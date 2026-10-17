@@ -2,7 +2,7 @@
 
 **Project:** GRID — Local-first Digital Civilization and Personal Task Assistant  
 **Roadmap:** Eight milestones  
-**Checklist baseline:** GitHub repository `Scorpio7736/Grid7736`, original reviewed commit `a11f394`; updated for locally implemented and verified World Management 1.4 and Simulation Clock 1.5 changes on 2026-10-16.
+**Checklist baseline:** GitHub repository `Scorpio7736/Grid7736`, reviewed commit `f5ee323` (local HEAD and GitHub master matched); sections 1.1–1.5 completion evidence updated on 2026-10-16.
 **Status convention:** `[x]` = observed in the reviewed repository or current working tree (independent verification is noted where performed); `[ ]` = pending or not verified.
 **Scope:** Includes GRID-REQ-002 conversational advice, uploaded context, authorized task execution, and file editing.
 
@@ -39,6 +39,14 @@
 - [x] Configure .gitignore and .gitattributes
 - [x] Add and organize project design documents
 
+**Completed — commit history reviewed and current implementation verified on 2026-10-16**
+
+- Repository configuration was introduced in [`0f86ab4`](https://github.com/Scorpio7736/Grid7736/commit/0f86ab4fe49401282fd398f4d019e6ce597e848f) (`.gitignore` and `.gitattributes`).
+- [`562e51d`](https://github.com/Scorpio7736/Grid7736/commit/562e51d4e4ed006fc462e4fb1818a4c26e38c3f8) established the solution and three .NET 10 SDK projects. [`442632c`](https://github.com/Scorpio7736/Grid7736/commit/442632ca7c25398c5eb441928c06a2806992f524) configured Grid.Terminal as an executable with a console entry point.
+- [`0ccb1e2`](https://github.com/Scorpio7736/Grid7736/commit/0ccb1e2dda4d852f28473800008cac729ccc03e0) established Terminal → Simulation → Core project references. [`f365151`](https://github.com/Scorpio7736/Grid7736/commit/f365151a8425314ebb531259cdd42941f0192f6d) added the design documents and solution document folder.
+- Verification: GitHub `master` was checked with `git ls-remote` and matches local commit `f5ee323`. Installed SDK reports `10.0.401`; the current solution built successfully in this session with zero warnings and zero errors.
+- Git history establishes project setup, not a historical installation record. Visual Studio installation was not independently checked; the existing installation checkbox is retained from the original checklist.
+
 ## 1.2 Program model
 
 - [x] Implement GridProgram.cs
@@ -46,7 +54,15 @@
 - [x] Add name and occupation
 - [x] Add energy and current district ID
 - [x] Implement GridProgramStatus enum
-- [x] Verify program IDs and initial defaults in terminal *(manual verification code present; runtime result not independently observed)*
+- [x] Add terminal checks for program IDs and initial defaults *(historical demo source verified in f365151; current automated verification documented below)*
+
+**Completed — commit history reviewed and current implementation verified on 2026-10-16**
+
+- [`f365151`](https://github.com/Scorpio7736/Grid7736/commit/f365151a8425314ebb531259cdd42941f0192f6d) introduced `GridProgram.cs` and `GridProgramStatus` with Idle, Working, Moving, Recharging, and Offline states.
+- The model provides an init-only GUID identity, name, occupation, energy defaulting to 100, district ID, and status defaulting to Idle.
+- That commit included a two-citizen terminal demonstration printing identity uniqueness, default energy, and default status. Its source was inspected; its historical execution was not independently observed. The demonstration was subsequently replaced by the district demo.
+- Verification: the eight current World Management tests passed in this session, including factory citizen identities, energy/status defaults, valid district membership, and duplicate-ID rejection. These are current automated results, not evidence of a historical terminal run.
+- Section 1.4 subsequently restricted the district setter and introduced world ownership to protect placement consistency.
 
 ## 1.3 District model
 
@@ -55,7 +71,15 @@
 - [x] Add district population IDs
 - [x] Add fictional resource dictionary
 - [x] Initialize the five starting district objects
-- [x] Verify district GUID uniqueness in terminal *(verification code present; runtime result not independently observed)*
+- [x] Verify district GUID uniqueness in terminal *(executed successfully on 2026-10-16; result: True)*
+
+**Completed — commit history reviewed and terminal verification performed on 2026-10-16**
+
+- [`a11f394`](https://github.com/Scorpio7736/Grid7736/commit/a11f3940a1ec87fd720b9820f5720f3a400679bf) introduced `GridDistrict.cs` with init-only GUID identity, name, description, program membership IDs, and a fictional resource dictionary.
+- The same commit initialized The Core, Processing Sector, Memory Banks, Archive Sector, and Gateway in the terminal, printing their details and checking district ID uniqueness.
+- Verification: `dotnet run --project Grid.Terminal/Grid.Terminal.csproj --no-build --no-restore` completed successfully in this session and printed `Districts: 5` and `Unique district IDs: True`. Each standalone demo district reported zero population, as expected.
+- Current automated World Management tests also passed, covering factory district initialization, membership, duplicate rejection, and transfers. Section 1.4 subsequently made district membership read-only to external callers.
+- The terminal demonstration remains separate from the factory-created world of twenty citizens.
 
 ## 1.4 World management
 
