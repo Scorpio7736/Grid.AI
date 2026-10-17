@@ -1,5 +1,11 @@
 # Project GRID — Program Fashion & Uniform Style Guide
 
+## Implementation status - 2026-10-17
+
+The program model and validated name/occupation/status/energy/district editing API are implemented; wardrobe rendering and uniform assignment remain planned. Display names, occupations, uniforms, and role colors confer no permissions. Future visual updates should read authoritative snapshots; login and terminal editing controls remain deferred.
+
+See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
+
 **Document:** Visual Design Specification  
 **Version:** 0.8 — Draft  
 **Scope:** Civilian, worker, specialist, officer, and high-level agent clothing  

@@ -1,9 +1,15 @@
 # Project GRID — Master Overview
 
+## Implementation status - 2026-10-17
+
+Genesis world management, clock, engine and terminal are implemented. Post-release work adds the validated editing API and optional --start startup. Login as Master Control or an agent, terminal editing controls, live view, persistence, autonomous jobs, host agents, AI, voice and 3D remain planned. The vision below describes the target product; use the linked implementation record for current behavior.
+
+See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
+
 **Project:** GRID — Hybrid Digital Civilization and Autonomous PC Agent System  
 **Document type:** High-level project overview  
-**Version:** 1.1 (user-directed assistance expansion)  
-**Status:** Design and planning; features described here are not yet implemented  
+**Version:** 1.2 (Genesis and post-release implementation reconciliation)
+**Status:** Genesis and editing API implemented; broader product vision remains planned
 **Source:** The six GRID design documents provided with this overview; expanded with a proposed user-directed task assistance goal
 
 ---
@@ -77,9 +83,9 @@ Commands are handled deterministically; conversational AI can interpret question
 
 The User wants future terminal sessions to begin with a login, supporting their own **Master Control** (master admin) identity or operation as any registered agent program. Agent sessions should expose that program's views and permitted actions; Master Control provides top-level GRID administration and oversight. The authenticated human and the active agent identity remain distinct for permissions and audit attribution.
 
-This is planned work, not implemented in Genesis. Authentication method, final role name, and interaction with agent autonomy remain open. See [Terminal Login and Master Control Plan](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md) for the experience, extension approach, phased work, and acceptance criteria.
+This is planned work, not implemented in Genesis. Authentication method and final role name remain open. Acting as an agent initially opens an operator view without automatically pausing or taking over its autonomous queue. See [Terminal Login and Master Control Plan](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md) for the experience, extension approach, phased work, and acceptance criteria.
 
-**Planned administration extension:** As Master Admin / Master Control, the User should be able to edit programs and their values from the terminal, initially including names, occupations, energy, status, and district assignment. Edits use validated engine/world operations, preserve membership, and record the operator and old/new values. Editable fields should be expandable as program models grow. See the program-editing section of the [Terminal Login and Master Control Plan](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md). This capability is not yet implemented.
+**Planned administration extension:** As Master Admin / Master Control, the User should be able to edit programs and their values from the terminal, initially including names, occupations, energy, status, and district assignment. Edits use validated engine/world operations, preserve membership, and record the operator and old/new values. Editable fields should be expandable as program models grow. See the program-editing section of the [Terminal Login and Master Control Plan](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md). The backend API is implemented in 1.9.3; authenticated terminal controls and durable audit remain planned.
 
 ## 5. Real PC tasks and safety
 

@@ -1,5 +1,11 @@
 # PROJECT GRID — City Design & Architectural Style Guide
 
+## Implementation status - 2026-10-17
+
+The runtime currently contains five logical districts and twenty citizens; no Godot city or navigation geometry is implemented. Administrative district edits transfer membership immediately, without a travel route. Future city views should consume engine snapshots and represent actual state changes; the visual districts below remain design targets.
+
+See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
+
 **Document type:** Visual design specification  
 **Status:** Concept / design direction  
 **Version:** 0.7 (City Design)  

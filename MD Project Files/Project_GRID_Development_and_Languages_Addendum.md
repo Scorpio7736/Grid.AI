@@ -1,5 +1,11 @@
 # Project GRID — Development Roadmap & Language Architecture
 
+## Implementation status - 2026-10-17
+
+Genesis is implemented and tagged v0.1.0-genesis. Sections 1.9.1 and 1.9.2 completed design contracts; 1.9.3 now implements the validated editing API. The actual solution is Grid7736.slnx with root-level Grid.Core, Grid.Simulation, Grid.Terminal and their three matching test projects. Python/C++ integrations and the expanded layouts below remain proposals. Next is checklist 1.10 live view, followed by Phase 2 persistence.
+
+See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
+
 **Design addendum v0.6**  
 **Date:** October 15, 2026  
 **Status:** Planning; proposals are not implemented unless explicitly stated.  
@@ -43,7 +49,7 @@ Principles:
 
 ## 3. Milestone 1: Genesis — detailed plan
 
-### Start with a small .NET solution
+### Original small-solution plan (Genesis implemented)
 
 ```text
 Project-GRID/
@@ -173,13 +179,14 @@ Every completed feature should include tests, documentation, and a demonstration
 
 ### First Genesis sprint checklist
 
-- [ ] Initialize repository, README, license, .gitignore and .NET solution.
-- [ ] Define world, program and district domain models.
-- [ ] Implement deterministic, pauseable world clock.
-- [ ] Generate five districts and twenty programs.
-- [ ] Create terminal commands for inspection and control.
-- [ ] Add xUnit coverage and run all tests.
-- [ ] Tag a verified Genesis build.
+- [x] Initialize repository, README, .gitignore and .NET solution.
+- [ ] Choose and add a repository license (no license file found in this review).
+- [x] Define world, program and district domain models.
+- [x] Implement deterministic, pauseable world clock.
+- [x] Generate five districts and twenty programs.
+- [x] Create terminal commands for inspection and control.
+- [x] Add xUnit coverage and run all tests.
+- [x] Tag a verified Genesis build.
 
 **Postpone:** photorealism, full autonomous coding, thousands of expensive model-driven agents, intricate government structures, and unrestricted shell execution.
 
@@ -355,6 +362,6 @@ An illustrative distribution of development effort might be **65% C#, 25% Python
 
 ## 13. Immediate next step
 
-**Build GRID Genesis first:** an executable, unit-tested C# world with 5 districts, 20 programs, a clock and terminal inspection. Maintain the Python and C++ integration plan and optionally create a small interoperability smoke test, but do not let cross-language plumbing delay a functioning civilization.
+**Genesis is complete:** an executable, unit-tested C# world with 5 districts, 20 programs, a clock and terminal inspection. The editing API is also complete. Implement checklist 1.10 live view next, then Phase 2 persistence. Maintain the Python and C++ integration plan and optionally create a small interoperability smoke test, but do not let cross-language plumbing delay a functioning civilization.
 
 After Genesis, add persistence, meaningful autonomous behavior, and a communication hub. This produces a sound foundation for the later AI, agent, and 3D phases.

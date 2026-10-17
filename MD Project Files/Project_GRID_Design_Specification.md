@@ -1,9 +1,15 @@
 # Project GRID
 
+## Implementation status - 2026-10-17
+
+Implemented scope is the headless .NET world, fixed-step clock/engine, extensible terminal and post-Genesis editing API. The broader architecture, sample interfaces, communications commands, persistence, host integration, autonomy and renderer below remain targets unless explicitly identified as implemented. The master checklist controls milestone scope; the original broad prototype proposal is not the acceptance scope of the released Genesis tag.
+
+See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
+
 **Hybrid Digital Civilization and Autonomous PC Agent System**  
 **Consolidated Design Specification — Draft v0.4**  
 **Date:** October 15, 2026  
-**Status:** Concept and proposed architecture; not yet implemented
+**Status:** Genesis and editing API implemented; expanded architecture remains proposed
 
 ---
 
@@ -76,6 +82,8 @@ These live entirely in the virtual Grid. They may operate infrastructure, constr
 These are both fictional in-world characters and concrete, permission-scoped host services. Their decisions can result in real tasks, but only through approved capabilities and execution policies.
 
 ### 3.3 Program identity and state
+
+The sample below is a conceptual future model. Current world-owned GridProgram setters reject direct mutation; validated edits use the engine API and per-program revisions.
 
 Each program may have:
 
@@ -226,7 +234,9 @@ These are **application policy levels**, not Windows administrator privileges. A
 2. **Voice console:** Push-to-talk microphone input, transcription, live text responses, and speech playback.
 3. **3D viewer:** Select programs or districts, open communication channels, display dialogue, and play assigned program voices.
 
-### 6.2 Example commands
+### 6.2 Proposed communications commands
+
+These are future command examples. Current commands are help, status, programs, districts, inspect, start, pause, step/tick and exit; see the [README](../README.md).
 
 ```text
 grid status
@@ -407,7 +417,9 @@ Use database transactions, migrations, indexes, and suitable SQLite WAL settings
 
 ## 8. Windows Lifecycle and Host Integration
 
-### 8.1 Startup sequence
+### 8.1 Proposed integrated startup sequence
+
+Current startup is manual through dotnet run and creates a fresh world, paused unless --start is supplied. There is no Windows startup service or saved-world recovery yet.
 
 1. User logs in to Windows and the Grid background host starts.
 2. Grid validates persistent data and loads the latest consistent saved state.
@@ -532,7 +544,9 @@ During a long PC session, citizens coordinate material supply, negotiate distric
 
 ## 11. Prototype Scope and Acceptance Criteria
 
-### 11.1 GRID v0.1 — Genesis (world simulation)
+### 11.1 Original broad prototype proposal (beyond released Genesis)
+
+Released v0.1.0-genesis covers the world, clock, energy ticks and terminal. Task selection, telemetry, persistence and throttling below belong to later checklist phases.
 
 Proposed MVP scale:
 
@@ -649,7 +663,9 @@ The preceding sections describe the desired concept and recommended implementati
 
 ---
 
-## 14. Recommended First Implementation
+## 14. Original implementation sequence and current next work
+
+The headless Genesis foundation and post-release editing API are complete. Next implement checklist 1.10 live view and bounded recent events, then Phase 2 persistence. The following original sequence remains context for later communications, agents and viewer work; it is not a list of entirely unstarted projects.
 
 Start with the **headless C# simulation and durable communication kernel**, not the entire 3D city:
 

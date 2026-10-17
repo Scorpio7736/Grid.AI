@@ -1,4 +1,5 @@
 using Grid.Core;
+using Grid.Simulation.Editing;
 
 namespace Grid.Simulation;
 
@@ -7,9 +8,9 @@ namespace Grid.Simulation;
 /// world directly or share it with another engine. UI readers should use GetSnapshot for a consistent view.
 /// No rendering, AI, host telemetry, or offline catch-up is involved.
 /// </summary>
-public sealed class GridSimulationEngine
+public sealed partial class GridSimulationEngine
 {
-    private readonly object gate = new();
+    private readonly object gate;
     private readonly GridWorld world;
     private readonly GridClock clock;
     private readonly TimeProvider timeProvider;
@@ -17,10 +18,13 @@ public sealed class GridSimulationEngine
     private long runVersion;
     private GridTickResult? lastTick;
 
-    public GridSimulationEngine(GridWorld world, TimeSpan? tickDuration = null, TimeProvider? timeProvider = null)
+    public GridSimulationEngine(GridWorld world, TimeSpan? tickDuration = null, TimeProvider? timeProvider = null, IProgramEditAuthorizer? editAuthorizer = null, ProgramEditFieldRegistry? editFields = null)
     {
         ArgumentNullException.ThrowIfNull(world);
         this.world = world;
+        gate = world.SyncRoot;
+        this.editAuthorizer = editAuthorizer ?? new DenyProgramEdits();
+        this.editFields = editFields ?? ProgramEditFieldRegistry.CreateDefault();
         clock = new GridClock(tickDuration);
         this.timeProvider = timeProvider ?? TimeProvider.System;
     }
@@ -37,7 +41,7 @@ public sealed class GridSimulationEngine
         lock (gate)
         {
             var programs = world.Programs.Values.OrderBy(p => p.Name).ThenBy(p => p.Id)
-                .Select(p => new GridProgramSnapshot(p.Id, p.Name, p.Occupation, p.Energy, p.CurrentDistrictId, p.Status))
+                .Select(p => new GridProgramSnapshot(p.Id, p.Name, p.Occupation, p.Energy, p.CurrentDistrictId, p.Status, p.Revision))
                 .ToArray();
             var districts = world.Districts.Values.OrderBy(d => d.Name).ThenBy(d => d.Id)
                 .Select(d => new GridDistrictSnapshot(d.Id, d.Name, d.Description,
@@ -172,6 +176,7 @@ public sealed class GridSimulationEngine
             var energy = (float)Math.Clamp(program.Energy + rate * TickDuration.TotalSeconds, 0d, 100d);
             if (energy != program.Energy)
             {
+                _ = checked(program.Revision + 1);
                 changes.Add((program, energy));
                 events.Add(new ProgramEnergyChanged(nextTick, nextTime, program.Id, program.Energy, energy));
             }
@@ -188,7 +193,7 @@ public sealed class GridSimulationEngine
 
         // 3. Apply staged changes, then expose events describing only the committed state.
         foreach (var change in changes)
-            change.Program.Energy = change.Energy;
+            world.CommitProgram(change.Program, change.Program.Values with { Energy = change.Energy });
         lastTick = result;
         return result;
     }

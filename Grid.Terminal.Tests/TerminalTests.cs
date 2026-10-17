@@ -1,4 +1,6 @@
-﻿using Grid.Core;
+using Grid.TestSupport;
+using Grid.Simulation.Editing;
+using Grid.Core;
 using Grid.Simulation;
 using Xunit;
 
@@ -46,7 +48,7 @@ public sealed class TerminalTests
     {
         var (world, _, commands) = Setup();
         var program = world.Programs.Values.First();
-        program.Energy = 42;
+        TestEdit.Update(world, program, new ProgramFieldEdit("energy", new EnergyValue(42)));
         Assert.Contains("Energy: 42", commands.Execute($"inspect program {program.Id}").Text);
         Assert.Contains(program.Occupation, commands.Execute($"inspect program {program.Name}").Text);
         var district = world.Districts.Values.First();
@@ -58,7 +60,7 @@ public sealed class TerminalTests
     public void AmbiguousNamesRequireId()
     {
         var (world, _, commands) = Setup();
-        foreach (var program in world.Programs.Values) program.Name = "Same";
+        foreach (var program in world.Programs.Values) TestEdit.Update(world, program, new ProgramFieldEdit("name", new TextValue("Same")));
         Assert.Contains("Multiple matches", commands.Execute("inspect program Same").Text);
         Assert.Contains("Program: Same", commands.Execute($"inspect program {world.Programs.Keys.First()}").Text);
     }
@@ -87,7 +89,7 @@ public sealed class TerminalTests
     public void CommandsControlEngineAndStepsReportActualChanges()
     {
         var (world, engine, commands) = Setup();
-        world.Programs.Values.First().Status = GridProgramStatus.Working;
+        TestEdit.Update(world, world.Programs.Values.First(), new ProgramFieldEdit("status", new StatusValue(GridProgramStatus.Working)));
         Assert.Equal("", commands.Execute("  ").Text);
         Assert.Contains("Energy changes: 1", commands.Execute("step").Text);
         commands.Execute("tick");
@@ -168,7 +170,7 @@ public sealed class TerminalTests
     {
         var (world, engine, _) = Setup();
         var program = world.Programs.Values.First();
-        program.Status = GridProgramStatus.Working;
+        TestEdit.Update(world, program, new ProgramFieldEdit("status", new StatusValue(GridProgramStatus.Working)));
         var district = world.Districts.Values.First();
         district.Resources["Power"] = 10;
         var before = engine.GetSnapshot();

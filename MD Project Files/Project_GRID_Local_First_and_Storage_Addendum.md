@@ -1,5 +1,11 @@
 # Project GRID — Local-First Architecture and Storage Planning
 
+## Implementation status - 2026-10-17
+
+Current execution is an in-memory .NET terminal with five districts and twenty citizens. Every launch creates a fresh world. SQLite, save/load, durable audit, model downloads, quota enforcement and storage governance remain planned. The 20 GB budget and larger populations below are estimates, not measured installation sizes or enforced limits. LastTick retains only the latest tick result; edit receipts are returned to callers and are not stored history. Checklist 1.10 plans a bounded recent-events buffer before Phase 2 persistence. Persisted program revisions must not make previews from an old world/session reusable.
+
+See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
+
 **Design addendum:** v0.5  
 **Date:** October 15, 2026  
 **Purpose:** Consolidate design decisions and estimates discussed *after* the original `Project_GRID_Design_Specification.md` was generated. This is a companion document rather than a replacement.

@@ -1,10 +1,16 @@
 # Project GRID — Master Development Checklist
 
+## Implementation status - 2026-10-17
+
+Documentation reconciled on 2026-10-17 against local HEAD 0b659e6 and current working-tree changes. Genesis 1.1-1.8 is complete; 1.9.1-1.9.2 are completed designs and 1.9.3 is implemented. Section 1.10 live view remains unchecked. Current solution verification passed 117 tests (8 Core, 85 Simulation, 24 Terminal). Historical completion counts below describe their original verification dates, not the current total.
+
+See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
+
 **Project:** GRID — Local-first Digital Civilization and Personal Task Assistant  
 **Roadmap:** Eight milestones  
-**Checklist baseline:** GitHub repository `Scorpio7736/Grid7736`, reviewed commit `f5ee323` (local HEAD and GitHub master matched); sections 1.1–1.5 completion evidence updated on 2026-10-16. Sections 1.6–1.7 record subsequent locally implemented and verified changes.
+**Checklist baseline:** Local repository HEAD `0b659e6` plus working-tree changes reviewed on 2026-10-17. Released Genesis is tagged `v0.1.0-genesis` at `0c1de64`; post-release API/startup changes are not part of that tag. Remote synchronization was not checked during this documentation audit.
 **Status convention:** `[x]` = observed in the reviewed repository or current working tree (independent verification is noted where performed); `[ ]` = pending or not verified.
-**Scope:** Includes GRID-REQ-002 conversational advice, uploaded context, authorized task execution, and file editing.
+**Scope:** Includes GRID-REQ-002 task assistance, GRID-REQ-003 terminal identities and program editing, and the requested live status/events view in 1.10.
 
 > **Architecture principles:** C#/.NET owns authoritative world state; agent behavior does not require AI; Windows tasks are explicitly permission-scoped and auditable; essential operation is local-first and requires no subscriptions; the 3D viewer observes the simulation instead of owning it. Simulation time advances only while GRID operates.
 
@@ -180,6 +186,12 @@ Terminal command integration is now complete in section 1.7. Persistence and dur
 
 World state remains in memory; persistence is planned for Phase 2. The extension point is an in-process command registry, not a dynamic plugin loader. Genesis release is marked by the annotated v0.1.0-genesis tag.
 
+### Terminal startup completion update - 2026-10-17
+
+- [x] Add optional case-insensitive `--start` launch argument; default remains paused.
+- [x] Verify `status` reports Running when launched with `dotnet run --project Grid.Terminal/Grid.Terminal.csproj -- --start`.
+- Full solution regression verification after this change: 117 passed, zero failed or skipped. This starts simulation ticking; it does not implement the 1.10 live view.
+
 ## 1.8 Genesis tests and release
 
 - [x] Create Grid.Core.Tests xUnit project
@@ -209,7 +221,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ## 1.9 Post-Genesis preparation — Terminal identities and administrative editing
 
-**Follow-up status:** Sections 1.9.1–1.9.2 designs are complete; section 1.9.3 implementation remains pending. Runtime administrative editing is not implemented. These preparations support GRID-REQ-003 and the User's Master Admin editing request. They are follow-up work after the completed `v0.1.0-genesis` release, not missing Genesis acceptance criteria. Preserve the existing release tag.
+**Follow-up status:** Sections 1.9.1–1.9.2 designs and the 1.9.3 editing API are complete. Authenticated terminal editing and login remain deferred. These preparations support GRID-REQ-003 and the User's Master Admin editing request. They are follow-up work after the completed `v0.1.0-genesis` release, not missing Genesis acceptance criteria. Preserve the existing release tag.
 
 ### 1.9.1 Define editable values and behavior
 
@@ -227,7 +239,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - Defined exact previews and whole-program revision checks, including conflict rejection, atomic multi-field updates, no-op behavior, explicit pause control, and world/session scope.
 - Defined an expandable typed field registry for metadata, parsing, formatting, validation, capability references, and staged mutations. Identity and authorization settings remain separate from profile values.
 - Verification: reviewed current GridProgram properties/status values, GridWorld transfer rules, GridSimulationEngine energy updates, and terminal name/ID lookup behavior against the specification. Included concrete acceptance scenarios for later implementation tests.
-- This completes design only. No source code was changed or runtime tests run for 1.9.1; field enforcement, revision tracking, and editing operations remain pending in 1.9.3. Session-context planning is now defined in 1.9.2.
+- This completes design only. No source code was changed or runtime tests run for 1.9.1; field enforcement, revision tracking, and editing operations were pending at design completion and are now implemented in 1.9.3. Session-context planning is now defined in 1.9.2.
 
 ### 1.9.2 Plan session context and authorization boundaries
 
@@ -248,20 +260,55 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - Verification: reviewed TerminalCommand and CommandDispatcher signatures, engine integration boundaries, and the 1.9.1 editing contract for consistency. Added required acceptance scenarios for future implementation.
 - Design only: no source changes or runtime test execution. Actual credential verification and login are not implemented; absent a trusted provider, new administrative operations must deny access. Test-only session resolvers must not become a default production administrator.
 
-### 1.9.3 Implement validated program editing API — first coding priority
+### 1.9.3 Implement validated program editing API - complete
 
-- [ ] Add typed program-edit requests and results through the engine/application boundary
-- [ ] Validate all requested values before committing any part of an edit
-- [ ] Serialize edits with simulation ticks and reject stale/conflicting requests
-- [ ] Route district changes through world transfer rules to preserve membership and population
-- [ ] Review public setters on program values and restrict mutation paths that bypass validation, while preserving factory initialization and engine updates
-- [ ] Return actual committed old/new values for later terminal output and audit integration
-- [ ] Keep this API separate from future login UI and credential storage; do not expose unauthenticated administrative terminal commands
-- [ ] Test valid edits, invalid values, all-or-nothing changes, unchanged IDs, district consistency, tick coordination, and authorization enforcement when session checks are connected
-- [ ] Run the existing world, clock, engine, and terminal regression tests after changes
-- [ ] Add completion notes with observed test/build results once this preparation is implemented
+- [x] Add typed program-edit requests and results through the engine/application boundary
+- [x] Validate all requested values before committing any part of an edit
+- [x] Serialize edits with simulation ticks and reject stale/conflicting requests
+- [x] Route district changes through world transfer rules to preserve membership and population
+- [x] Review public setters on program values and restrict mutation paths that bypass validation, while preserving factory initialization and engine updates
+- [x] Return actual committed old/new values for later terminal output and audit integration
+- [x] Keep this API separate from future login UI and credential storage; do not expose unauthenticated administrative terminal commands
+- [x] Test valid edits, invalid values, all-or-nothing changes, unchanged IDs, district consistency, tick coordination, and authorization enforcement when session checks are connected
+- [x] Run the existing world, clock, engine, and terminal regression tests after changes
+- [x] Add completion notes with observed test/build results once this preparation is implemented
+
+**Implemented and verified — 2026-10-17**
+
+- Added typed field values, edit requests, immutable previews, structured outcomes, and committed receipts through `GridSimulationEngine.PrepareEdit()` and `ApplyEdit()`.
+- Added an explicit typed field registry for name, occupation, energy, status, and district, including normalization, metadata, decimal parsing, round-trip formatting, and validation. Energy text is limited to 1024 characters and bounds are checked exactly before float conversion.
+- Added per-program revisions and a world instance ID. Successful changing transactions increment revision once; ticks and transfers invalidate stale previews, while no-ops and unrelated changes do not.
+- Edits and world mutations share the engine/world lock. Multi-field edits validate fully before commit, preserve IDs and population, and return actual before/after values. Edits do not advance time or replace the last tick result.
+- World-owned program setters now reject direct external changes; unowned initialization remains supported. District changes use the world transfer path. Existing tests were adapted to initialize before ownership or use authorized test editing.
+- Added an injectable authorization lease contract with default-deny behavior. Trusted providers must verify authentication, current programs.edit capability and world scope, and hold authorization validity through commit. The engine also checks Master Control identity and session/world bindings. The test provider is compiled only into test projects.
+- Preview/apply check current authorization separately. Revoked sessions, agent sessions, changed session generations, foreign previews, replayed consumed previews, stale revisions and invalid values do not commit changes. Cancellation is honored before commit, never midway through a mutation.
+- Receipts carry request/operator/session identity, revisions, old/new values, simulation tick/time and UTC time for later audit integration; these receipts are not a durable audit log or live-event buffer.
+- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 117 tests: eight World Management, 85 simulation (including 48 new editing cases), and 24 terminal cases. Tests cover validation, atomicity, no-ops, one-time behavior, membership, authorization, revocation/commit ordering, preview isolation, concurrency with ticks, and unchanged terminal behavior.
+- `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors. The executable status/step/inspect/exit smoke check also passed.
+- Login, credential verification, a production authenticated-session provider, terminal edit commands, persistence, and durable audit remain deferred. Existing Genesis commands keep their current behavior; newly added administrative APIs deny access by default.
 
 **Deferred implementation:** Actual login and credential handling, identity switching UI, saved roles, and durable audit history remain in the planned persistence/session/system-agent work. Sections 4.2A and 5.1 describe that later integration; do not mark those capabilities complete merely because these contracts or APIs exist.
+
+---
+
+## 1.10 Post-Genesis terminal live view
+
+**User-requested planning addition — 2026-10-17; not implemented.** Add an optional continuously updating terminal view after the tagged Genesis release.
+
+- [ ] Add a live-view command or option to enter the updating display
+- [ ] Continuously show running/paused state, simulation tick, elapsed simulation time, and population
+- [ ] Show current program activities, statuses, locations, energy, and actual changes
+- [ ] Include a compact recent-events list with simulation timestamps and relevant program names/IDs
+- [ ] Show real program actions, state changes, transfers, and administrative edits when those events exist; do not invent autonomous activity
+- [ ] Distinguish completed events from ongoing activity; initially show Idle honestly where no behavior has been implemented
+- [ ] Add a bounded recent-event buffer with stable sequence IDs so events between display refreshes are not lost or duplicated; keep durable history in Phase 2
+- [ ] Keep rendering refresh rate separate from simulation ticks; use consistent snapshots without advancing or pausing simulation merely to redraw
+- [ ] Add an easy key to leave live view and return to the command prompt without stopping the world
+- [ ] Handle Ctrl+C, terminal resizing, and redirected/unsupported output with a clean fallback
+- [ ] Avoid flooding scrollback or retaining an unbounded event list; keep refresh/resource usage modest
+- [ ] Apply session visibility rules once login is implemented
+- [ ] Test refresh consistency, event ordering, bounded history, paused display, and return-to-prompt behavior
+- [ ] Add completion notes and verification results after implementation
 
 ---
 
@@ -399,16 +446,16 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ### Planned Master Admin program editing (GRID-REQ-003)
 
-**Planning addition — not implemented.** Master Admin and Master Control refer to the same planned human administrator role.
+**Terminal integration remains planned; backend API completed in 1.9.3.** Master Admin and Master Control refer to the same planned human administrator role. Checked items below refer to backend functionality, not a working login/editing UI.
 
 - [ ] Add terminal commands to inspect and edit programs and their values as Master Control
 - [ ] Initially support name, occupation, energy, status, and district assignment
-- [ ] Define an expandable registry of editable fields, types, and validation rules
-- [ ] Enforce Master Control authorization in the editing service
+- [x] Define an expandable registry of editable fields, types, and validation rules
+- [x] Enforce Master Control authorization in the editing service
 - [ ] Preview target and old/new values; report committed results
-- [ ] Serialize edits with ticks and reject stale/conflicting updates
-- [ ] Use world-management transfers for district changes; preserve stable identity and membership
-- [ ] Separate profile edits from credential, permission, and host-capability management
+- [x] Serialize edits with ticks and reject stale/conflicting updates
+- [x] Use world-management transfers for district changes; preserve stable identity and membership
+- [x] Separate profile edits from credential, permission, and host-capability management
 - [ ] Audit edits and integrate persistence; define one-time edits versus ongoing overrides
 - [ ] Test authorized/denied edits, invalid values, atomicity, population consistency, and saved results
 
@@ -725,9 +772,10 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 # Immediate Next Steps — Post-Genesis Recommendations
 
 1. [x] Complete editable-field and session-context planning in sections 1.9.1–1.9.2.
-2. [ ] Implement and verify the validated editing API in section 1.9.3.
-3. [ ] Begin Phase 2 persistence with the identity, edit-result, and audit requirements considered in schema design.
-4. [ ] Integrate login and Master Control terminal editing in the later GRID-REQ-003 work; preserve the completed Genesis release.
-5. [ ] Record completion notes and verification evidence as each item is finished.
+2. [x] Implement and verify the validated editing API in section 1.9.3.
+3. [ ] Implement the terminal live view in section 1.10.
+4. [ ] Begin Phase 2 persistence with the identity, edit-result, and audit requirements considered in schema design.
+5. [ ] Integrate login and Master Control terminal editing in the later GRID-REQ-003 work; preserve the completed Genesis release.
+6. [ ] Record completion notes and verification evidence as each item is finished.
 
 **Note:** This checklist reproduces the full eight-phase planning scope as of this conversation. Completion indicators should be updated after each repository review; generated code and documentation are not evidence that a test has passed.

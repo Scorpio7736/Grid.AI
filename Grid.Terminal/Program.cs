@@ -1,8 +1,9 @@
-﻿using Grid.Core;
+using Grid.Core;
 using Grid.Simulation;
 using Grid.Terminal;
 
 var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
+if (args.Contains("--start", StringComparer.OrdinalIgnoreCase)) engine.Start();
 var commands = DefaultCommands.Create(engine);
 using var shutdown = new CancellationTokenSource();
 ConsoleCancelEventHandler cancel = (_, args) =>

@@ -1,7 +1,13 @@
-﻿# Project GRID — Session Context and Authorization Contract
+# Project GRID — Session Context and Authorization Contract
+
+## Implementation status - 2026-10-17
+
+The editing authorization seam is implemented, with default denial and test-only authorization providers. The general session contract and lifecycle below remain the integration specification. A production provider must implement authentication, expiry, current capability/scope checks and revocation ordering; the engine does not supply those services.
+
+See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
 
 **Scope:** Section 1.9.2; GRID-REQ-003  
-**Status:** Design complete; authentication, sessions and enforcement are not implemented  
+**Status:** Design complete; editing authorization boundary implemented in 1.9.3; authentication and session lifecycle remain deferred
 **Recorded:** 2026-10-16  
 **Related:** [Identity plan](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md), [Program Editing Rules](Project_GRID_Program_Editing_Rules.md)
 
@@ -48,7 +54,7 @@ The eventual flow is:
 
 A caller-provided role string, capability collection, program name or IsAdmin flag must not be enough to authorize an action. Session identifiers must be resolved by the trusted service; in-process types alone are not a security boundary against arbitrary code running inside the process.
 
-For 1.9.3, design the editing API to depend on an authorization/session resolver. A test fixture may supply an explicit fake resolver. The normal application must deny administrative edits when no authenticated session provider is configured; do not silently create a production Master Control session to make tests or demos convenient. Genesis commands can retain their current behavior until session integration, but newly added administrative edits must not be exposed without enforcement.
+The 1.9.3 editing API now depends on an authorization lease provider. A test fixture may supply an explicit fake resolver. The normal application must deny administrative edits when no authenticated session provider is configured; do not silently create a production Master Control session to make tests or demos convenient. Genesis commands can retain their current behavior until session integration, but newly added administrative edits must not be exposed without enforcement.
 
 ## 4. Initial capability policy
 
@@ -115,7 +121,9 @@ An autonomous action has an agent identity and no falsely attributed human opera
 
 Do not retain credentials or secret tokens. Failure/no-op records must be distinguishable from committed changes. Durable storage, retention, protected log access and audit write-failure policy are Phase 2/agent integration work; an edit-result object alone is not a durable audit trail.
 
-## 8. Required verification scenarios for later implementation
+## 8. Verification contract
+
+The editing suite covers default denial, forged references, agent denial, switching/generations, revocation ordering, preview isolation and atomicity with a test provider. Real credentials, expiry, multi-terminal session propagation and durable audit still require integration tests when implemented.
 
 - Missing/forged session claims cannot authorize an edit.
 - Authenticated Master Control can perform a valid scoped edit.
@@ -134,4 +142,10 @@ Do not retain credentials or secret tokens. Failure/no-op records must be distin
 
 Reviewed the current TerminalCommand handler signature, CommandDispatcher routing, terminal/engine separation, and 1.9.1 preview and revision rules. Current handlers accept arguments only: the session-aware signature and trusted resolver described here are future implementation work.
 
-This completes the six planning items in section 1.9.2. No source code was changed and no runtime tests were run. The next coding task is 1.9.3. Local credential choice, session timeouts/recovery, durable role storage and login UI remain open; none is represented as implemented authentication.
+This completes the six planning items in section 1.9.2. No source code was changed and no runtime tests were run. The subsequent coding task 1.9.3 is now complete; see section 10. Local credential choice, session timeouts/recovery, durable role storage and login UI remain open; none is represented as implemented authentication.
+
+## 10. Editing boundary implementation — 2026-10-17
+
+Section 1.9.3 adds EditSessionReference, ProgramEditIdentity, IProgramEditAuthorizer and IProgramEditLease for the editing boundary. A production provider must verify live authentication, capability and world scope and hold validity until the operation finishes; lock order is authorization lease followed by world/engine lock. The engine checks Master Control identity and preview bindings and defaults to denial when no provider is configured.
+
+A test-only provider verifies revocation ordering, role switching and session generations. No production login, credential store, general session service, expiry mechanism or terminal session propagation is claimed. Those remain future integrations under this contract. The wider human/agent/system audit model remains planned; edit receipts currently capture human Master Control attribution for later audit storage.

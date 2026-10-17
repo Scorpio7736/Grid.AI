@@ -1,7 +1,13 @@
 # Project GRID — Terminal Login and Master Control Plan
 
+## Implementation status - 2026-10-17
+
+The 1.9.3 backend editing boundary is implemented and denies access by default. There is no production authentication provider, login/identity-switching UI, or terminal edit command. Existing Genesis inspection/control commands remain available without login. Acceptance criteria below concern the future integrated terminal experience; API completion evidence is recorded separately. Live view is planned under checklist 1.10.
+
+See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
+
 **Requirement:** GRID-REQ-003 — Terminal identities and operator sessions  
-**Status:** Planned; not implemented in Genesis  
+**Status:** Login and terminal integration planned; backend editing API implemented after Genesis
 **Recorded:** 2026-10-16  
 **Working name:** Master Control (also described as master admin; final label remains open)
 
@@ -38,7 +44,7 @@ These are intended role views, not claims that these services already exist. Mas
 
 ## Identity and action model
 
-Section 1.9.2 now defines the [Session Context and Authorization Contract](Project_GRID_Session_Context_and_Authorization.md), including trusted session issuance, effective permissions, identity switching, preview invalidation and audit attribution. This is a design contract; authentication and enforcement are not yet implemented.
+Section 1.9.2 now defines the [Session Context and Authorization Contract](Project_GRID_Session_Context_and_Authorization.md), including trusted session issuance, effective permissions, identity switching, preview invalidation and audit attribution. The editing authorization boundary is now implemented in 1.9.3 with default denial; authentication and general session lifecycle remain pending.
 
 - Keep the authenticated human operator separate from the active program identity. A human operating as FORGE is recorded as that human acting through FORGE, rather than as an autonomous FORGE action.
 - Carry a session context through command dispatch and task execution, including operator ID, active identity ID, and effective capabilities.
@@ -55,7 +61,7 @@ Section 1.9.2 now defines the [Session Context and Authorization Contract](Proje
 
 The User, signed in as Master Admin / Master Control, should be able to inspect and edit programs and their values directly from the terminal. This includes civilian programs and editable simulation/profile fields of named agents.
 
-Initial editable fields are name, occupation, energy, status, and district assignment. The completed section 1.9.1 design is specified in [Program Editing Rules](Project_GRID_Program_Editing_Rules.md), including validation, one-time behavior, previews, conflict detection, and expandable field metadata. Runtime implementation remains pending.
+Initial editable fields are name, occupation, energy, status, and district assignment. The completed section 1.9.1 design is specified in [Program Editing Rules](Project_GRID_Program_Editing_Rules.md), including validation, one-time behavior, previews, conflict detection, and expandable field metadata. The editing API is now implemented in 1.9.3; login and terminal editing integration remain pending.
 
 Proposed usage (illustrative syntax; not currently implemented):
 

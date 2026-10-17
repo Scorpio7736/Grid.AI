@@ -1,4 +1,6 @@
-﻿using System.Threading.Channels;
+using Grid.TestSupport;
+using Grid.Simulation.Editing;
+using System.Threading.Channels;
 using Grid.Core;
 using Xunit;
 
@@ -103,9 +105,7 @@ public sealed class GridSimulationEngineTests
     [Fact]
     public void EventsAreImmutableSnapshotsInStableIdentityOrder()
     {
-        var world = GridWorldFactory.CreateGenesis();
-        foreach (var program in world.Programs.Values)
-            program.Status = GridProgramStatus.Working;
+        var world = TestEdit.Genesis(p => p.Status = GridProgramStatus.Working);
         var engine = new GridSimulationEngine(world);
         var first = engine.Step();
         var changes = first.Events.OfType<ProgramEnergyChanged>().ToArray();
@@ -118,10 +118,8 @@ public sealed class GridSimulationEngineTests
     [Fact]
     public void EqualSeedsAndCommandsProduceEqualResults()
     {
-        var firstWorld = GridWorldFactory.CreateGenesis(12);
-        var secondWorld = GridWorldFactory.CreateGenesis(12);
-        foreach (var program in firstWorld.Programs.Values.Concat(secondWorld.Programs.Values))
-            program.Status = GridProgramStatus.Working;
+        var firstWorld = TestEdit.Genesis(p => p.Status = GridProgramStatus.Working, 12);
+        var secondWorld = TestEdit.Genesis(p => p.Status = GridProgramStatus.Working, 12);
         var first = new GridSimulationEngine(firstWorld);
         var second = new GridSimulationEngine(secondWorld);
         for (var i = 0; i < 10; i++)
@@ -131,10 +129,13 @@ public sealed class GridSimulationEngineTests
     [Fact]
     public void InvalidProgramPreventsAnyPartialUpdate()
     {
-        var world = GridWorldFactory.CreateGenesis();
+        var lastId = GridWorldFactory.CreateGenesis().Programs.Keys.Order().Last();
+        var world = TestEdit.Genesis(p =>
+        {
+            p.Status = GridProgramStatus.Working;
+            if (p.Id == lastId) p.Energy = float.NaN;
+        });
         var programs = world.Programs.Values.OrderBy(p => p.Id).ToArray();
-        programs[0].Status = GridProgramStatus.Working;
-        programs[^1].Energy = float.NaN;
         var engine = new GridSimulationEngine(world);
         Assert.Throws<InvalidOperationException>(() => engine.Step());
         Assert.Equal(100f, programs[0].Energy);
@@ -174,7 +175,7 @@ public sealed class GridSimulationEngineTests
         Assert.Null(engine.LastTick);
         engine.Pause();
         var first = engine.Step();
-        program.Energy = 50;
+        TestEdit.Update(world, program, new ProgramFieldEdit("energy", new EnergyValue(50)));
         Assert.Throws<OverflowException>(() => engine.Step());
         Assert.Equal(50f, program.Energy);
         Assert.Equal(1, engine.TickCount);
@@ -277,7 +278,7 @@ public sealed class GridSimulationEngineTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => run.WaitAsync(TimeSpan.FromSeconds(5)));
         Assert.False(engine.IsRunning);
         Assert.Equal(0, engine.TickCount);
-        program.Energy = 50;
+        TestEdit.Update(world, program, new ProgramFieldEdit("energy", new EnergyValue(50)));
         engine.Step();
         Assert.Equal(1, engine.TickCount);
     }

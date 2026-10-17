@@ -1,7 +1,13 @@
-﻿# Project GRID — Program Editing Rules
+# Project GRID — Program Editing Rules
+
+## Implementation status - 2026-10-17
+
+Sections 1.9.1 and 1.9.3 are complete as design and API implementation respectively. The current field registry, preview/apply behavior, revisions and authorization lease are implemented; terminal-generated editing help, confirmation commands, production login and durable receipts remain future integration.
+
+See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
 
 **Scope:** Section 1.9.1; GRID-REQ-003  
-**Status:** Design defined for implementation; editing API and terminal commands are not implemented  
+**Status:** Editing API implemented and verified in 1.9.3 on 2026-10-17; terminal editing/login remain deferred
 **Recorded:** 2026-10-16  
 **Related plan:** [Terminal Login and Master Control](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md)
 
@@ -45,7 +51,7 @@ Example: editing a Working program to energy 75 immediately yields 75; its next 
 
 ## 4. Preview and conflict contract
 
-The future API has separate prepare/preview and apply operations:
+The implemented API has separate prepare/preview and apply operations:
 
 1. Resolve the target GUID, check eligibility/authorization, normalize inputs, and validate the entire request.
 2. Under the engine's mutation lock, capture the program revision and actual old values. Return a preview showing the target ID/name, canonical fields, stored proposed values, one-time behavior, and any no-op fields.
@@ -53,7 +59,7 @@ The future API has separate prepare/preview and apply operations:
 4. If the target program revision differs, return `Conflict` with no changes. Require a fresh preview. Do not automatically overwrite or silently retry.
 5. Commit all fields in the request as one operation under the same lock used by ticks and district transfers. Return the actual old/new values, resulting revision, and commit tick/time.
 
-A monotonically increasing per-program revision is required for this future API. Increment it once per successful mutation transaction that changes any target program value, whether caused by an administrative edit, energy tick, or world transfer. A change followed by a reversal still advances the revision. No-op transactions do not. Revisions and their mutation paths are to be implemented in 1.9.3; they do not exist in the current code.
+A monotonically increasing per-program revision is implemented for this API. Increment it once per successful mutation transaction that changes any target program value, whether caused by an administrative edit, energy tick, or world transfer. A change followed by a reversal still advances the revision. No-op transactions do not. Revisions and their mutation paths are implemented in 1.9.3.
 
 An unrelated citizen changing, or a tick that leaves the target program unchanged, does not invalidate the preview. A target energy change invalidates even a pending rename: the first version intentionally uses whole-program conflict detection.
 
@@ -65,7 +71,7 @@ Previews are scoped to a world/session instance and must not survive process res
 
 One request targets one program and contains one or more unique fields. Multi-program bulk editing is deferred. Validate all fields and cross-field/world constraints before mutation; failure must not update any requested field, membership, revision, clock, or last committed tick result.
 
-Proposed result categories for implementation:
+Implemented result categories (prepare returns `Prepared` with a preview and no mutation):
 
 | Result | Meaning |
 |---|---|
@@ -90,13 +96,13 @@ Use an explicit registration contract rather than setting arbitrary properties b
 - Typed value access, validation, and staged mutation support; district uses a transfer operation.
 - Equality/no-op comparison after normalization.
 
-Registry startup rejects duplicate keys (case-insensitive). Unknown keys remain rejected until explicitly registered. The terminal lists descriptors and generates field help from this registry; it does not duplicate validation rules. The engine/application service remains authoritative for validation and authorization.
+Registry startup rejects duplicate keys (case-insensitive). Unknown keys remain rejected until explicitly registered. The future terminal editing UI must list descriptors and generate field help from this registry; it does not duplicate validation rules. The engine/application service remains authoritative for validation and authorization.
 
 Adding a field requires a descriptor, domain mutation support, and focused tests, but no rewrite of the terminal input loop. Metadata describes capabilities; it does not itself authenticate users or grant permissions.
 
 ## 7. Verification scenarios for implementation
 
-These are required examples for 1.9.3 tests, not tests already executed:
+These scenarios define the 1.9.3 validation contract. The implemented editing suite now passes 48 cases; see section 9 for completion evidence:
 
 | Input/scenario | Expected result |
 |---|---|
@@ -117,6 +123,14 @@ These are required examples for 1.9.3 tests, not tests already executed:
 
 ## 8. Design completion evidence
 
-Section 1.9.1 is documentation/design work. The contract was checked against the current `GridProgram` properties, enum values, energy behavior in `GridSimulationEngine`, membership rules in `GridWorld`, and the terminal's existing name/ID lookup behavior. Text limits, field metadata, revisions and the editing workflow are new design decisions, not existing enforcement.
+Section 1.9.1 is documentation/design work. The contract was checked against the current `GridProgram` properties, enum values, energy behavior in `GridSimulationEngine`, membership rules in `GridWorld`, and the terminal's existing name/ID lookup behavior. Text limits, field metadata, revisions and the editing workflow were design decisions at 1.9.1 completion; enforcement is now implemented in 1.9.3.
 
-No source code was changed and no new runtime tests were run for this section. Session contracts remain 1.9.2; implementing and testing these rules remains 1.9.3.
+No source code was changed and no new runtime tests were run for this section. Session contracts were subsequently completed in 1.9.2, and implementation/testing completed in 1.9.3. This paragraph records the earlier design-only milestone.
+
+## 9. Implementation update — 2026-10-17
+
+The 1.9.3 API now implements prepare/apply, typed values, validation, revisions, atomic commits, scoped immutable previews and committed receipts. The field registry supplies metadata and decimal parsing; energy text has a 1024-character limit. Formatting expands scientific notation to a precise decimal accepted by the parser. Applied and no-op previews are consumed once; reusing one returns Conflict. The additional Prepared outcome returns a preview without mutation.
+
+The engine shares the world's synchronization lock. Direct writes to world-owned program values throw; unowned initialization remains available. The Core-to-Simulation internal mutation boundary is trusted application code, not an authentication mechanism.
+
+A trusted authorization provider must supply a live lease; the default denies administrative edits. Receipts are in-memory returned values, not persistence or a durable audit log. Forty-eight editing test cases passed as part of the 117-test solution run. Terminal editing and credential-based login are not implemented.
