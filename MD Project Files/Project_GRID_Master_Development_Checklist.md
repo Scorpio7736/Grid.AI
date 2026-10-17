@@ -2,8 +2,8 @@
 
 **Project:** GRID — Local-first Digital Civilization and Personal Task Assistant  
 **Roadmap:** Eight milestones  
-**Checklist baseline:** GitHub repository `Scorpio7736/Grid7736`, latest reviewed commit `a11f394`  
-**Status convention:** `[x]` = observed in latest reviewed repository (not necessarily independently tested); `[ ]` = pending or not verified.  
+**Checklist baseline:** GitHub repository `Scorpio7736/Grid7736`, original reviewed commit `a11f394`; updated for locally implemented and verified World Management 1.4 and Simulation Clock 1.5 changes on 2026-10-16.
+**Status convention:** `[x]` = observed in the reviewed repository or current working tree (independent verification is noted where performed); `[ ]` = pending or not verified.
 **Scope:** Includes GRID-REQ-002 conversational advice, uploaded context, authorized task execution, and file editing.
 
 > **Architecture principles:** C#/.NET owns authoritative world state; agent behavior does not require AI; Windows tasks are explicitly permission-scoped and auditable; essential operation is local-first and requires no subscriptions; the 3D viewer observes the simulation instead of owning it. Simulation time advances only while GRID operates.
@@ -59,27 +59,51 @@
 
 ## 1.4 World management
 
-- [ ] Create GridWorld.cs
-- [ ] Store authoritative program and district collections
-- [ ] Implement AddDistrict() with duplicate prevention
-- [ ] Implement AddProgram() with district validation
-- [ ] Implement GetProgram() and GetDistrict()
-- [ ] Implement MoveProgram() with membership consistency
-- [ ] Restrict direct modifications that bypass world rules
-- [ ] Create GridWorldFactory.cs
-- [ ] Initialize all five districts through the factory
-- [ ] Generate twenty uniquely identified programs
-- [ ] Distribute citizens across valid districts
-- [ ] Verify transfers preserve population totals
+- [x] Create GridWorld.cs
+- [x] Store authoritative program and district collections
+- [x] Implement AddDistrict() with duplicate prevention
+- [x] Implement AddProgram() with district validation
+- [x] Implement GetProgram() and GetDistrict()
+- [x] Implement MoveProgram() with membership consistency
+- [x] Restrict direct modifications that bypass world rules
+- [x] Create GridWorldFactory.cs
+- [x] Initialize all five districts through the factory
+- [x] Generate twenty uniquely identified programs
+- [x] Distribute citizens across valid districts
+- [x] Verify transfers preserve population totals
+
+**Completed and verified — 2026-10-16**
+
+- `GridWorld` owns read-only program and district dictionaries. Additions reject null entities, empty or duplicate IDs, invalid district references, and entities already owned by a world.
+- `MoveProgram()` updates source membership, destination membership, and the program location together. Moving to the current district is a no-op; invalid requests leave membership unchanged.
+- `GridDistrict.ProgramIds` is read-only to callers, and `GridProgram.CurrentDistrictId` has an internal setter to prevent external placement changes.
+- `GridWorldFactory.CreateGenesis(seed)` creates five districts with four citizens each. Equal seeds reproduce IDs and placement in independent world instances.
+- Added `Grid.Core.Tests` to the solution. Eight automated tests cover initialization, seeded reproducibility, transfers and population totals, invalid requests, duplicate IDs, world ownership, and read-only membership access.
+- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all eight tests. `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
+
+The terminal still uses its original district demonstration; connecting it to the world factory remains pending.
 
 ## 1.5 Simulation clock
 
-- [ ] Create GridClock.cs
-- [ ] Track simulation tick count and elapsed simulation time
-- [ ] Implement Start() and Pause()
-- [ ] Implement manual single-step advancement
-- [ ] Make tick duration configurable, initially one second
-- [ ] Keep simulation time independent of the real Windows clock
+- [x] Create GridClock.cs
+- [x] Track simulation tick count and elapsed simulation time
+- [x] Implement Start() and Pause()
+- [x] Implement manual single-step advancement
+- [x] Make tick duration configurable, initially one second
+- [x] Keep simulation time independent of the real Windows clock
+
+**Completed and verified — 2026-10-16**
+
+- Added `Grid.Simulation/GridClock.cs` with read-only tick duration, tick count, elapsed simulation time, and running state.
+- New clocks start paused at zero ticks. Tick duration is configured at construction, defaults to one second, and must be positive; keeping it fixed preserves the meaning of elapsed ticks.
+- `Start()` and `Pause()` are idempotent and preserve accumulated time. `TryAdvance()` advances exactly one fixed tick while running and returns false without changes while paused.
+- `Step()` advances one tick while paused and leaves the clock paused. Calling it while running throws without changing time.
+- Time advances only through explicit advancement calls; there are no Windows clock reads, background timers, or offline catch-up. Callers must use a single simulation thread.
+- Elapsed time uses exact TimeSpan ticks. Overflow is checked before either counter changes.
+- Added `Grid.Simulation.Tests` to the solution. All 13 clock test cases passed, covering defaults, invalid durations, exact fixed steps, repeated start/pause, resume, manual steps, and overflow.
+- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 21 tests (13 simulation clock and eight World Management). `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
+
+Automatic scheduling and world updates remain in section 1.6; terminal clock commands remain in section 1.7.
 
 ## 1.6 Simulation engine
 
@@ -104,17 +128,17 @@
 
 ## 1.8 Genesis tests and release
 
-- [ ] Create Grid.Core.Tests xUnit project
-- [ ] Create Grid.Simulation.Tests xUnit project
-- [ ] Test uniqueness of IDs
-- [ ] Test district/program initialization and membership
-- [ ] Test duplicate and invalid district/program rejection
-- [ ] Test movement and population invariants
-- [ ] Test simulation clock and fixed-step advancement
-- [ ] Test pause, resume and manual stepping
+- [x] Create Grid.Core.Tests xUnit project
+- [x] Create Grid.Simulation.Tests xUnit project
+- [x] Test uniqueness of IDs
+- [x] Test district/program initialization and membership
+- [x] Test duplicate and invalid district/program rejection
+- [x] Test movement and population invariants
+- [x] Test simulation clock and fixed-step advancement
+- [x] Test pause, resume and manual stepping
 - [ ] Test terminal command parsing and outputs
-- [ ] Run dotnet build successfully
-- [ ] Run dotnet test successfully
+- [x] Run dotnet build successfully
+- [x] Run dotnet test successfully
 - [ ] Add Genesis usage instructions to README
 - [ ] Tag v0.1.0-genesis
 
@@ -528,15 +552,15 @@
 | **GRID Assistant** *(proposed additional release gate)* | Grounded advice, supplied context, approved editing and task assistance |
 | **GRID City** | Interactive Godot 3D viewer displaying actual authoritative simulation state |
 
-# Immediate Next Steps — Based on Last Reviewed Commit
+# Immediate Next Steps — Updated After Simulation Clock 1.5
 
-1. [ ] Implement `Grid.Core/GridWorld.cs`.
-2. [ ] Implement `Grid.Core/GridWorldFactory.cs`.
-3. [ ] Initialize five districts and twenty citizens through the factory.
-4. [ ] Enforce valid memberships and coherent district transfers.
+1. [x] Implement `Grid.Core/GridWorld.cs`.
+2. [x] Implement `Grid.Core/GridWorldFactory.cs`.
+3. [x] Initialize five districts and twenty citizens through the factory.
+4. [x] Enforce valid memberships and coherent district transfers.
 5. [ ] Replace temporary terminal district demo with a genuine world-state demo.
-6. [ ] Implement `GridClock` and `GridSimulationEngine` with fixed-step progression.
-7. [ ] Add command-loop terminal features and xUnit test projects.
+6. [ ] Implement `GridSimulationEngine` with fixed-step progression using the completed `GridClock`.
+7. [ ] Add command-loop terminal features and engine/terminal tests; Grid.Core.Tests and the clock tests in Grid.Simulation.Tests are implemented and passing.
 8. [ ] Build and run tests, then commit and tag Genesis when all acceptance criteria pass.
 
 **Note:** This checklist reproduces the full eight-phase planning scope as of this conversation. Completion indicators should be updated after each repository review; generated code and documentation are not evidence that a test has passed.

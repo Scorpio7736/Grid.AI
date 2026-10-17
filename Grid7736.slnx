@@ -3,4 +3,6 @@
   <Project Path="Grid.Core/Grid.Core.csproj" />
   <Project Path="Grid.Simulation/Grid.Simulation.csproj" />
   <Project Path="Grid.Terminal/Grid.Terminal.csproj" />
+  <Project Path="Grid.Core.Tests/Grid.Core.Tests.csproj" />
+  <Project Path="Grid.Simulation.Tests/Grid.Simulation.Tests.csproj" />
 </Solution>

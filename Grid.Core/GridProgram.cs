@@ -1,4 +1,4 @@
-﻿
+
 namespace Grid.Core;
 
 public enum GridProgramStatus
@@ -20,7 +20,9 @@ public sealed class GridProgram
 
     public float Energy { get; set; } = 100f;
 
-    public Guid CurrentDistrictId { get; set; }
+    public Guid CurrentDistrictId { get; internal set; }
+
+    internal GridWorld? Owner { get; set; }
 
     public GridProgramStatus Status { get; set; }
         = GridProgramStatus.Idle;
