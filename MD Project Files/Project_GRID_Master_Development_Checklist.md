@@ -2,7 +2,7 @@
 
 **Project:** GRID — Local-first Digital Civilization and Personal Task Assistant  
 **Roadmap:** Eight milestones  
-**Checklist baseline:** GitHub repository `Scorpio7736/Grid7736`, reviewed commit `f5ee323` (local HEAD and GitHub master matched); sections 1.1–1.5 completion evidence updated on 2026-10-16. Section 1.6 records subsequent locally implemented and verified changes.
+**Checklist baseline:** GitHub repository `Scorpio7736/Grid7736`, reviewed commit `f5ee323` (local HEAD and GitHub master matched); sections 1.1–1.5 completion evidence updated on 2026-10-16. Sections 1.6–1.7 record subsequent locally implemented and verified changes.
 **Status convention:** `[x]` = observed in the reviewed repository or current working tree (independent verification is noted where performed); `[ ]` = pending or not verified.
 **Scope:** Includes GRID-REQ-002 conversational advice, uploaded context, authorized task execution, and file editing.
 
@@ -79,7 +79,7 @@
 - The same commit initialized The Core, Processing Sector, Memory Banks, Archive Sector, and Gateway in the terminal, printing their details and checking district ID uniqueness.
 - Verification: `dotnet run --project Grid.Terminal/Grid.Terminal.csproj --no-build --no-restore` completed successfully in this session and printed `Districts: 5` and `Unique district IDs: True`. Each standalone demo district reported zero population, as expected.
 - Current automated World Management tests also passed, covering factory district initialization, membership, duplicate rejection, and transfers. Section 1.4 subsequently made district membership read-only to external callers.
-- The terminal demonstration remains separate from the factory-created world of twenty citizens.
+- At section 1.3 completion, the terminal demonstration was separate from the factory-created world; section 1.7 now connects the terminal to that world.
 
 ## 1.4 World management
 
@@ -105,7 +105,7 @@
 - Added `Grid.Core.Tests` to the solution. Eight automated tests cover initialization, seeded reproducibility, transfers and population totals, invalid requests, duplicate IDs, world ownership, and read-only membership access.
 - Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all eight tests. `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
 
-The terminal still uses its original district demonstration; connecting it to the world factory remains pending.
+At section 1.4 completion, the terminal still used its original district demonstration; factory integration is now complete in section 1.7.
 
 ## 1.5 Simulation clock
 
@@ -127,7 +127,7 @@ The terminal still uses its original district demonstration; connecting it to th
 - Added `Grid.Simulation.Tests` to the solution. All 13 clock test cases passed, covering defaults, invalid durations, exact fixed steps, repeated start/pause, resume, manual steps, and overflow.
 - Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 21 tests (13 simulation clock and eight World Management). `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
 
-Automatic scheduling and world updates are now implemented in section 1.6; terminal clock commands remain in section 1.7.
+Automatic scheduling and world updates are now implemented in section 1.6; terminal clock commands are now implemented in section 1.7.
 
 ## 1.6 Simulation engine
 
@@ -152,18 +152,33 @@ Automatic scheduling and world updates are now implemented in section 1.6; termi
 - Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 45 tests: eight World Management, 13 clock, and 24 engine cases. Coverage includes energy rules and bounds, genuine events, deterministic results, membership preservation, pause/resume, manual stepping, cancellation, scheduler exclusivity, invalid-state recovery, and overflow.
 - `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
 
-Terminal command integration remains in section 1.7. Persistence and durable event history remain in Phase 2.
+Terminal command integration is now complete in section 1.7. Persistence and durable event history remain in Phase 2.
 
 ## 1.7 Terminal interface
 
-- [ ] Replace temporary sample code with a command loop
-- [ ] Implement help, status and programs commands
-- [ ] Implement inspect command for a program or district
-- [ ] Implement start and pause commands
-- [ ] Implement manual tick/step command
-- [ ] Implement exit with graceful shutdown
-- [ ] Handle invalid commands without crashing
-- [ ] Display genuine world state, never fabricated status
+- [x] Replace temporary sample code with a command loop
+- [x] Implement help, status and programs commands
+- [x] Implement inspect command for a program or district
+- [x] Implement start and pause commands
+- [x] Implement manual tick/step command
+- [x] Implement exit with graceful shutdown
+- [x] Handle invalid commands without crashing
+- [x] Display genuine world state, never fabricated status
+
+**Completed and verified — 2026-10-16**
+
+- Replaced the district demo with a factory-created world, simulation engine, and interactive terminal. The initial world is paused with five districts and twenty citizens.
+- Added a command registry (`TerminalCommand`, `CommandDispatcher`), built-in command registration (`DefaultCommands`), and a separate `TerminalHost` for input/output and scheduler lifetime. New commands register their metadata and handler; help updates automatically without changing the input loop.
+- Implemented `help`, `status`, `programs`, `districts`, `inspect`, `start`, `pause`, `step`, `tick`, and `exit`. Inspect accepts a program/district ID or name; names can contain spaces or quotes. Duplicate names require a full ID.
+- Command names and name matching ignore case. Blank input is harmless; unknown commands, invalid argument counts, unmatched quotes, missing entities, and stepping while running produce readable responses without ending the session.
+- Added `GridSimulationEngine.GetSnapshot()` and detached read-only snapshot records. Status and inspection use a consistent view captured under the same lock as tick commits, without pausing the running simulation or exposing mutable world collections.
+- Start enables the scheduler; pause stops automatic advancement; step/tick advances once while paused. Output reports actual simulation state and committed events. Idle citizens remain Idle rather than receiving fabricated activity.
+- Exit, EOF, and Ctrl+C cancel and await scheduler shutdown. Scheduler failures are reported with a nonzero process result. Console reads run off the control thread so blocked input cannot prevent shutdown; a pending background read can remain until input arrives or the process exits.
+- Added `Grid.Terminal.Tests` to the solution and a README with run instructions, command examples, lifecycle behavior, and the command extension pattern.
+- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 69 tests (eight World Management, 37 clock/engine, and 24 terminal cases). Terminal coverage includes parsing, actual output, extension registration/help, snapshots, invalid input, exit, EOF, blocked-input cancellation, and scheduler failure.
+- `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors. Executable smoke checks verified help, status, district/program inspection, two manual steps, invalid-command recovery, and clean exit. A live redirected process advanced automatically to tick 2, paused, reported its real state, and exited successfully.
+
+World state remains in memory; persistence is planned for Phase 2. The extension point is an in-process command registry, not a dynamic plugin loader. Genesis release tagging remains pending.
 
 ## 1.8 Genesis tests and release
 
@@ -175,10 +190,10 @@ Terminal command integration remains in section 1.7. Persistence and durable eve
 - [x] Test movement and population invariants
 - [x] Test simulation clock and fixed-step advancement
 - [x] Test pause, resume and manual stepping
-- [ ] Test terminal command parsing and outputs
+- [x] Test terminal command parsing and outputs
 - [x] Run dotnet build successfully
 - [x] Run dotnet test successfully
-- [ ] Add Genesis usage instructions to README
+- [x] Add Genesis usage instructions to README
 - [ ] Tag v0.1.0-genesis
 
 **Genesis release gate:** A console simulation with five districts and twenty unique programs; start, pause, tick, status, programs, inspect, and exit work using actual state; automated tests pass.
@@ -591,15 +606,15 @@ Terminal command integration remains in section 1.7. Persistence and durable eve
 | **GRID Assistant** *(proposed additional release gate)* | Grounded advice, supplied context, approved editing and task assistance |
 | **GRID City** | Interactive Godot 3D viewer displaying actual authoritative simulation state |
 
-# Immediate Next Steps — Updated After Simulation Engine 1.6
+# Immediate Next Steps — Updated After Terminal Interface 1.7
 
 1. [x] Implement `Grid.Core/GridWorld.cs`.
 2. [x] Implement `Grid.Core/GridWorldFactory.cs`.
 3. [x] Initialize five districts and twenty citizens through the factory.
 4. [x] Enforce valid memberships and coherent district transfers.
-5. [ ] Replace temporary terminal district demo with a genuine world-state demo.
+5. [x] Replace temporary terminal district demo with a genuine world-state interface.
 6. [x] Implement `GridSimulationEngine` with fixed-step progression using the completed `GridClock`.
-7. [ ] Add command-loop terminal features and terminal tests; World Management, clock, and engine tests are implemented and passing.
+7. [x] Add command-loop terminal features and terminal tests; all 69 tests are passing.
 8. [ ] Build and run tests, then commit and tag Genesis when all acceptance criteria pass.
 
 **Note:** This checklist reproduces the full eight-phase planning scope as of this conversation. Completion indicators should be updated after each repository review; generated code and documentation are not evidence that a test has passed.

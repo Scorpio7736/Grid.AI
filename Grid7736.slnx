@@ -5,4 +5,5 @@
   <Project Path="Grid.Terminal/Grid.Terminal.csproj" />
   <Project Path="Grid.Core.Tests/Grid.Core.Tests.csproj" />
   <Project Path="Grid.Simulation.Tests/Grid.Simulation.Tests.csproj" />
+  <Project Path="Grid.Terminal.Tests/Grid.Terminal.Tests.csproj" />
 </Solution>

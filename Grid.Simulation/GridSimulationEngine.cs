@@ -1,10 +1,10 @@
-﻿using Grid.Core;
+using Grid.Core;
 
 namespace Grid.Simulation;
 
 /// <summary>
 /// Serializes fixed-step updates to a world. While in use, callers must not mutate the supplied
-/// world directly or share it with another engine. UI readers should inspect it only while paused.
+/// world directly or share it with another engine. UI readers should use GetSnapshot for a consistent view.
 /// No rendering, AI, host telemetry, or offline catch-up is involved.
 /// </summary>
 public sealed class GridSimulationEngine
@@ -30,6 +30,24 @@ public sealed class GridSimulationEngine
     public TimeSpan ElapsedSimulationTime { get { lock (gate) return clock.ElapsedSimulationTime; } }
     public bool IsRunning { get { lock (gate) return clock.IsRunning; } }
     public GridTickResult? LastTick { get { lock (gate) return lastTick; } }
+
+    /// <summary>Copies a consistent world view under the same lock used to commit ticks.</summary>
+    public GridSimulationSnapshot GetSnapshot()
+    {
+        lock (gate)
+        {
+            var programs = world.Programs.Values.OrderBy(p => p.Name).ThenBy(p => p.Id)
+                .Select(p => new GridProgramSnapshot(p.Id, p.Name, p.Occupation, p.Energy, p.CurrentDistrictId, p.Status))
+                .ToArray();
+            var districts = world.Districts.Values.OrderBy(d => d.Name).ThenBy(d => d.Id)
+                .Select(d => new GridDistrictSnapshot(d.Id, d.Name, d.Description,
+                    Array.AsReadOnly(d.ProgramIds.ToArray()),
+                    new System.Collections.ObjectModel.ReadOnlyDictionary<string, float>(
+                        new Dictionary<string, float>(d.Resources)))).ToArray();
+            return new(clock.TickCount, clock.ElapsedSimulationTime, clock.TickDuration, clock.IsRunning,
+                Array.AsReadOnly(programs), Array.AsReadOnly(districts));
+        }
+    }
 
     public void Start()
     {

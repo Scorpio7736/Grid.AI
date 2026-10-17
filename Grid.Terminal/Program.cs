@@ -1,52 +1,22 @@
-﻿
-using Grid.Core;
+﻿using Grid.Core;
+using Grid.Simulation;
+using Grid.Terminal;
 
-Console.WriteLine("PROJECT GRID — GENESIS");
-Console.WriteLine("----------------------");
-
-var districts = new List<GridDistrict>
+var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
+var commands = DefaultCommands.Create(engine);
+using var shutdown = new CancellationTokenSource();
+ConsoleCancelEventHandler cancel = (_, args) =>
 {
-    new()
-    {
-        Name = "The Core",
-        Description = "Central reactor and administration"
-    },
-    new()
-    {
-        Name = "Processing Sector",
-        Description = "Manufacturing and research"
-    },
-    new()
-    {
-        Name = "Memory Banks",
-        Description = "Research and temporary resource storage"
-    },
-    new()
-    {
-        Name = "Archive Sector",
-        Description = "History and long-term storage"
-    },
-    new()
-    {
-        Name = "Gateway",
-        Description = "Communications, trade, and transit"
-    }
+    args.Cancel = true;
+    shutdown.Cancel();
 };
-
-Console.WriteLine($"Districts: {districts.Count}");
-Console.WriteLine();
-
-foreach (var district in districts)
+Console.CancelKeyPress += cancel;
+try
 {
-    Console.WriteLine($"[{district.Name}]");
-    Console.WriteLine($" ID: {district.Id}");
-    Console.WriteLine($" Purpose: {district.Description}");
-    Console.WriteLine($" Population: {district.ProgramIds.Count}");
-    Console.WriteLine();
+    return await new TerminalHost(engine, commands, Console.In, Console.Out,
+        showPrompt: !Console.IsInputRedirected).RunAsync(shutdown.Token);
 }
-
-bool uniqueIds =
-    districts.Select(d => d.Id).Distinct().Count()
-    == districts.Count;
-
-Console.WriteLine($"Unique district IDs: {uniqueIds}");
+finally
+{
+    Console.CancelKeyPress -= cancel;
+}
