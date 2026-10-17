@@ -125,6 +125,14 @@ Implement needs (energy, recharge, work), goals, occupations, district movement,
 
 Build terminal command parsing; persistent messages, conversations, and program addresses; then add microphone capture and offline speech-to-text and text-to-speech. Interfaces share one communication hub. Demonstrate starting in terminal, continuing through voice, and recovering conversation text after restart. Rule-based replies precede generative conversation.
 
+#### Planned terminal identity extension (GRID-REQ-003)
+
+Add a future login/session layer supporting the User as Master Control and authorized operation through each registered agent identity. Extend the existing command registry with session context and capability metadata; keep authentication, authorization, and identity registration independent of console I/O. Plan identity/audit persistence in Milestone 2, session UX in Milestone 4, and enforce real agent capabilities in Milestone 5. Authentication method and final naming remain undecided.
+
+See [Terminal Login and Master Control Plan](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md). This is planning only; Genesis has no login and its completed release scope remains unchanged.
+
+The planned Master Control terminal also includes program-value editing. Add typed editable-field metadata and command presentation during terminal/session work, with service-layer authorization and validated engine mutations. Coordinate edits with ticks, use world transfers for location changes, audit old/new values, and connect edits to persistence. Initial fields are name, occupation, energy, status, and district; program IDs and authorization settings are separate concerns.
+
 ### Milestone 5 — System Agents
 
 - **ARCHON:** assign work, coordinate programs, synthesize status and approval requests.

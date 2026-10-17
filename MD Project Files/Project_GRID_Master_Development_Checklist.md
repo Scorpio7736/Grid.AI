@@ -324,6 +324,36 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - [ ] Add command validation and helpful errors
 - [ ] Support ongoing conversations in the same session
 
+## 4.2A Planned terminal login and identity sessions (GRID-REQ-003)
+
+**Planning addition — 2026-10-16; not implemented.** See [Terminal Login and Master Control Plan](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md). This extends the terminal after Genesis and does not change section 1.7's completed status.
+
+- [ ] Choose local authentication method and final Master Control/Master Admin label
+- [ ] Define persistent operator/agent identities, role policies, and audit records with Phase 2 storage
+- [ ] Begin future terminal sessions with login
+- [ ] Support the User's Master Control identity and each registered agent identity
+- [ ] Pass operator identity, active program identity, and capabilities through command/session context
+- [ ] Show active identity in prompts and implement whoami, logout, and authorized switching
+- [ ] Provide role-specific views of real tasks, messages, history, and world state
+- [ ] Extend command registration with capabilities and identity-aware help
+- [ ] Clear or rescope context on logout and identity changes
+- [ ] Verify login failures, switching, logout, context isolation, and expandable identity registration
+
+### Planned Master Admin program editing (GRID-REQ-003)
+
+**Planning addition — not implemented.** Master Admin and Master Control refer to the same planned human administrator role.
+
+- [ ] Add terminal commands to inspect and edit programs and their values as Master Control
+- [ ] Initially support name, occupation, energy, status, and district assignment
+- [ ] Define an expandable registry of editable fields, types, and validation rules
+- [ ] Enforce Master Control authorization in the editing service
+- [ ] Preview target and old/new values; report committed results
+- [ ] Serialize edits with ticks and reject stale/conflicting updates
+- [ ] Use world-management transfers for district changes; preserve stable identity and membership
+- [ ] Separate profile edits from credential, permission, and host-capability management
+- [ ] Audit edits and integrate persistence; define one-time edits versus ongoing overrides
+- [ ] Test authorized/denied edits, invalid values, atomicity, population consistency, and saved results
+
 ## 4.3 User-supplied context (GRID-REQ-002)
 
 - [ ] Support selecting or uploading local files as task context
@@ -368,6 +398,16 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - [ ] Add permission policies and explicit approval requests
 - [ ] Implement cancellation, timeouts and safe retries
 - [ ] Persist task execution audit records
+
+### Planned Master Control and agent action permissions (GRID-REQ-003)
+
+- [ ] Define Master Control administration and each agent's allowed capabilities
+- [ ] Enforce effective operator/agent permissions in services as well as terminal commands
+- [ ] Keep human Master Control authority distinct from ARCHON coordination
+- [ ] Audit the human operator and active agent identity for manually initiated actions
+- [ ] Preserve scoped host-task approvals when operating through an agent session
+- [ ] Define coordination between manual agent sessions and autonomous task execution
+- [ ] Test denied actions, privilege escalation attempts, and manual/autonomous attribution
 
 ## 5.2 ARCHON — Administration
 

@@ -1,0 +1,122 @@
+# Project GRID — Terminal Login and Master Control Plan
+
+**Requirement:** GRID-REQ-003 — Terminal identities and operator sessions  
+**Status:** Planned; not implemented in Genesis  
+**Recorded:** 2026-10-16  
+**Working name:** Master Control (also described as master admin; final label remains open)
+
+## Goal
+
+Eventually, opening a GRID terminal should begin with a login. The User can enter as their own Master Control identity or operate through a named agent program: ARCHON, FORGE, SENTINEL, ARCHIVIST, VOLT, or RELAY. Each agent session provides that program's view of the world and its available actions.
+
+The identity list should be expandable as new agent programs are added. This is a future addition to the existing terminal, not a change to the completed v0.1.0-genesis release.
+
+## Session experience
+
+1. Open a terminal and authenticate the human operator using a local method to be decided.
+2. Choose an authorized identity: Master Control or a named agent.
+3. Show the active identity in the prompt and status output, such as `master-control>` or `forge>`.
+4. Display commands, tasks, messages, history, and relevant world information for that identity.
+5. Execute actions within the selected identity's capabilities.
+6. Log out or switch identities through an explicit session action. Switching to Master Control requires its authorization.
+
+Proposed commands include `login`, `logout`, `whoami`, and `switch`; exact syntax remains a design decision. Logout ends access through that session, rather than silently restoring Master Control. Whether the headless world continues after logout will be defined with service lifecycle work.
+
+## Master Control and agent sessions
+
+| Identity | Intended experience |
+|---|---|
+| Master Control | The User's top-level GRID administration identity: inspect the whole system, manage identities and role policies, review activity, approve scoped tasks, and enter authorized agent sessions. |
+| ARCHON | View coordination, assignments, briefings, and approval requests. |
+| FORGE | View development projects, builds, tests, and authorized code tasks. |
+| SENTINEL | View security findings and permitted monitoring actions. |
+| ARCHIVIST | View archives, storage, retained context, and authorized file tasks. |
+| VOLT | View resource readings and GRID performance controls. |
+| RELAY | View communications, conversations, notifications, and permitted messaging actions. |
+
+These are intended role views, not claims that these services already exist. Master Control is the human administrator role within GRID; ARCHON remains a separate agent responsible for coordination. Master Control does not automatically grant Windows administrator privileges.
+
+## Identity and action model
+
+- Keep the authenticated human operator separate from the active program identity. A human operating as FORGE is recorded as that human acting through FORGE, rather than as an autonomous FORGE action.
+- Carry a session context through command dispatch and task execution, including operator ID, active identity ID, and effective capabilities.
+- Agent sessions expose their own permitted views and actions. The effective permissions must fit both the operator's authorization and the chosen identity's role; adopting an agent identity does not inherit Master Control powers.
+- Enforce authorization in the underlying service/capability layer as well as in command presentation. Hiding a command from help is not access control.
+- Existing host task approvals and scoped workspace rules still apply. An autonomous program cannot promote itself to Master Control or approve its own escalation.
+- Record login/logout, identity switches, actions, outcomes, and the responsible operator/agent in local audit history. Do not record authentication secrets.
+- Keep conversations, session context, and access to retained information correctly scoped when switching identities.
+- Define how manual operation interacts with an agent's autonomous task queue, avoiding duplicate execution or conflicting control.
+
+## Planned Master Admin program editing
+
+**User-requested extension to GRID-REQ-003 — planning only.**
+
+The User, signed in as Master Admin / Master Control, should be able to inspect and edit programs and their values directly from the terminal. This includes civilian programs and editable simulation/profile fields of named agents.
+
+Initial editable fields should include name, occupation, energy, status, and district assignment. As program models grow, additional fields should be exposed through an explicit editable-field registry with types, constraints, and descriptions.
+
+Proposed usage (illustrative syntax; not currently implemented):
+
+```text
+program edit <program-id> energy 75
+program edit <program-id> name "New Name"
+program edit <program-id> status Recharging
+program move <program-id> <district-id>
+```
+
+- Provide a way to list editable fields and inspect current values.
+- Enforce Master Admin / Master Control authorization in the editing service. An agent session does not gain administrative editing authority merely because the human can also enter Master Control.
+- Validate field types and domain rules: finite energy within its supported range, valid statuses, and existing destination districts. Invalid edits leave state unchanged.
+- Route district changes through world-management operations to preserve membership and population. Stable IDs and ownership references are not ordinary editable fields.
+- Keep profile/simulation edits separate from credentials, role permissions, and host capabilities. Editing a name or occupation must not change authorization.
+- Preview the target and old/new values, then report the actual committed result. The exact confirmation workflow remains a UI design choice.
+- Serialize edits with simulation ticks through validated engine operations. Define pause or conflict handling so stale previews cannot silently overwrite newer state.
+- Audit the authenticated operator, target, old/new values, outcome, and simulation timestamp. Integrate saved edits with Phase 2 persistence.
+- Define one-time edits versus ongoing overrides: an energy or status edit may change again during autonomous updates. Make this behavior visible.
+
+### Program-editing acceptance criteria
+
+- [ ] Master Control can inspect editable fields and change supported program values.
+- [ ] Agent and logged-out sessions cannot invoke administrative edits.
+- [ ] Invalid or conflicting edits do not partially change a program.
+- [ ] District edits preserve membership and total population.
+- [ ] Edits appear in subsequent inspection and survive save/reload once persistence exists.
+- [ ] Audit records preserve operator attribution and old/new values.
+- [ ] Additional editable fields can be registered without rewriting the terminal loop.
+- [ ] Tests cover authorization, validation, tick coordination, membership, and audit attribution.
+
+## Expandable implementation direction
+
+Extend the existing command registry with session context and capability metadata. Build identity registration and role policies separately from console input/output, so future voice, desktop, or city interfaces can use the same authentication and authorization services.
+
+Use stable identity IDs rather than hardcoding privileges to display names. Keep credential verification behind a local authentication interface so the authentication method can be selected later without rewriting command handlers. A cosmetic identity selector may be useful for a prototype, but must be labeled as such until authentication and enforcement exist.
+
+## Roadmap placement
+
+- **Phase 2 — Persistence:** plan durable operator/agent identities, role policy records, and audit storage alongside the existing schema. Persist session-related data only according to a defined retention and restart policy.
+- **Phase 4 — Communications:** implement the login/session experience, identity-aware prompt, whoami/logout/switch behavior, and scoped conversation views.
+- **Phase 5 — System Agents:** enforce role capabilities for actual agent actions, add Master Control administration and approvals, and verify human-versus-autonomous attribution.
+- Add a future milestone or revise placement if the User wants login earlier. Do not reopen completed Genesis items or imply login is already available.
+
+## Acceptance criteria
+
+- [ ] A new terminal starts in an unauthenticated state and presents a login path.
+- [ ] The authorized User can enter Master Control or each registered agent identity.
+- [ ] Prompt and whoami clearly identify the operator and active role.
+- [ ] Agent views show actual permitted state, messages, tasks, and history.
+- [ ] A valid scoped action succeeds; an unauthorized action is rejected by the service layer.
+- [ ] Logout clears session access; switching identities does not leak prior context or privileges.
+- [ ] Audit records distinguish autonomous actions from a human acting as an agent.
+- [ ] A new agent identity and its command capabilities can be registered without rewriting the terminal loop.
+- [ ] Tests cover failed login, role boundaries, switching, logout, attribution, and task-control conflicts.
+- [ ] Core login and identity handling work locally without required paid services.
+
+## Decisions still open
+
+- Final display name: Master Control or Master Admin.
+- Authentication method: existing Windows identity, a separate local credential, or another local method.
+- Whether agents have separate credentials or are selected through an authenticated operator's delegated session.
+- Initial single-user versus future multi-user support.
+- Session expiry, locking, recovery, and concurrent terminal policy.
+- Which world controls are available to each identity.
+- Whether adopting an agent identity pauses its autonomous tasks or opens a coordinated operator view.

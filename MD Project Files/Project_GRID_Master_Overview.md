@@ -73,6 +73,14 @@ Users should be able to address ARCHON for coordination or speak directly to a s
 
 Commands are handled deterministically; conversational AI can interpret questions and propose plans, but **never becomes the authoritative source of world state or gains the right to execute arbitrary commands**.
 
+## 4A. Planned terminal login and Master Control (GRID-REQ-003)
+
+The User wants future terminal sessions to begin with a login, supporting their own **Master Control** (master admin) identity or operation as any registered agent program. Agent sessions should expose that program's views and permitted actions; Master Control provides top-level GRID administration and oversight. The authenticated human and the active agent identity remain distinct for permissions and audit attribution.
+
+This is planned work, not implemented in Genesis. Authentication method, final role name, and interaction with agent autonomy remain open. See [Terminal Login and Master Control Plan](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md) for the experience, extension approach, phased work, and acceptance criteria.
+
+**Planned administration extension:** As Master Admin / Master Control, the User should be able to edit programs and their values from the terminal, initially including names, occupations, energy, status, and district assignment. Edits use validated engine/world operations, preserve membership, and record the operator and old/new values. Editable fields should be expandable as program models grow. See the program-editing section of the [Terminal Login and Master Control Plan](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md). This capability is not yet implemented.
+
 ## 5. Real PC tasks and safety
 
 System agents act through explicitly registered capabilities, bounded parameters, agent-specific permissions, and approval checks. The system tracks task state, results, failures, and audit history. Examples include approved repository tests, Defender status checks, resource readings, and preparation of file-organization proposals.
