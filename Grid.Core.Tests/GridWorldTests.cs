@@ -33,7 +33,7 @@ public sealed class GridWorldTests
             Assert.Equal(100f, p.Energy);
             Assert.Equal(GridProgramStatus.Idle, p.Status);
         });
-        AssertConsistent(world);
+        AssertConsistent(world); 
     }
 
     [Fact]
