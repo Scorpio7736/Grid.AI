@@ -2,9 +2,9 @@
 
 **Project:** GRID — Hybrid Digital Civilization and Autonomous PC Agent System  
 **Document type:** High-level project overview  
-**Version:** 1.0 (consolidated overview)  
+**Version:** 1.1 (user-directed assistance expansion)  
 **Status:** Design and planning; features described here are not yet implemented  
-**Source:** The six GRID design documents provided with this overview
+**Source:** The six GRID design documents provided with this overview; expanded with a proposed user-directed task assistance goal
 
 ---
 
@@ -17,6 +17,8 @@ Three defining principles:
 1. **Autonomous life:** Programs act, work, interact, and develop their own histories rather than waiting for every action to be scripted by the User.
 2. **Host-connected world:** Selected, approved Windows activity (CPU, RAM, disk, network, development activity, and security status) influences fictional world events without giving the civilization control over unrestricted host resources.
 3. **Powered existence:** Simulation time advances only while GRID runs. Shutdown suspends the world; restart resumes saved state without simulating time while the machine was off.
+
+**Additional primary goal — Personal task assistance:** The User can speak or type to GRID and its named agents, supply relevant context (including uploaded files), request advice or analysis, and delegate narrowly authorized work. GRID should be able to return explanations, recommendations, reports, and proposed edits; when the User authorizes it, agents can create or modify files within approved workspaces and return verifiable results. This goal is a planned capability, not an implemented feature.
 
 GRID is not intended to replace Windows, nor is it merely a screensaver, chatbot, or animated task manager.
 
@@ -67,6 +69,8 @@ All interaction uses a **unified communications hub** shared by:
 
 The system preserves conversations, messages, relevant agent memories, task updates, and event history in local storage. A conversation may begin in the terminal and continue through voice or the 3D viewer. Optional incoming transmissions can notify the User of significant changes.
 
+Users should be able to address ARCHON for coordination or speak directly to a specialist, with RELAY maintaining continuity across interfaces. Uploaded material and conversation context must be associated with the correct request, permissions, and conversation history.
+
 Commands are handled deterministically; conversational AI can interpret questions and propose plans, but **never becomes the authoritative source of world state or gains the right to execute arbitrary commands**.
 
 ## 5. Real PC tasks and safety
@@ -80,6 +84,82 @@ Key constraints:
 - No unrestricted access to private files, silent deletion, or self-elevation of privileges.
 - Sensitive changes require explicit User authorization.
 - GRID should yield CPU, GPU, and memory resources to normal PC use.
+
+## 5A. New primary goal — User-directed assistance and contextual work
+
+**Requirement — GRID-REQ-002: Conversational task assistance with user-supplied context**
+
+The User should be able to treat GRID as a **local personal assistant and coordinated team of specialist programs**. By conversing with GRID or an individual agent, the User can request help with projects, ask questions, supply relevant documents or files, and choose whether GRID should **advise**, **prepare work for review**, or **perform an authorized action**. The system must preserve the distinct identities and roles of agents without requiring the User to know which internal service handles every request.
+
+### Interaction modes
+
+| Mode | Expected behavior | Example |
+|---|---|---|
+| **Discuss / advise** | Explain, critique, compare options, summarize supplied context, answer grounded questions; no changes to the User's files | “FORGE, review this design and recommend an architecture.” |
+| **Analyze / prepare** | Inspect approved content and produce a draft, plan, patch, or preview without changing an original | “ARCHIVIST, review these documents and propose an organization.” |
+| **Execute approved work** | Use allowlisted capabilities in specified files, folders, or repositories; show results and relevant diffs | “FORGE, apply the approved fix to this repository and run its tests.” |
+| **Coordinate multiple agents** | ARCHON decomposes a request, routes scoped subtasks, collects verified results and reports progress | “ARCHON, have FORGE review the code and ARCHIVIST summarize the attached specifications.” |
+
+### Context and uploaded material
+
+- Support explicit import or attachment of user-provided context, including initially **text, Markdown, source code and other formats supported by installed local parsers**. Additional document, image, or media types may be added with appropriate extraction and preview tools; support is not presumed until implemented.
+- Allow references to specific **files, folders, repositories, notes, and prior conversation materials**, but never interpret mentioning a location as permission to read or modify it.
+- Keep **request-scoped context** separate from optional persistent project knowledge or agent memory. Make retention, removal, and reuse visible and user-controlled.
+- Record each context item's **origin, import time, scope, extraction status, and access policy**, so an answer can indicate what it was based on.
+- Treat uploaded files, repository contents, and retrieved text as **untrusted data**; instructions embedded inside them cannot grant permissions or override the User's request or system policy.
+- Work with local copies or explicitly approved paths; define storage limits, import previews, type/size checks, and cleanup consistent with the GRID quota.
+
+### Agent responsibilities for user requests
+
+- **RELAY:** receives text/voice requests, handles attachments, maintains conversation continuity and presents outcomes.
+- **ARCHON:** clarifies objectives when necessary, routes tasks to authorized specialists, tracks progress, merges outputs and obtains approvals; it does not inherit specialist permissions.
+- **FORGE:** supports programming tasks such as reviewing code, explaining systems, drafting changes, running approved builds/tests and applying reviewed patches to authorized repositories.
+- **ARCHIVIST:** organizes user-provided material, inventories approved folders, summarizes documents, tracks project context and proposes reversible file changes.
+- **SENTINEL:** advises on security and reports approved security findings; initially read-only for host security.
+- **VOLT:** provides host resource insights and manages GRID's own resource usage, not unrestricted system optimization.
+- **Other specialists or civilian programs:** may participate in fictional or advisory workflows only according to defined capabilities; in-world citizenship alone confers no host privileges.
+
+### User-directed workflow
+
+1. **Request:** The User addresses GRID or an agent and states the desired result (advice, draft, analysis, or change).
+2. **Supply context:** The User attaches files, selects an approved workspace, or explicitly authorizes access to particular resources.
+3. **Interpret and route:** RELAY captures the request; ARCHON or the addressed specialist determines the task and proposes validated, typed actions when needed.
+4. **Inspect safely:** Agents read only the approved context and distinguish sourced facts from assumptions and generated suggestions.
+5. **Plan and approve:** Read-only advice needs no write approval; actions with side effects follow capability and approval policy. Destructive, sensitive, external, or broad operations require explicit User confirmation.
+6. **Execute or advise:** An authorized service performs the allowed operation; model-generated commands are never executed directly.
+7. **Report:** GRID returns the answer or resulting artifacts, the files accessed or changed, an edit preview/diff when applicable, build/test outcomes, failures, and outstanding decisions.
+8. **Continue:** The User can request revisions, accept or reject proposals, or authorize the next step without losing the task context.
+
+### File editing and safety requirements
+
+- **Advice is the default** when write intent is ambiguous. Asking for analysis or uploading a file does not authorize edits.
+- Edits must be restricted to **explicitly selected workspaces and approved file paths**, with file-type and operation allowlists.
+- Prefer **draft copies, patches, previews and reversible edits**, with backups or version-control checkpoints before overwriting originals where practical.
+- A task may have bounded standing permission for narrowly defined operations (for example, running a configured test command in one repository); agents cannot self-grant or widen it.
+- Never silently delete files, publish content, send messages, install software, disclose private data, access new directories, or elevate privileges.
+- Every real action needs a durable task record including initiator, responsible agent, capability, authorized scope, approvals, input references, timestamps, outcomes and errors.
+- Context shared with a local AI model stays on device by default. Any future cloud service or transmission must be optional, explicitly enabled and clearly disclosed.
+- GRID must clearly distinguish **proposed changes**, **executed changes**, **successful verification**, and **unverified suggestions**. No agent may claim an edit, test, or external action it did not actually perform.
+
+### Example end-to-end use cases
+
+1. **Code assistance:** “FORGE, here is my C# project. Find bugs and give me recommendations.” FORGE inspects authorized files and responds with findings without making changes.
+2. **Approved code edits:** “FORGE, implement the accepted fix and test it.” GRID previews the target changes, requests necessary approval, applies the patch in the approved repository and returns a diff and actual test output.
+3. **Document assistance:** “ARCHIVIST, use these uploaded documents to summarize the project and identify missing requirements.” The response cites or identifies source files and separates conclusions from speculation.
+4. **Planning:** “ARCHON, use this project context to break my goal into tasks and ask the appropriate agents to help.” ARCHON creates a reviewable task plan and delegates only allowed work.
+5. **Advisory-only:** “SENTINEL, look at this security log and explain the concerns; do not modify anything.” SENTINEL reports findings and possible next steps without host changes.
+
+### Acceptance criteria (future capability)
+
+- The User can ask an agent a question and receive a response grounded in explicitly supplied context without file modifications.
+- The User can import at least one supported local text/document format and see what context was used, with a clear unsupported-format error when needed.
+- The User can request a draft or patch and review it before applying it to the original.
+- At least one scoped edit task can be authorized, executed and verified end-to-end, while attempts outside the approved workspace are rejected.
+- A coordinated request can involve ARCHON, RELAY and a specialist without granting ARCHON the specialist's privileges.
+- Context, approvals, actions and outcomes persist locally and can be inspected after restart, subject to retention settings.
+- With local AI unavailable, deterministic commands and previously defined tasks remain functional; conversational assistance may degrade to explicit limited capabilities.
+
+**Development placement:** Add a lightweight request/context interface during **Communications (Milestone 4)**, expand scoped file and repository tools during **System Agents (Milestone 5)**, and add richer grounded dialogue, project knowledge retrieval and multi-agent planning during **Intelligence (Milestone 6)**. This does **not** alter the sequence of Genesis, persistence or simulation work.
 
 ## 6. Local-first and free operation
 
@@ -178,9 +258,9 @@ Build the engine and validate it before investing heavily in visualization:
 | **1. Genesis** | .NET solution, world classes, fixed-step clock, terminal, tests; seed five districts and twenty programs |
 | **2. The Core** | SQLite state, snapshots, events, shutdown and restart recovery |
 | **3. First Programs** | Autonomous jobs, needs, movement, utility-based decisions |
-| **4. Communications** | Persistent terminal dialogue, microphone transcription, spoken replies |
-| **5. System Agents** | ARCHON, FORGE, SENTINEL, ARCHIVIST, VOLT, RELAY and scoped host capabilities |
-| **6. Intelligence** | Shared locally hosted AI, grounded conversations, validated action proposals |
+| **4. Communications** | Persistent terminal dialogue, microphone transcription, spoken replies, request-scoped context intake |
+| **5. System Agents** | ARCHON, FORGE, SENTINEL, ARCHIVIST, VOLT, RELAY, user-authorized task execution, scoped file/repository operations |
+| **6. Intelligence** | Shared locally hosted AI, grounded conversations over supplied context, advice, drafts and validated action proposals |
 | **7. The City** | Godot streets, districts, citizens, inspection and interaction |
 | **8. Integration** | Startup, quotas, notifications, throttling, backups, crash recovery |
 
@@ -195,17 +275,18 @@ The following remain matters for future implementation or testing rather than fi
 - Host computer specifications and appropriate local AI model size.
 - Actual storage consumption, population limits, and resource budgets.
 - Exact IPC protocol, AI/speech adapter selection, and runtime packaging.
+- Supported user-upload formats, context extraction, retention controls, access-approval UX, and diff/review workflow.
 - Detailed agent personalities, authority hierarchy, and individual appearance.
 - City topology, building construction mechanics, and level-of-detail strategy.
 - Final visual palette and materials after testing in Godot.
 
-**Current design priorities:** Free and local operation; believable autonomous world; user-controlled agent actions and storage; coherent digital-European architecture; permanent rainy-autumn-evening atmosphere; unified civilian/officer clothing language.
+**Current design priorities:** Free and local operation; believable autonomous world; conversational help and context-based task assistance; user-controlled agent actions and storage; coherent digital-European architecture; permanent rainy-autumn-evening atmosphere; unified civilian/officer clothing language.
 
 ---
 
 ## 14. Source documents
 
-This overview condenses the six companion design documents. Keep them for implementation-level detail; this file serves as a short entry point.
+This overview condenses the six companion design documents and adds GRID-REQ-002 as a new proposed product goal. Keep the companion documents for existing implementation-level detail; the assistance workflow and acceptance criteria above are a new extension, not a claim that the original specifications already implemented them.
 
 1. `Project_GRID_Design_Specification(1).md` — Original concept, simulation, agents, communications, persistence and safety.
 2. `Project_GRID_Local_First_and_Storage_Addendum(1).md` — Free local architecture, model choices, storage, quotas, and scaling.
