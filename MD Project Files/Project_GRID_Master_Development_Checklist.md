@@ -178,7 +178,7 @@ Terminal command integration is now complete in section 1.7. Persistence and dur
 - Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 69 tests (eight World Management, 37 clock/engine, and 24 terminal cases). Terminal coverage includes parsing, actual output, extension registration/help, snapshots, invalid input, exit, EOF, blocked-input cancellation, and scheduler failure.
 - `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors. Executable smoke checks verified help, status, district/program inspection, two manual steps, invalid-command recovery, and clean exit. A live redirected process advanced automatically to tick 2, paused, reported its real state, and exited successfully.
 
-World state remains in memory; persistence is planned for Phase 2. The extension point is an in-process command registry, not a dynamic plugin loader. Genesis release tagging remains pending.
+World state remains in memory; persistence is planned for Phase 2. The extension point is an in-process command registry, not a dynamic plugin loader. Genesis release is marked by the annotated v0.1.0-genesis tag.
 
 ## 1.8 Genesis tests and release
 
@@ -194,7 +194,14 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - [x] Run dotnet build successfully
 - [x] Run dotnet test successfully
 - [x] Add Genesis usage instructions to README
-- [ ] Tag v0.1.0-genesis
+- [x] Tag v0.1.0-genesis
+
+**Genesis release verification — 2026-10-16**
+
+- Release tag: `v0.1.0-genesis` (annotated), covering world management, the simulation clock and engine, and the expandable terminal interface.
+- Re-ran all 69 tests successfully and built the full solution with zero warnings and zero errors before tagging.
+- Existing executable checks verified real factory state, inspection, manual stepping, automatic ticks, pause, invalid-command recovery, and clean shutdown.
+- The release starts a fresh in-memory world; persistence remains Phase 2 work.
 
 **Genesis release gate:** A console simulation with five districts and twenty unique programs; start, pause, tick, status, programs, inspect, and exit work using actual state; automated tests pass.
 
@@ -615,6 +622,6 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 5. [x] Replace temporary terminal district demo with a genuine world-state interface.
 6. [x] Implement `GridSimulationEngine` with fixed-step progression using the completed `GridClock`.
 7. [x] Add command-loop terminal features and terminal tests; all 69 tests are passing.
-8. [ ] Build and run tests, then commit and tag Genesis when all acceptance criteria pass.
+8. [x] Build and run tests, then commit and tag Genesis when all acceptance criteria pass.
 
 **Note:** This checklist reproduces the full eight-phase planning scope as of this conversation. Completion indicators should be updated after each repository review; generated code and documentation are not evidence that a test has passed.
