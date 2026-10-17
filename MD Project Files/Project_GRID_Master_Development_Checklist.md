@@ -2,7 +2,7 @@
 
 **Project:** GRID — Local-first Digital Civilization and Personal Task Assistant  
 **Roadmap:** Eight milestones  
-**Checklist baseline:** GitHub repository `Scorpio7736/Grid7736`, reviewed commit `f5ee323` (local HEAD and GitHub master matched); sections 1.1–1.5 completion evidence updated on 2026-10-16.
+**Checklist baseline:** GitHub repository `Scorpio7736/Grid7736`, reviewed commit `f5ee323` (local HEAD and GitHub master matched); sections 1.1–1.5 completion evidence updated on 2026-10-16. Section 1.6 records subsequent locally implemented and verified changes.
 **Status convention:** `[x]` = observed in the reviewed repository or current working tree (independent verification is noted where performed); `[ ]` = pending or not verified.
 **Scope:** Includes GRID-REQ-002 conversational advice, uploaded context, authorized task execution, and file editing.
 
@@ -127,17 +127,32 @@ The terminal still uses its original district demonstration; connecting it to th
 - Added `Grid.Simulation.Tests` to the solution. All 13 clock test cases passed, covering defaults, invalid durations, exact fixed steps, repeated start/pause, resume, manual steps, and overflow.
 - Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 21 tests (13 simulation clock and eight World Management). `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
 
-Automatic scheduling and world updates remain in section 1.6; terminal clock commands remain in section 1.7.
+Automatic scheduling and world updates are now implemented in section 1.6; terminal clock commands remain in section 1.7.
 
 ## 1.6 Simulation engine
 
-- [ ] Create GridSimulationEngine.cs
-- [ ] Advance the authoritative world with fixed simulation steps
-- [ ] Define a clear world-update sequence
-- [ ] Generate actual world events during ticks
-- [ ] Prevent updates while paused
-- [ ] Support safe cancellation and graceful stopping
-- [ ] Avoid dependence on any 3D renderer or AI service
+- [x] Create GridSimulationEngine.cs
+- [x] Advance the authoritative world with fixed simulation steps
+- [x] Define a clear world-update sequence
+- [x] Generate actual world events during ticks
+- [x] Prevent updates while paused
+- [x] Support safe cancellation and graceful stopping
+- [x] Avoid dependence on any 3D renderer or AI service
+
+**Completed and verified — 2026-10-16**
+
+- Added `Grid.Simulation/GridSimulationEngine.cs` around the authoritative `GridWorld` and a privately owned `GridClock`. Engine operations serialize updates; callers must not mutate the world directly or share it between engines while it is in use.
+- Defined the tick sequence: calculate the next simulation timestamp; validate programs and stage changes in stable GUID order; check cancellation; advance the clock and apply all staged energy changes; expose the completed tick's immutable event batch. Validation failures, pre-commit cancellation, and time overflow leave world changes, clock counters, and the previous result untouched.
+- Initial Genesis energy rules: Working and Moving consume one energy unit per simulated second; Recharging restores two; Idle and Offline leave energy unchanged. Values clamp to 0–100, and invalid energy/status inputs are rejected. These are initial deterministic rules; autonomous job selection, travel, and needs behavior remain in Phase 3.
+- Added `GridTickResult`, `ProgramEnergyChanged`, and `SimulationTickCompleted`. Events contain actual committed changes and simulation timestamps; unchanged energy emits no change event. The engine retains only the latest tick result, avoiding an unbounded in-memory history.
+- `Start()` and `Pause()` control normal ticks. `Tick()` returns null while paused; `Step()` explicitly advances once while paused and rejects use while running. Pause waits for any active commit to finish.
+- `RunAsync(cancellationToken)` provides cancellable scheduling with at most one fixed simulation step per completed delay, without missed-time catch-up. Pause/resume invalidates a pending wait. Cancellation completes normally, pauses the clock, and releases scheduler ownership; other failures propagate after the same cleanup. Callers await the run task before releasing the world.
+- Duplicate schedulers and competing external `Tick()` calls during scheduling are rejected. Automatic scheduling accepts durations from 1 ms through 4294967294 ms; manual advancement supports the clock's wider positive TimeSpan range.
+- Scheduling uses an injectable `TimeProvider`; the engine has no AI, renderer, or host telemetry dependency. Tests control timer completion directly rather than sleeping.
+- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 45 tests: eight World Management, 13 clock, and 24 engine cases. Coverage includes energy rules and bounds, genuine events, deterministic results, membership preservation, pause/resume, manual stepping, cancellation, scheduler exclusivity, invalid-state recovery, and overflow.
+- `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
+
+Terminal command integration remains in section 1.7. Persistence and durable event history remain in Phase 2.
 
 ## 1.7 Terminal interface
 
@@ -576,15 +591,15 @@ Automatic scheduling and world updates remain in section 1.6; terminal clock com
 | **GRID Assistant** *(proposed additional release gate)* | Grounded advice, supplied context, approved editing and task assistance |
 | **GRID City** | Interactive Godot 3D viewer displaying actual authoritative simulation state |
 
-# Immediate Next Steps — Updated After Simulation Clock 1.5
+# Immediate Next Steps — Updated After Simulation Engine 1.6
 
 1. [x] Implement `Grid.Core/GridWorld.cs`.
 2. [x] Implement `Grid.Core/GridWorldFactory.cs`.
 3. [x] Initialize five districts and twenty citizens through the factory.
 4. [x] Enforce valid memberships and coherent district transfers.
 5. [ ] Replace temporary terminal district demo with a genuine world-state demo.
-6. [ ] Implement `GridSimulationEngine` with fixed-step progression using the completed `GridClock`.
-7. [ ] Add command-loop terminal features and engine/terminal tests; Grid.Core.Tests and the clock tests in Grid.Simulation.Tests are implemented and passing.
+6. [x] Implement `GridSimulationEngine` with fixed-step progression using the completed `GridClock`.
+7. [ ] Add command-loop terminal features and terminal tests; World Management, clock, and engine tests are implemented and passing.
 8. [ ] Build and run tests, then commit and tag Genesis when all acceptance criteria pass.
 
 **Note:** This checklist reproduces the full eight-phase planning scope as of this conversation. Completion indicators should be updated after each repository review; generated code and documentation are not evidence that a test has passed.
