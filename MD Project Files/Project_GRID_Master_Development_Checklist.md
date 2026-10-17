@@ -207,6 +207,64 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ---
 
+## 1.9 Post-Genesis preparation — Terminal identities and administrative editing
+
+**Follow-up status:** Sections 1.9.1–1.9.2 designs are complete; section 1.9.3 implementation remains pending. Runtime administrative editing is not implemented. These preparations support GRID-REQ-003 and the User's Master Admin editing request. They are follow-up work after the completed `v0.1.0-genesis` release, not missing Genesis acceptance criteria. Preserve the existing release tag.
+
+### 1.9.1 Define editable values and behavior
+
+- [x] Specify initial editable fields: name, occupation, energy, status, and district assignment
+- [x] Document field types, valid ranges/statuses, text constraints, and invalid-input behavior
+- [x] Keep stable IDs and ownership references outside ordinary editing; keep authorization settings separate from profile values
+- [x] Define one-time edits versus persistent overrides and how autonomous updates may change edited values
+- [x] Define preview and conflict behavior when the target changes before an edit is applied
+- [x] Design editable-field metadata so future fields can be added without rewriting the terminal loop
+
+**Design completed — 2026-10-16**
+
+- Defined the implementation contract in [Program Editing Rules](Project_GRID_Program_Editing_Rules.md), including the five initial fields, text limits, allowed statuses, finite 0–100 energy, district validation, and invalid-input results.
+- Selected one-time assignments for the first version; ordinary edits do not pin values against future simulation behavior. Persistent overrides remain deferred.
+- Defined exact previews and whole-program revision checks, including conflict rejection, atomic multi-field updates, no-op behavior, explicit pause control, and world/session scope.
+- Defined an expandable typed field registry for metadata, parsing, formatting, validation, capability references, and staged mutations. Identity and authorization settings remain separate from profile values.
+- Verification: reviewed current GridProgram properties/status values, GridWorld transfer rules, GridSimulationEngine energy updates, and terminal name/ID lookup behavior against the specification. Included concrete acceptance scenarios for later implementation tests.
+- This completes design only. No source code was changed or runtime tests run for 1.9.1; field enforcement, revision tracking, and editing operations remain pending in 1.9.3. Session-context planning is now defined in 1.9.2.
+
+### 1.9.2 Plan session context and authorization boundaries
+
+- [x] Define a session-context contract separating authenticated human operator, active program identity, and effective capabilities
+- [x] Define how command handlers and engine/application services receive session context
+- [x] Specify Master Control editing permissions and denial behavior for agent or unauthenticated sessions
+- [x] Define authorization checks at the service boundary rather than relying on command visibility
+- [x] Identify future audit fields: operator, active identity, target, old/new values, simulation timestamp, and outcome
+- [x] Document that session contracts alone do not implement authentication; do not label a placeholder identity as authenticated
+
+**Design completed — 2026-10-16**
+
+- Defined [Session Context and Authorization Contract](Project_GRID_Session_Context_and_Authorization.md): verified human operator, active Master Control/agent identity, session generation, world scope, policy version, and effective capabilities.
+- Defined explicit context propagation through terminal dispatch into services, with a trusted session resolver and authorization checks at preview and apply. Command visibility alone cannot authorize an action.
+- Defined initial capability policy: administrative program edits and world control require Master Control; acting as an agent does not inherit the human's administrator rights.
+- Defined logout, switching, revocation, preview invalidation, concurrent-session isolation, and authorization/commit coordination.
+- Specified audit attribution and old/new value records, distinguishing human-as-agent, autonomous agent, and simulation-system actions. Durable audit implementation remains deferred.
+- Verification: reviewed TerminalCommand and CommandDispatcher signatures, engine integration boundaries, and the 1.9.1 editing contract for consistency. Added required acceptance scenarios for future implementation.
+- Design only: no source changes or runtime test execution. Actual credential verification and login are not implemented; absent a trusted provider, new administrative operations must deny access. Test-only session resolvers must not become a default production administrator.
+
+### 1.9.3 Implement validated program editing API — first coding priority
+
+- [ ] Add typed program-edit requests and results through the engine/application boundary
+- [ ] Validate all requested values before committing any part of an edit
+- [ ] Serialize edits with simulation ticks and reject stale/conflicting requests
+- [ ] Route district changes through world transfer rules to preserve membership and population
+- [ ] Review public setters on program values and restrict mutation paths that bypass validation, while preserving factory initialization and engine updates
+- [ ] Return actual committed old/new values for later terminal output and audit integration
+- [ ] Keep this API separate from future login UI and credential storage; do not expose unauthenticated administrative terminal commands
+- [ ] Test valid edits, invalid values, all-or-nothing changes, unchanged IDs, district consistency, tick coordination, and authorization enforcement when session checks are connected
+- [ ] Run the existing world, clock, engine, and terminal regression tests after changes
+- [ ] Add completion notes with observed test/build results once this preparation is implemented
+
+**Deferred implementation:** Actual login and credential handling, identity switching UI, saved roles, and durable audit history remain in the planned persistence/session/system-agent work. Sections 4.2A and 5.1 describe that later integration; do not mark those capabilities complete merely because these contracts or APIs exist.
+
+---
+
 # Phase 2 — The Core
 
 ## 2.1 Persistence architecture
@@ -653,7 +711,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 | **GRID Assistant** *(proposed additional release gate)* | Grounded advice, supplied context, approved editing and task assistance |
 | **GRID City** | Interactive Godot 3D viewer displaying actual authoritative simulation state |
 
-# Immediate Next Steps — Updated After Terminal Interface 1.7
+# Completed Genesis Steps
 
 1. [x] Implement `Grid.Core/GridWorld.cs`.
 2. [x] Implement `Grid.Core/GridWorldFactory.cs`.
@@ -663,5 +721,13 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 6. [x] Implement `GridSimulationEngine` with fixed-step progression using the completed `GridClock`.
 7. [x] Add command-loop terminal features and terminal tests; all 69 tests are passing.
 8. [x] Build and run tests, then commit and tag Genesis when all acceptance criteria pass.
+
+# Immediate Next Steps — Post-Genesis Recommendations
+
+1. [x] Complete editable-field and session-context planning in sections 1.9.1–1.9.2.
+2. [ ] Implement and verify the validated editing API in section 1.9.3.
+3. [ ] Begin Phase 2 persistence with the identity, edit-result, and audit requirements considered in schema design.
+4. [ ] Integrate login and Master Control terminal editing in the later GRID-REQ-003 work; preserve the completed Genesis release.
+5. [ ] Record completion notes and verification evidence as each item is finished.
 
 **Note:** This checklist reproduces the full eight-phase planning scope as of this conversation. Completion indicators should be updated after each repository review; generated code and documentation are not evidence that a test has passed.

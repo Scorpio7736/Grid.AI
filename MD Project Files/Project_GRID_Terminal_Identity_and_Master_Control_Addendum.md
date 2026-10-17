@@ -38,6 +38,8 @@ These are intended role views, not claims that these services already exist. Mas
 
 ## Identity and action model
 
+Section 1.9.2 now defines the [Session Context and Authorization Contract](Project_GRID_Session_Context_and_Authorization.md), including trusted session issuance, effective permissions, identity switching, preview invalidation and audit attribution. This is a design contract; authentication and enforcement are not yet implemented.
+
 - Keep the authenticated human operator separate from the active program identity. A human operating as FORGE is recorded as that human acting through FORGE, rather than as an autonomous FORGE action.
 - Carry a session context through command dispatch and task execution, including operator ID, active identity ID, and effective capabilities.
 - Agent sessions expose their own permitted views and actions. The effective permissions must fit both the operator's authorization and the chosen identity's role; adopting an agent identity does not inherit Master Control powers.
@@ -53,7 +55,7 @@ These are intended role views, not claims that these services already exist. Mas
 
 The User, signed in as Master Admin / Master Control, should be able to inspect and edit programs and their values directly from the terminal. This includes civilian programs and editable simulation/profile fields of named agents.
 
-Initial editable fields should include name, occupation, energy, status, and district assignment. As program models grow, additional fields should be exposed through an explicit editable-field registry with types, constraints, and descriptions.
+Initial editable fields are name, occupation, energy, status, and district assignment. The completed section 1.9.1 design is specified in [Program Editing Rules](Project_GRID_Program_Editing_Rules.md), including validation, one-time behavior, previews, conflict detection, and expandable field metadata. Runtime implementation remains pending.
 
 Proposed usage (illustrative syntax; not currently implemented):
 
@@ -70,9 +72,9 @@ program move <program-id> <district-id>
 - Route district changes through world-management operations to preserve membership and population. Stable IDs and ownership references are not ordinary editable fields.
 - Keep profile/simulation edits separate from credentials, role permissions, and host capabilities. Editing a name or occupation must not change authorization.
 - Preview the target and old/new values, then report the actual committed result. The exact confirmation workflow remains a UI design choice.
-- Serialize edits with simulation ticks through validated engine operations. Define pause or conflict handling so stale previews cannot silently overwrite newer state.
+- Serialize edits with simulation ticks through validated engine operations. Use per-program revision checks to reject stale previews; the User may explicitly pause the simulation before preparing an edit.
 - Audit the authenticated operator, target, old/new values, outcome, and simulation timestamp. Integrate saved edits with Phase 2 persistence.
-- Define one-time edits versus ongoing overrides: an energy or status edit may change again during autonomous updates. Make this behavior visible.
+- The first version uses one-time edits: energy or status may change again during subsequent updates. Persistent overrides are deferred; previews must explain this behavior.
 
 ### Program-editing acceptance criteria
 
@@ -115,8 +117,8 @@ Use stable identity IDs rather than hardcoding privileges to display names. Keep
 
 - Final display name: Master Control or Master Admin.
 - Authentication method: existing Windows identity, a separate local credential, or another local method.
-- Whether agents have separate credentials or are selected through an authenticated operator's delegated session.
+- Initial design: authenticate the human, then select an authorized agent identity; credential provider and any later separate agent credentials remain undecided.
 - Initial single-user versus future multi-user support.
 - Session expiry, locking, recovery, and concurrent terminal policy.
-- Which world controls are available to each identity.
-- Whether adopting an agent identity pauses its autonomous tasks or opens a coordinated operator view.
+- Initial world-control policy is defined in the session contract: Master Control can control simulation and edit programs; later role-specific exceptions require explicit policy.
+- Initial agent adoption opens an operator view without automatically pausing autonomous tasks; explicit takeover controls remain future work.
