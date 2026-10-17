@@ -1,4 +1,5 @@
 <Solution>
+  <Folder Name="/MD Project Files/" />
   <Project Path="Grid.Core/Grid.Core.csproj" />
   <Project Path="Grid.Simulation/Grid.Simulation.csproj" />
   <Project Path="Grid.Terminal/Grid.Terminal.csproj" />

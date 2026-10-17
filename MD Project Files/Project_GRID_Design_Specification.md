@@ -1,0 +1,679 @@
+# Project GRID
+
+**Hybrid Digital Civilization and Autonomous PC Agent System**  
+**Consolidated Design Specification — Draft v0.4**  
+**Date:** October 15, 2026  
+**Status:** Concept and proposed architecture; not yet implemented
+
+---
+
+## 1. Vision
+
+Project GRID is a persistent, TRON-inspired digital civilization hosted on a Windows PC. The world contains simulated districts, autonomous programs, a resource economy, relationships, history, and a visual 3D environment. It is also a practical personal computing interface: selected system programs can observe approved aspects of Windows, perform tightly scoped tasks, and report results through terminal and voice communication.
+
+**Three core principles:**
+
+1. **Autonomy:** Digital citizens make choices, interact, work, and develop history without constant direction from the User.
+2. **Host influence:** Real PC metrics and approved activities influence the simulated environment, without allowing the simulation to interfere with host operation.
+3. **Powered existence:** Simulation time advances only while its engine runs. When the PC shuts down, the Grid stops advancing; its state remains saved and resumes on startup. There is no offline catch-up simulation by default.
+
+The Grid is **not** only a screensaver, chatbot collection, graphical task manager, or Windows replacement. Its fictional city and useful system-facing agents share a coherent world model.
+
+### Inspiration
+
+The fictional roles of **TRON** (security) and **CLU** (administration / digital counterpart to Flynn) inspire the idea of specialized programs with identities and responsibilities. Original GRID program names and personalities can be used in the implementation.
+
+---
+
+## 2. World Design
+
+### 2.1 Initial city districts
+
+| District | Windows influence | Simulation role |
+|---|---|---|
+| The Core | General host/system state | Central reactor, administration, simulated power distribution |
+| Processing Sector | CPU utilization | Industrial manufacturing and research |
+| Memory Banks | Memory utilization / availability | Research and short-term resource storage |
+| Archive Sector | Disk activity / approved storage statistics | Historic records, archives, construction materials |
+| Gateway | Network throughput / connectivity metadata | Communication, exploration, trade and transit |
+
+A later city may add a GPU/Arena district, residential zones, defense facilities, maintenance depots, and research campuses.
+
+### 2.2 World mechanics
+
+- Grid energy and other resources form **fictional** systems, not allocations of actual PC hardware.
+- Buildings and transit routes can be constructed, expanded, repaired, or abandoned.
+- Citizens navigate the world and carry out jobs.
+- Program decisions may lead to emergent situations, including negotiations, scarcity, innovation, and district development.
+- An event log preserves the causes and consequences of significant changes.
+- Physical visualization should reflect the simulation state rather than fabricate world events.
+
+### 2.3 Example Windows-to-world mappings
+
+| Host activity | Possible Grid response |
+|---|---|
+| CPU load increases | Processing Sector activity rises; energy production and maintenance pressure change |
+| Memory pressure rises | Memory Banks temporarily prioritize essential work |
+| Network traffic surges | Gateway dispatches additional simulated data carriers |
+| Development tools open | Research and development work becomes active |
+| GPU-intensive game launches | Arena or GPU district receives activity |
+| PC is mostly idle | Maintenance or recovery opportunities increase |
+| Approved test suite finishes | Forge may record a research event and report the real outcome |
+| Defender reports an alert | Sentinel opens a simulated incident, without treating a fictional event as proof of actual danger |
+
+All responses should be tuned, smoothed, bounded, and based on measured host conditions. For example, intense gaming should not automatically destroy the civilization.
+
+---
+
+## 3. Program Population
+
+### 3.1 Civilization programs
+
+These live entirely in the virtual Grid. They may operate infrastructure, construct buildings, socialize, research, explore, manage simulated energy, and form relationships. They have **no direct Windows privileges**.
+
+### 3.2 System programs
+
+These are both fictional in-world characters and concrete, permission-scoped host services. Their decisions can result in real tasks, but only through approved capabilities and execution policies.
+
+### 3.3 Program identity and state
+
+Each program may have:
+
+- Persistent unique ID and display name
+- Role, occupation, district, and capabilities
+- Personality and preferences
+- Energy, health, needs, goals, and priorities
+- Location and movement state
+- Relationships with other programs
+- Memories and experiences with provenance
+- Conversation history and voice profile
+- Assigned tasks and execution status
+
+Illustrative C# model:
+
+```csharp
+public sealed class GridProgram
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = "";
+    public string Occupation { get; set; } = "";
+    public float Energy { get; set; } = 100;
+    public float Health { get; set; } = 100;
+    public Guid CurrentDistrictId { get; set; }
+    public List<ProgramGoal> Goals { get; set; } = [];
+    public List<ProgramMemory> Memories { get; set; } = [];
+    public List<ProgramRelationship> Relationships { get; set; } = [];
+}
+```
+
+`ProgramGoal`, `ProgramMemory`, and `ProgramRelationship` are conceptual types to define in the implementation.
+
+### 3.4 Decision-making
+
+A proposed per-agent loop:
+
+1. Observe the environment, personal state, and nearby programs.
+2. Generate allowed candidate actions (work, rest, repair, socialize, explore, negotiate).
+3. Score actions using goals, needs, rules, and context (utility-based decision-making; potentially state machines and pathfinding).
+4. Execute the selected action through the world simulation.
+5. Store resulting state changes, memories, and meaningful events.
+
+Routine simulation does **not** require a large language model for every action. Optional local AI is better reserved for natural-language dialogue and higher-level planning. AI-generated proposals never bypass the deterministic rules engine.
+
+---
+
+## 4. Initial Named System Programs
+
+| Program | Role | Real capabilities (scoped) | Example update |
+|---|---|---|---|
+| **SENTINEL** | Security, inspired by TRON | Read Windows Defender/firewall status and permitted security events, investigate and report anomalies | “A security alert was recorded. No protective action has been taken.” |
+| **ARCHON** | Coordinator/administrator, inspired by CLU | Assign tasks, gather summaries, track queues, coordinate simulation administration | “Sentinel completed its review; Forge has three tasks pending.” |
+| **ARCHIVIST** | Data management | Inventory approved folders, identify duplicates, prepare organization proposals and perform approved reversible moves | “18 possible duplicates are ready for review.” |
+| **FORGE** | Development and builds | Inspect explicitly authorized repositories, run configured tests/builds, produce diagnostics and propose patches in isolated workspaces | “Two unit tests failed; a report is available.” |
+| **VOLT** | Resource monitoring | Observe CPU/GPU/RAM/disk/thermal metrics where supported and adjust *Grid’s own* resource budget | “I reduced Grid background work while host load is high.” |
+| **RELAY** | Communication | Route messages, transcribe audio, synthesize replies, manage notifications, and deliver briefings | “Forge's report is complete. Shall I read it aloud?” |
+
+**Organizational rule:** ARCHON may coordinate other agents but does not inherit their permissions. SENTINEL should independently monitor security conditions. RELAY is the universal communications layer.
+
+Potential first trio for useful system functionality: **ARCHON + SENTINEL + FORGE**. Basic RELAY functionality must still exist early to deliver terminal messages.
+
+### 4.1 Agent personality
+
+Personality should change how a program communicates, not grant it extra access. For example:
+
+- SENTINEL: precise, vigilant, concise.
+- ARCHON: calm, strategic, administrative.
+- ARCHIVIST: thorough and methodical.
+- FORGE: curious, engineering-focused.
+- VOLT: factual, resource-conscious.
+- RELAY: clear and responsive.
+
+---
+
+## 5. Real Task Execution
+
+Example request: “Archon, have Forge run my unit tests and ask Archivist to check Downloads.”
+
+1. RELAY receives the typed or spoken message.
+2. The communication layer identifies the requested intent and recipient(s).
+3. ARCHON breaks the request into discrete task proposals.
+4. The system validates each proposal against specific tools, directories, repositories, and approved parameters.
+5. FORGE runs tests through a configured test runner in an authorized workspace; ARCHIVIST inventories the approved Downloads folder.
+6. Results and failures are stored in durable task/event records.
+7. ARCHON combines the results into a report; RELAY presents the text and optionally reads it aloud.
+
+### 5.1 Task lifecycle
+
+Suggested states: `Pending`, `AwaitingApproval`, `Running`, `Completed`, `Failed`, `Cancelled` (optionally `Paused`, `RetryScheduled`).
+
+```csharp
+public enum GridTaskStatus
+{
+    Pending,
+    AwaitingApproval,
+    Running,
+    Completed,
+    Failed,
+    Cancelled
+}
+
+public sealed class GridTask
+{
+    public Guid Id { get; init; } = Guid.NewGuid();
+    public string Title { get; init; } = "";
+    public string AssignedProgram { get; init; } = "";
+    public GridTaskStatus Status { get; set; }
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
+    public string CapabilityId { get; init; } = "";
+    public string ParametersJson { get; init; } = "{}";
+}
+```
+
+A durable SQLite-backed queue should retain requests over restarts, use transaction-safe claims, and avoid duplicate side effects through idempotency and explicit recovery rules. A task due while the PC is powered off should be handled under a defined resume policy when the Grid restarts, not executed retroactively without user permission.
+
+### 5.2 Permission tiers
+
+| Tier | Meaning | Example |
+|---|---|---|
+| 0 — Observer | Read permitted data | SENTINEL reads security status |
+| 1 — Reporter | Analyze and notify | VOLT reports high sustained CPU use |
+| 2 — Operator | Perform narrowly preapproved, bounded actions | FORGE executes a fixed test command in an allowed repository |
+| 3 — Approval required | Propose higher-risk changes; execute only after user authorization | ARCHIVIST proposes deletions or major file moves |
+
+These are **application policy levels**, not Windows administrator privileges. Actual access must be separately enforced by capability-specific tool interfaces, operating-system permissions, allowlists, and user approval.
+
+### 5.3 Security boundaries
+
+- No self-escalation of permissions by agents.
+- No direct execution of untrusted AI-generated PowerShell, SQL, or shell commands.
+- No unrestricted filesystem access or browsing of private content.
+- No security software disabling or firewall alteration without separate, explicit, appropriate authorization.
+- No silent deletion or file changes outside approved scopes.
+- Use dry runs and reversibility for file organization where possible.
+- Log actions, parameters, approvals, outcomes, and errors.
+- Keep the simulated world unable to command Windows without passing the same task broker checks.
+- Minimize collected telemetry and never infer security guarantees from fictional Grid status.
+
+---
+
+## 6. Unified Grid Communications System (GCS)
+
+**Goal:** One persistent conversation network reachable by **Windows Terminal**, **microphone**, and **Godot 3D viewer**. A conversation begun in one interface can continue in another.
+
+### 6.1 Interfaces
+
+1. **Terminal:** Inspect the Grid, issue commands, have conversations, inspect agent tasks, and control voice output.
+2. **Voice console:** Push-to-talk microphone input, transcription, live text responses, and speech playback.
+3. **3D viewer:** Select programs or districts, open communication channels, display dialogue, and play assigned program voices.
+
+### 6.2 Example commands
+
+```text
+grid status
+grid programs list
+grid agent inspect archon
+grid connect CL-047
+grid talk CL-047 "How is the reactor?"
+grid broadcast "Prepare for system maintenance."
+grid voice on
+grid voice off
+grid listen
+grid history CL-047
+grid observe CL-047
+grid events --recent
+```
+
+Administrative and agent-specific commands may include `grid tasks list`, `grid task inspect <id>`, `grid approvals list`, and `grid brief`.
+
+### 6.3 Message pipeline
+
+```text
+Typed text ────────────────────────────────┐
+                                           v
+Microphone → Capture → Speech-to-text → Message Router
+                                           |
+                                   Intent / recipient
+                                           |
+                         +-----------------+-----------------+
+                         |                                   |
+                 Deterministic command                  Conversation
+                         |                                   |
+                 Permission validation            Retrieve program context,
+                         |                         state, and memory
+                         |                                   |
+                         |                        Dialogue generation
+                         |                                   |
+                         +----------- Action proposals -----+
+                                             |
+                                      Rules + capability
+                                       validation broker
+                                             |
+                                       World/task engine
+                                             |
+                                 Message + event persistence
+                                             |
+                           +-----------------+-----------------+
+                           |                                   |
+                        Text UI                           Speech output
+```
+
+A conversation that requests no action can return a response without changing simulation state. Messages from AI models are never themselves authoritative world facts or executable instructions.
+
+### 6.4 Shared message model
+
+```csharp
+public enum MessageOrigin { Terminal, Microphone, WorldViewer, SystemEvent }
+public enum MessageKind { Conversation, Command, Broadcast, Notification }
+
+public sealed record GridMessage
+{
+    public Guid MessageId { get; init; } = Guid.NewGuid();
+    public Guid ConversationId { get; init; }
+    public string SenderId { get; init; } = "";
+    public string RecipientId { get; init; } = "";
+    public MessageOrigin Origin { get; init; }
+    public MessageKind Kind { get; init; }
+    public string Content { get; init; } = "";
+    public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;
+    public long SimulationTick { get; init; }
+    public bool SpeakResponse { get; init; }
+}
+```
+
+Additional implementation metadata should include correlation and causation IDs, delivery status, action proposal IDs, transcription language/confidence when available, and sender authentication/authorization context.
+
+### 6.5 Speech recognition and synthesis
+
+**Input options**
+
+- **Default:** Push-to-talk, with visible microphone activity indicator.
+- **Optional:** Opt-in local wake-word mode, which requires ongoing microphone analysis.
+- **Disabled:** Text-only mode.
+
+**Speech recognition candidate:** local `whisper.cpp`; audio capture through a Windows audio library such as NAudio.
+
+**Text-to-speech candidates:** Windows `System.Speech.Synthesis` for a simple MVP; local Piper voices for richer character differentiation later.
+
+Each program may have a stable voice profile: voice/model identifier, speech rate, pitch (where supported), volume, and style. Voice output should have a global mute switch, interruption/cancellation, single-speaker arbitration, device selection, and quiet-hours controls.
+
+Default microphone audio should be discarded after transcription, while the transcript remains subject to user-defined retention. Avoid surprise speech during unattended background operation.
+
+Example service interfaces:
+
+```csharp
+public interface ISpeechRecognitionService
+{
+    Task<string> TranscribeAsync(Stream audio, CancellationToken ct);
+}
+
+public interface ISpeechSynthesisService
+{
+    Task SpeakAsync(string text, string voiceId, CancellationToken ct);
+}
+
+public interface IDialogueService
+{
+    Task<GridMessage> GenerateReplyAsync(GridMessage input, CancellationToken ct);
+}
+
+public interface IConversationRepository
+{
+    Task SaveAsync(GridMessage message, CancellationToken ct);
+    Task<IReadOnlyList<GridMessage>> GetHistoryAsync(Guid conversationId, CancellationToken ct);
+}
+
+public interface IGridCommunicationHub
+{
+    Task<GridMessage> SendAsync(GridMessage message, CancellationToken ct);
+}
+```
+
+### 6.6 Conversation channels
+
+| Channel | Use | Authority |
+|---|---|---|
+| Private | User speaks to one program | Responses and validated proposals only |
+| District | User addresses a department | Same scoped broker rules |
+| Broadcast | User sends informational announcements | No implicit administrator privileges |
+| Administration | Approved system management operations | Explicit privileges and approvals |
+| Emergency | Program reports critical simulated or real alerts | Predefined alert paths; sensitive remediation requires authorization |
+
+### 6.7 Program voice/personality examples
+
+- Administrative voice: calm, authoritative, slightly synthetic.
+- Security voice: clipped and precise.
+- Research voice: curious and conversational.
+- Energy management voice: methodical.
+- Ordinary citizens: varied natural voices.
+
+### 6.8 Incoming transmissions
+
+Agents may initiate notifications after significant events: security alerts, failed builds, task completion, unusual load, or approval requests. Outputs may include terminal notifications, Windows notifications, in-world radio messages, or opt-in spoken alerts. Configure severity thresholds, quiet hours, rate limits, and per-agent notification preferences. Routine events should usually be logged silently.
+
+---
+
+## 7. Persistence, Memory, and History
+
+### 7.1 Distinct data categories
+
+- **World snapshots:** Positions, resources, buildings, program identities and states, current simulation clock.
+- **World event history:** Construction, decisions, incidents, relationships, task outcomes, and real-host-derived world events.
+- **Conversation history:** The actual messages exchanged across all interfaces.
+- **Program memories:** Curated, attributed summaries of important exchanges and experiences that may influence future decisions.
+- **Task audit:** Approvals, permitted tools, results, failures, retries, and user notifications.
+
+Conversation history is **not equivalent** to program memory. A program can remember that a User prefers archives to industrial expansion without that preference changing world policy automatically.
+
+### 7.2 Proposed SQLite tables
+
+| Table | Important fields |
+|---|---|
+| `Programs` | ProgramId, Name, Type, Role, DistrictId, State |
+| `Districts` | DistrictId, Name, ResourceLevels, Infrastructure |
+| `WorldSnapshots` | SnapshotId, SimulationTick, Data, CreatedAt |
+| `WorldEvents` | EventId, SimulationTick, Type, SourceId, Payload |
+| `Conversations` | ConversationId, Type, CreatedAt, LastActivityAt |
+| `Messages` | MessageId, ConversationId, SenderId, RecipientId, Content, Origin, Timestamp, SimulationTick |
+| `ProgramMemories` | MemoryId, ProgramId, Summary, Importance, SourceMessageId |
+| `VoiceProfiles` | ProgramId, VoiceId, Rate, Pitch, Volume |
+| `CommunicationEvents` | EventId, MessageId, EventType, Result, SimulationTick |
+| `Tasks` | TaskId, OwnerProgramId, Status, CapabilityId, Parameters, CreatedAt |
+| `TaskApprovals` | ApprovalId, TaskId, RequestedAction, Decision, AuthorizedAt |
+| `TaskExecutionLog` | ExecutionId, TaskId, Tool, InputsDigest, Outcome, Time |
+
+Use database transactions, migrations, indexes, and suitable SQLite WAL settings. Snapshot recovery and event replay must be designed to prevent doubled side effects or mismatched world/conversation histories. Conversation deletion and derived memory deletion should be user-controllable.
+
+---
+
+## 8. Windows Lifecycle and Host Integration
+
+### 8.1 Startup sequence
+
+1. User logs in to Windows and the Grid background host starts.
+2. Grid validates persistent data and loads the latest consistent saved state.
+3. The host establishes read-only telemetry subscriptions or polling.
+4. The simulation engine starts its clock and agent scheduler.
+5. RELAY and ARCHON can offer an optional concise startup briefing.
+6. The terminal, voice console, and 3D viewer may connect independently.
+
+A cinematic full-screen startup sequence **after Windows login** is practical. Rendering a custom interactive Grid *before* Windows login is a substantially different, constrained operating-system integration and is **not** an MVP dependency. The motherboard/Gigabyte firmware splash screen is separate from the Grid application.
+
+### 8.2 Suspension and shutdown
+
+- Persist snapshots at regular intervals and after material events.
+- Save cleanly on normal application exit, session shutdown, or suspend when the OS allows.
+- Avoid relying solely on last-second shutdown callbacks; power loss is possible.
+- Stop the simulation clock while the host is not running.
+- On resume, restore the last durable tick without time-skipping.
+- Distinguish pending, interrupted, and completed real tasks and reconcile retries safely.
+
+### 8.3 Performance policy
+
+- Run core simulation independently of graphics.
+- Use low-frequency logical ticks for most tasks, not rendering frame rates.
+- Run the 3D renderer at its own frame rate when visible.
+- Throttle background activities under host load.
+- Avoid continuous heavyweight AI inference or voice processing unless needed.
+- Suggested initial engineering target: **under 1% average CPU for the idle headless engine**, subject to profiling on the specific PC; this is a target, not a guarantee.
+
+---
+
+## 9. Architecture and Technology Stack
+
+**Primary recommendation:** C#/.NET for the core, interfaces, telemetry, and task services; Godot .NET for 3D; WPF for native Windows controls; SQLite for durable records.
+
+| Subsystem | Candidate technology | Notes |
+|---|---|---|
+| World simulation | C# / .NET | Independent of UI or game engine |
+| 3D world | Godot .NET | City, camera, animated agents, environmental effects |
+| Desktop controls | WPF | Dashboard, voice settings, approvals, task details |
+| Terminal | .NET CLI | Commands, conversations, status and audit |
+| Persistence | SQLite | World state, tasks, communication and histories |
+| Interprocess transport | Named pipes (Windows) | Local IPC, scoped access; optional local WebSocket for viewer integration |
+| Telemetry | Supported Windows APIs | Resource sampling; approved process and security information |
+| Audio capture | NAudio or equivalent | Push-to-talk and microphone device management |
+| Offline STT | whisper.cpp | Local speech-to-text candidate |
+| Initial TTS | Windows `System.Speech` | Simple initial synthesis |
+| Neural TTS | Piper | Optional higher-quality local voices |
+| AI dialogue | Pluggable local language model adapter | Optional; facts always grounded in world state |
+| Tests | xUnit | Deterministic engine, broker, data and IPC coverage |
+
+### 9.1 Proposed solution tree
+
+```text
+GRID/
+├── Grid.Core/                   # World objects, resource rules, agent states
+├── Grid.Simulation/             # World clock, ticks, autonomous decision systems
+├── Grid.Host/                   # Windows telemetry and event translation
+├── Grid.Persistence/            # SQLite schema, snapshots, event history
+├── Grid.Agents/                 # Agent registry, memory, decision engine, scheduler
+├── Grid.SystemPrograms/
+│   ├── Sentinel/
+│   ├── Archon/
+│   ├── Archivist/
+│   ├── Forge/
+│   ├── Volt/
+│   └── Relay/
+├── Grid.Communication/          # Message hub, routing, sessions, dialogue
+├── Grid.Audio/                  # STT/TTS providers, voice profiles, playback
+├── Grid.Terminal/               # CLI commands and interactive chats
+├── Grid.Viewer/                 # Godot 3D city and in-world conversations
+├── Grid.Control/                # WPF settings, task and agent dashboard
+├── Grid.Security/               # Capability broker, policy and approvals
+└── Grid.Tests/                  # Unit/integration/acceptance tests
+```
+
+### 9.2 Execution boundaries
+
+- **World engine:** Owns simulated resources, time, identities and world events.
+- **Communication hub:** Owns message routing and conversation sessions.
+- **Task broker:** Sole supported path from agent requests to host actions.
+- **Tool adapters:** Implement approved operations; validate inputs and host permissions.
+- **Persistence:** Provides durable commits and recovery semantics.
+- **Clients:** Terminal, WPF voice console, and Godot viewer are views/controllers, not independent authorities.
+
+The communication hub belongs to the always-running Grid host, **not** to the viewer. Closing the viewer should not end the world or erase conversations.
+
+---
+
+## 10. Example User Experiences
+
+### 10.1 Morning startup briefing
+
+> **ARCHON:** “Welcome back, User. The Grid has resumed. All six system programs are responding. Sentinel has no outstanding alerts from its last completed check. Forge has three development tasks pending. Would you like a full briefing?”
+
+The briefing must distinguish the time of the latest check from actual live scan results.
+
+### 10.2 Spoken task delegation
+
+**User:** “Archon, have Forge run my unit tests and ask Archivist to check Downloads.”
+
+**Process:** RELAY transcribes → ARCHON coordinates → permissions checked → FORGE and ARCHIVIST operate only within granted scopes → task records update → results delivered by text and speech.
+
+### 10.3 Program conversation
+
+**User:** “CL-047, how is the reactor?”
+
+**CL-047:** “The reactor is operating normally. Processing demand has increased, but reserve capacity remains stable.”
+
+That reply must derive from the simulation's current reactor state, not be a plausible-sounding invented measurement.
+
+### 10.4 Incoming security transmission
+
+> **SENTINEL:** “User, a new security alert has appeared. I have prepared the details. No remediation has been attempted.”
+
+The incident can appear in the 3D security district as an in-world event and in the real task/audit interface as a verifiable host alert.
+
+### 10.5 Emergent urban growth
+
+During a long PC session, citizens coordinate material supply, negotiate district power allocation, and build a research facility. The next time the User opens the viewer, the new structure appears; the event history can explain the actual simulation decisions that created it.
+
+---
+
+## 11. Prototype Scope and Acceptance Criteria
+
+### 11.1 GRID v0.1 — Genesis (world simulation)
+
+Proposed MVP scale:
+
+- One city, five districts, twenty simulated programs.
+- Three basic simulated resources (to be specified, e.g., Energy, Materials, Data).
+- Agent movement and a few utility-based task choices.
+- Persistent SQLite world state and event history.
+- Fake telemetry source for deterministic testing, then real read-only host telemetry.
+- Ability to run without a viewer.
+
+**Acceptance criteria:**
+
+- Twenty agents can independently select legal tasks.
+- Telemetry inputs change bounded simulation conditions.
+- Programs respond to simulated resource shortages.
+- The world remains active without a renderer.
+- Saving/restarting preserves state with no offline time jump.
+- Events explain significant changes.
+- Background resource usage can be measured and throttled.
+
+### 11.2 GCS v0.1 — Text communication
+
+- Communication hub, message types, CLI, recipients, conversations.
+- SQLite message persistence and cross-session retrieval.
+- Deterministic agent responses for initial development.
+- Authorized command dispatch and permission checks.
+
+### 11.3 GCS v0.2 — Speech
+
+- Push-to-talk and microphone selection.
+- Offline speech recognition.
+- Transcript display and storage.
+- Text-to-speech with persistent per-agent profiles.
+- Interruption, mute, and error handling.
+
+### 11.4 GCS v0.3 — Intelligent dialogue
+
+- Local/model-agnostic dialogue provider.
+- Context retrieval from current world state and attributed memories.
+- Auditable action proposals, not direct model execution.
+- Consistent conversation continuity across interfaces.
+
+### 11.5 Agent task release
+
+- ARCHON coordinator, SENTINEL security status, FORGE test/build capabilities.
+- Durable task queue, approvals and execution audit.
+- RELAY delivery and text/voice notifications.
+- Add ARCHIVIST and VOLT capabilities next.
+
+### 11.6 3D integration
+
+- Godot digital city with controllable observer camera.
+- Program bodies, locations and animated activity.
+- Select a citizen to inspect or converse.
+- District lights and environmental activity reflect simulation state.
+- Optional cinematic post-login startup.
+
+---
+
+## 12. Test Strategy
+
+**Simulation tests**
+
+- Deterministic ticks with seeded randomness.
+- Legal state transitions and resource conservation/invariants.
+- Agent decision scoring and movement rules.
+- Snapshot/restart and event replay.
+- Powered-off intervals do not advance simulation time.
+
+**Communication tests**
+
+- Routing by ID, district and broadcast target.
+- Unknown recipients and malformed command handling.
+- Conversation ordering, deduplication, and recovery.
+- Text and transcription produce equivalent logical requests.
+- Voice mapping and cancellation.
+- Cross-interface history consistency.
+
+**Security and task tests**
+
+- Deny unauthorized directory, file and repository access.
+- Reject unapproved operations, argument injection, and arbitrary shell execution.
+- Verify dry-run and approval flows.
+- Crash recovery and idempotent task dispatch.
+- Separate simulated world permissions from actual Windows privileges.
+- Verify no model-produced text can bypass tool validation.
+
+**Performance tests**
+
+- Headless agent-count scaling.
+- Memory and CPU budgets under high host load.
+- Microphone/TTS resource consumption and cancellation.
+- Database throughput and snapshot integrity.
+
+---
+
+## 13. Outstanding Design Decisions
+
+The preceding sections describe the desired concept and recommended implementation, not an already finished product. These items still require explicit decisions or measurements:
+
+1. **Visual style:** faithful TRON-like neon imagery versus an original visual identity inspired by digital circuits.
+2. **World size and procedural generation:** fixed starter city versus expanding generated neighborhoods.
+3. **Resource mechanics:** exact definitions, production/consumption equations, and recovery rules.
+4. **Agent AI:** amount of deterministic utility-based logic versus local-model-assisted planning.
+5. **Dialogue model:** local runtime, model size, hardware budget, and fallback when unavailable.
+6. **Host telemetry permissions:** exactly what may be observed, retained, and displayed.
+7. **Approval policy:** which tasks require one-time approval versus per-run approval.
+8. **Schedules:** which tasks may be recurring, and how missed tasks are handled after shutdown.
+9. **Notifications:** incoming transmission severity, quiet hours, and permitted spoken alerts.
+10. **World governance:** how autonomous programs vote, allocate resources, and propose infrastructure.
+11. **Privacy:** retention of conversation transcripts, derived program memories, and telemetry.
+12. **Deployment:** separate headless service/process versus user-session application; IPC security model.
+13. **Hardware optimization:** precise tick rate, AI inference limits, GPU budget, and throttling thresholds.
+
+---
+
+## 14. Recommended First Implementation
+
+Start with the **headless C# simulation and durable communication kernel**, not the entire 3D city:
+
+1. Create `Grid.Core`, `Grid.Simulation`, `Grid.Persistence`, `Grid.Communication`, `Grid.Security`, `Grid.Terminal`, and `Grid.Tests`.
+2. Implement a world clock, five districts, three simulated resources, and twenty simple citizens.
+3. Add deterministic fake host telemetry and event logging.
+4. Add persistent CLI conversations (`grid status`, `grid programs list`, `grid connect`, `grid talk`, `grid events`).
+5. Introduce ARCHON as a coordinator and a task broker that initially exposes only safe mock capabilities.
+6. Implement SENTINEL's read-only status inspection and FORGE's narrowly configured test runner.
+7. Add push-to-talk, speech recognition, and TTS when terminal communications are stable.
+8. Add the Godot renderer last, observing the same world state and conversations.
+
+**Definition of success:** GRID behaves like a genuine simulated society; contains useful, clearly scoped PC agents; supports typed and spoken communication with persistent memory; and remains safe, auditable, recoverable, and unobtrusive on the host machine.
+
+---
+
+## 15. Concept Summary
+
+**GRID = autonomous simulation + host-derived environmental signals + delegated real tasks + persistent conversations + voice interaction + visual digital world.**
+
+Its programs have **three overlapping identities**:
+
+1. **Character:** A personality, relationships, location, and history in the Grid.
+2. **Responsibility:** A continuing role within the civilization or host-support team.
+3. **Capability:** A tested, permission-controlled service that may perform actual work.
+
+The aspiration is to turn on a PC and find a living digital world that has meaningful things to say, can help accomplish real tasks, and evolves for understandable reasons—without surrendering control of Windows to autonomous AI.
