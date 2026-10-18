@@ -1,5 +1,46 @@
 # Project GRID
 
+## GRID-REQ-004 - Hardware-generated city contract
+
+**Planned requirement - 2026-10-18; not implemented.** First-time world creation discovers motherboard, CPU, GPU, RAM, storage and network hardware, generates a unique city from those components, saves the resulting world and reuses that saved world on subsequent startups.
+
+### Creation and load contract
+
+1. Resolve the selected world's local save location before generation. If an initialized world exists, validate and load its saved layout, identities, simulation state and clock.
+2. Only for a genuinely new world, collect a read-only hardware profile covering all six component categories. Distinguish unavailable information from absent hardware; record discovery provenance and partial results.
+3. Normalize component ordering and units. Use the profile with a new per-world seed and versioned generation rules to create a bounded, valid city. Identical profile, seed and generator version must produce repeatable initial generation; hardware alone is not a globally unique identity.
+4. Persist a stable world ID, creation profile, seed, generator/schema versions, component-to-city associations, generated layout, entities and initial simulation state as one consistent initialization. Mark creation complete only after a successful durable commit.
+5. Later launches load the actual saved world, including subsequent edits and history. Do not regenerate it from the seed on startup. Start/pause behavior remains independent of the create/load decision, with no offline catch-up.
+6. Missing components, hardware upgrades, driver changes or changed discovery ordering must not replace a saved world. Detecting hardware changes may inform future explicit migration proposals; it is not authorization to rebuild.
+7. Unreadable, corrupt or incompatible saves enter a visible recovery/migration path. A failed load is not proof that no world exists. Interrupted initialization and concurrent launches must not create two authoritative worlds or overwrite a valid save.
+
+### Architecture and component mapping
+
+A read-only Windows discovery adapter supplies normalized data to a C# generation service; Core holds world data, Simulation operates it, and Persistence owns durable storage. Godot consumes saved layouts and snapshots and never generates a competing authoritative world. Tests use supplied hardware fixtures, not the developer's live machine.
+
+| Discovered category | Proposed city influence; exact mapping remains open |
+|---|---|
+| Motherboard | Overall connectivity and regional arrangement |
+| CPU | Processing/industry capacity and district structure |
+| GPU | Graphics/visual-computation facilities and landmarks |
+| RAM | Memory/research areas and bounded initial scale |
+| Storage | Archive/storage areas, with multiple devices represented coherently |
+| Network hardware | Gateways and communications connections |
+
+These are semantic mappings, not an assertion that Windows exposes precise physical board geometry. Motherboard layout images are artistic references, not authoritative measurements. Integrated/discrete GPUs, multiple disks/adapters, virtual adapters and unavailable motherboard data need explicit normalization/fallback rules. Discovery does not scan network peers or read user files. Store only the local inventory fields needed for generation; raw serial numbers and MAC addresses are not required for world identity.
+
+Generation must honor the existing architecture, readable streets, human-scale neighborhoods and atmosphere guides. Capacity influences are bounded; more hardware must not imply unlimited citizens or assets. Live load/temperature/traffic telemetry can later affect fictional activity through separate rules, but must not continually reshape or regenerate the city.
+
+### Acceptance and unresolved design choices
+
+- First creation covers all six hardware categories, produces a valid hardware-influenced layout and saves it before normal world use.
+- Save, close and reopen preserve layout, entity IDs, memberships, edited values and simulation time without invoking generation again.
+- Repeatable fixture tests verify canonical ordering, seed/version determinism and profile-sensitive output. Distinct worlds have distinct saved identities; visually different output is a design goal, not a guarantee of globally unique geometry.
+- Test partial discovery, unsupported APIs, multiple components, hardware changes, corrupt saves, failed writes and simultaneous initialization.
+- Exact discovery APIs, field schema, component deduplication, fallback UX, scale limits and mapping algorithms remain decisions to implement and verify.
+
+The existing fixed Genesis factory remains the implemented baseline and a useful test fixture. A Grid.Persistence project scaffold exists, but discovery, generation and durable world reuse are still planned. Checklist 2.6 tracks implementation; Phase 7 renders the saved result and Phase 8 integrates lifecycle behavior.
+
 ## Implementation status - 2026-10-17
 
 Implemented scope is the headless .NET world, fixed-step clock/engine, extensible terminal and post-Genesis editing API. The broader architecture, sample interfaces, communications commands, persistence, host integration, autonomy and renderer below remain targets unless explicitly identified as implemented. The master checklist controls milestone scope; the original broad prototype proposal is not the acceptance scope of the released Genesis tag.
@@ -422,7 +463,7 @@ Use database transactions, migrations, indexes, and suitable SQLite WAL settings
 Current startup is manual through dotnet run and creates a fresh world, paused unless --start is supplied. There is no Windows startup service or saved-world recovery yet.
 
 1. User logs in to Windows and the Grid background host starts.
-2. Grid validates persistent data and loads the latest consistent saved state.
+2. Grid validates persistent data and loads the latest consistent saved state; only genuinely new worlds use the GRID-REQ-004 hardware discovery, generation and durable initialization flow. Failed loads use recovery rather than regeneration.
 3. The host establishes read-only telemetry subscriptions or polling.
 4. The simulation engine starts its clock and agent scheduler.
 5. RELAY and ARCHON can offer an optional concise startup briefing.
@@ -648,7 +689,7 @@ Proposed MVP scale:
 The preceding sections describe the desired concept and recommended implementation, not an already finished product. These items still require explicit decisions or measurements:
 
 1. **Visual style:** faithful TRON-like neon imagery versus an original visual identity inspired by digital circuits.
-2. **World size and procedural generation:** fixed starter city versus expanding generated neighborhoods.
+2. **World size and procedural generation:** GRID-REQ-004 selects hardware-informed first creation and saved-world reuse. Exact mappings, scale limits, fallback behavior and later neighborhood expansion remain open; fixed Genesis generation remains the implemented baseline.
 3. **Resource mechanics:** exact definitions, production/consumption equations, and recovery rules.
 4. **Agent AI:** amount of deterministic utility-based logic versus local-model-assisted planning.
 5. **Dialogue model:** local runtime, model size, hardware budget, and fallback when unavailable.

@@ -1,5 +1,17 @@
 # PROJECT GRID — City Design & Architectural Style Guide
 
+## GRID-REQ-004 - Hardware-informed city composition (planned, 2026-10-18)
+
+On first-time world creation, discover motherboard, CPU, GPU, RAM, storage and network hardware and use them to procedurally generate a unique city. Save the resulting layout and reuse the world on later startups; the viewer must not generate a new city when it opens. See the [generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract).
+
+Proposed translation: motherboard connectivity guides the city framework; CPU influences processing districts; GPU influences visual-computation facilities; RAM influences memory/research areas; storage influences archives; network adapters influence gateways. These are initial design proposals, not implemented mappings or literal physical measurements. Precise component placement is not assumed discoverable.
+
+Preserve Digital European Classicism: human-scale streets, ordinary neighborhoods, restrained landmarks, stone/material palettes and useful urban functions. Hardware-informed macro layout must still produce connected, navigable streets and coherent blocks. It must not turn every building into an exposed chip or replace the existing visual direction with a circuit-board diagram. Bound district/detail counts independently of raw device capacity.
+
+The motherboard layout and CPU images in Design Concepts/World remain inspiration. They neither implement the feature nor require one particular host layout. Future Godot scenes should represent saved semantic layout data, stable entity IDs and component associations. The current five logical Genesis districts remain the implemented baseline; procedural city geometry is planned.
+
+Hardware upgrades do not redraw an established city. Any future expansion/migration must be explicit and preserve existing identities and history.
+
 ## Implementation status - 2026-10-17
 
 The runtime currently contains five logical districts and twenty citizens; no Godot city or navigation geometry is implemented. Administrative district edits transfer membership immediately, without a travel route. Future city views should consume engine snapshots and represent actual state changes; the visual districts below remain design targets.

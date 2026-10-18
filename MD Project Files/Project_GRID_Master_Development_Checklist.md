@@ -1,5 +1,15 @@
 # Project GRID — Master Development Checklist
 
+## Documentation integration - 2026-10-18
+
+GRID-REQ-004 is planned: first-time world creation discovers motherboard, CPU, GPU, RAM, storage and network hardware, generates a unique city using those components, and saves the resulting world for reuse on later startups. Section 2.6 tracks the work; no implementation is claimed. The [design specification](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract) is the shared contract for all eight documents.
+
+The user identified this repository's MD Project Files folder as the supplied document location. Its current eight overview/checklist/design/development/storage/city/environment/fashion documents are the integration baseline. Older Downloads copies were compared and contain no GRID-REQ-004; they were not used to overwrite newer repository content. There is no separate updated copy in that location to merge against. The explicit requirement in the user's message supplies the new functionality.
+
+Preserved all existing completed checklist entries, historical test results, editing/session contracts, newer concept images and source changes. Grid.Persistence now exists as a project scaffold (commit 42dc69a); its presence does not complete the pending persistence layer, SQLite integration or save/load items. This update changes Markdown only and does not rerun or claim new runtime tests.
+
+Resolved planning overlaps: fixed Genesis generation remains the implemented baseline; hardware-derived first creation is future work. Existing saves take priority over regeneration, and hardware does not override the established visual guides. Exact component mappings, discovery APIs and fallback policy remain open design decisions.
+
 ## Implementation status - 2026-10-17
 
 Documentation reconciled on 2026-10-17 against local HEAD 0b659e6 and current working-tree changes. Genesis 1.1-1.8 is complete; 1.9.1-1.9.2 are completed designs and 1.9.3 is implemented. Section 1.10 live view remains unchecked. Current solution verification passed 117 tests (8 Core, 85 Simulation, 24 Terminal). Historical completion counts below describe their original verification dates, not the current total.
@@ -316,6 +326,8 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ## 2.1 Persistence architecture
 
+Repository update: Grid.Persistence project/Class1 scaffold exists. The layer implementation and integrations below remain pending.
+
 - [ ] Create persistence layer/project when needed
 - [ ] Select and integrate SQLite
 - [ ] Design tables for districts, programs and resources
@@ -362,6 +374,29 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - [ ] Test no offline catch-up
 - [ ] Test invalid or missing database behavior
 - [ ] Verify persistent world runs without graphics or AI
+
+---
+
+## 2.6 Hardware-generated first-time world creation (GRID-REQ-004)
+
+**Planned - 2026-10-18; no implementation completed by this documentation update.** Coordinate with 2.1-2.2 persistence; do not change completed Genesis criteria or the current fixed factory.
+
+- [ ] Define a read-only host discovery adapter for motherboard, CPU, GPU, RAM, storage and network hardware
+- [ ] Specify normalized profile fields, units, stable ordering, multiple-device handling and recorded partial-discovery fallbacks
+- [ ] Keep local adapter discovery separate from network scanning, user-file access and live telemetry
+- [ ] Define bounded component-to-city mappings that preserve the city, atmosphere and fashion design guides
+- [ ] Implement headless C# generation using a normalized creation profile, per-world seed and generator version
+- [ ] Persist world ID, creation profile, seed, versions, component associations, generated layout, entities and simulation state atomically
+- [ ] Mark first creation complete only after durable save; handle simultaneous initialization without duplicate authoritative worlds
+- [ ] Load the actual saved world on later startups instead of rerunning generation, preserving edits, identities, memberships and clock state
+- [ ] Preserve established worlds after hardware upgrades, missing devices, changed drivers or changed discovery order
+- [ ] Distinguish genuinely absent saves from corrupt, inaccessible or incompatible saves; recover or migrate without silent replacement
+- [ ] Keep explicit new-world creation separate from normal startup and preserve prior worlds/history
+- [ ] Test deterministic fixtures, profile-sensitive generation, partial discovery, multiple devices and bounded world size
+- [ ] Test first creation and reopen, changed-hardware reuse, interrupted saves, full disk, corrupt data and concurrent initialization
+- [ ] Add completion notes with actual implementation and verification evidence when finished
+
+**Later integration:** Phase 7 renders saved layouts; Phase 8 startup uses this same create/load decision. GPU or hardware capacity must not require graphics or AI for headless generation. Hardware details are provenance, not authentication; persisted world IDs do not preserve old session/preview validity after restart.
 
 ---
 
@@ -633,6 +668,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ## 7.1 Godot foundation
 
+- [ ] Render the persisted GRID-REQ-004 city layout without regenerating or taking ownership of authoritative world state
 - [ ] Create Godot .NET viewer project
 - [ ] Establish local communication with C# engine
 - [ ] Render existing world state instead of simulating separately
@@ -699,6 +735,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ## 8.1 Windows lifecycle
 
+- [ ] Integrate GRID-REQ-004 first creation versus saved-world loading; hardware changes and failed loads must not silently regenerate the city
 - [ ] Run GRID headless at Windows sign-in if enabled
 - [ ] Allow independent startup and shutdown of viewer
 - [ ] Handle Windows sleep and wake

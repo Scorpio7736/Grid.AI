@@ -1,5 +1,15 @@
 # Project GRID — Program Fashion & Uniform Style Guide
 
+## GRID-REQ-004 - Program identity in hardware-generated cities (planned, 2026-10-18)
+
+First-time creation will discover motherboard, CPU, GPU, RAM, storage and network hardware and generate a unique city from those components. That world must be saved and reused on later startups. Discovery, generation and persistent reuse are not implemented; see the [generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract).
+
+The generated city changes the setting, not the approved wardrobe rules. Preserve civilian coats, formal agent silhouettes, materials and restrained luminous seams. Component-themed districts may inform future occupational accents, but such variants remain art proposals and must stay consistent with the existing uniform vocabulary.
+
+Hardware does not grant security roles, choose an authenticated Master Control identity, or make names/occupations into capabilities. Program identities, memberships and edited values must survive saved-world reload. Future persistent appearance choices should also be retained rather than randomized each startup.
+
+Hardware replacement must not recreate citizens or reset uniforms. Existing fashion/head/eye references and their newer repository organization remain intact. Runtime wardrobe generation and rendering remain deferred; documenting this requirement implements neither.
+
 ## Implementation status - 2026-10-17
 
 The program model and validated name/occupation/status/energy/district editing API are implemented; wardrobe rendering and uniform assignment remain planned. Display names, occupations, uniforms, and role colors confer no permissions. Future visual updates should read authoritative snapshots; login and terminal editing controls remain deferred.

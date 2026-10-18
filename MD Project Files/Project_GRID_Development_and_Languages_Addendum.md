@@ -1,5 +1,17 @@
 # Project GRID — Development Roadmap & Language Architecture
 
+## GRID-REQ-004 - Implementation sequencing (planned, 2026-10-18)
+
+First-time world creation must discover motherboard, CPU, GPU, RAM, storage and network hardware, procedurally generate a unique hardware-informed city, and save it. Later startups must load and reuse that world rather than regenerate it. See the [generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract).
+
+- **Phase 2:** define the normalized read-only discovery contract and test fixtures; establish durable creation/load storage; implement versioned C# generation and the initialize-once transaction. Store the creation profile, seed, world ID, versions, generated layout and evolving state.
+- **Phase 7:** render the saved city using the existing architecture, atmosphere and fashion guides. Rendering must not own generation or persistence.
+- **Phase 8:** connect startup, recovery and hardware-change reporting to the same saved-world flow. A hardware change cannot silently rebuild an existing city.
+
+Keep the current terminal live-view priority and completed Genesis work intact. The fixed Genesis factory remains the implemented baseline. Grid.Persistence now has a project/Class1 scaffold; database integration, save/load and GRID-REQ-004 remain unimplemented. C# owns discovery orchestration, validation and generation; Python, C++, AI and Godot are not dependencies for initial creation. Procedural world sizing must be bounded by explicit performance budgets.
+
+Implementation tests must cover deterministic profile/seed/version inputs, partial hardware discovery, multiple devices, first creation, reuse after restart and hardware changes, and recovery without replacing a valid world. No such tests are claimed to have run in this documentation update.
+
 ## Implementation status - 2026-10-17
 
 Genesis is implemented and tagged v0.1.0-genesis. Sections 1.9.1 and 1.9.2 completed design contracts; 1.9.3 now implements the validated editing API. The actual solution is Grid7736.slnx with root-level Grid.Core, Grid.Simulation, Grid.Terminal and their three matching test projects. Python/C++ integrations and the expanded layouts below remain proposals. Next is checklist 1.10 live view, followed by Phase 2 persistence.

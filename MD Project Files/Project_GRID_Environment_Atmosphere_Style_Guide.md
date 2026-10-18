@@ -1,5 +1,15 @@
 # Project GRID — Environment & Atmosphere Style Guide
 
+## GRID-REQ-004 - Atmosphere across generated worlds (planned, 2026-10-18)
+
+First creation will discover motherboard, CPU, GPU, RAM, storage and network hardware, procedurally generate a unique city using them, and save it for reuse on later startups. This remains planned; current Genesis has no generated city or persistence. See the [generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract).
+
+Hardware influences city structure and district composition; it does not override GRID-ENV-001 Eternal Autumn Evening. Retain the fixed early-evening, mid-autumn palette, wet surfaces, restrained light and existing weather direction across generated layouts. Adapt placement of lighting and atmosphere volumes to the saved geometry without changing the intended mood.
+
+Keep environmental presentation time separate from simulation time and the host clock. Live CPU/GPU load or network traffic is not a regeneration trigger or a new day/night cycle. Future bounded activity effects must represent genuine simulation/telemetry events.
+
+Save persistent world/layout choices and any durable environmental choices needed for continuity. Reloading the viewer or upgrading hardware must not randomize the city or its established visual identity. Transient presentation effects can remain renderer concerns and must not mutate authoritative world layout. Phase 7 implements presentation after Phase 2 provides durable generated world data.
+
 ## Implementation status - 2026-10-17
 
 The fixed-step simulation clock is implemented. Simulation elapsed time, UTC edit-receipt timestamps, and future presentation refresh/lighting are distinct. The --start option starts simulation ticking; it does not implement weather, daylight, or a renderer. Eternal Autumn Evening remains the visual direction. Terminal live view and its recent-events buffer are planned in checklist 1.10.

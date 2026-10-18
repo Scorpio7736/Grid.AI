@@ -1,5 +1,19 @@
 # Project GRID — Local-First Architecture and Storage Planning
 
+## GRID-REQ-004 - Persistent hardware-generated worlds (planned, 2026-10-18)
+
+First-time creation must discover motherboard, CPU, GPU, RAM, storage and network hardware locally, generate a unique city from that profile and save the resulting world. Subsequent startups load the saved city and evolving simulation state; they do not regenerate it. The [generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract) defines creation versus recovery.
+
+Persist the stable world ID, creation hardware profile, per-world seed, generator/schema versions, component-to-city associations, generated layout, entities and clock/state together. Keep creation provenance separate from later host observations. Backups and migrations must preserve that provenance and the actual world, not just enough inputs to generate a new approximation.
+
+Hardware changes, unavailable devices or a changed driver must not invalidate an existing civilization. Loading a saved world must not require successful current hardware discovery. Unknown or inaccessible hardware during first creation needs an explicit recorded fallback policy; corrupted or inaccessible storage must never be mistaken for a first launch.
+
+Initialization must commit atomically and avoid competing creation by simultaneous processes. On disk-full or interrupted-write failure, preserve existing saves and report an incomplete creation; do not advertise persistence success. Durable completion must precede treating the world as initialized.
+
+Discovery and storage remain local-first and need no paid API or AI model. Network hardware discovery is local adapter inventory, not network scanning. Retain only fields required by generation; avoid raw serial/MAC identifiers. The 20 GB budget remains a planning target; cap generated detail and include layout/provenance data in future quota accounting.
+
+**Current status:** the application still creates a fresh in-memory Genesis world per run. Grid.Persistence exists as a scaffold only. No discovery, city generator, SQLite persistence or saved-world reuse is implemented. Phase 2 checklist 2.6 adds these requirements without changing historical Genesis completion.
+
 ## Implementation status - 2026-10-17
 
 Current execution is an in-memory .NET terminal with five districts and twenty citizens. Every launch creates a fresh world. SQLite, save/load, durable audit, model downloads, quota enforcement and storage governance remain planned. The 20 GB budget and larger populations below are estimates, not measured installation sizes or enforced limits. LastTick retains only the latest tick result; edit receipts are returned to callers and are not stored history. Checklist 1.10 plans a bounded recent-events buffer before Phase 2 persistence. Persisted program revisions must not make previews from an old world/session reusable.

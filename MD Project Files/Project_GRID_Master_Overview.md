@@ -1,5 +1,17 @@
 # Project GRID — Master Overview
 
+## GRID-REQ-004 - Hardware-generated city (planned, 2026-10-18)
+
+On first-time world creation, GRID must discover the host computer's motherboard, CPU, GPU, RAM, storage and network hardware, then procedurally generate a unique city using those components. Save the resulting world and reuse it on subsequent startups; do not regenerate the city every launch.
+
+Hardware informs the city's initial structure, while C# remains authoritative for world state. Generation runs without Godot, AI or cloud access. The viewer later presents the saved city using the established Digital European Classicism and Eternal Autumn Evening direction. Component-to-district mappings are proposed design choices, not implemented behavior or a literal reconstruction of a circuit board.
+
+Existing saves take precedence over current hardware discovery. Hardware upgrades or changed enumeration must not silently replace an established civilization. A deliberate new-world operation is separate from loading, and corrupt/unreadable saves require recovery rather than automatic replacement.
+
+**Current boundary:** Genesis still uses its fixed five-district/twenty-citizen factory and creates an in-memory world each launch. Hardware discovery, procedural city generation and persistent reuse are not implemented. The newer Grid.Persistence scaffold is not save/load functionality. Preserve the completed Genesis release and editing API history.
+
+Plan discovery, generated world data and durable first creation in Phase 2, then rendering in Phase 7 and startup integration in Phase 8. See [the generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract) and checklist section 2.6.
+
 ## Implementation status - 2026-10-17
 
 Genesis world management, clock, engine and terminal are implemented. Post-release work adds the validated editing API and optional --start startup. Login as Master Control or an agent, terminal editing controls, live view, persistence, autonomous jobs, host agents, AI, voice and 3D remain planned. The vision below describes the target product; use the linked implementation record for current behavior.
