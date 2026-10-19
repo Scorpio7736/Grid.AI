@@ -1,5 +1,11 @@
 # Project GRID — Master Development Checklist
 
+## Program behavior completion - 2026-10-19
+
+**3.1 implemented and verified.** Non-demo residents now have deterministic needs/goals/actions. Applications reflect fresh or unknown observations; explicitly configured Agent/Special residents perform resource-gated simulated occupation work/rest on simulation-time shifts. Schema v5 persists their routines, sourced budgets and progress without restoring live observations or adding offline work. Use behaviors and inspect for last-tick behavior. No OS task execution, movement or named agent services are claimed.
+
+See [Program Needs and Behavior](Project_GRID_Program_Behavior.md) for policy, APIs, limits and completion evidence: **278 Release tests passed**, build zero warnings/errors, disposable terminal smoke passed. Debug output was locked by running user sessions, which were left running. Earlier dated deferred-behavior/schema statements describe previous milestones; existing history and completed scope are preserved.
+
 ## Application resident completion - 2026-10-19
 
 **2.7 / 2.7.1 implemented and verified:** production population now follows current-session windowed executable groups through read-only discovery and serialized lifecycle reconciliation. Application residents are transient; Agent/Special residents persist in schema v4. Before production conversion, legacy fictional citizens are preserved in a uniquely named validated archive. City/layout and clock remain intact. Unknown resource requirements display unknown condition; no host-control authority is implied.
@@ -550,12 +556,20 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 3.1 Program needs and behavior
 
-- [ ] Implement the approved resource-based energy/condition policy for application residents and persistent agents; do not use movement/open duration as arbitrary drain
-- [ ] Implement persistent-agent/special-program work/rest policies and observation-grounded application activity
-- [ ] Add needs, goals and action priorities
-- [ ] Define legal states and state transitions
-- [ ] Implement occupations and simple daily work
-- [ ] Use deterministic state machines or utility scores
+- [x] Implement the approved resource-based energy/condition policy for application residents and persistent agents; do not use movement/open duration as arbitrary drain
+- [x] Implement persistent-agent/special-program work/rest policies and observation-grounded application activity
+- [x] Add needs, goals and action priorities
+- [x] Define legal states and state transitions
+- [x] Implement occupations and simple daily work
+- [x] Use deterministic state machines or utility scores
+
+**Completion notes - 2026-10-19**
+
+- Added a deterministic priority state machine for application observation and persistent-resident needs/goals, shifts, resource waits, work bursts and rest. Applications never acquire fictional work; Agent/Special routines require explicit trusted configuration and sourced headroom budgets.
+- Administrator, Archivist, Researcher and Technician routines track simulated work units. Work/rest durations, shift windows and 60/40 resource hysteresis are explicit. Unknown evidence freezes progress. No arbitrary energy drain, offline catch-up, movement, OS actions or named agent services were introduced.
+- Schema v5 persists routine/configuration and progress atomically while omitting application behavior. Restored routines wait for fresh measurements. Added transition/completion history, revision tracking, read-only behaviors and inspection details.
+- Verification: 278 tests passed in Release (14 Core, 125 Simulation, 79 Persistence, 60 Terminal); Release build zero warnings/errors. Tests cover state selection, cycles, shifts, cancellation, overflow rollback, persistence/recovery and UI. A disposable real terminal step/reopen preserved tick 1 and showed observation-only applications.
+- Debug binaries were locked by running GRID/Visual Studio sessions; they were not stopped. Added the existing test-only crash probe to the solution to ensure matching Release configuration. See [Program Needs and Behavior](Project_GRID_Program_Behavior.md) for evidence and scope. Changes are local, not a release/publication claim.
 
 ## 3.2 Movement and occupations
 

@@ -23,6 +23,16 @@ public sealed partial class GridSimulationEngine
             program.Commit(program.Values, saved.Revision);
         }
         var engine = new GridSimulationEngine(world, snapshot.TickDuration, timeProvider);
+        foreach (var saved in snapshot.Programs.Where(p => p.Behavior is not null))
+        {
+            var behavior = saved.Behavior!;
+            if (behavior.Routine is { } routine)
+            {
+                behavior = behavior with { Routine = Behavior.ResidentBehavior.Copy(routine) };
+                engine.requirements[saved.Id] = behavior.Routine.Requirements.ToArray();
+            }
+            engine.behaviors[saved.Id] = behavior;
+        }
         engine.clock.Restore(snapshot.TickCount);
         return engine;
     }
@@ -38,6 +48,11 @@ public sealed partial class GridSimulationEngine
         var programs = new Dictionary<Guid, Guid>();
         foreach (var p in snapshot.Programs)
         {
+            if (p.Behavior is { } behavior)
+            {
+                if (p.Kind == ResidentKind.Legacy) throw new InvalidDataException("Demo residents cannot own routines.");
+                Behavior.ResidentBehavior.Validate(behavior, p.Kind);
+            }
             if (p.Application is { } a && (string.IsNullOrWhiteSpace(a.ApplicationKey) || a.ApplicationKey.Length > 128 ||
                 a.Incarnation == Guid.Empty || a.ObservedAtUtc.Offset != TimeSpan.Zero || a.Processes is null || a.Processes.Count is < 1 or > 4096 ||
                 a.Processes.Distinct().Count() != a.Processes.Count || a.WorkingSetBytes < 0 ||

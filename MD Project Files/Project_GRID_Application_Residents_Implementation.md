@@ -1,5 +1,11 @@
 # Project GRID - Application residents implementation
 
+## Program behavior completion - 2026-10-19
+
+**3.1 implemented and verified.** Non-demo residents now have deterministic needs/goals/actions. Applications reflect fresh or unknown observations; explicitly configured Agent/Special residents perform resource-gated simulated occupation work/rest on simulation-time shifts. Schema v5 persists their routines, sourced budgets and progress without restoring live observations or adding offline work. Use behaviors and inspect for last-tick behavior. No OS task execution, movement or named agent services are claimed.
+
+See [Program Needs and Behavior](Project_GRID_Program_Behavior.md) for policy, APIs, limits and completion evidence: **278 Release tests passed**, build zero warnings/errors, disposable terminal smoke passed. Debug output was locked by running user sessions, which were left running. Earlier dated deferred-behavior/schema statements describe previous milestones; existing history and completed scope are preserved.
+
 **2.7 and 2.7.1 implemented and verified - 2026-10-19.** This implements the initial GRID-REQ-005 population/persistence foundation. It does not implement autonomous named agents, login, task delegation or full application health diagnosis.
 
 ## Population and grouping policy v1

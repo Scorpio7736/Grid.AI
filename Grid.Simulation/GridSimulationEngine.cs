@@ -46,7 +46,7 @@ public sealed partial class GridSimulationEngine
         lock (gate)
         {
             var programs = world.Programs.Values.OrderBy(p => p.Name).ThenBy(p => p.Id)
-                .Select(p => new GridProgramSnapshot(p.Id, p.Name, p.Occupation, p.Energy, p.CurrentDistrictId, p.Status, p.Revision) { Kind = p.Kind, Application = CurrentBinding(p), Condition = CurrentCondition(p) })
+                .Select(p => new GridProgramSnapshot(p.Id, p.Name, p.Occupation, p.Energy, p.CurrentDistrictId, p.Status, p.Revision) { Kind = p.Kind, Application = CurrentBinding(p), Condition = CurrentCondition(p), Behavior = BehaviorOf(p) })
                 .ToArray();
             var districts = world.Districts.Values.OrderBy(d => d.Name).ThenBy(d => d.Id)
                 .Select(d => new GridDistrictSnapshot(d.Id, d.Name, d.Description,
@@ -190,6 +190,7 @@ public sealed partial class GridSimulationEngine
                 events.Add(new ProgramEnergyChanged(nextTick, nextTime, program.Id, program.Energy, energy));
             }
         }
+        var behaviorChanges = StageBehaviors(nextTime);
         events.Add(new SimulationTickCompleted(nextTick, nextTime, world.Programs.Count, world.Districts.Count));
         var result = new GridTickResult(nextTick, nextTime, events.AsReadOnly());
 
@@ -203,6 +204,7 @@ public sealed partial class GridSimulationEngine
         // 3. Apply staged changes, then expose events describing only the committed state.
         foreach (var change in changes)
             world.CommitProgram(change.Program, change.Program.Values with { Energy = change.Energy });
+        CommitBehaviors(behaviorChanges);
         lastTick = result;
         foreach (var change in events.OfType<ProgramEnergyChanged>())
             RecordEvent("Energy", change.ProgramId, world.GetProgram(change.ProgramId).Name,

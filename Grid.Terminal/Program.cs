@@ -44,6 +44,7 @@ try
     if (options.Start) engine.Start();
     var commands = DefaultCommands.Create(engine);
     CityCommand.Register(commands, engine);
+    BehaviorCommand.Register(commands, engine);
     if (store is not null) HistoryCommand.Register(commands, store);
     var telemetry = new HostTelemetryMonitor(new WindowsHostTelemetryProvider(), engine);
     await telemetry.SampleOnceAsync(shutdown.Token);

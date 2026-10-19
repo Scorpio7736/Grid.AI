@@ -31,7 +31,13 @@ public sealed partial class GridSimulationEngine
     {
         var copy = value.ToArray();
         new ResourceConditionPolicy().Evaluate([], copy, timeProvider.GetUtcNow());
-        lock (gate) { _ = world.GetProgram(id); requirements[id] = copy; conditions.Remove(id); }
+        lock (gate)
+        {
+            _ = world.GetProgram(id);
+            if (behaviors.GetValueOrDefault(id)?.Routine is not null)
+                throw new InvalidOperationException("Use ConfigureRoutine to change a configured routine budget.");
+            requirements[id] = copy; conditions.Remove(id);
+        }
     }
 
     public void ReconcileApplications(ApplicationObservation observation)
@@ -72,7 +78,7 @@ public sealed partial class GridSimulationEngine
                 }
                 else if (binding.Processes.All(exited.Contains) || observation.Complete && (found is not null || missingApplications.GetValueOrDefault(p.Id) >= 1))
                 {
-                    world.RemoveProgram(p.Id); missingApplications.Remove(p.Id); requirements.Remove(p.Id); conditions.Remove(p.Id);
+                    world.RemoveProgram(p.Id); missingApplications.Remove(p.Id); requirements.Remove(p.Id); conditions.Remove(p.Id); behaviors.Remove(p.Id);
                     RecordEvent("ApplicationExit", p.Id, p.Name, binding.Processes.All(exited.Contains) ? "Observed process lifetimes confirmed exited." : found is null ? "Absent from two complete observations." : "Previous observed process lifetime ended; new incarnation observed.",
                         System.Text.Json.JsonSerializer.Serialize(new { binding.Incarnation, source = observation.Source }));
                 }

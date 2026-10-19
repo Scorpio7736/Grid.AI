@@ -7,6 +7,7 @@ public sealed record GridProgramSnapshot(Guid Id, string Name, string Occupation
     public ResidentKind Kind { get; init; } = ResidentKind.Legacy;
     public ApplicationBinding? Application { get; init; }
     public Resources.ResourceCondition? Condition { get; init; }
+    public Behavior.ResidentBehavior? Behavior { get; init; }
 }
 public sealed record GridDistrictSnapshot(Guid Id, string Name, string Description,
     IReadOnlyList<Guid> ProgramIds, IReadOnlyDictionary<string, float> Resources);

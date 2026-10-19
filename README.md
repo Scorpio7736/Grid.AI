@@ -1,5 +1,11 @@
 # GRID7736
 
+## Program behavior - 3.1 (2026-10-19)
+
+Use `behaviors` to see last-tick needs, goals, priorities and simulated work units. Applications reflect observations; configured agents/special programs use sourced resource budgets and deterministic simulated work/rest schedules. Schema v5 preserves routine progress without offline advancement. Routine configuration is a trusted service API, not an unauthenticated terminal command. Movement and real task execution remain future work.
+
+Verification: **278 Release tests passed**, build zero warnings/errors. See [Program Needs and Behavior](MD%20Project%20Files/Project_GRID_Program_Behavior.md) for details. Debug output was locked by running GRID/Visual Studio sessions; verification used Release without stopping them.
+
 ## Application population - 2.7 (2026-10-19)
 
 Normal startup discovers current-session windowed executable groups and reconciles starts/exits every two seconds, including while paused. Applications are transient; Agent/Special residents persist. Multiple windows and same-executable helpers share one representative. Background-only services, cross-executable helpers and per-window identity are outside the initial policy.
@@ -46,6 +52,7 @@ The application flag is case-insensitive. `--` passes it through dotnet run. `--
 
 | Command | Behavior |
 |---|---|
+| `behaviors` | Show last-tick needs, goals, priorities and simulated work progress. |
 | `help` | Show registered commands and usage. |
 | `city` | Inspect the saved hardware-generated layout and discovery coverage; legacy worlds remain preserved. |
 | `status` | Show clock state, tick count, simulation time, and population. |
