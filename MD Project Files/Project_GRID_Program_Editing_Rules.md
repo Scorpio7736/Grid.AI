@@ -45,7 +45,7 @@ Version 1 supports one-time state assignments only. An edit changes the present 
 - Status remains until another authorized command or future behavior system changes it.
 - District remains until a later move. An administrative relocation does not create a travel route.
 - A future persistent override would need a separate explicit policy, duration/release behavior, and visible indicator. Pinning is deferred; it must not be inferred from an ordinary edit.
-- "One-time" does not mean lost during save: once Phase 2 persistence exists, the current edited state is saved normally. Today's Genesis runtime still has no save support.
+- "One-time" does not mean lost during save: section 2.2 saves current edited values and revisions normally. Edit receipts and live-event summaries remain transient until durable audit is implemented.
 
 Example: editing a Working program to energy 75 immediately yields 75; its next one-second working tick yields 74. Editing its status to Recharging lets later ticks restore energy according to the engine rules.
 
@@ -65,7 +65,7 @@ An unrelated citizen changing, or a tick that leaves the target program unchange
 
 The terminal must not pause or resume simulation implicitly. To avoid repeated conflicts on active citizens, the User can explicitly pause, prepare and apply an edit, then resume. Other sessions can still edit while paused, so revision checks remain necessary.
 
-Previews are scoped to a world/session instance and must not survive process restart or world replacement. A future persisted revision does not make an old session preview reusable. The exact preview-token/confirmation command syntax belongs to later API/UI implementation.
+Previews are scoped to a world/session instance and must not survive process restart or world replacement. A persisted revision does not make an old session preview reusable. The exact preview-token/confirmation command syntax belongs to later API/UI implementation.
 
 ## 5. Invalid input and atomic results
 
@@ -83,7 +83,7 @@ Implemented result categories (prepare returns `Prepared` with a preview and no 
 | `Conflict` | Target changed since preview or preview belongs to a different world/session instance. |
 | `Cancelled` | Request cancelled before commit; no partial application. |
 
-Check access before disclosing protected target details. Once a commit starts, complete it atomically rather than cancelling midway. An edit does not advance simulation time or replace the engine's last tick result; it produces a distinct administrative edit result for later audit integration. Durable audit and persistence remain future work.
+Check access before disclosing protected target details. Once a commit starts, complete it atomically rather than cancelling midway. An edit does not advance simulation time or replace the engine's last tick result; it produces a distinct administrative edit result for later audit integration. Durable audit remains future work; section 2.2 persists the resulting world values and revisions.
 
 ## 6. Expandable field metadata
 

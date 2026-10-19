@@ -53,7 +53,7 @@ public sealed partial class GridSimulationEngine
                     new System.Collections.ObjectModel.ReadOnlyDictionary<string, float>(
                         new Dictionary<string, float>(d.Resources)))).ToArray();
             return new(clock.TickCount, clock.ElapsedSimulationTime, clock.TickDuration, clock.IsRunning,
-                Array.AsReadOnly(programs), Array.AsReadOnly(districts));
+                Array.AsReadOnly(programs), Array.AsReadOnly(districts)) { WorldId = world.Id };
         }
     }
 

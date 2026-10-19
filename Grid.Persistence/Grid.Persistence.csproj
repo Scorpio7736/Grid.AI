@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Grid.Core\Grid.Core.csproj" />
+    <ProjectReference Include="..\Grid.Simulation\Grid.Simulation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -10,10 +10,13 @@ public sealed class GridWorld
     // Trusted engine observer; invoked under SyncRoot only after a real direct transfer.
     internal event Action<GridProgram, Guid, Guid>? ProgramMoved;
     public Guid InstanceId { get; } = Guid.NewGuid();
+    public Guid Id { get; }
     public IReadOnlyDictionary<Guid, GridProgram> Programs { get; }
     public IReadOnlyDictionary<Guid, GridDistrict> Districts { get; }
-    public GridWorld()
+    public GridWorld(Guid? id = null)
     {
+        Id = id ?? Guid.NewGuid();
+        if (Id == Guid.Empty) throw new ArgumentException("World ID must not be empty.", nameof(id));
         Programs = new ReadOnlyDictionary<Guid, GridProgram>(programs);
         Districts = new ReadOnlyDictionary<Guid, GridDistrict>(districts);
     }

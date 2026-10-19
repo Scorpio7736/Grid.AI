@@ -16,7 +16,7 @@ Install the .NET 10 SDK, then from this repository:
 dotnet run --project Grid.Terminal/Grid.Terminal.csproj
 ```
 
-The world starts paused with a one-second tick duration. Each run creates a fresh in-memory world; saving and restoration are planned for Phase 2. Citizens initially remain Idle, so ticking advances simulation time without inventing activities or energy changes.
+The world starts paused with a one-second tick duration. Normal launches create and save Genesis once, then load the same world from `%LOCALAPPDATA%\GRID\world.db`. Autosave runs every 30 seconds; exit, EOF and Ctrl+C save after the scheduler stops. Restored worlds start paused unless `--start` is supplied, with no offline time advancement. Citizens initially remain Idle, so ticking advances simulation time without inventing activities or energy changes.
 
 To start automatic ticks immediately:
 
@@ -40,7 +40,7 @@ The application flag is case-insensitive. `--` passes it through dotnet run. `--
 | `pause` | Stop automatic advancement. |
 | `live` | Live status and recent events; Q/Esc returns to commands without pausing. |
 | `step` or `tick` | Advance exactly once while paused. |
-| `exit` | Cancel and await the scheduler, then exit. |
+| `exit` | Stop the scheduler, finish autosave, save the world, then exit. |
 
 Commands and name lookups ignore case. Full GUIDs disambiguate duplicate names. Multiword names can be quoted or supplied as the remaining words:
 
@@ -91,7 +91,7 @@ The engine now exposes PrepareEdit and ApplyEdit with typed values from Grid.Sim
 
 Administrative editing denies access by default. A trusted IProgramEditAuthorizer must supply a live authorization lease through commit; no production login provider or terminal edit command exists yet. Test authorization providers live only in TestSupport and are compiled only into test assemblies.
 
-World-owned program setters now reject direct changes. Initialize programs before adding them to a world; use validated engine editing for later administrative changes. Ticks and district transfers update revisions so stale previews cannot overwrite newer state. Receipts are returned in memory; durable audit and save/load remain future work.
+World-owned program setters now reject direct changes. Initialize programs before adding them to a world; use validated engine editing for later administrative changes. Ticks and district transfers update revisions so stale previews cannot overwrite newer state. Receipts are returned in memory; current edited values and revisions are saved by section 2.2; durable audit remains future work.
 
 See the Program Editing Rules and Session Context and Authorization documents under MD Project Files for the contracts. Section 1.10 is implemented: see [Terminal Live View](MD%20Project%20Files/Project_GRID_Terminal_Live_View.md) for paging controls, event retention, console fallback and extension details. On 2026-10-18, all 140 tests passed and the solution built with zero warnings/errors.
 
@@ -99,6 +99,18 @@ See the Program Editing Rules and Session Context and Authorization documents un
 
 Grid.Persistence now supplies a file-backed SQLite schema and transactional version migrations. `SqliteGridDatabase.Initialize()` explicitly creates schema; `OpenExisting()` validates/upgrades an initialized file and never creates a missing database. Tables cover worlds, districts, programs, district resources and simulation clock state. Foreign keys and constraints enforce stored relationships and basic invariants.
 
-The terminal still creates a fresh in-memory world. Engine save/load, automatic saves, recovery and durable event/audit writing are not integrated yet; those remain 2.2 and later. See [Persistence Architecture](MD%20Project%20Files/Project_GRID_Persistence_Architecture.md) for schema and extension details.
+Section 2.2 now connects the terminal to transactional saves, validated restoration, periodic saves and explicit backup recovery. Durable event/audit writing remains section 2.3 and later. See [Persistence Architecture](MD%20Project%20Files/Project_GRID_Persistence_Architecture.md) for schema and extension details.
 
 Verification on 2026-10-18: 171 solution tests passed (31 persistence cases); solution build succeeded with zero warnings/errors.
+
+## Save and recovery (Phase 2.2)
+
+Implemented and verified on 2026-10-18. Normal launches reuse `%LOCALAPPDATA%\GRID\world.db`, autosave every 30 seconds and save after the clock stops on exit, EOF or Ctrl+C. Restored worlds start paused unless `--start` is passed. World/program identities, revisions, memberships, resources and simulation time survive restart; powered-off time is never simulated.
+
+- `--world <path>` selects a separate world file in an existing folder.
+- `--recover` explicitly restores that file's validated `.backup`, preserving damaged files. Use it with the same `--world` path, or alone for the default world.
+- `--ephemeral` runs a disposable in-memory session; it cannot be combined with `--world` or `--recover`.
+- A second process cannot open the same world while the first holds its session lease.
+- Invalid saves stop startup rather than generating a replacement. Abrupt termination can lose changes since the last committed snapshot.
+
+Verification: **200 tests passed** (8 Core, 93 Simulation, 50 Terminal, 49 Persistence), with a successful real-terminal create/reopen/corruption/recovery smoke test using an isolated temporary database. See [Persistence Architecture](MD%20Project%20Files/Project_GRID_Persistence_Architecture.md) for recovery behavior and test limits. Durable event history (2.3), hardware-generated cities (2.6), login and Windows service integration remain planned.

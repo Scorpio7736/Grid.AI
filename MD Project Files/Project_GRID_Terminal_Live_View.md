@@ -41,7 +41,7 @@ Command registration returns a `LiveViewRequested` result. TerminalHost delegate
 
 LiveViewRenderer is pure formatting. ILiveTerminal separates console capabilities, keys and painting from engine and command logic. New committed action types should be recorded at their authoritative commit boundary, never inferred from a periodic screen diff. Future authenticated interfaces must filter state and events consistently before rendering; current live mode has the same unauthenticated world visibility as the existing Genesis commands. It does not establish a new permission policy.
 
-Durable event history, save/load and GRID-REQ-004 hardware-generated cities remain future work. Edit receipts retain their separate attribution contract; live event summaries are not replacements for receipts or durable audit.
+Section 2.2 now saves/restores world state and clock values, autosaves every 30 seconds (including during live view), and saves after shutdown. Autosave failures end the session through the same live-view cleanup path. Recent events and sequence IDs still reset on restart; durable event history and GRID-REQ-004 hardware-generated cities remain future work. Edit receipts retain their separate attribution contract; live event summaries are not replacements for receipts or durable audit.
 
 ## Verification
 

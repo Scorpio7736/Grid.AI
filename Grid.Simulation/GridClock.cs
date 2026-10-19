@@ -26,6 +26,15 @@ public sealed class GridClock
     /// <summary>Disables normal advancement without resetting simulation time.</summary>
     public void Pause() => IsRunning = false;
 
+    internal void Restore(long tickCount)
+    {
+        var elapsed = checked(tickCount * TickDuration.Ticks);
+        if (tickCount < 0) throw new ArgumentOutOfRangeException(nameof(tickCount));
+        TickCount = tickCount;
+        ElapsedSimulationTime = TimeSpan.FromTicks(elapsed);
+        IsRunning = false;
+    }
+
     /// <summary>Advances exactly one tick when running; returns false without changes when paused.</summary>
     public bool TryAdvance()
     {

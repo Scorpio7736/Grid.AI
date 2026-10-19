@@ -7,4 +7,7 @@ public sealed record GridDistrictSnapshot(Guid Id, string Name, string Descripti
     IReadOnlyList<Guid> ProgramIds, IReadOnlyDictionary<string, float> Resources);
 public sealed record GridSimulationSnapshot(long TickCount, TimeSpan ElapsedSimulationTime,
     TimeSpan TickDuration, bool IsRunning, IReadOnlyList<GridProgramSnapshot> Programs,
-    IReadOnlyList<GridDistrictSnapshot> Districts);
+    IReadOnlyList<GridDistrictSnapshot> Districts)
+{
+    public Guid WorldId { get; init; }
+}

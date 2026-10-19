@@ -4,7 +4,7 @@
 
 ## Persistence architecture update - 2026-10-18
 
-Section 2.1 is complete: SQLite schema v1, explicit initialization, existing-file validation, foreign keys and atomic migrations. The solution passes 171 tests (including 31 persistence tests), with zero build warnings/errors. Engine save/load, snapshots/recovery, durable audit and GRID-REQ-004 remain pending. See [Persistence Architecture](Project_GRID_Persistence_Architecture.md). Earlier totals below describe their original verification milestones.
+Section 2.1 is complete: SQLite schema v1, explicit initialization, existing-file validation, foreign keys and atomic migrations. At the 2.1 milestone, 171 tests passed (including 31 persistence tests), with zero build warnings/errors. Section 2.2 subsequently completed engine save/load, snapshots and recovery; durable audit and GRID-REQ-004 remain pending. See [Persistence Architecture](Project_GRID_Persistence_Architecture.md). Earlier totals below describe their original verification milestones.
 
 ## Live-view update - 2026-10-18
 
@@ -27,14 +27,14 @@ Section 1.10 is implemented. The full solution now passes 140 tests (8 Core, 93 
 
 ## Runtime and startup
 
-The .NET 10 solution `Grid7736.slnx` contains Grid.Core, Grid.Simulation, Grid.Terminal and Grid.Persistence, plus a matching test project for each. The factory uses seed 7736 and creates twenty citizens distributed across five districts, initially Idle with energy 100. Each process starts a fresh in-memory world.
+The .NET 10 solution `Grid7736.slnx` contains Grid.Core, Grid.Simulation, Grid.Terminal and Grid.Persistence, plus a matching test project for each. The factory uses seed 7736 and creates twenty citizens distributed across five districts, initially Idle with energy 100. Normal launches create and save Genesis once, then reload `%LOCALAPPDATA%\GRID\world.db`. Use --world <path> for a separate database, --recover for explicit validated backup restoration, or --ephemeral for a disposable in-memory world.
 
 ```powershell
 dotnet run --project Grid.Terminal/Grid.Terminal.csproj
 dotnet run --project Grid.Terminal/Grid.Terminal.csproj -- --start
 ```
 
-The first command starts paused; the second enables automatic ticking immediately. The flag is case-insensitive. Normal terminal commands are `help`, `status`, `programs`, `districts`, `inspect`, `start`, `pause`, `live`, `step`/`tick`, and `exit`. There is no login or edit command yet. Enter `live` for updating state/events; Q/Esc returns to commands without changing running/paused state. Exit, EOF and Ctrl+C cancel and await the scheduler. A blocked console read can remain on a background thread until input or process exit. Scheduler failures are reported with a nonzero result.
+The first command starts paused; the second enables automatic ticking immediately. The flag is case-insensitive. Normal terminal commands are `help`, `status`, `programs`, `districts`, `inspect`, `start`, `pause`, `live`, `step`/`tick`, and `exit`. There is no login or edit command yet. Enter `live` for updating state/events; Q/Esc returns to commands without changing running/paused state. Exit, EOF and Ctrl+C cancel and await the scheduler and autosave before a final save. Autosave runs every 30 seconds; failures are visible and return a nonzero result. A blocked console read can remain on a background thread until input or process exit. Scheduler failures are reported with a nonzero result.
 
 The default tick duration is one simulation second. Working and Moving consume one energy unit per second; Recharging gains two; Idle and Offline leave energy unchanged. Values clamp to 0-100 on ticks. Status alone does not launch a job, travel route or Windows task. The scheduler advances once per delay without catching up missed wall-clock time, permits one runner and rejects external Tick calls while that runner owns automatic ticking. Manual Step requires a paused clock. Snapshots copy consistent read-only state under the world/engine lock.
 
@@ -60,13 +60,13 @@ TestSupport supplies a fake provider compiled only into test projects. Productio
 
 Typed tick events include energy changes and tick completion. LastTick retains the latest tick; a separate bounded recent-event buffer now retains committed events across ticks. Programs initially Idle produce no invented activity. Checklist 1.10 implements a 250 ms live view, a default 256-entry event buffer with stable sequence IDs and eviction counts, committed transfer/edit summaries, paging, Q/Esc return, resize/cancellation handling and one-snapshot console fallback. Visibility filtering remains future login integration. Rendering must not drive simulation ticks.
 
-Phase 2 must add save/load, consistent snapshots, durable events/audit and recovery. No offline catch-up, persistent world, undo, persistent overrides or bulk multi-program editing is implemented. The 20 GB quota remains a planning budget. Autonomous jobs, host telemetry/tasks, named-agent services, conversations, uploads, AI, voice, Godot/WPF clients and Windows startup integration remain later phases.
+Sections 2.1-2.2 now provide a persistent world, consistent snapshots and recovery. Durable events/audit remain 2.3 work. Offline catch-up is deliberately excluded; undo, persistent overrides and bulk multi-program editing are not implemented. The 20 GB quota remains a planning budget. Autonomous jobs, host telemetry/tasks, named-agent services, conversations, uploads, AI, voice, Godot/WPF clients and Windows startup integration remain later phases.
 
 ## Verification evidence
 
 On 2026-10-17, after the --start change, `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed **117 tests**, with zero failures or skips: Core 8, Simulation 85, Terminal 24. Simulation includes 48 editing cases covering validation, decimal boundaries, atomicity, membership, no-ops, revisions, stale/replayed/foreign previews, cancellation, authorization denial, generation changes, revocation ordering, typed extension and concurrency with ticks.
 
-The previously recorded solution and terminal builds succeeded with zero warnings/errors. Startup smoke verification reported Running with --start; default status/step/inspect/exit smoke verification also passed. These checks establish current implementation behavior, not completion of future login or persistence. Live-view verification was subsequently completed on 2026-10-18.
+The previously recorded solution and terminal builds succeeded with zero warnings/errors. Startup smoke verification reported Running with --start; default status/step/inspect/exit smoke verification also passed. These checks establish current implementation behavior, not completion of future login; later persistence evidence is recorded below. Live-view verification was subsequently completed on 2026-10-18.
 
 ## Documentation map
 
@@ -82,3 +82,11 @@ The previously recorded solution and terminal builds succeeded with zero warning
 - [Program Fashion Style Guide](Project_GRID_Program_Fashion_Style_Guide.md)
 - [Session Context and Authorization](Project_GRID_Session_Context_and_Authorization.md)
 - [Terminal Identity and Master Control Addendum](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md)
+
+## Save and recovery completion - 2026-10-18
+
+Section 2.2 is implemented. Normal startup creates and saves fixed Genesis once or validates and restores the existing world. Autosave runs every 30 seconds. Shutdown awaits the scheduler and periodic saver before the final save. World identities, program revisions, values, memberships, resources and clock state survive restart, with fresh runtime/session bindings and no offline advancement.
+
+Verification: **200 tests passed**, zero failures/skips (8 Core, 93 Simulation, 50 Terminal, 49 Persistence). The solution build passed with zero warnings/errors. A temporary-world terminal smoke test verified creation, two steps, shutdown save, paused reopen at tick 2, corruption rejection and explicit --recover restoration. --ephemeral --start also passed. The user's default database was not used for verification. See [Persistence Architecture](Project_GRID_Persistence_Architecture.md) for operational details and limits; physical power-loss testing is not claimed.
+
+Remaining work begins with 2.3 durable history/observability. Hardware discovery/generated cities remain 2.6, and login, terminal editing commands, archive retention, quota enforcement and Windows service startup remain planned.

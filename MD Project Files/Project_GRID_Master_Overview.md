@@ -8,13 +8,13 @@ Hardware informs the city's initial structure, while C# remains authoritative fo
 
 Existing saves take precedence over current hardware discovery. Hardware upgrades or changed enumeration must not silently replace an established civilization. A deliberate new-world operation is separate from loading, and corrupt/unreadable saves require recovery rather than automatic replacement.
 
-**Current boundary:** Genesis still uses its fixed five-district/twenty-citizen factory and creates an in-memory world each launch. Hardware discovery, procedural city generation and persistent reuse are not implemented. Section 2.1 now implements a versioned SQLite schema and migration foundation, but it is not engine save/load functionality. Preserve the completed Genesis release and editing API history.
+**Current boundary:** Genesis uses its fixed five-district/twenty-citizen factory only for first creation. Sections 2.1-2.2 implement SQLite schema/migrations, transactional saves, validated restoration and backup recovery; later launches reuse the saved world. Hardware discovery and procedural city generation remain planned in 2.6. Preserve the completed Genesis release and editing API history.
 
 Plan discovery, generated world data and durable first creation in Phase 2, then rendering in Phase 7 and startup integration in Phase 8. See [the generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract) and checklist section 2.6.
 
 ## Implementation status - 2026-10-17
 
-Genesis world management, clock, engine and terminal are implemented. Post-release work adds the validated editing API and optional --start startup. Section 1.10 live view and bounded recent events were implemented on 2026-10-18. Login as Master Control or an agent, terminal editing controls, world save/load, autonomous jobs, host agents, AI, voice and 3D remain planned. The vision below describes the target product; use the linked implementation record for current behavior.
+Genesis world management, clock, engine and terminal are implemented. Post-release work adds the validated editing API and optional --start startup. Section 1.10 live view and bounded recent events were implemented on 2026-10-18. Login as Master Control or an agent, terminal editing controls, autonomous jobs, host agents, AI, voice and 3D remain planned. The vision below describes the target product; use the linked implementation record for current behavior.
 
 See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
 

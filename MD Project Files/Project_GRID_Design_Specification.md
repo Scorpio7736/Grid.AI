@@ -39,7 +39,7 @@ Generation must honor the existing architecture, readable streets, human-scale n
 - Test partial discovery, unsupported APIs, multiple components, hardware changes, corrupt saves, failed writes and simultaneous initialization.
 - Exact discovery APIs, field schema, component deduplication, fallback UX, scale limits and mapping algorithms remain decisions to implement and verify.
 
-The existing fixed Genesis factory remains the implemented baseline and a useful test fixture. Grid.Persistence now provides the section 2.1 SQLite schema and migration foundation; discovery, generation, engine save/load and durable world reuse are still planned. Checklist 2.6 tracks implementation; Phase 7 renders the saved result and Phase 8 integrates lifecycle behavior.
+The existing fixed Genesis factory remains the implemented baseline and a useful test fixture. Grid.Persistence now provides the section 2.1 SQLite schema and migration foundation; section 2.2 now saves and reuses fixed Genesis worlds. Hardware discovery and hardware-derived generation remain planned. Checklist 2.6 tracks implementation; Phase 7 renders the saved result and Phase 8 integrates lifecycle behavior.
 
 ## Implementation status - 2026-10-17
 
@@ -460,7 +460,7 @@ Use database transactions, migrations, indexes, and suitable SQLite WAL settings
 
 ### 8.1 Proposed integrated startup sequence
 
-Current startup is manual through dotnet run and creates a fresh world, paused unless --start is supplied. There is no Windows startup service or saved-world recovery yet.
+Current startup is manual through dotnet run. It creates and saves Genesis only when no world artifacts exist, otherwise validates and loads the saved world, paused unless --start is supplied. Section 2.2 provides autosave, orderly shutdown saves and explicit --recover backup restoration. There is no Windows startup service yet.
 
 1. User logs in to Windows and the Grid background host starts.
 2. Grid validates persistent data and loads the latest consistent saved state; only genuinely new worlds use the GRID-REQ-004 hardware discovery, generation and durable initialization flow. Failed loads use recovery rather than regeneration.
@@ -706,7 +706,7 @@ The preceding sections describe the desired concept and recommended implementati
 
 ## 14. Original implementation sequence and current next work
 
-The headless Genesis foundation and post-release editing API are complete. Checklist 1.10 live view and bounded recent events are implemented as of 2026-10-18; section 2.1 persistence architecture is complete and next is 2.2 save and recovery. Session visibility filtering remains deferred until login integration. The following original sequence remains context for later communications, agents and viewer work; it is not a list of entirely unstarted projects.
+The headless Genesis foundation and post-release editing API are complete. Checklist 1.10 live view and bounded recent events are implemented as of 2026-10-18; sections 2.1 persistence architecture and 2.2 save/recovery are complete; next is 2.3 history and observability. Session visibility filtering remains deferred until login integration. The following original sequence remains context for later communications, agents and viewer work; it is not a list of entirely unstarted projects.
 
 Start with the **headless C# simulation and durable communication kernel**, not the entire 3D city:
 

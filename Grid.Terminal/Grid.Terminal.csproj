@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Grid.Simulation\Grid.Simulation.csproj" />
+    <ProjectReference Include="..\Grid.Persistence\Grid.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

@@ -6,7 +6,7 @@ GRID-REQ-004 is planned: first-time world creation discovers motherboard, CPU, G
 
 The user identified this repository's MD Project Files folder as the supplied document location. Its current eight overview/checklist/design/development/storage/city/environment/fashion documents are the integration baseline. Older Downloads copies were compared and contain no GRID-REQ-004; they were not used to overwrite newer repository content. There is no separate updated copy in that location to merge against. The explicit requirement in the user's message supplies the new functionality.
 
-Preserved all existing completed checklist entries, historical test results, editing/session contracts, newer concept images and source changes. At that documentation review, Grid.Persistence was a project scaffold (commit 42dc69a). Section 2.1 below records its subsequent schema implementation; save/load remains pending. That earlier requirement-integration update changed Markdown only and did not run runtime tests; later implementation evidence is recorded in the relevant sections.
+Preserved all existing completed checklist entries, historical test results, editing/session contracts, newer concept images and source changes. At that documentation review, Grid.Persistence was a project scaffold (commit 42dc69a). Sections 2.1-2.2 below record subsequent schema and save/recovery implementation. That earlier requirement-integration update changed Markdown only and did not run runtime tests; later implementation evidence is recorded in the relevant sections.
 
 Resolved planning overlaps: fixed Genesis generation remains the implemented baseline; hardware-derived first creation is future work. Existing saves take priority over regeneration, and hardware does not override the established visual guides. Exact component mappings, discovery APIs and fallback policy remain open design decisions.
 
@@ -354,19 +354,29 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - Explicit initialization creates schema only. OpenExisting refuses missing/uninitialized databases. Every managed connection enables foreign keys, FULL synchronization, private cache and a bounded busy timeout.
 - Migration metadata, DDL and version markers share an immediate transaction. Unknown/future/inconsistent databases are rejected; failed upgrades roll back. Tests cover concurrent initialization and synthetic next-version migration; only v1 ships.
 - Verification: 31 new persistence tests passed. Full solution `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed 171 tests (8 Core, 93 Simulation, 39 Terminal, 31 Persistence), zero failed/skipped. Solution build passed with zero warnings/errors.
-- Tests verify SQL row preservation, constraints, relationships, rollback and schema lifecycle. They do not claim engine save/load, crash recovery or power-loss verification. Sections 2.2-2.6 and GRID-REQ-004 remain pending.
+- Tests verify SQL row preservation, constraints, relationships, rollback and schema lifecycle. They do not claim engine save/load, crash recovery or power-loss verification. At that milestone, sections 2.2-2.6 and GRID-REQ-004 remained pending; the subsequent 2.2 completion is recorded below.
 - See [Persistence Architecture and Schema](Project_GRID_Persistence_Architecture.md) for tables, connection/migration policy, identity conventions and future audit/hardware integration.
 
 ## 2.2 Save and recovery
 
-- [ ] Save world state transactionally
-- [ ] Load and validate saved world state
-- [ ] Add periodic consistent snapshots
-- [ ] Implement safe startup and shutdown saves
-- [ ] Handle interrupted writes and corrupt files
-- [ ] Restore from last known-good snapshot
-- [ ] Preserve identities, district memberships and clock state
-- [ ] Ensure no simulation progress during powered-off time
+- [x] Save world state transactionally
+- [x] Load and validate saved world state
+- [x] Add periodic consistent snapshots
+- [x] Implement safe startup and shutdown saves
+- [x] Handle interrupted writes and corrupt files
+- [x] Restore from last known-good snapshot
+- [x] Preserve identities, district memberships and clock state
+- [x] Ensure no simulation progress during powered-off time
+
+**Completion notes - 2026-10-18**
+
+- Added WorldStore transactional save/load over the unchanged schema v1, with complete state validation and parameterized SQL. Durable GridWorld.Id is separate from the fresh runtime InstanceId. Programs retain exact values, revisions and memberships; resources and clock state round-trip.
+- Normal terminal startup creates and persists Genesis once, then restores the existing world paused unless --start is passed. No wall-clock catch-up occurs. Default storage is %LOCALAPPDATA%\GRID\world.db; --world selects another file and --ephemeral explicitly opts out of saving.
+- Autosave captures a consistent snapshot every 30 seconds without holding the engine lock during disk I/O. Exit, EOF and Ctrl+C await scheduler/autosave shutdown before a final save. Failures are visible and produce a nonzero result.
+- Saves roll back on SQL failure/cancellation before commit. A validated rolling .backup is published after each successful primary commit. --recover validates that backup and preserves damaged primary/sidecar files; interrupted recovery requires an explicit retry. Missing/corrupt saves are never silently regenerated. An exclusive session lease prevents competing GRID instances for one file.
+- Verification: `dotnet test Grid7736.slnx --verbosity minimal --no-restore` passed **200 tests** (8 Core, 93 Simulation, 50 Terminal, 49 Persistence), zero failed/skipped. `dotnet build Grid7736.slnx --no-restore --verbosity minimal` passed with zero warnings/errors. Added 29 cases covering world round trips, injected transaction failure, cancellation, invalid data, backup/recovery failures, periodic saving, ownership and terminal lifecycle.
+- Built-terminal smoke verification used an isolated temporary database: create, step twice, exit/save, reopen paused at tick 2 with the same identity, reject corruption, explicitly recover, and verify --ephemeral --start. No default user world was opened.
+- Limits: abrupt termination can lose work after the last committed snapshot; tests do not claim physical power-loss validation. Backups are one rolling snapshot, not historical retention. Durable events/audit (2.3), hardware-generated cities (2.6), login and Windows service integration remain pending. See [Persistence Architecture](Project_GRID_Persistence_Architecture.md).
 
 ## 2.3 History and observability
 
@@ -832,7 +842,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 1. [x] Complete editable-field and session-context planning in sections 1.9.1–1.9.2.
 2. [x] Implement and verify the validated editing API in section 1.9.3.
 3. [x] Implement the terminal live view in section 1.10; session visibility follows login integration.
-4. [x] Complete Phase 2.1 persistence architecture with identity, edit-result and audit extension requirements documented. Next implement 2.2 save and recovery.
+4. [x] Complete Phase 2.1 persistence architecture with identity, edit-result and audit extension requirements documented. Section 2.2 save/recovery is also complete; next implement 2.3 history and observability.
 5. [ ] Integrate login and Master Control terminal editing in the later GRID-REQ-003 work; preserve the completed Genesis release.
 6. [ ] Record completion notes and verification evidence as each item is finished.
 

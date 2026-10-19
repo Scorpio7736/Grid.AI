@@ -1,28 +1,30 @@
-﻿using Grid.Simulation;
+using Grid.Simulation;
+using Grid.Persistence;
 
 namespace Grid.Terminal;
 
 /// <summary>Owns input/output and scheduler lifetime; commands are independently registered and tested.</summary>
 public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher commands,
-    TextReader input, TextWriter output, bool showPrompt = true, ILiveTerminal? liveTerminal = null)
+    TextReader input, TextWriter output, bool showPrompt = true, ILiveTerminal? liveTerminal = null, IWorldPersistenceSession? persistence = null)
 {
     public async Task<int> RunAsync(CancellationToken cancellationToken = default)
     {
         using var shutdown = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var scheduler = engine.RunAsync(shutdown.Token);
+        var autosave = persistence?.RunPeriodicAsync(shutdown.Token) ?? Task.Delay(Timeout.Infinite, shutdown.Token);
         var exitCode = 0;
         try
         {
             await output.WriteLineAsync("PROJECT GRID — GENESIS");
-            await output.WriteLineAsync("Type help for commands. This session is in memory; exit does not save the world.");
+            await output.WriteLineAsync(persistence is null ? "Type help for commands. This session is in memory; exit does not save the world." : "Type help for commands. Autosave every 30 seconds; exit saves after the clock stops.");
             while (!shutdown.IsCancellationRequested)
             {
                 if (showPrompt) { await output.WriteAsync("grid> "); await output.FlushAsync(); }
                 // Console.In may block synchronously even through ReadLineAsync. Keep that read
                 // off the control thread so Ctrl+C and scheduler faults can still end the session.
                 var read = Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token);
-                var completed = await Task.WhenAny(read, scheduler);
-                if (completed == scheduler)
+                var completed = await Task.WhenAny(read, scheduler, autosave);
+                if (completed != read)
                 {
                     break;
                 }
@@ -38,7 +40,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                     var live = new TerminalLiveView(engine, output, liveTerminal).RunAsync(liveCancellation.Token);
                     try
                     {
-                        if (await Task.WhenAny(live, scheduler) == scheduler) break;
+                        if (await Task.WhenAny(live, scheduler, autosave) != live) break;
                         await live;
                     }
                     finally
@@ -59,6 +61,22 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
             {
                 await output.WriteLineAsync($"Simulation stopped with an error: {exception.Message}");
                 exitCode = 1;
+            }
+            try { await autosave; }
+            catch (OperationCanceledException) when (shutdown.IsCancellationRequested) { }
+            catch (Exception exception)
+            {
+                await output.WriteLineAsync($"Autosave failed: {exception.Message}");
+                exitCode = 1;
+            }
+            if (persistence is not null)
+            {
+                try { await persistence.SaveAsync(); await output.WriteLineAsync("World saved."); }
+                catch (Exception exception)
+                {
+                    await output.WriteLineAsync($"Shutdown save failed: {exception.Message}");
+                    exitCode = 1;
+                }
             }
         }
         return exitCode;
