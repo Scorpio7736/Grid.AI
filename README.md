@@ -137,3 +137,9 @@ Use `resources` to inspect read-only CPU headroom, RAM, Windows system-drive spa
 A tested resource-condition policy compares explicitly sourced additional-work requirements with available headroom. Application-specific energy remains unknown until the 2.7 application discovery/classification work supplies those bindings and requirements. Existing fictional Genesis citizens still use their old energy rules. No resource observation changes Windows allocations or starts/stops applications.
 
 Verification: **223 tests passed**, build zero warnings/errors, and a real Windows disposable-session smoke passed. See [Resources and Host State](MD%20Project%20Files/Project_GRID_Resources_and_Host_State.md) for units, freshness, formula and integration work still pending.
+
+## Phase 2 verification (2.5, completed 2026-10-19)
+
+**231 tests passed**, with zero build warnings/errors. Added isolated tests for terminal save/reopen and recovery, populated schema migration, no offline catch-up, invalid/missing database preservation, and SQLite recovery after terminating a writer with uncommitted changes. Tests never open the default user world and require no viewer or AI service. The crash helper is test-only.
+
+See [Phase 2 Verification](MD%20Project%20Files/Project_GRID_Phase_2_Verification.md) for evidence and limits. Physical power-loss coverage is not claimed. The 2.7 application-resident retrofit and dependent energy binding, and 2.6 hardware-generated cities, remain planned.

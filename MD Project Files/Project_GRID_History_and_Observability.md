@@ -1,5 +1,12 @@
 # Project GRID - History and observability
 
+## Phase 2 verification update - 2026-10-19
+
+Section 2.5 is complete for the current implementation. **231 tests passed** (8 Core, 106 Simulation, 64 Persistence, 53 Terminal), with zero build warnings/errors. Eight new isolated cases verify headless terminal save/reopen/recovery, populated older-schema restoration, no offline catch-up, invalid/missing-file preservation and abrupt writer termination with SQLite journal recovery. A test-only helper under TestSupport is built by the persistence tests; production projects do not reference it.
+
+See [Phase 2 Verification](Project_GRID_Phase_2_Verification.md) for evidence and limits. Earlier test counts remain historical. Process-crash verification does not claim physical power-loss coverage; pending application energy/classification/lifecycle work and hardware-generated cities remain unimplemented. No production behavior was changed for 2.5.
+
+
 **Section 2.3 implemented and verified - 2026-10-18.** This extends the current Genesis runtime. GRID-REQ-005 application discovery, resident classification and resource interpretation remain planned in 2.4/2.7; history does not implement those features.
 
 ## Captured events

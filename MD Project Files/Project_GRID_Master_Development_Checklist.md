@@ -428,12 +428,22 @@ See [Resources and Host State](Project_GRID_Resources_and_Host_State.md) for exa
 
 ## 2.5 Verification
 
-- [ ] Test save → close → reopen consistency
-- [ ] Test transaction rollback and crash recovery
-- [ ] Test migration from an older schema
-- [ ] Test no offline catch-up
-- [ ] Test invalid or missing database behavior
-- [ ] Verify persistent world runs without graphics or AI
+- [x] Test save → close → reopen consistency
+- [x] Test transaction rollback and crash recovery
+- [x] Test migration from an older schema
+- [x] Test no offline catch-up
+- [x] Test invalid or missing database behavior
+- [x] Verify persistent world runs without graphics or AI
+
+**Completion notes - 2026-10-19**
+
+- Added eight isolated integration/verification cases covering real terminal save/close/reopen and backup recovery, a populated v1-to-v2 migration, simulated years offline, and missing/empty/foreign/future database rejection without replacement.
+- Added a test-only subprocess that holds an uncommitted SQLite transaction with spilled pages. The parent terminates that child after a readiness handshake; reopening restores the last committed world/history, removes uncommitted schema/data, passes integrity_check and retains the backup unchanged. Existing injected-failure tests continue to verify production save/history transaction rollback and retry.
+- Verified restored world/program IDs, revisions, values, district membership/resources and clock state. Restoration starts paused with a fresh runtime identity, no stale host telemetry and no offline advancement; a manual step advances exactly once.
+- Headless terminal subprocesses operate with redirected streams and no viewer/model dependency. Tests use unique temporary worlds and never the user's default database. No production behavior changes were needed.
+- Verification: `dotnet test Grid7736.slnx --verbosity minimal` and final `--no-restore` run passed **231 tests** (8 Core, 106 Simulation, 64 Persistence, 53 Terminal), zero failed/skipped. `dotnet build Grid7736.slnx --no-restore --verbosity minimal` passed with zero warnings/errors.
+- Scope: process-crash/journal recovery is tested, not physical power loss or exhaustive storage-failure coverage. Pending application-energy binding (2.4/2.7), hardware generation (2.6), and application-resident retrofit (2.7) remain pending.
+- See [Phase 2 Verification](Project_GRID_Phase_2_Verification.md) for the requirement-to-test mapping, helper isolation and limitations.
 
 ---
 

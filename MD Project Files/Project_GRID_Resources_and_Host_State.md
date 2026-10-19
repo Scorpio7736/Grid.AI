@@ -1,5 +1,12 @@
 # Project GRID - Resources and host state
 
+## Phase 2 verification update - 2026-10-19
+
+Section 2.5 is complete for the current implementation. **231 tests passed** (8 Core, 106 Simulation, 64 Persistence, 53 Terminal), with zero build warnings/errors. Eight new isolated cases verify headless terminal save/reopen/recovery, populated older-schema restoration, no offline catch-up, invalid/missing-file preservation and abrupt writer termination with SQLite journal recovery. A test-only helper under TestSupport is built by the persistence tests; production projects do not reference it.
+
+See [Phase 2 Verification](Project_GRID_Phase_2_Verification.md) for evidence and limits. Earlier test counts remain historical. Process-crash verification does not claim physical power-loss coverage; pending application energy/classification/lifecycle work and hardware-generated cities remain unimplemented. No production behavior was changed for 2.5.
+
+
 **2.4 telemetry and policy foundation implemented and verified - 2026-10-19.** Read-only host measurements and a tested resource-condition policy now exist. Applying that policy to discovered application residents and replacing their placeholder energy behavior depends on the still-planned 2.7 classification/lifecycle retrofit. Current saved Genesis citizens remain fictional and retain their old energy rules; they must not be presented as measured applications.
 
 ## Architecture and measurement contract
