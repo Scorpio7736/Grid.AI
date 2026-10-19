@@ -24,7 +24,7 @@ To start automatic ticks immediately:
 dotnet run --project Grid.Terminal/Grid.Terminal.csproj -- --start
 ```
 
-The application flag is case-insensitive. `--` passes it through dotnet run. `--no-build` may be added before `--` after a successful build. This starts the clock; status output still updates only when requested until live view is implemented.
+The application flag is case-insensitive. `--` passes it through dotnet run. `--no-build` may be added before `--` after a successful build. This starts the clock. Enter `live` at the prompt for continuously updating status and recent events.
 
 ## Commands
 
@@ -38,6 +38,7 @@ The application flag is case-insensitive. `--` passes it through dotnet run. `--
 | `inspect district <id or name>` | Show description, population, resources, and residents. |
 | `start` | Enable automatic ticks. |
 | `pause` | Stop automatic advancement. |
+| `live` | Live status and recent events; Q/Esc returns to commands without pausing. |
 | `step` or `tick` | Advance exactly once while paused. |
 | `exit` | Cancel and await the scheduler, then exit. |
 
@@ -92,4 +93,4 @@ Administrative editing denies access by default. A trusted IProgramEditAuthorize
 
 World-owned program setters now reject direct changes. Initialize programs before adding them to a world; use validated engine editing for later administrative changes. Ticks and district transfers update revisions so stale previews cannot overwrite newer state. Receipts are returned in memory; durable audit and save/load remain future work.
 
-See the Program Editing Rules and Session Context and Authorization documents under MD Project Files for the contracts. Section 1.10 of the master checklist plans a continuously updating terminal live view and recent-events list.
+See the Program Editing Rules and Session Context and Authorization documents under MD Project Files for the contracts. Section 1.10 is implemented: see [Terminal Live View](MD%20Project%20Files/Project_GRID_Terminal_Live_View.md) for paging controls, event retention, console fallback and extension details. On 2026-10-18, all 140 tests passed and the solution built with zero warnings/errors.

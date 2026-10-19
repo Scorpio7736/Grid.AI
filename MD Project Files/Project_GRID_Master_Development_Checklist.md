@@ -12,7 +12,7 @@ Resolved planning overlaps: fixed Genesis generation remains the implemented bas
 
 ## Implementation status - 2026-10-17
 
-Documentation reconciled on 2026-10-17 against local HEAD 0b659e6 and current working-tree changes. Genesis 1.1-1.8 is complete; 1.9.1-1.9.2 are completed designs and 1.9.3 is implemented. Section 1.10 live view remains unchecked. Current solution verification passed 117 tests (8 Core, 85 Simulation, 24 Terminal). Historical completion counts below describe their original verification dates, not the current total.
+Documentation reconciled on 2026-10-17 against local HEAD 0b659e6 and current working-tree changes. Genesis 1.1-1.8 is complete; 1.9.1-1.9.2 are completed designs and 1.9.3 is implemented. At that review, section 1.10 was unimplemented; see the 2026-10-18 completion notes below for its subsequent implementation. Current solution verification passed 117 tests (8 Core, 85 Simulation, 24 Terminal). Historical completion counts below describe their original verification dates, not the current total.
 
 See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
 
@@ -303,22 +303,32 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ## 1.10 Post-Genesis terminal live view
 
-**User-requested planning addition — 2026-10-17; not implemented.** Add an optional continuously updating terminal view after the tagged Genesis release.
+**Implemented and verified - 2026-10-18.** Requested on 2026-10-17. Session-dependent visibility remains deferred until login integration.
 
-- [ ] Add a live-view command or option to enter the updating display
-- [ ] Continuously show running/paused state, simulation tick, elapsed simulation time, and population
-- [ ] Show current program activities, statuses, locations, energy, and actual changes
-- [ ] Include a compact recent-events list with simulation timestamps and relevant program names/IDs
-- [ ] Show real program actions, state changes, transfers, and administrative edits when those events exist; do not invent autonomous activity
-- [ ] Distinguish completed events from ongoing activity; initially show Idle honestly where no behavior has been implemented
-- [ ] Add a bounded recent-event buffer with stable sequence IDs so events between display refreshes are not lost or duplicated; keep durable history in Phase 2
-- [ ] Keep rendering refresh rate separate from simulation ticks; use consistent snapshots without advancing or pausing simulation merely to redraw
-- [ ] Add an easy key to leave live view and return to the command prompt without stopping the world
-- [ ] Handle Ctrl+C, terminal resizing, and redirected/unsupported output with a clean fallback
-- [ ] Avoid flooding scrollback or retaining an unbounded event list; keep refresh/resource usage modest
-- [ ] Apply session visibility rules once login is implemented
-- [ ] Test refresh consistency, event ordering, bounded history, paused display, and return-to-prompt behavior
-- [ ] Add completion notes and verification results after implementation
+- [x] Add a live-view command or option to enter the updating display
+- [x] Continuously show running/paused state, simulation tick, elapsed simulation time, and population
+- [x] Show current program activities, statuses, locations, energy, and actual changes
+- [x] Include a compact recent-events list with simulation timestamps and relevant program names/IDs
+- [x] Show real program actions, state changes, transfers, and administrative edits when those events exist; do not invent autonomous activity
+- [x] Distinguish completed events from ongoing activity; initially show Idle honestly where no behavior has been implemented
+- [x] Add a bounded recent-event buffer with stable sequence IDs so events between display refreshes are not lost or duplicated; keep durable history in Phase 2
+- [x] Keep rendering refresh rate separate from simulation ticks; use consistent snapshots without advancing or pausing simulation merely to redraw
+- [x] Add an easy key to leave live view and return to the command prompt without stopping the world
+- [x] Handle Ctrl+C, terminal resizing, and redirected/unsupported output with a clean fallback
+- [x] Avoid flooding scrollback or retaining an unbounded event list; keep refresh/resource usage modest
+- [ ] Apply session visibility rules once login is implemented (deferred dependency; no login/provider exists yet)
+- [x] Test refresh consistency, event ordering, bounded history, paused display, and return-to-prompt behavior
+- [x] Add completion notes and verification results after implementation
+
+**Completion notes - 2026-10-18**
+
+- Added `live` through command registration, with pure formatting and an injectable interactive terminal surface. Refresh runs every 250 ms independently of ticks; Q/Esc returns to commands without changing clock state. Page Up/Down pages citizens; Left/Right pages retained events.
+- Added an atomic live snapshot and a bounded 256-event buffer (configurable 1-10,000), stable per-engine sequence IDs and explicit eviction count. Records actual tick/energy changes, clock transitions, direct world transfers and applied edit summaries. No-op/failed edits do not fabricate changes.
+- Shows real current statuses, energy, occupation, district and simulation time; Idle does not imply autonomous work. Prior LastTick and edit receipt contracts remain intact. Recent events are not durable history.
+- Redraw fits the console, updates only changed rows, restores the cursor and handles resize, cancellation and scheduler failure. Redirected/TERM=dumb/unsupported or too-small surfaces show one snapshot and return to commands. Text is sanitized to single-cell ASCII and clipping is marked.
+- Verification: `dotnet test Grid7736.slnx --no-restore --verbosity minimal -p:NuGetAudit=false` passed 140 tests (8 Core, 93 Simulation, 39 Terminal), zero failed/skipped. Added 23 event and live-view cases. Solution build succeeded with zero warnings/errors.
+- Interactive smoke checks verified running ticks, Q return, paused view and exit; TERM=dumb fallback also passed. Resize/cancellation and scheduler-failure paths have injected-console tests.
+- See [Terminal Live View](Project_GRID_Terminal_Live_View.md) for controls, architecture, limitations and verification details. Login visibility, persistence, autonomous actions and GRID-REQ-004 remain deferred; earlier completion notes remain historical.
 
 ---
 
@@ -810,7 +820,7 @@ Repository update: Grid.Persistence project/Class1 scaffold exists. The layer im
 
 1. [x] Complete editable-field and session-context planning in sections 1.9.1–1.9.2.
 2. [x] Implement and verify the validated editing API in section 1.9.3.
-3. [ ] Implement the terminal live view in section 1.10.
+3. [x] Implement the terminal live view in section 1.10; session visibility follows login integration.
 4. [ ] Begin Phase 2 persistence with the identity, edit-result, and audit requirements considered in schema design.
 5. [ ] Integrate login and Master Control terminal editing in the later GRID-REQ-003 work; preserve the completed Genesis release.
 6. [ ] Record completion notes and verification evidence as each item is finished.

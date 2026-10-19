@@ -7,6 +7,8 @@ public sealed class GridWorld
     private readonly Dictionary<Guid, GridProgram> programs = new();
     private readonly Dictionary<Guid, GridDistrict> districts = new();
     internal object SyncRoot { get; } = new();
+    // Trusted engine observer; invoked under SyncRoot only after a real direct transfer.
+    internal event Action<GridProgram, Guid, Guid>? ProgramMoved;
     public Guid InstanceId { get; } = Guid.NewGuid();
     public IReadOnlyDictionary<Guid, GridProgram> Programs { get; }
     public IReadOnlyDictionary<Guid, GridDistrict> Districts { get; }
@@ -57,7 +59,10 @@ public sealed class GridWorld
         lock (SyncRoot)
         {
             var program = GetProgram(programId);
+            var previous = program.CurrentDistrictId;
             CommitProgram(program, program.Values with { DistrictId = destinationDistrictId });
+            if (previous != program.CurrentDistrictId)
+                ProgramMoved?.Invoke(program, previous, program.CurrentDistrictId);
         }
     }
     internal void CommitProgram(GridProgram program, GridProgramValues values)

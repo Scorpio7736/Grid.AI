@@ -2,7 +2,7 @@
 
 ## Implementation status - 2026-10-17
 
-The 1.9.3 backend editing boundary is implemented and denies access by default. There is no production authentication provider, login/identity-switching UI, or terminal edit command. Existing Genesis inspection/control commands remain available without login. Acceptance criteria below concern the future integrated terminal experience; API completion evidence is recorded separately. Live view is planned under checklist 1.10.
+The 1.9.3 backend editing boundary is implemented and denies access by default. There is no production authentication provider, login/identity-switching UI, or terminal edit command. Existing Genesis inspection/control commands remain available without login. Acceptance criteria below concern the future integrated terminal experience; API completion evidence is recorded separately. Live view is implemented under checklist 1.10 as of 2026-10-18. It currently shares the existing Genesis world visibility; consistent session-based filtering of state and events remains deferred until login is implemented.
 
 See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
 

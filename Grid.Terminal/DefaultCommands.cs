@@ -68,6 +68,7 @@ public static class DefaultCommands
         }));
         Add("start", "Start or resume automatic simulation.", () => { engine.Start(); return new("Simulation running."); });
         Add("pause", "Pause automatic simulation.", () => { engine.Pause(); return new("Simulation paused."); });
+        Add("live", "Live status and recent events; Q/Esc returns to commands.", () => new("", LiveViewRequested: true));
         CommandResult Step()
         {
             var tick = engine.Step();

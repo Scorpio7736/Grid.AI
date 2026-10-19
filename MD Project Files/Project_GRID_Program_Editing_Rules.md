@@ -133,4 +133,4 @@ The 1.9.3 API now implements prepare/apply, typed values, validation, revisions,
 
 The engine shares the world's synchronization lock. Direct writes to world-owned program values throw; unowned initialization remains available. The Core-to-Simulation internal mutation boundary is trusted application code, not an authentication mechanism.
 
-A trusted authorization provider must supply a live lease; the default denies administrative edits. Receipts are in-memory returned values, not persistence or a durable audit log. Forty-eight editing test cases passed as part of the 117-test solution run. Terminal editing and credential-based login are not implemented.
+A trusted authorization provider must supply a live lease; the default denies administrative edits. Receipts are in-memory returned values, not persistence or a durable audit log. Section 1.10 now records applied edit summaries in a separate bounded live-event buffer; no-op and failed edits do not add committed-change events. Forty-eight editing test cases passed as part of the 117-test solution run. Terminal editing and credential-based login are not implemented.

@@ -18,15 +18,19 @@ public sealed partial class GridSimulationEngine
     private long runVersion;
     private GridTickResult? lastTick;
 
-    public GridSimulationEngine(GridWorld world, TimeSpan? tickDuration = null, TimeProvider? timeProvider = null, IProgramEditAuthorizer? editAuthorizer = null, ProgramEditFieldRegistry? editFields = null)
+    public GridSimulationEngine(GridWorld world, TimeSpan? tickDuration = null, TimeProvider? timeProvider = null, IProgramEditAuthorizer? editAuthorizer = null, ProgramEditFieldRegistry? editFields = null, int recentEventCapacity = 256)
     {
         ArgumentNullException.ThrowIfNull(world);
+        if (recentEventCapacity is < 1 or > 10000) throw new ArgumentOutOfRangeException(nameof(recentEventCapacity));
+        this.recentEventCapacity = recentEventCapacity;
         this.world = world;
         gate = world.SyncRoot;
         this.editAuthorizer = editAuthorizer ?? new DenyProgramEdits();
         this.editFields = editFields ?? ProgramEditFieldRegistry.CreateDefault();
         clock = new GridClock(tickDuration);
         this.timeProvider = timeProvider ?? TimeProvider.System;
+        world.ProgramMoved += (program, previous, destination) => RecordEvent("Transfer", program.Id, program.Name,
+            $"{world.GetDistrict(previous).Name} ({previous}) -> {world.GetDistrict(destination).Name} ({destination})");
     }
 
     public TimeSpan TickDuration => clock.TickDuration;
@@ -61,6 +65,7 @@ public sealed partial class GridSimulationEngine
             {
                 runVersion++;
                 clock.Start();
+                RecordEvent("Clock", null, null, "Simulation started.");
             }
         }
     }
@@ -74,6 +79,7 @@ public sealed partial class GridSimulationEngine
             {
                 runVersion++;
                 clock.Pause();
+                RecordEvent("Clock", null, null, "Simulation paused.");
             }
         }
     }
@@ -195,6 +201,10 @@ public sealed partial class GridSimulationEngine
         foreach (var change in changes)
             world.CommitProgram(change.Program, change.Program.Values with { Energy = change.Energy });
         lastTick = result;
+        foreach (var change in events.OfType<ProgramEnergyChanged>())
+            RecordEvent("Energy", change.ProgramId, world.GetProgram(change.ProgramId).Name,
+                FormattableString.Invariant($"{change.PreviousEnergy:R} -> {change.Energy:R}"));
+        RecordEvent("Tick", null, null, $"Tick completed; {changes.Count} energy changes.");
         return result;
     }
 }

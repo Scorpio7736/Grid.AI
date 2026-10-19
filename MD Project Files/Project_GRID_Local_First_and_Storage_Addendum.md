@@ -16,7 +16,7 @@ Discovery and storage remain local-first and need no paid API or AI model. Netwo
 
 ## Implementation status - 2026-10-17
 
-Current execution is an in-memory .NET terminal with five districts and twenty citizens. Every launch creates a fresh world. SQLite, save/load, durable audit, model downloads, quota enforcement and storage governance remain planned. The 20 GB budget and larger populations below are estimates, not measured installation sizes or enforced limits. LastTick retains only the latest tick result; edit receipts are returned to callers and are not stored history. Checklist 1.10 plans a bounded recent-events buffer before Phase 2 persistence. Persisted program revisions must not make previews from an old world/session reusable.
+Current execution is an in-memory .NET terminal with five districts and twenty citizens. Every launch creates a fresh world. SQLite, save/load, durable audit, model downloads, quota enforcement and storage governance remain planned. The 20 GB budget and larger populations below are estimates, not measured installation sizes or enforced limits. LastTick retains only the latest tick result; edit receipts are returned to callers and are not stored history. Checklist 1.10 now implements a bounded process-local recent-events buffer (default 256 entries), including applied-edit summaries; it is separate from LastTick and is not durable audit. Evictions are reported. Phase 2 persistence remains planned. Persisted program revisions must not make previews from an old world/session reusable.
 
 See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
 

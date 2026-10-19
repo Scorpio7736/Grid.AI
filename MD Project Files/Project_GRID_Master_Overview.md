@@ -14,7 +14,7 @@ Plan discovery, generated world data and durable first creation in Phase 2, then
 
 ## Implementation status - 2026-10-17
 
-Genesis world management, clock, engine and terminal are implemented. Post-release work adds the validated editing API and optional --start startup. Login as Master Control or an agent, terminal editing controls, live view, persistence, autonomous jobs, host agents, AI, voice and 3D remain planned. The vision below describes the target product; use the linked implementation record for current behavior.
+Genesis world management, clock, engine and terminal are implemented. Post-release work adds the validated editing API and optional --start startup. Section 1.10 live view and bounded recent events were implemented on 2026-10-18. Login as Master Control or an agent, terminal editing controls, persistence, autonomous jobs, host agents, AI, voice and 3D remain planned. The vision below describes the target product; use the linked implementation record for current behavior.
 
 See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
 

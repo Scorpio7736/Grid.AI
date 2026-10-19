@@ -12,7 +12,7 @@ Save persistent world/layout choices and any durable environmental choices neede
 
 ## Implementation status - 2026-10-17
 
-The fixed-step simulation clock is implemented. Simulation elapsed time, UTC edit-receipt timestamps, and future presentation refresh/lighting are distinct. The --start option starts simulation ticking; it does not implement weather, daylight, or a renderer. Eternal Autumn Evening remains the visual direction. Terminal live view and its recent-events buffer are planned in checklist 1.10.
+The fixed-step simulation clock is implemented. Simulation elapsed time, UTC edit-receipt timestamps, and future presentation refresh/lighting are distinct. The --start option starts simulation ticking; it does not implement weather, daylight, or a renderer. Eternal Autumn Evening remains the visual direction. Terminal live view and its bounded recent-events buffer were implemented on 2026-10-18 under checklist 1.10. The 250 ms terminal refresh does not control simulation time or implement environmental rendering.
 
 See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
 

@@ -58,9 +58,13 @@ public sealed partial class GridSimulationEngine
             var receipt = new ProgramEditReceipt(preview.RequestId, lease.Identity, program.Id,
                 program.Revision, revision, clock.TickCount, clock.ElapsedSimulationTime,
                 timeProvider.GetUtcNow(), staged.Changes);
+            // Prepare presentation data before commit as well: formatting cannot fail after mutation.
+            var eventDetail = changed ? string.Join("; ", staged.Changes.Where(c => c.IsChanged).Select(c =>
+                $"{c.Field}: {EventValue(c.Before)} -> {EventValue(c.After)}")) : "";
             if (cancellationToken.IsCancellationRequested) return new(ProgramEditOutcome.Cancelled);
             world.CommitProgram(program, staged.Values);
             preview.Consumed = true;
+            if (changed) RecordEvent("Edit", program.Id, program.Name, eventDetail);
             return new(changed ? ProgramEditOutcome.Applied : ProgramEditOutcome.NoChange, Receipt: receipt);
         }
     }
@@ -70,6 +74,9 @@ public sealed partial class GridSimulationEngine
         identity.SessionId == session.SessionId && identity.SessionId != Guid.Empty &&
         identity.Generation == session.Generation && identity.Generation >= 0 &&
         identity.WorldInstanceId == world.InstanceId && identity.IsMasterControl && identity.AgentId is null;
+
+    private static string EventValue(ProgramEditValue value) => value is TextValue or EnergyValue or StatusValue or DistrictValue
+        ? ProgramEditFormatting.Format(value) : value.ToString() ?? "";
 
     private static ProgramEditResult Invalid(string field, string message) =>
         new(ProgramEditOutcome.ValidationFailed, Errors: Array.AsReadOnly(new[] { new ProgramEditError(field, message) }));

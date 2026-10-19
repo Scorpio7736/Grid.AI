@@ -8,13 +8,13 @@ First-time world creation must discover motherboard, CPU, GPU, RAM, storage and 
 - **Phase 7:** render the saved city using the existing architecture, atmosphere and fashion guides. Rendering must not own generation or persistence.
 - **Phase 8:** connect startup, recovery and hardware-change reporting to the same saved-world flow. A hardware change cannot silently rebuild an existing city.
 
-Keep the current terminal live-view priority and completed Genesis work intact. The fixed Genesis factory remains the implemented baseline. Grid.Persistence now has a project/Class1 scaffold; database integration, save/load and GRID-REQ-004 remain unimplemented. C# owns discovery orchestration, validation and generation; Python, C++, AI and Godot are not dependencies for initial creation. Procedural world sizing must be bounded by explicit performance budgets.
+Preserve the completed Genesis work and the live-view implementation completed on 2026-10-18. The fixed Genesis factory remains the implemented baseline. Grid.Persistence now has a project/Class1 scaffold; database integration, save/load and GRID-REQ-004 remain unimplemented. C# owns discovery orchestration, validation and generation; Python, C++, AI and Godot are not dependencies for initial creation. Procedural world sizing must be bounded by explicit performance budgets.
 
 Implementation tests must cover deterministic profile/seed/version inputs, partial hardware discovery, multiple devices, first creation, reuse after restart and hardware changes, and recovery without replacing a valid world. No such tests are claimed to have run in this documentation update.
 
 ## Implementation status - 2026-10-17
 
-Genesis is implemented and tagged v0.1.0-genesis. Sections 1.9.1 and 1.9.2 completed design contracts; 1.9.3 now implements the validated editing API. The actual solution is Grid7736.slnx with root-level Grid.Core, Grid.Simulation, Grid.Terminal and their three matching test projects. Python/C++ integrations and the expanded layouts below remain proposals. Next is checklist 1.10 live view, followed by Phase 2 persistence.
+Genesis is implemented and tagged v0.1.0-genesis. Sections 1.9.1 and 1.9.2 completed design contracts; 1.9.3 now implements the validated editing API. The actual solution is Grid7736.slnx with root-level Grid.Core, Grid.Simulation, Grid.Terminal and their three matching test projects. Python/C++ integrations and the expanded layouts below remain proposals. Checklist 1.10 live view is now implemented (2026-10-18); next is Phase 2 persistence.
 
 See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
 
@@ -374,6 +374,6 @@ An illustrative distribution of development effort might be **65% C#, 25% Python
 
 ## 13. Immediate next step
 
-**Genesis is complete:** an executable, unit-tested C# world with 5 districts, 20 programs, a clock and terminal inspection. The editing API is also complete. Implement checklist 1.10 live view next, then Phase 2 persistence. Maintain the Python and C++ integration plan and optionally create a small interoperability smoke test, but do not let cross-language plumbing delay a functioning civilization.
+**Genesis is complete:** an executable, unit-tested C# world with 5 districts, 20 programs, a clock and terminal inspection. The editing API is also complete. Live view is implemented; proceed to Phase 2 persistence. Session visibility filtering will accompany future login integration. Maintain the Python and C++ integration plan and optionally create a small interoperability smoke test, but do not let cross-language plumbing delay a functioning civilization.
 
 After Genesis, add persistence, meaningful autonomous behavior, and a communication hub. This produces a sound foundation for the later AI, agent, and 3D phases.

@@ -4,7 +4,7 @@ namespace Grid.Terminal;
 
 /// <summary>Owns input/output and scheduler lifetime; commands are independently registered and tested.</summary>
 public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher commands,
-    TextReader input, TextWriter output, bool showPrompt = true)
+    TextReader input, TextWriter output, bool showPrompt = true, ILiveTerminal? liveTerminal = null)
 {
     public async Task<int> RunAsync(CancellationToken cancellationToken = default)
     {
@@ -31,6 +31,23 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 var result = commands.Execute(line);
                 if (result.Text.Length != 0) await output.WriteLineAsync(result.Text);
                 if (result.ExitRequested) break;
+                if (result.LiveViewRequested)
+                {
+                    // No ReadLine is outstanding while live mode owns the keyboard.
+                    using var liveCancellation = CancellationTokenSource.CreateLinkedTokenSource(shutdown.Token);
+                    var live = new TerminalLiveView(engine, output, liveTerminal).RunAsync(liveCancellation.Token);
+                    try
+                    {
+                        if (await Task.WhenAny(live, scheduler) == scheduler) break;
+                        await live;
+                    }
+                    finally
+                    {
+                        liveCancellation.Cancel();
+                        try { await live; }
+                        catch (OperationCanceledException) when (liveCancellation.IsCancellationRequested) { }
+                    }
+                }
             }
         }
         catch (OperationCanceledException) when (shutdown.IsCancellationRequested) { }

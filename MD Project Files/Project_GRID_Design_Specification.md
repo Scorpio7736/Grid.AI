@@ -277,7 +277,7 @@ These are **application policy levels**, not Windows administrator privileges. A
 
 ### 6.2 Proposed communications commands
 
-These are future command examples. Current commands are help, status, programs, districts, inspect, start, pause, step/tick and exit; see the [README](../README.md).
+These are future command examples. Current commands are help, status, programs, districts, inspect, start, pause, live, step/tick and exit; see the [README](../README.md).
 
 ```text
 grid status
@@ -706,7 +706,7 @@ The preceding sections describe the desired concept and recommended implementati
 
 ## 14. Original implementation sequence and current next work
 
-The headless Genesis foundation and post-release editing API are complete. Next implement checklist 1.10 live view and bounded recent events, then Phase 2 persistence. The following original sequence remains context for later communications, agents and viewer work; it is not a list of entirely unstarted projects.
+The headless Genesis foundation and post-release editing API are complete. Checklist 1.10 live view and bounded recent events are implemented as of 2026-10-18; next is Phase 2 persistence. Session visibility filtering remains deferred until login integration. The following original sequence remains context for later communications, agents and viewer work; it is not a list of entirely unstarted projects.
 
 Start with the **headless C# simulation and durable communication kernel**, not the entire 3D city:
 

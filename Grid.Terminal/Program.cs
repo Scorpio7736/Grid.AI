@@ -15,7 +15,7 @@ Console.CancelKeyPress += cancel;
 try
 {
     return await new TerminalHost(engine, commands, Console.In, Console.Out,
-        showPrompt: !Console.IsInputRedirected).RunAsync(shutdown.Token);
+        showPrompt: !Console.IsInputRedirected, liveTerminal: new ConsoleLiveTerminal()).RunAsync(shutdown.Token);
 }
 finally
 {
