@@ -18,7 +18,7 @@ public sealed partial class GridSimulationEngine
         foreach (var saved in snapshot.Programs)
         {
             var program = new GridProgram { Id = saved.Id, Name = saved.Name, Occupation = saved.Occupation,
-                Energy = saved.Energy, Status = saved.Status };
+                Energy = saved.Energy, Status = saved.Status, Kind = saved.Kind, Application = saved.Application is { } binding ? binding with { Processes = Array.AsReadOnly(binding.Processes.ToArray()) } : null };
             world.AddProgram(program, saved.DistrictId);
             program.Commit(program.Values, saved.Revision);
         }
@@ -38,7 +38,13 @@ public sealed partial class GridSimulationEngine
         var programs = new Dictionary<Guid, Guid>();
         foreach (var p in snapshot.Programs)
         {
+            if (p.Application is { } a && (string.IsNullOrWhiteSpace(a.ApplicationKey) || a.ApplicationKey.Length > 128 ||
+                a.Incarnation == Guid.Empty || a.ObservedAtUtc.Offset != TimeSpan.Zero || a.Processes is null || a.Processes.Count is < 1 or > 4096 ||
+                a.Processes.Distinct().Count() != a.Processes.Count || a.WorkingSetBytes < 0 ||
+                a.Processes.Any(l => l is null || l.Pid <= 0 || l.StartedAtUtc.Offset != TimeSpan.Zero || l.StartedAtUtc > a.ObservedAtUtc)))
+                throw new InvalidDataException("Invalid application binding.");
             if (p.Id == Guid.Empty || !programs.TryAdd(p.Id, p.DistrictId) ||
+                !Enum.IsDefined(p.Kind) || (p.Kind == ResidentKind.Application) != (p.Application is not null) ||
                 !ValidLabel(p.Name, 80) || !ValidLabel(p.Occupation, 120) ||
                 !float.IsFinite(p.Energy) || p.Energy < 0 || p.Energy > 100 || p.Revision < 0 || !Enum.IsDefined(p.Status))
                 throw new InvalidDataException("Invalid or duplicate program.");

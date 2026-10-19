@@ -9,6 +9,11 @@ public sealed partial class GridSimulationEngine
     private readonly object previewIssuer = new();
     public Guid WorldInstanceId => world.InstanceId;
     public ProgramEditFieldRegistry EditableFields => editFields;
+    public IReadOnlyList<ProgramEditFieldDescriptor> EditableFieldsFor(Guid id)
+    {
+        lock (gate) return Array.AsReadOnly(editFields.Fields.Where(f => world.GetProgram(id).Kind == ResidentKind.Legacy ||
+            f.Key is not ("energy" or "status")).ToArray());
+    }
 
     public ProgramEditResult PrepareEdit(EditSessionReference session, ProgramEditRequest request,
         CancellationToken cancellationToken = default)
@@ -23,7 +28,11 @@ public sealed partial class GridSimulationEngine
             if (cancellationToken.IsCancellationRequested) return new(ProgramEditOutcome.Cancelled);
             if (request is null || request.Fields is null) return Invalid("", "A target and fields are required.");
             if (!world.Programs.TryGetValue(request.ProgramId, out var program)) return new(ProgramEditOutcome.NotFound);
+            if (program.Kind != ResidentKind.Legacy && request.Fields.Any(f => f is not null && (string.Equals(f.Field, "energy", StringComparison.OrdinalIgnoreCase) || string.Equals(f.Field, "status", StringComparison.OrdinalIgnoreCase))))
+                return Invalid("", "Energy and status are observation/service-owned for non-demo residents.");
             var staged = Stage(program.Values, request.Fields.ToArray());
+            if (program.Kind != ResidentKind.Legacy && (staged.Values.Energy != program.Energy || staged.Values.Status != program.Status))
+                return Invalid("", "Observation-owned values cannot be changed through an alias field.");
             if (staged.Errors.Count != 0) return new(ProgramEditOutcome.ValidationFailed, Errors: staged.Errors);
             if (cancellationToken.IsCancellationRequested) return new(ProgramEditOutcome.Cancelled);
             var preview = new ProgramEditPreview(previewIssuer, Guid.NewGuid(), lease!.Identity,
@@ -51,6 +60,8 @@ public sealed partial class GridSimulationEngine
             if (!world.Programs.TryGetValue(preview.ProgramId, out var program)) return new(ProgramEditOutcome.NotFound);
             if (program.Revision != preview.ExpectedRevision) return new(ProgramEditOutcome.Conflict);
             var staged = Stage(program.Values, preview.Changes.Select(c => new ProgramFieldEdit(c.Field, c.After)).ToArray());
+            if (program.Kind != ResidentKind.Legacy && (staged.Values.Energy != program.Energy || staged.Values.Status != program.Status))
+                return Invalid("", "Observation-owned values cannot be changed through an alias field.");
             if (staged.Errors.Count != 0) return new(ProgramEditOutcome.ValidationFailed, Errors: staged.Errors);
             var changed = staged.Values != program.Values;
             if (changed && program.Revision == long.MaxValue) return Invalid("", "Program revision is exhausted.");

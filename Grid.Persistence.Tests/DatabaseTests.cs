@@ -24,7 +24,7 @@ public sealed class DatabaseTests
         Execute(connection, $"""
             INSERT INTO Worlds VALUES ('{World}', 'Test world', '2026-10-18T00:00:00Z', 7736, 'genesis');
             INSERT INTO Districts VALUES ('{World}', '{District}', 'The Core', 'Description');
-            INSERT INTO Programs VALUES ('{World}', '{Program}', 'Citizen', 'Administrator', 42.5, 'Idle', '{District}', 7);
+            INSERT INTO Programs (WorldId,ProgramId,Name,Occupation,Energy,Status,CurrentDistrictId,Revision) VALUES ('{World}', '{Program}', 'Citizen', 'Administrator', 42.5, 'Idle', '{District}', 7);
             INSERT INTO DistrictResources VALUES ('{World}', '{District}', 'Energy', 10.5);
             INSERT INTO SimulationStates VALUES ('{World}', 2, 20000000, 10000000, 0, '2026-10-18T00:00:00Z');
             """);
@@ -100,7 +100,7 @@ public sealed class DatabaseTests
         // Deterministic Genesis IDs may repeat across separate worlds, but never within one.
         Execute(connection, $"""
             INSERT INTO Districts VALUES ('{OtherWorld}', '{District}', 'Other Core', '');
-            INSERT INTO Programs VALUES ('{OtherWorld}', '{Program}', 'Other Citizen', 'Researcher', 100, 'Idle', '{District}', 0);
+            INSERT INTO Programs (WorldId,ProgramId,Name,Occupation,Energy,Status,CurrentDistrictId,Revision) VALUES ('{OtherWorld}', '{Program}', 'Other Citizen', 'Researcher', 100, 'Idle', '{District}', 0);
             """);
         Assert.Equal(2L, Scalar(connection, "SELECT COUNT(*) FROM Programs;"));
         Assert.Throws<SqliteException>(() => Execute(connection, "INSERT INTO Programs SELECT * FROM Programs;"));

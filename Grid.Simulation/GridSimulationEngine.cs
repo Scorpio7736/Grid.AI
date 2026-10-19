@@ -46,7 +46,7 @@ public sealed partial class GridSimulationEngine
         lock (gate)
         {
             var programs = world.Programs.Values.OrderBy(p => p.Name).ThenBy(p => p.Id)
-                .Select(p => new GridProgramSnapshot(p.Id, p.Name, p.Occupation, p.Energy, p.CurrentDistrictId, p.Status, p.Revision))
+                .Select(p => new GridProgramSnapshot(p.Id, p.Name, p.Occupation, p.Energy, p.CurrentDistrictId, p.Status, p.Revision) { Kind = p.Kind, Application = CurrentBinding(p), Condition = CurrentCondition(p) })
                 .ToArray();
             var districts = world.Districts.Values.OrderBy(d => d.Name).ThenBy(d => d.Id)
                 .Select(d => new GridDistrictSnapshot(d.Id, d.Name, d.Description,
@@ -54,7 +54,7 @@ public sealed partial class GridSimulationEngine
                     new System.Collections.ObjectModel.ReadOnlyDictionary<string, float>(
                         new Dictionary<string, float>(d.Resources)))).ToArray();
             return new(clock.TickCount, clock.ElapsedSimulationTime, clock.TickDuration, clock.IsRunning,
-                Array.AsReadOnly(programs), Array.AsReadOnly(districts)) { WorldId = world.Id, City = world.City };
+                Array.AsReadOnly(programs), Array.AsReadOnly(districts)) { WorldId = world.Id, City = world.City, ApplicationDiscoveryStatus = CurrentDiscoveryStatus };
         }
     }
 
@@ -172,6 +172,8 @@ public sealed partial class GridSimulationEngine
                 !Enum.IsDefined(program.Status) ||
                 !world.GetDistrict(program.CurrentDistrictId).ProgramIds.Contains(program.Id))
                 throw new InvalidOperationException($"Invalid state for program {program.Id}.");
+
+            if (program.Kind != ResidentKind.Legacy) continue;
 
             // Minimal Genesis rule: rates per simulated second; no autonomous decisions yet.
             var rate = program.Status switch

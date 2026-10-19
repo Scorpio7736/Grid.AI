@@ -1,5 +1,11 @@
 # Project GRID - Hardware-generated city creation
 
+## Application resident completion - 2026-10-19
+
+**2.7 / 2.7.1 implemented and verified:** production population now follows current-session windowed executable groups through read-only discovery and serialized lifecycle reconciliation. Application residents are transient; Agent/Special residents persist in schema v4. Before production conversion, legacy fictional citizens are preserved in a uniquely named validated archive. City/layout and clock remain intact. Unknown resource requirements display unknown condition; no host-control authority is implied.
+
+Verification: **268 tests passed**, build zero warnings/errors, and a disposable Windows startup/reopen detected nine application groups. See [Application Residents Implementation](Project_GRID_Application_Residents_Implementation.md) for grouping limits, discovery/freshness, storage/migration, editing, resource interpretation and completion evidence. Earlier dated statements that 2.7 is planned, production cities stay empty, or all residents persist describe previous milestones. Agent delegation/services, login, rendering and additional per-application telemetry remain future work.
+
 **Section 2.6 / GRID-REQ-004 implemented and verified - 2026-10-19.** This is authoritative headless city data, not a rendered 3D city. Application population, classification and resource/energy binding remain pending in 2.7.
 
 ## Creation and reuse

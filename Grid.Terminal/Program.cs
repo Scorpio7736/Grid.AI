@@ -3,6 +3,7 @@ using Grid.Persistence;
 using Grid.Simulation;
 using Grid.Terminal;
 using Grid.Simulation.Resources;
+using Grid.Simulation.Applications;
 
 using var shutdown = new CancellationTokenSource();
 ConsoleCancelEventHandler cancel = (_, eventArgs) => { eventArgs.Cancel = true; shutdown.Cancel(); };
@@ -27,7 +28,9 @@ try
         if (options.Recover) store.Recover();
         var startup = await WorldStartup.LoadOrCreateAsync(store, new WindowsHardwareDiscovery(), shutdown.Token);
         var info = startup.Saved.Info;
-        engine = GridSimulationEngine.Restore(startup.Saved.State);
+        var converted = store.ArchiveLegacyResidents(shutdown.Token);
+        if (converted.ArchivePath is { } archive) Console.WriteLine($"Legacy fictional residents archived to {archive}; production population now follows observed applications.");
+        engine = GridSimulationEngine.Restore(converted.Saved.State);
         Console.WriteLine($"{(startup.Created ? "Created" : "Loaded")} {info.Name} ({info.Id}) at tick {engine.TickCount}.");
         if (startup.Created)
         {
@@ -44,10 +47,12 @@ try
     if (store is not null) HistoryCommand.Register(commands, store);
     var telemetry = new HostTelemetryMonitor(new WindowsHostTelemetryProvider(), engine);
     await telemetry.SampleOnceAsync(shutdown.Token);
+    var applications = options.Ephemeral ? null : new ApplicationMonitor(new WindowsApplicationDiscovery(), engine);
+    if (applications is not null) await applications.SampleOnceAsync(shutdown.Token);
     ResourcesCommand.Register(commands, engine);
     return await new TerminalHost(engine, commands, Console.In, Console.Out,
         showPrompt: !Console.IsInputRedirected, liveTerminal: new ConsoleLiveTerminal(), persistence: persistence,
-        telemetry: telemetry).RunAsync(shutdown.Token);
+        telemetry: applications is null ? telemetry : new CombinedHostMonitor(telemetry, applications)).RunAsync(shutdown.Token);
 }
 catch (OperationCanceledException) when (shutdown.IsCancellationRequested) { return 0; }
 catch (Exception exception)

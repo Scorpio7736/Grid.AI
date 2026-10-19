@@ -124,7 +124,7 @@ public sealed class PhaseTwoVerificationTests : IDisposable
             command.CommandText = $"""
                 INSERT INTO Worlds VALUES ('{world}','Legacy','2020-01-01T00:00:00.0000000+00:00',7736,'legacy-v1');
                 INSERT INTO Districts VALUES ('{world}','{district}','Archive','Legacy district');
-                INSERT INTO Programs VALUES ('{world}','{program}','Resident','Archivist',42.5,'Working','{district}',7);
+                INSERT INTO Programs (WorldId,ProgramId,Name,Occupation,Energy,Status,CurrentDistrictId,Revision) VALUES ('{world}','{program}','Resident','Archivist',42.5,'Working','{district}',7);
                 INSERT INTO DistrictResources VALUES ('{world}','{district}','Data',12.25);
                 INSERT INTO SimulationStates VALUES ('{world}',12,30000000,2500000,1,'2020-01-01T00:00:00.0000000+00:00');
                 """;

@@ -1,11 +1,14 @@
 # GRID7736
 
-## Planned population change - GRID-REQ-005 (2026-10-18)
+## Application population - 2.7 (2026-10-19)
 
-The target design now represents running PC applications as transient ordinary residents, with persistent agents and explicitly designated special programs. Resources will reflect observed application use, explicit/estimated requirements and host conditions; energy will be a defined GRID interpretation rather than arbitrary stamina. This is **planned, not implemented**: new hardware-generated cities start empty pending 2.7; legacy saved worlds and ephemeral demos retain fictional citizens and their Genesis energy rules.
+Normal startup discovers current-session windowed executable groups and reconciles starts/exits every two seconds, including while paused. Applications are transient; Agent/Special residents persist. Multiple windows and same-executable helpers share one representative. Background-only services, cross-executable helpers and per-window identity are outside the initial policy.
 
-See [Host programs, lifecycles and resources](MD%20Project%20Files/Project_GRID_Host_Programs_and_Resources.md) and checklist 2.4/2.7. The existing save/recovery implementation and historical test results below retain their original scope. This update changes Markdown only.
+Schema v4 omits ordinary application state from saves. Before production conversion, old fictional citizens are preserved in a unique validated `.legacy-<id>.db` archive whose path is printed. The city and clock remain intact. `--ephemeral` keeps the Genesis demo.
 
+Use `programs`, `inspect program <id|name>`, `status` and `live` for resident type, observation state and interpreted condition. Unknown requirements show **unknown** energy; discovering an app never authorizes controlling it. See [Application Residents Implementation](MD%20Project%20Files/Project_GRID_Application_Residents_Implementation.md) for policy, migration and limitations.
+
+Verification: **268 tests passed**, build zero warnings/errors, Windows disposable startup/reopen passed. Agent task services, login, rendering and additional app-specific telemetry remain future work.
 
 ## Implementation status - 2026-10-17
 
@@ -13,11 +16,11 @@ The current implementation record tracks the released Genesis baseline, post-rel
 
 See [Current implementation and verification](MD%20Project%20Files/Project_GRID_Current_Implementation_Status.md).
 
-A local-first digital civilization prototype built with .NET 10. New saved worlds create six hardware-informed districts with an empty population pending application discovery. The Genesis demo retains five districts and twenty fictional citizens. Both use the fixed-step engine and interactive terminal.
+A local-first digital civilization prototype built with .NET 10. New saved worlds create six hardware-informed districts and populate them from observed applications. The Genesis demo retains five districts and twenty fictional citizens. Both use the fixed-step engine and interactive terminal.
 
 ## Hardware-generated worlds - 2.6 (2026-10-19)
 
-Schema v3 saves the creation profile, seed and actual district/street/building-lot layout. Existing worlds load without rediscovery or regeneration, including after hardware changes. Use `--world "C:\path\to\new-world.db"` with a new filename for a separate city; `--ephemeral` keeps the fixed Genesis demo. Corrupt or incomplete saves are not silently replaced. The layout is headless data; 3D rendering and running-application residents remain planned.
+Schema v3 saves the creation profile, seed and actual district/street/building-lot layout. Existing worlds load without rediscovery or regeneration, including after hardware changes. Use `--world "C:\path\to\new-world.db"` with a new filename for a separate city; `--ephemeral` keeps the fixed Genesis demo. Corrupt or incomplete saves are not silently replaced. The layout remains headless data; 3D rendering remains planned. Application residents are now implemented in 2.7 above.
 
 Verification: 250 tests passed and build completed with zero warnings/errors. See [Hardware City Generation](MD%20Project%20Files/Project_GRID_Hardware_City_Generation.md) for the full completion record.
 

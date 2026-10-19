@@ -97,6 +97,7 @@ public sealed partial class WorldStore : IDisposable
     private void Write(WorldInfo info, GridSimulationSnapshot state, CancellationToken token,
         IReadOnlyList<GridHistoryEvent>? events = null)
     {
+        state = PersistentState(state);
         using (var connection = OpenForWrite())
         using (var transaction = connection.BeginTransaction())
         {
@@ -122,8 +123,8 @@ public sealed partial class WorldStore : IDisposable
                     Execute("INSERT INTO DistrictResources VALUES ($p0,$p1,$p2,$p3)", world, d.Id.ToString("D"), r.Key, r.Value);
             }
             foreach (var p in state.Programs)
-                Execute("INSERT INTO Programs VALUES ($p0,$p1,$p2,$p3,$p4,$p5,$p6,$p7)", world, p.Id.ToString("D"), p.Name,
-                    p.Occupation, p.Energy, p.Status.ToString(), p.DistrictId.ToString("D"), p.Revision);
+                Execute("INSERT INTO Programs VALUES ($p0,$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8)", world, p.Id.ToString("D"), p.Name,
+                    p.Occupation, p.Energy, p.Status.ToString(), p.DistrictId.ToString("D"), p.Revision, p.Kind.ToString());
             Execute("INSERT INTO SimulationStates VALUES ($p0,$p1,$p2,$p3,$p4,$p5)", world, state.TickCount,
                 state.ElapsedSimulationTime.Ticks, state.TickDuration.Ticks, state.IsRunning ? 1 : 0, Utc(DateTimeOffset.UtcNow));
             foreach (var item in events ?? [])
@@ -211,14 +212,14 @@ public sealed partial class WorldStore : IDisposable
             if (r.Read()) throw new InvalidDataException("This runtime requires one world per database.");
         }
         var programs = new List<GridProgramSnapshot>();
-        command.CommandText = "SELECT ProgramId,Name,Occupation,Energy,CurrentDistrictId,Status,Revision FROM Programs";
+        command.CommandText = "SELECT ProgramId,Name,Occupation,Energy,CurrentDistrictId,Status,Revision,ResidentKind FROM Programs";
         using (var r = command.ExecuteReader())
             while (r.Read())
             {
                 var status = r.GetString(5);
                 if (!Enum.TryParse<GridProgramStatus>(status, out var parsed) || parsed.ToString() != status)
                     throw new InvalidDataException("Invalid program status.");
-                programs.Add(new(Id(r.GetString(0)), r.GetString(1), r.GetString(2), r.GetFloat(3), Id(r.GetString(4)), parsed, r.GetInt64(6)));
+                programs.Add(new(Id(r.GetString(0)), r.GetString(1), r.GetString(2), r.GetFloat(3), Id(r.GetString(4)), parsed, r.GetInt64(6)) { Kind = Enum.Parse<ResidentKind>(r.GetString(7)) });
             }
         var resources = new Dictionary<Guid, Dictionary<string, float>>();
         command.CommandText = "SELECT DistrictId,ResourceKey,Amount FROM DistrictResources";

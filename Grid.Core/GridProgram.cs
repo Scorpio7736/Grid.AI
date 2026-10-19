@@ -12,6 +12,8 @@ public sealed class GridProgram
     private float energy = 100f;
     private GridProgramStatus status = GridProgramStatus.Idle;
     public Guid Id { get; init; } = Guid.NewGuid();
+    public ResidentKind Kind { get; init; } = ResidentKind.Legacy;
+    public ApplicationBinding? Application { get; internal set; }
     // Initialization is supported; world-owned values change through validated engine operations.
     public string Name { get => name; set { EnsureUnowned(); name = value; } }
     public string Occupation { get => occupation; set { EnsureUnowned(); occupation = value; } }

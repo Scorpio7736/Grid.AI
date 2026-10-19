@@ -1,5 +1,11 @@
 # Project GRID — Master Development Checklist
 
+## Application resident completion - 2026-10-19
+
+**2.7 / 2.7.1 implemented and verified:** production population now follows current-session windowed executable groups through read-only discovery and serialized lifecycle reconciliation. Application residents are transient; Agent/Special residents persist in schema v4. Before production conversion, legacy fictional citizens are preserved in a uniquely named validated archive. City/layout and clock remain intact. Unknown resource requirements display unknown condition; no host-control authority is implied.
+
+Verification: **268 tests passed**, build zero warnings/errors, and a disposable Windows startup/reopen detected nine application groups. See [Application Residents Implementation](Project_GRID_Application_Residents_Implementation.md) for grouping limits, discovery/freshness, storage/migration, editing, resource interpretation and completion evidence. Earlier dated statements that 2.7 is planned, production cities stay empty, or all residents persist describe previous milestones. Agent delegation/services, login, rendering and additional per-application telemetry remain future work.
+
 ## Hardware city completion - 2026-10-19
 
 **2.6 / GRID-REQ-004 implemented and verified.** First-time creation discovers motherboard, CPU, GPU, RAM, storage and network hardware, generates bounded district/street/building-lot geometry and saves actual layout and provenance in schema v3. Later startups reuse the saved world without discovery or regeneration. Existing worlds are preserved; new generated cities start empty pending 2.7. Inventory is creation provenance, separate from live resource telemetry and application identity. Rendering, atmosphere, fashion and application-resident integration remain planned.
@@ -489,42 +495,49 @@ See [Resources and Host State](Project_GRID_Resources_and_Host_State.md) for exa
 
 ## 2.7 Host application population and persistence policy (GRID-REQ-005)
 
-**Planned - 2026-10-18; documentation only.** Complete with the 2.4 resource foundation before extending Phase 3. Section 2.2 remains completed for its original all-citizen save/load behavior. See [shared contract](Project_GRID_Host_Programs_and_Resources.md).
+**Implemented and verified - 2026-10-19.** Integrated with the 2.4 resource foundation before extending Phase 3. Section 2.2 remains completed for its original all-citizen save/load behavior. See [shared contract](Project_GRID_Host_Programs_and_Resources.md).
 
-- [ ] Add explicit transient application versus persistent agent/special-program classification without deriving authority from names or labels
-- [ ] Define application grouping, multi-process ownership, independent instances, background/system-process inclusion and bounded discovery costs
-- [ ] Add fake and read-only host process discovery adapters with process-lifetime identity, PID-reuse protection, sample freshness and unavailable-data handling
-- [ ] Reconcile starts, confirmed exits and relaunches atomically with ticks and district membership; incomplete observations must not imply exit
-- [ ] Load persistent residents and discover the currently running application population at startup; never restore a closed application from a prior save
-- [ ] Persist city/layout, persistent agents/special programs and clock while omitting ordinary resident state and dangling membership references
-- [ ] Add a versioned migration and explicit legacy conversion/archive policy; retain a recoverable original and never relabel old citizens as detected apps
-- [ ] Apply live reconciliation after backup recovery without resurrecting historic application residents
-- [ ] Integrate 2.4 resource observations and requirement provenance; define energy/unknown-state behavior and separate optional civic resources
-- [ ] Keep historical lifecycle records distinct from resident saves; define minimal metadata, retention and no unobserved offline activity
-- [ ] Update terminal snapshots/inspection/live view for resident type, incarnation, resource freshness and known versus estimated values
-- [ ] Ensure observations and simulated shortages never stop, suspend, restart or throttle host applications without a separate authorized capability
-- [ ] Test grouping, PID reuse, rapid starts/exits, zero applications, denied/stale telemetry, resource interpretation and invalidated previews
-- [ ] Test changed application sets across restart, persistent-agent continuity, legacy migration/rollback and recovery reconciliation
-- [ ] Add dated implementation/completion verification only after the behavior is built and tested
+- [x] Add explicit transient application versus persistent agent/special-program classification without deriving authority from names or labels
+- [x] Define application grouping, multi-process ownership, independent instances, background/system-process inclusion and bounded discovery costs
+- [x] Add fake and read-only host process discovery adapters with process-lifetime identity, PID-reuse protection, sample freshness and unavailable-data handling
+- [x] Reconcile starts, confirmed exits and relaunches atomically with ticks and district membership; incomplete observations must not imply exit
+- [x] Load persistent residents and discover the currently running application population at startup; never restore a closed application from a prior save
+- [x] Persist city/layout, persistent agents/special programs and clock while omitting ordinary resident state and dangling membership references
+- [x] Add a versioned migration and explicit legacy conversion/archive policy; retain a recoverable original and never relabel old citizens as detected apps
+- [x] Apply live reconciliation after backup recovery without resurrecting historic application residents
+- [x] Integrate 2.4 resource observations and requirement provenance; define energy/unknown-state behavior and separate optional civic resources
+- [x] Keep historical lifecycle records distinct from resident saves; define minimal metadata, retention and no unobserved offline activity
+- [x] Update terminal snapshots/inspection/live view for resident type, incarnation, resource freshness and known versus estimated values
+- [x] Ensure observations and simulated shortages never stop, suspend, restart or throttle host applications without a separate authorized capability
+- [x] Test grouping, PID reuse, rapid starts/exits, zero applications, denied/stale telemetry, resource interpretation and invalidated previews
+- [x] Test changed application sets across restart, persistent-agent continuity, legacy migration/rollback and recovery reconciliation
+- [x] Add dated implementation/completion verification only after the behavior is built and tested
 
 ### 2.7.1 Retrofit existing modules before extending citizen behavior
 
-**Planned follow-up - 2026-10-18; no code changes.** See [retrofit mapping and dependency order](Project_GRID_Host_Programs_and_Resources.md#existing-implementation-retrofit---planned-2026-10-18). Preserve original completion entries for 1.2–1.10 and 2.2.
+**Retrofit implemented and verified - 2026-10-19.** See [retrofit mapping and dependency order](Project_GRID_Host_Programs_and_Resources.md#existing-implementation-retrofit---planned-2026-10-18). Preserve original completion entries for 1.2–1.10 and 2.2.
 
-- [ ] Extend GridProgram with explicit resident classification and application-run identity distinct from durable identity
-- [ ] Add safe world/engine removal and reconciliation, including atomic membership cleanup and rejection of operations on expired incarnations
-- [ ] Retain the Genesis twenty-citizen factory as an explicit demo/test fixture and replace production population seeding with discovery
-- [ ] Adapt 2.2 save/load and backup recovery with classification-aware persistence and a recoverable, versioned legacy migration
-- [ ] Switch production startup only once lifecycle reconciliation and the new persistence policy work together
-- [ ] Replace fixed application energy drain/recharge only after 2.4 specifies measurable inputs, requirement provenance and unknown-data behavior
-- [ ] Adapt editing metadata and preview validation for observation-owned fields, transient edits and application exit/relaunch
-- [ ] Extend terminal inspection/live view for resident type, resource freshness and unknown measurements
-- [ ] Preserve clock/no-offline-time rules, transactions, backups, command registration and consistent snapshots; add regressions around their integration
-- [ ] Verify the complete retrofit before expanding Phase 3 behavior; retain Genesis tests as fixtures rather than production population requirements
+- [x] Extend GridProgram with explicit resident classification and application-run identity distinct from durable identity
+- [x] Add safe world/engine removal and reconciliation, including atomic membership cleanup and rejection of operations on expired incarnations
+- [x] Retain the Genesis twenty-citizen factory as an explicit demo/test fixture and replace production population seeding with discovery
+- [x] Adapt 2.2 save/load and backup recovery with classification-aware persistence and a recoverable, versioned legacy migration
+- [x] Switch production startup only once lifecycle reconciliation and the new persistence policy work together
+- [x] Replace fixed application energy drain/recharge only after 2.4 specifies measurable inputs, requirement provenance and unknown-data behavior
+- [x] Adapt editing metadata and preview validation for observation-owned fields, transient edits and application exit/relaunch
+- [x] Extend terminal inspection/live view for resident type, resource freshness and unknown measurements
+- [x] Preserve clock/no-offline-time rules, transactions, backups, command registration and consistent snapshots; add regressions around their integration
+- [x] Verify the complete retrofit before expanding Phase 3 behavior; retain Genesis tests as fixtures rather than production population requirements
 
 **Order:** classification/policy → safe lifecycle with fake discovery → coordinated persistence/startup migration → real telemetry and resource interpretation → editing/UI integration and end-to-end verification. Section 2.3 can proceed against this contract without treating all event subjects as permanent residents.
 
-**Planning verification:** documented adaptations and retained foundations; no implementation completion or new runtime test result is claimed.
+**Completion notes - 2026-10-19**
+
+- Added explicit Legacy/Application/Agent/Special classification, new runtime incarnations, current-session windowed executable grouping, read-only Windows discovery and injectable fake-provider tests. Same-executable helpers/windows share one resident; background-only services and cross-executable child ownership are outside the initial policy.
+- Lifecycle reconciliation shares the engine lock with ticks/edits/snapshots. Confirmed exits clean membership; incomplete samples retain unknown residents/helpers. PID reuse/relaunch invalidates the prior resident and its edit previews. No unobserved offline activity is invented.
+- Schema v4 filters application rows and membership from saves. Agent/Special identity/state persists. Production conversion archives legacy citizens in a validated unique .legacy-<id>.db file before removal; cancellation/failure preserves recoverable data. Recovery rediscovers current applications.
+- Bound 2.4's optional sourced headroom policy to non-demo residents; unknown requirements remain unknown. Removed arbitrary non-demo tick energy changes. Observation-owned energy/status reject edits; aliases/district edits remain transient. Inspection/live/status expose classification, incarnation, freshness and measurement limits.
+- Verification: 268 tests passed (14 Core, 117 Simulation, 78 Persistence, 59 Terminal); build zero warnings/errors. Eighteen added cases cover grouping, lifecycle/denials/PID reuse, concurrent churn/ticks, condition interpretation, invalidated edits, save/restart/recovery, persistent residents and archive failure/cancellation. Real Windows disposable startup and reopen observed nine groups without changing the default user world.
+- See [Application Residents Implementation](Project_GRID_Application_Residents_Implementation.md) for precise scope and evidence. Per-application CPU/GPU/disk/network attribution, persistent service budgets, agent task services and broader app discovery remain future extensions. Changes are local working-tree changes, not a release or publication claim.
 
 **Planning integration notes - 2026-10-18:** Updated the design, resource/persistence contracts, terminal/identity/editing plans, visual guides and agent handoff. Replaced fixed production-population targets with running applications plus persistent residents; retained twenty-citizen fixtures and original completion history. No C# or database changes and no runtime tests were performed. Earlier 200-test verification belongs to 2.2, not GRID-REQ-005.
 

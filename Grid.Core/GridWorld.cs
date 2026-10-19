@@ -54,6 +54,17 @@ public sealed class GridWorld
         lock (SyncRoot) return programs.TryGetValue(id, out var program)
             ? program : throw new KeyNotFoundException($"Unknown program: {id}.");
     }
+    internal void RemoveProgram(Guid id)
+    {
+        lock (SyncRoot)
+        {
+            var program = GetProgram(id);
+            GetDistrict(program.CurrentDistrictId).RemoveMember(id);
+            programs.Remove(id);
+            program.Owner = null;
+            program.CurrentDistrictId = Guid.Empty;
+        }
+    }
     public GridDistrict GetDistrict(Guid id)
     {
         lock (SyncRoot) return districts.TryGetValue(id, out var district)

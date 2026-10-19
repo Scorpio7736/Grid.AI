@@ -1,5 +1,11 @@
 # Project GRID — Session Context and Authorization Contract
 
+## Application resident completion - 2026-10-19
+
+**2.7 / 2.7.1 implemented and verified:** production population now follows current-session windowed executable groups through read-only discovery and serialized lifecycle reconciliation. Application residents are transient; Agent/Special residents persist in schema v4. Before production conversion, legacy fictional citizens are preserved in a uniquely named validated archive. City/layout and clock remain intact. Unknown resource requirements display unknown condition; no host-control authority is implied.
+
+Verification: **268 tests passed**, build zero warnings/errors, and a disposable Windows startup/reopen detected nine application groups. See [Application Residents Implementation](Project_GRID_Application_Residents_Implementation.md) for grouping limits, discovery/freshness, storage/migration, editing, resource interpretation and completion evidence. Earlier dated statements that 2.7 is planned, production cities stay empty, or all residents persist describe previous milestones. Agent delegation/services, login, rendering and additional per-application telemetry remain future work.
+
 ## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
 
 Application representatives are observed entities, not authenticated users or agents. Process names and persistent classifications grant no roles. Future agent login must use trusted persistent identity; any ordinary-program view must be read-scoped and bound to a current incarnation. Exit/relaunch invalidates incarnation-bound previews and access bindings. Existing default-deny authorization remains unchanged.

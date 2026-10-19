@@ -23,13 +23,13 @@ public static class DefaultCommands
             var state = engine.GetSnapshot();
             return new($"State: {(state.IsRunning ? "Running" : "Paused")}{Environment.NewLine}" +
                 $"Tick: {state.TickCount} | Simulation time: {state.ElapsedSimulationTime:c} | Tick duration: {state.TickDuration:c}{Environment.NewLine}" +
-                $"Districts: {state.Districts.Count} | Programs: {state.Programs.Count}");
+                $"Districts: {state.Districts.Count} | Programs: {state.Programs.Count}{Environment.NewLine}Application discovery: {state.ApplicationDiscoveryStatus}");
         });
         Add("programs", "List citizens with their IDs, locations, and energy.", () =>
         {
             var state = engine.GetSnapshot();
             return new(string.Join(Environment.NewLine, state.Programs.Select(p =>
-                $"{p.Id} | {p.Name} | {p.Status} | Energy: {Number(p.Energy)} | {state.Districts.Single(d => d.Id == p.DistrictId).Name}")));
+                $"{p.Id} | {p.Name} | {p.Kind} | {ResidentFormatting.Status(p)} | Energy: {ResidentFormatting.Energy(p)} | {state.Districts.Single(d => d.Id == p.DistrictId).Name}")));
         });
         Add("districts", "List districts and populations.", () =>
         {
@@ -53,8 +53,8 @@ public static class DefaultCommands
                 if (matches.Length != 1) return LookupFailure(matches.Length, query);
                 var p = matches[0];
                 return new($"Program: {p.Name}{Environment.NewLine}ID: {p.Id}{Environment.NewLine}" +
-                    $"Occupation: {p.Occupation}{Environment.NewLine}Status: {p.Status}{Environment.NewLine}" +
-                    $"Energy: {Number(p.Energy)}{Environment.NewLine}District: {state.Districts.Single(d => d.Id == p.DistrictId).Name} ({p.DistrictId})");
+                    $"{ResidentFormatting.Details(p)}{Environment.NewLine}Occupation: {p.Occupation}{Environment.NewLine}Status: {ResidentFormatting.Status(p)}{Environment.NewLine}" +
+                    $"Energy: {ResidentFormatting.Energy(p)}{Environment.NewLine}District: {state.Districts.Single(d => d.Id == p.DistrictId).Name} ({p.DistrictId})");
             }
             var districts = state.Districts.Where(d => Matches(d.Id, d.Name)).ToArray();
             if (districts.Length != 1) return LookupFailure(districts.Length, query);

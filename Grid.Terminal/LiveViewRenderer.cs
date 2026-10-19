@@ -35,8 +35,8 @@ public static class LiveViewRenderer
         var districts = state.Districts.ToDictionary(d => d.Id, d => d.Name);
         foreach (var program in state.Programs.Skip(programPage * programSlots).Take(programSlots))
         {
-            lines.Add($"{program.Name} | {program.Status} | Energy: {program.Energy.ToString("0.###", CultureInfo.InvariantCulture)} | {program.Occupation}");
-            lines.Add($"{program.Id} | {districts.GetValueOrDefault(program.DistrictId, "Unknown district")}");
+            lines.Add($"{program.Name} | {program.Kind} | {ResidentFormatting.Status(program)} | Energy: {ResidentFormatting.Energy(program)} | {program.Occupation}");
+            lines.Add($"{program.Id} | {districts.GetValueOrDefault(program.DistrictId, "Unknown district")} | {(program.Application is { } a ? (a.Confirmed ? "fresh" : "unknown/stale") + " run " + a.Incarnation : program.Kind.ToString())}");
         }
         if (state.Programs.Count == 0) lines.Add("No programs.");
         lines.Add(snapshot.HostResources.Count == 0 ? "Status describes current state; no autonomous jobs/routes are implemented." :
