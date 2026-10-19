@@ -1,5 +1,12 @@
 # Project GRID — Master Development Checklist
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+New work is tracked in revised 2.4 and added 2.7, with Phase 3/7 acceptance criteria aligned to a changing application population. All completed Genesis and 2.1-2.2 entries remain completed for their original scope; this requirement is not implemented.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 ## Documentation integration - 2026-10-18
 
 GRID-REQ-004 is planned: first-time world creation discovers motherboard, CPU, GPU, RAM, storage and network hardware, generates a unique city using those components, and saves the resulting world for reuse on later startups. Section 2.6 tracks the work; no implementation is claimed. The [design specification](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract) is the shared contract for all eight documents.
@@ -389,12 +396,12 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ## 2.4 Resources and host state
 
-- [ ] Define initial Energy, Materials and Data resource rules
+- [ ] Define CPU, RAM, GPU/VRAM, storage and network resource categories for application residents (GRID-REQ-005); distinguish measured usage, capacity, pressure and estimated requirements
 - [ ] Establish resource limits and update invariants
 - [ ] Create abstract interfaces for host telemetry
 - [ ] Add fake telemetry provider for repeatable tests
 - [ ] Add approved read-only Windows telemetry
-- [ ] Smooth and bound effects of host metrics on fictional resources
+- [ ] Specify and test bounded, smoothed energy/resource-sufficiency interpretation, including missing/stale metrics and unknown requirements; replace arbitrary application energy drain
 - [ ] Prevent fictional resource changes from affecting Windows allocations
 
 ## 2.5 Verification
@@ -431,12 +438,39 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ---
 
+## 2.7 Host application population and persistence policy (GRID-REQ-005)
+
+**Planned - 2026-10-18; documentation only.** Complete with the 2.4 resource foundation before extending Phase 3. Section 2.2 remains completed for its original all-citizen save/load behavior. See [shared contract](Project_GRID_Host_Programs_and_Resources.md).
+
+- [ ] Add explicit transient application versus persistent agent/special-program classification without deriving authority from names or labels
+- [ ] Define application grouping, multi-process ownership, independent instances, background/system-process inclusion and bounded discovery costs
+- [ ] Add fake and read-only host process discovery adapters with process-lifetime identity, PID-reuse protection, sample freshness and unavailable-data handling
+- [ ] Reconcile starts, confirmed exits and relaunches atomically with ticks and district membership; incomplete observations must not imply exit
+- [ ] Load persistent residents and discover the currently running application population at startup; never restore a closed application from a prior save
+- [ ] Persist city/layout, persistent agents/special programs and clock while omitting ordinary resident state and dangling membership references
+- [ ] Add a versioned migration and explicit legacy conversion/archive policy; retain a recoverable original and never relabel old citizens as detected apps
+- [ ] Apply live reconciliation after backup recovery without resurrecting historic application residents
+- [ ] Integrate 2.4 resource observations and requirement provenance; define energy/unknown-state behavior and separate optional civic resources
+- [ ] Keep historical lifecycle records distinct from resident saves; define minimal metadata, retention and no unobserved offline activity
+- [ ] Update terminal snapshots/inspection/live view for resident type, incarnation, resource freshness and known versus estimated values
+- [ ] Ensure observations and simulated shortages never stop, suspend, restart or throttle host applications without a separate authorized capability
+- [ ] Test grouping, PID reuse, rapid starts/exits, zero applications, denied/stale telemetry, resource interpretation and invalidated previews
+- [ ] Test changed application sets across restart, persistent-agent continuity, legacy migration/rollback and recovery reconciliation
+- [ ] Add dated implementation/completion verification only after the behavior is built and tested
+
+**Planning integration notes - 2026-10-18:** Updated the design, resource/persistence contracts, terminal/identity/editing plans, visual guides and agent handoff. Replaced fixed production-population targets with running applications plus persistent residents; retained twenty-citizen fixtures and original completion history. No C# or database changes and no runtime tests were performed. Earlier 200-test verification belongs to 2.2, not GRID-REQ-005.
+
+---
+
+
 # Phase 3 — First Programs
+
+Planned behavior follows GRID-REQ-005: ordinary application residents are transient and observation-driven; persistent agents/special programs retain autonomous roles. Relationships and memories for ordinary residents are session-local; durable historical events do not restore them as active residents.
 
 ## 3.1 Program needs and behavior
 
-- [ ] Implement energy expenditure and recharge
-- [ ] Implement work/rest routines
+- [ ] Implement the approved resource-based energy/condition policy for application residents and persistent agents; do not use movement/open duration as arbitrary drain
+- [ ] Implement persistent-agent/special-program work/rest policies and observation-grounded application activity
 - [ ] Add needs, goals and action priorities
 - [ ] Define legal states and state transitions
 - [ ] Implement occupations and simple daily work
@@ -448,7 +482,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - [ ] Add movement goals and route selection
 - [ ] Add jobs and workstations
 - [ ] Assign programs to suitable jobs
-- [ ] Connect work to fictional resource production/consumption
+- [ ] Connect application presentation to measured resource activity; keep optional fictional civic production separate
 - [ ] Prevent impossible or invalid movements
 
 ## 3.3 Social civilization
@@ -465,7 +499,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - [ ] Implement program decision loop
 - [ ] Use seeded randomness for reproducibility
 - [ ] Ensure each action follows world rules
-- [ ] Run twenty citizens autonomously for an hour
+- [ ] Run a changing fake application population and persistent agents for an hour; cover zero applications, starts/exits and high churn
 - [ ] Verify coherent movement and event records
 - [ ] Measure CPU and memory consumption
 - [ ] Verify autonomy works without an LLM
@@ -742,7 +776,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ## 7.5 World interaction
 
-- [ ] Render twenty citizens from live simulation state
+- [ ] Render the reconciled application population plus persistent residents from live simulation state; use twenty-resident fixtures only for tests
 - [ ] Animate movement and program activity
 - [ ] Click citizens to inspect actual status and history
 - [ ] Display conversations with agents and residents

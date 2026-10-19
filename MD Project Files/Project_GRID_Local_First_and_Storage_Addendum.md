@@ -1,5 +1,12 @@
 # Project GRID — Local-First Architecture and Storage Planning
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+Save the city, persistent agents/special programs and world clock; do not save ordinary application residents for restoration. Reconcile running applications at startup. Retained history is separate from active residents. Earlier population/storage estimates describe the older fictional-citizen proposal, not a target number of production inhabitants.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 ## GRID-REQ-004 - Persistent hardware-generated worlds (planned, 2026-10-18)
 
 First-time creation must discover motherboard, CPU, GPU, RAM, storage and network hardware locally, generate a unique city from that profile and save the resulting world. Subsequent startups load the saved city and evolving simulation state; they do not regenerate it. The [generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract) defines creation versus recovery.
@@ -237,7 +244,7 @@ Configure restrictive filesystem access permissions and separate per-user prefer
 
 **Key distinction:** Storage determines how much the Grid can retain (assets, agent records, history). **CPU/GPU/RAM determine how many detailed behaviors, conversations and rendered characters can operate simultaneously.** Therefore a population estimate is not a guarantee of real-time performance.
 
-### Scale illustrations
+### Historical scale illustrations (superseded population assumptions)
 
 | Approximate number of simulated citizens | Experience | Storage interpretation |
 |---|---|---|
@@ -281,13 +288,13 @@ This is arithmetic based on illustrative assumptions, **not measured Grid perfor
 
 ## 10. Proposed Starting Civilization
 
-**Recommendation for Genesis (early usable version):**
+**Historical recommendation retained for context; population assumptions superseded by GRID-REQ-005:**
 
 | Parameter | Starting target |
 |---|---|
 | Initial storage quota | 20 GB |
 | Default requested expansion | +10 GB, user approval required |
-| Starting population | ~100 simulated citizens, scaled to hardware |
+| Starting population | Running application representatives plus persistent agents/special programs; no fixed citizen target |
 | Key system agents | ARCHON, SENTINEL, ARCHIVIST, FORGE, VOLT, RELAY |
 | City layout | Five interconnected districts |
 | Language models | One shared local inference service, optional when idle |
@@ -296,7 +303,7 @@ This is arithmetic based on illustrative assumptions, **not measured Grid perfor
 | Offline behavior | Entirely local once installed |
 | Viewer | Optional; closing it does not stop the headless simulation |
 
-Start smaller during implementation (e.g., 20 citizens) before scaling to 100, then thousands. Use measured CPU, RAM, GPU, and disk consumption to decide expansion pace.
+Use bounded fake application sets for tests, including zero and high-churn populations. Production population follows running applications plus persistent residents. Use measured GRID CPU, RAM, GPU and disk consumption to bound telemetry and presentation costs.
 
 ## 11. Project Roadmap Implications
 

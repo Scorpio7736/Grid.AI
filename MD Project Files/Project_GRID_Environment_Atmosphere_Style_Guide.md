@@ -1,5 +1,12 @@
 # Project GRID — Environment & Atmosphere Style Guide
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+Host resource pressure may drive bounded, smoothed presentation with explicit unknown-data behavior; it must not imply measured application failure or destroy the city. Application arrivals/departures change occupancy, not the saved layout or established atmosphere. Resource visuals remain interpretations, not literal hardware allocation.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 ## GRID-REQ-004 - Atmosphere across generated worlds (planned, 2026-10-18)
 
 First creation will discover motherboard, CPU, GPU, RAM, storage and network hardware, procedurally generate a unique city using them, and save it for reuse on later startups. This remains planned; current Genesis has no generated city or persistence. See the [generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract).

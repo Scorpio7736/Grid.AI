@@ -1,0 +1,69 @@
+# Project GRID - Host programs, lifecycles and resources
+
+**GRID-REQ-005 — planned, 2026-10-18.** This records the user's revised population and resource model. It supersedes earlier plans for a permanently saved population of ordinary fictional citizens. This update changes documentation only; the implementation still creates twenty fictional citizens, saves all of them, and uses the Genesis energy rules.
+
+## Population contract
+
+Ordinary GRID programs represent applications currently running on the PC. Starting an application brings its representative into the world; confirmed application exit removes that active representative. GRID does not populate the production city with arbitrary ordinary citizens to reach a fixed population target.
+
+Agents and explicitly designated special programs are persistent residents. Their identity, role, configuration, authorized capabilities and applicable history survive restart. Persistence is an explicit entity classification; a process name, occupation, uniform or self-reported agent label cannot grant it or confer authorization. Named agents remain planned services, not implemented merely because this contract describes them.
+
+Ordinary application residents are transient. Do not save their individual energy, position, needs, relationships or other resident state for resurrection on the next launch. A new application run gets a new runtime incarnation. Historical events can refer to a former incarnation without making it an active resident or retaining a full ordinary-program save record. Application grouping configuration and shared visual templates are separate from saved individual residents.
+
+## Discovery and lifecycle
+
+1. Load the saved city and persistent residents, retaining the durable simulation clock without offline advancement.
+2. Discover currently running applications through a read-only host adapter.
+3. Reconcile successful observations with the active population, then observe starts, exits and resource changes throughout the session.
+4. Create residents for newly observed applications and remove them after confirmed exit. Restarting GRID must never restore an application merely because it ran during the previous session.
+
+An application may own multiple processes. The proposed default is one application representative with associated child processes; exact grouping, multiple independent instances, background services and system-process inclusion require an explicit, tested policy. Avoid double-counting grouped resource use. Identity matching must distinguish process lifetimes and PID reuse; a PID or executable display name alone is insufficient.
+
+Access-denied, incomplete or stale observations mean unknown availability, not confirmed application exit or zero resource use. Define a bounded reconciliation/grace policy. Short-lived applications and missed intervals must not produce invented activity. When GRID was closed, report only what is observed on restart; do not reconstruct unobserved activity or advance simulation time to fill the gap.
+
+The telemetry adapter supplies observations; C# simulation operations serialize population changes with ticks, membership updates and snapshots. The viewer never enumerates processes to mutate the world independently. Fake providers support repeatable lifecycle tests without depending on applications installed on the test PC.
+
+## Resources and energy
+
+Resources describe what an application uses or needs to function and the relevant capacity or pressure of the host. Proposed categories are:
+
+| Category | Meaning | World presentation |
+|---|---|---|
+| CPU | Processing activity and available processing capacity | Processing-sector work |
+| RAM | Active memory usage and memory pressure | Workspace in the Memory Banks |
+| GPU / VRAM | Supported graphics/compute and video-memory measurements | Graphics/compute district activity |
+| Storage | Capacity, free space and read/write activity as distinct measurements | Archive capacity and transfer activity |
+| Network | Connectivity and transfer activity | Gateway communications |
+
+Keep measured usage, host capacity, pressure and configured/estimated requirements separate, with units, sampling time, source and freshness. Current usage is not proof of an application's exact minimum requirement. Missing measurements are unknown, never fabricated zeroes. Not every metric will be available per application; unsupported attribution must be visible. Do not equate all occupied RAM with harmful pressure or treat lack of network traffic as failure for an offline application.
+
+Energy is a GRID interpretation of resource sufficiency or operating condition, not a literal Windows energy meter or proof of application health. A normalized 0–100 display may be retained, but its formula, category weights, thresholds, smoothing, recovery and unknown-data behavior must be specified and tested before implementation. Requirements must have stated provenance; an energy score must not imply certainty about unknown requirements.
+
+The current fixed drain for Working/Moving and fixed Recharging gain are Genesis placeholders, not the target model for host application residents. Movement or merely remaining open must not drain an application's energy without a resource-based reason. Recharging, if retained as a presentation state, reflects recovery of the relevant condition rather than consuming an invented universal fuel pool. Persistent agents need an explicit resource policy for their actual services and tasks, not assumed per-character OS processes.
+
+Earlier Energy/Materials/Data economy proposals are superseded as the primary host-resource model. Any later fictional construction or civic resource must be clearly separate, optional world mechanics; it must not claim to measure or allocate real PC resources.
+
+Observation does not control the application. Low GRID energy must not close, suspend, throttle, restart or otherwise alter a host application. Such operations belong to a separately authorized task capability. GRID may budget its own work under host pressure. No permission is implied by an application appearing in the city.
+
+## Persistence and migration
+
+Save the city, districts, generated layout/provenance, persistent agents/special programs and durable world clock. Derive current district memberships for transient residents from the reconciled live population. Never leave a saved membership pointing to an omitted resident. Reconcile newcomers into valid districts without regenerating the city.
+
+Section 2.2 currently persists every GridProgram; its implementation and verification remain valid for the old model. Add a versioned migration and explicit save/load filtering before claiming GRID-REQ-005 is implemented. Do not edit the released schema v1 migration or silently delete existing saved citizens. Define a documented legacy conversion/archive policy and preserve a recoverable original before conversion; legacy citizens must not be mislabeled as discovered applications or automatically promoted to special programs.
+
+Backup recovery restores durable world state, then rediscovers live applications. It must not resurrect application residents from the backup. Historical lifecycle events, if retained by section 2.3, are distinct from active population state; define retention and minimal identifying metadata separately from sensitive command lines or document contents.
+
+GRID-REQ-004 still generates the city once from motherboard, CPU, GPU, RAM, storage and network hardware. GRID-REQ-005 updates its occupants and observed resource conditions continuously. Application starts/exits and changing telemetry do not regenerate the saved city.
+
+## Implementation placement and acceptance
+
+- **2.3:** history can record starts, confirmed exits and meaningful resource changes with provenance; avoid logging every sample. Historical residents never become active through replay.
+- **2.4:** read-only telemetry, resource definitions, requirement provenance and energy interpretation.
+- **2.7:** entity classification, application grouping/lifecycle reconciliation, filtered persistence and legacy migration. Complete this foundation before extending Phase 3 population behavior.
+- **Phase 3:** behavior and presentation consistent with real observed application state; persistent agents/special programs retain their intended autonomy. Fake populations remain test fixtures.
+- **Phases 4–6:** agent delegation, identity and task authorization remain separate. An ordinary application representative is not automatically an authenticated agent.
+- **Phases 7–8:** render the changing population and integrate startup/shutdown through the same authoritative engine.
+
+Required verification includes launch/exit/relaunch, grouped processes and independent instances, PID reuse, denied/stale telemetry, unknown resource requirements, atomic membership updates, restart with a different application set, persistent-agent continuity, legacy migration/rollback, backup recovery followed by live reconciliation, and no host-app mutation from simulated shortages. Zero applications must be a supported state; twenty fictional citizens are a test fixture, not a production acceptance requirement.
+
+**Documentation verification — 2026-10-18:** revised the shared design, checklist, persistence, resource, editing, terminal and visual planning documents. Preserved completed checklist entries and dated implementation evidence. No C# changes, schema migration or runtime tests were performed for this planning update. The prior 200-test result belongs to section 2.2 and does not verify GRID-REQ-005.

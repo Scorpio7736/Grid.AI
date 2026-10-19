@@ -1,5 +1,12 @@
 # Project GRID — Session Context and Authorization Contract
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+Application representatives are observed entities, not authenticated users or agents. Process names and persistent classifications grant no roles. Future agent login must use trusted persistent identity; any ordinary-program view must be read-scoped and bound to a current incarnation. Exit/relaunch invalidates incarnation-bound previews and access bindings. Existing default-deny authorization remains unchanged.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 ## Implementation status - 2026-10-17
 
 The editing authorization seam is implemented, with default denial and test-only authorization providers. The general session contract and lifecycle below remain the integration specification. A production provider must implement authentication, expiry, current capability/scope checks and revocation ordering; the engine does not supply those services.

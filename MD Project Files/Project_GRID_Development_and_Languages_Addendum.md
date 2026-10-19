@@ -1,5 +1,12 @@
 # Project GRID — Development Roadmap & Language Architecture
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+C# will own application classification, lifecycle reconciliation and telemetry interpretation through fake/Windows adapters. Persistence will save only agents/special residents alongside the world; transient ordinary residents are rebuilt from live discovery. Implement checklist 2.7 before expanding Phase 3 behavior. Python, AI and the viewer are not required for this foundation.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 ## GRID-REQ-004 - Implementation sequencing (planned, 2026-10-18)
 
 First-time world creation must discover motherboard, CPU, GPU, RAM, storage and network hardware, procedurally generate a unique hardware-informed city, and save it. Later startups must load and reuse that world rather than regenerate it. See the [generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract).

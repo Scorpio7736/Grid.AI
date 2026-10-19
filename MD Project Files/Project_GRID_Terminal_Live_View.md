@@ -1,5 +1,12 @@
 # Project GRID - Terminal live view
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+Future live view will identify application residents versus persistent residents, show starts/confirmed exits and observed resource conditions, and label stale/unsupported measurements as unknown. Energy must be labeled as a GRID interpretation with a defined policy. UI refresh observes engine snapshots and must not discover processes or invent events independently. The current live view still displays fictional Genesis citizens.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 **Implemented and verified:** 2026-10-18, checklist section 1.10. Session-specific visibility filtering remains deferred until login exists.
 
 ## Use

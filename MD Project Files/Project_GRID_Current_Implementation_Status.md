@@ -1,5 +1,12 @@
 # Project GRID - Current Implementation and Verification
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+Documentation now targets transient residents for running PC applications, persistent agents/special programs, and resource-based energy. None of that new behavior is implemented yet. Runtime still uses twenty fictional citizens, saves them all and applies fixed Genesis energy rates. The 200-test result below verifies 2.2, not this new requirement.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 **Reviewed:** 2026-10-17. Covers local HEAD `0b659e6` and the current working tree, including uncommitted changes. Remote synchronization was not checked.
 
 ## Persistence architecture update - 2026-10-18

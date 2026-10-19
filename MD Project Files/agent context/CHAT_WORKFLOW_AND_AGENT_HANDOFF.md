@@ -1,5 +1,12 @@
 # Project GRID - Chat workflow and agent handoff
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+The user revised the product vision: ordinary programs represent currently running PC applications and are not individually saved; agents and explicitly designated special programs persist. Resources reflect application needs/usage and host conditions; energy is a defined interpretation, not arbitrary stamina. Read the shared contract and checklist 2.4/2.7 before further population work. Preserve historical 2.2 evidence without claiming this new model is implemented.
+
+See [Host programs, lifecycles and resources](../Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 **Recorded:** 2026-10-18
 **Purpose:** Help future agents continue this collaboration with the same continuity, accuracy and practical results.
 

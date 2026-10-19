@@ -1,5 +1,12 @@
 # GRID7736
 
+## Planned population change - GRID-REQ-005 (2026-10-18)
+
+The target design now represents running PC applications as transient ordinary residents, with persistent agents and explicitly designated special programs. Resources will reflect observed application use, explicit/estimated requirements and host conditions; energy will be a defined GRID interpretation rather than arbitrary stamina. This is **planned, not implemented**: current code still creates twenty fictional citizens, saves every citizen and uses fixed Genesis energy rates.
+
+See [Host programs, lifecycles and resources](MD%20Project%20Files/Project_GRID_Host_Programs_and_Resources.md) and checklist 2.4/2.7. The existing save/recovery implementation and historical test results below retain their original scope. This update changes Markdown only.
+
+
 ## Implementation status - 2026-10-17
 
 The current implementation record tracks the released Genesis baseline, post-release changes, verification evidence, and remaining work. The default launch is paused; use --start to begin automatic ticking immediately.

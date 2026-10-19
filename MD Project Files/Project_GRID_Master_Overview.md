@@ -1,5 +1,12 @@
 # Project GRID — Master Overview
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+Ordinary inhabitants will represent running PC applications and leave after confirmed exit. Agents and explicitly designated special programs remain persistent. Resources will reflect application usage/requirements and host conditions; the existing fictional-citizen implementation remains the historical baseline.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 ## GRID-REQ-004 - Hardware-generated city (planned, 2026-10-18)
 
 On first-time world creation, GRID must discover the host computer's motherboard, CPU, GPU, RAM, storage and network hardware, then procedurally generate a unique city using those components. Save the resulting world and reuse it on subsequent startups; do not regenerate the city every launch.
@@ -52,7 +59,7 @@ The initial simulation is centered on five functional districts:
 | Archive Sector | Disk statistics | History, records, long-term storage |
 | Gateway | Network activity | Communication, trade, transit |
 
-Further development can add administrative, security, residential, engineering, energy, archives, and communications neighborhoods. The world includes a fictional resource economy and citizens who can move, recharge, perform work, exchange resources, form relationships, and initiate construction or other civic changes. Meaningful events become part of a durable history.
+Further development can add administrative, security, residential, engineering, energy, archives, and communications neighborhoods. The target world connects application residents to measured host resource use and explicitly modeled requirements. Persistent agents and special programs can perform their planned civic and authorized task roles. Optional fictional civic mechanics must remain separate from measured PC resources. Meaningful events become part of a durable history.
 
 **Important boundary:** Fictional energy shortages or resource decisions never directly remove resources from your real computer.
 
@@ -60,8 +67,8 @@ Further development can add administrative, security, residential, engineering, 
 
 GRID distinguishes two kinds of inhabitant:
 
-- **Civilization programs:** Digital citizens acting wholly within the simulation, without Windows privileges.
-- **System programs:** Recognizable in-world characters linked to narrowly authorized real Windows services and tasks.
+- **Application programs:** Transient residents representing currently running PC applications, without implied Windows privileges. Confirmed application exit removes the resident; startup rediscovers the active population.
+- **Persistent agents and special programs:** Explicitly designated residents with saved identities and state. System agents connect to narrowly authorized services and tasks; persistence itself grants no capabilities.
 
 The initial named agents are:
 

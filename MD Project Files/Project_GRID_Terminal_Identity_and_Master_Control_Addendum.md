@@ -1,5 +1,12 @@
 # Project GRID — Terminal Login and Master Control Plan
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+Future login-as-agent applies to persistent trusted agents/special programs. An ordinary running application is not automatically a login principal. Application inspection must distinguish transient representation from agent identity; observation or a Master Control label does not authorize stopping/throttling host apps. Define incarnation expiry and field editability before adding such controls.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 ## Implementation status - 2026-10-17
 
 The 1.9.3 backend editing boundary is implemented and denies access by default. There is no production authentication provider, login/identity-switching UI, or terminal edit command. Existing Genesis inspection/control commands remain available without login. Acceptance criteria below concern the future integrated terminal experience; API completion evidence is recorded separately. Live view is implemented under checklist 1.10 as of 2026-10-18. It currently shares the existing Genesis world visibility; consistent session-based filtering of state and events remains deferred until login is implemented.

@@ -1,5 +1,12 @@
 # PROJECT GRID — City Design & Architectural Style Guide
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+The saved hardware-generated city remains stable as running applications bring transient residents into and out of it. Agents/special programs remain persistent residents. Population changes must not regenerate streets or districts; resource-linked district placement remains a planned mapping. Preserve the existing architecture and art direction.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 ## GRID-REQ-004 - Hardware-informed city composition (planned, 2026-10-18)
 
 On first-time world creation, discover motherboard, CPU, GPU, RAM, storage and network hardware and use them to procedurally generate a unique city. Save the resulting layout and reuse the world on later startups; the viewer must not generate a new city when it opens. See the [generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract).

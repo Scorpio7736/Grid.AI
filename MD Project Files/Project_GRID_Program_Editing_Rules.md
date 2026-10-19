@@ -1,5 +1,12 @@
 # Project GRID — Program Editing Rules
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+Current editing APIs remain unchanged. Future host usage, process lifetime and measured condition fields are observation-owned; editing a label or energy value must not falsify telemetry or control Windows. Ordinary resident edits are transient and expire with that incarnation; persistent-agent/special-program state is saved. Revalidate previews after application exit/relaunch and expose future field editability explicitly.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 ## Implementation status - 2026-10-17
 
 Sections 1.9.1 and 1.9.3 are complete as design and API implementation respectively. The current field registry, preview/apply behavior, revisions and authorization lease are implemented; terminal-generated editing help, confirmation commands, production login and durable receipts remain future integration.

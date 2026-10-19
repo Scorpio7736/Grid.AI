@@ -1,5 +1,12 @@
 # Project GRID - Persistence architecture and schema v1
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+Section 2.2 currently saves every program and remains implemented as documented below. Planned 2.7 adds explicit entity classification, filtered persistence and versioned legacy migration. Save city/agents/special programs; rediscover ordinary running applications after normal load and backup recovery. Preserve recoverable legacy saves; do not silently delete old citizens or edit schema v1.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 **Sections 2.1 and 2.2 implemented and verified - 2026-10-18.** SQLite schema v1 now supports engine save/load, periodic consistent snapshots, explicit backup recovery and terminal lifecycle integration. Durable events/audit and hardware-generated cities remain later work.
 
 ## Project and connection boundary

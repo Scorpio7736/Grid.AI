@@ -1,5 +1,12 @@
 # Project GRID
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+The shared contract replaces permanently saved ordinary fictional citizens with transient running-application representatives, persistent agents/special programs, and host-related resource requirements. The legacy illustrative model and civic examples below must be interpreted under that lifecycle distinction.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 ## GRID-REQ-004 - Hardware-generated city contract
 
 **Planned requirement - 2026-10-18; not implemented.** First-time world creation discovers motherboard, CPU, GPU, RAM, storage and network hardware, generates a unique city from those components, saves the resulting world and reuses that saved world on subsequent startups.
@@ -88,7 +95,7 @@ A later city may add a GPU/Arena district, residential zones, defense facilities
 
 ### 2.2 World mechanics
 
-- Grid energy and other resources form **fictional** systems, not allocations of actual PC hardware.
+- Application resources reflect observed CPU, RAM, GPU/VRAM, storage and network conditions and explicit requirement estimates. Energy is a labeled GRID interpretation of resource sufficiency; its formula remains planned. These observations do not allocate or withhold actual hardware resources.
 - Buildings and transit routes can be constructed, expanded, repaired, or abandoned.
 - Citizens navigate the world and carry out jobs.
 - Program decisions may lead to emergent situations, including negotiations, scarcity, innovation, and district development.
@@ -114,21 +121,21 @@ All responses should be tuned, smoothed, bounded, and based on measured host con
 
 ## 3. Program Population
 
-### 3.1 Civilization programs
+### 3.1 Application programs (GRID-REQ-005 target)
 
-These live entirely in the virtual Grid. They may operate infrastructure, construct buildings, socialize, research, explore, manage simulated energy, and form relationships. They have **no direct Windows privileges**.
+These represent currently running PC applications. They appear through live discovery and leave after confirmed application exit; individual ordinary resident state is not saved for later restoration. They have **no direct Windows privileges**. Their activity and resource presentation must be grounded in observations, not invented jobs or arbitrary energy drain. Autonomous civic roles belong to persistent agents and explicitly designated special programs.
 
-### 3.2 System programs
+### 3.2 Persistent agents and special programs
 
-These are both fictional in-world characters and concrete, permission-scoped host services. Their decisions can result in real tasks, but only through approved capabilities and execution policies.
+These retain identities and state across restarts. System agents can be both in-world characters and concrete permission-scoped services; other special programs require explicit classification. Their decisions can result in real tasks only through approved capabilities and execution policies. A name or process label cannot grant persistent status or authority.
 
 ### 3.3 Program identity and state
 
-The sample below is a conceptual future model. Current world-owned GridProgram setters reject direct mutation; validated edits use the engine API and per-program revisions.
+The sample below is a legacy conceptual model, not the complete GRID-REQ-005 target; classification, observation bindings and persistence policy must be added. Persistent personality/memory fields apply to agents/special programs, not automatic saved ordinary residents. Current world-owned GridProgram setters reject direct mutation; validated edits use the engine API and per-program revisions.
 
 Each program may have:
 
-- Persistent unique ID and display name
+- Identity and display name: durable for agents/special programs, runtime-incarnation identity for ordinary application residents
 - Role, occupation, district, and capabilities
 - Personality and preferences
 - Energy, health, needs, goals, and priorities
@@ -592,7 +599,7 @@ Released v0.1.0-genesis covers the world, clock, energy ticks and terminal. Task
 Proposed MVP scale:
 
 - One city, five districts, twenty simulated programs.
-- Three basic simulated resources (to be specified, e.g., Energy, Materials, Data).
+- Host-derived application resource categories and an explicitly specified energy interpretation; earlier Energy/Materials/Data mechanics are superseded by GRID-REQ-005.
 - Agent movement and a few utility-based task choices.
 - Persistent SQLite world state and event history.
 - Fake telemetry source for deterministic testing, then real read-only host telemetry.

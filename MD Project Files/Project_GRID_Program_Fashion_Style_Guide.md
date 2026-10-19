@@ -1,14 +1,21 @@
 # Project GRID — Program Fashion & Uniform Style Guide
 
+## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
+
+Preserve the existing civilian/agent wardrobe vocabulary. Ordinary application residents use transient incarnations and shared visual templates; persistent agents/special programs retain individual appearance choices. Clothing and application branding confer no identity privileges. This is planned rendering behavior, not an implemented outfit system.
+
+See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Resources.md) for the shared contract. This planning update changes Markdown only.
+
+
 ## GRID-REQ-004 - Program identity in hardware-generated cities (planned, 2026-10-18)
 
-First-time creation will discover motherboard, CPU, GPU, RAM, storage and network hardware and generate a unique city from those components. That world must be saved and reused on later startups. Discovery, generation and persistent reuse are not implemented; see the [generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract).
+First-time creation will discover motherboard, CPU, GPU, RAM, storage and network hardware and generate a unique city from those components. That world must be saved and reused on later startups. Hardware discovery and generated-city reuse remain planned; fixed Genesis save/reuse is implemented in 2.2; see the [generation contract](Project_GRID_Design_Specification.md#grid-req-004---hardware-generated-city-contract).
 
 The generated city changes the setting, not the approved wardrobe rules. Preserve civilian coats, formal agent silhouettes, materials and restrained luminous seams. Component-themed districts may inform future occupational accents, but such variants remain art proposals and must stay consistent with the existing uniform vocabulary.
 
-Hardware does not grant security roles, choose an authenticated Master Control identity, or make names/occupations into capabilities. Program identities, memberships and edited values must survive saved-world reload. Future persistent appearance choices should also be retained rather than randomized each startup.
+Hardware does not grant security roles, choose an authenticated Master Control identity, or make names/occupations into capabilities. Agent and special-program identities, memberships, edited values and persistent appearance choices survive reload. Ordinary application residents are rediscovered and do not retain saved individual appearance/state; shared application templates may provide a consistent visual vocabulary without resurrecting a resident.
 
-Hardware replacement must not recreate citizens or reset uniforms. Existing fashion/head/eye references and their newer repository organization remain intact. Runtime wardrobe generation and rendering remain deferred; documenting this requirement implements neither.
+Hardware replacement must not recreate persistent residents or reset their uniforms; live application residents continue to follow observed application lifetimes. Existing fashion/head/eye references and their newer repository organization remain intact. Runtime wardrobe generation and rendering remain deferred; documenting this requirement implements neither.
 
 ## Implementation status - 2026-10-17
 
