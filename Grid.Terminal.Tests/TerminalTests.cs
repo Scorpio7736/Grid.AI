@@ -23,11 +23,11 @@ public sealed class TerminalTests
         Assert.Contains("Paused", commands.Execute("status").Text);
         foreach (var program in world.Programs.Values)
         {
-            Assert.Contains(program.Id.ToString(), commands.Execute("programs").Text);
+            Assert.Contains(program.Id.ToString(), commands.Execute("programs ids").Text);
             Assert.Contains(program.Name, commands.Execute("programs").Text);
         }
         foreach (var district in world.Districts.Values)
-            Assert.Contains(district.Id.ToString(), commands.Execute("districts").Text);
+            Assert.Contains(district.Id.ToString(), commands.Execute("districts ids").Text);
     }
 
     [Theory]

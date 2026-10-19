@@ -26,16 +26,20 @@ public static class LiveViewRenderer
         eventPage = Math.Clamp(eventPage, 0, eventPages - 1);
         var lines = new List<string>
         {
-            interactive ? "GRID LIVE | Q/Esc: prompt | PgUp/PgDn: citizens | Left/Right: events" : "GRID SNAPSHOT | Single frame; returning to commands",
+            interactive ? "GRID LIVE | Esc / Q: Back to command prompt" : "GRID SNAPSHOT | Single frame; returning to commands",
             $"State: {(state.IsRunning ? "Running" : "Paused")} | Tick: {state.TickCount} | Simulation time: {state.ElapsedSimulationTime:c}",
             $"Programs: {state.Programs.Count} | Districts: {state.Districts.Count}" +
                 (interactive ? " | Refresh: 250 ms (independent of ticks)" : " | No automatic redraw"),
             $"CURRENT STATE - citizens page {programPage + 1}/{programPages}",
         };
         var districts = state.Districts.ToDictionary(d => d.Id, d => d.Name);
+        var nameWidth = Math.Clamp(width / 4, 12, 30);
+        var stateWidth = Math.Clamp(width / 3, 18, 30);
+        lines.Add("NAME".PadRight(nameWidth) + " | " + "STATE".PadRight(stateWidth) + " | ENERGY");
         foreach (var program in state.Programs.Skip(programPage * programSlots).Take(programSlots))
         {
-            lines.Add($"{program.Name} | {program.Kind} | {ResidentFormatting.Status(program)} | Energy: {ResidentFormatting.Energy(program)} | {program.Occupation}");
+            lines.Add(Fit(program.Name, nameWidth).PadRight(nameWidth) + " | " +
+                Fit(ResidentFormatting.Status(program), stateWidth).PadRight(stateWidth) + " | " + ResidentFormatting.Energy(program));
             lines.Add($"{program.Id} | {districts.GetValueOrDefault(program.DistrictId, "Unknown district")} | {(program.Application is { } a ? (a.Confirmed ? "fresh" : "unknown/stale") + " run " + a.Incarnation : program.Kind.ToString())}");
         }
         if (state.Programs.Count == 0) lines.Add("No programs.");
@@ -52,7 +56,8 @@ public static class LiveViewRenderer
         }
         if (snapshot.Events.Count == 0) lines.Add("No events yet. Idle citizens do not invent activity.");
         lines.Add("In-memory history only. '+' marks clipped text. Entering/leaving does not control the clock.");
-        return lines.Take(height - 1).Select(line => Fit(line, width - 1)).ToArray();
+        var footer = interactive ? "Esc/Q: Back | PgUp/Dn: programs | Left/Right: events" : "Snapshot complete; returning to command prompt.";
+        return lines.Take(height - 2).Append(footer).Select(line => Fit(line, width - 1)).ToArray();
     }
 
     // A predictable one-cell ASCII surface prevents controls, escape injection and wide glyph wrapping.

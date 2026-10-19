@@ -51,8 +51,8 @@ try
     var applications = options.Ephemeral ? null : new ApplicationMonitor(new WindowsApplicationDiscovery(), engine);
     if (applications is not null) await applications.SampleOnceAsync(shutdown.Token);
     ResourcesCommand.Register(commands, engine);
-    return await new TerminalHost(engine, commands, Console.In, Console.Out,
-        showPrompt: !Console.IsInputRedirected, liveTerminal: new ConsoleLiveTerminal(), persistence: persistence,
+    return await new TerminalHost(engine, commands, Console.In, new TerminalOutput(Console.Out, TerminalTheme.Enabled(options.NoColor)),
+        showPrompt: !Console.IsInputRedirected, liveTerminal: new ConsoleLiveTerminal(options.NoColor), persistence: persistence,
         telemetry: applications is null ? telemetry : new CombinedHostMonitor(telemetry, applications)).RunAsync(shutdown.Token);
 }
 catch (OperationCanceledException) when (shutdown.IsCancellationRequested) { return 0; }

@@ -359,6 +359,28 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ---
 
+## 1.11 Post-Genesis terminal usability and live-view navigation
+
+**Planned - 2026-10-19; documentation only.** Improve readability and make navigation easier to discover across the command prompt and live view. This extends completed 1.7/1.10 without changing their completion history.
+
+- [ ] Improve spacing, headings, concise labels and help text so important information is easy to scan
+- [ ] Present comparable data in aligned tables where helpful: programs, districts, resources, behaviors and event/history listings
+- [ ] Choose useful default columns; keep full IDs and detailed provenance available through inspection rather than crowding summary rows
+- [ ] Adapt tables and live panels to terminal width/resize with sensible wrapping, clipping indicators or paging; retain readable narrow-terminal/plain-text fallbacks
+- [ ] Add consistent color coding for statuses, healthy/warning/error conditions, unknown/stale observations and event types
+- [ ] Keep text labels alongside colors, use readable contrast, and provide a no-color mode; suppress terminal color/control sequences in redirected or unsupported output
+- [ ] Make live-view navigation prominent: display an unambiguous Back to command prompt control and distinguish it from exiting GRID
+- [ ] Preserve Q/Esc as back-to-prompt controls, restore the cursor/prompt cleanly, and allow repeated live → prompt → live navigation
+- [ ] Verify leaving live view preserves running/paused state, telemetry, autosave and the world session; quitting remains a separate explicit action
+- [ ] Verify usability in interactive and redirected output, narrow/resized terminals, long names/IDs, empty tables and high event volume
+- [ ] Update help, README and live-view documentation with the final controls, palette/table conventions and dated completion evidence
+
+**Existing behavior confirmed by source review:** TerminalLiveView already returns on Q/Esc, and TerminalHost resumes the command loop; existing tests cover returning without pausing. This task makes that path clearer and checks it in the user's terminal environment. If leaving live currently quits there, diagnose and fix the discrepancy rather than treating shutdown as intended behavior. Ctrl+C remains the existing shutdown signal; it is not the Back control.
+
+See [Terminal Live View](Project_GRID_Terminal_Live_View.md#planned-usability-and-navigation-improvements---111) for acceptance details. No C# changes or new runtime verification are included in this planning update.
+
+---
+
 # Phase 2 — The Core
 
 ## 2.1 Persistence architecture

@@ -8,9 +8,10 @@ public static class BehaviorCommand
         {
             if (args.Count != 0) return new("Usage: behaviors");
             var state = engine.GetSnapshot();
-            var lines = state.Programs.Where(p => p.Behavior is not null).Select(p =>
-                $"{p.Name} ({p.Id}) | {p.Kind} | {p.Behavior!.Action} | Need: {p.Behavior.Need} | Priority: {p.Behavior.Priority} | Goal: {p.Behavior.Goal} | Simulated units: {p.Behavior.CompletedUnits}");
-            return new($"Behavior at tick {state.TickCount}; routine work is simulated, not OS task execution.\n" +
-                (state.Programs.Any(p => p.Behavior is not null) ? string.Join(Environment.NewLine, lines) : "No non-demo residents."));
+            var residents = state.Programs.Where(p => p.Behavior is not null).ToArray();
+            return new($"Behavior at tick {state.TickCount}; simulated work, not OS task execution.\n" +
+                TerminalTable.Render(["Name", "Action", "Need", "Priority", "Units", "Goal"], residents.Select(p => new[] {
+                    p.Name, p.Behavior!.Action.ToString(), p.Behavior.Need, p.Behavior.Priority.ToString(), p.Behavior.CompletedUnits.ToString(), p.Behavior.Goal })) +
+                "\nUse inspect program <name> for full resident details.");
         }));
 }

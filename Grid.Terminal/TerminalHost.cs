@@ -18,8 +18,9 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
         var exitCode = 0;
         try
         {
-            await output.WriteLineAsync("PROJECT GRID — GENESIS");
+            await output.WriteLineAsync("PROJECT GRID");
             await output.WriteLineAsync(persistence is null ? "Type help for commands. This session is in memory; exit does not save the world." : "Type help for commands. Autosave every 30 seconds; exit saves after the clock stops.");
+            await output.WriteLineAsync("Navigation: live opens dashboard | Esc/Q returns to commands | exit or Ctrl+C shuts down GRID.");
             while (!shutdown.IsCancellationRequested)
             {
                 if (showPrompt) { await output.WriteAsync("grid> "); await output.FlushAsync(); }
@@ -45,6 +46,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                     {
                         if (await Task.WhenAny(live, scheduler, autosave, monitoring) != live) break;
                         await live;
+                        await output.WriteLineAsync("Back at command prompt. World session remains open; type live to return or exit to shut down.");
                     }
                     finally
                     {

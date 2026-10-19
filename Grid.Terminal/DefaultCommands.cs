@@ -25,18 +25,23 @@ public static class DefaultCommands
                 $"Tick: {state.TickCount} | Simulation time: {state.ElapsedSimulationTime:c} | Tick duration: {state.TickDuration:c}{Environment.NewLine}" +
                 $"Districts: {state.Districts.Count} | Programs: {state.Programs.Count}{Environment.NewLine}Application discovery: {state.ApplicationDiscoveryStatus}");
         });
-        Add("programs", "List citizens with their IDs, locations, and energy.", () =>
+        dispatcher.Register(new("programs", "programs [ids]", "List residents in a compact table; ids shows full identifiers.", args =>
         {
+            if (args.Count > 1 || args.Count == 1 && !args[0].Equals("ids", StringComparison.OrdinalIgnoreCase)) return new("Usage: programs [ids]");
             var state = engine.GetSnapshot();
-            return new(string.Join(Environment.NewLine, state.Programs.Select(p =>
-                $"{p.Id} | {p.Name} | {p.Kind} | {ResidentFormatting.Status(p)} | Energy: {ResidentFormatting.Energy(p)} | {state.Districts.Single(d => d.Id == p.DistrictId).Name}")));
-        });
-        Add("districts", "List districts and populations.", () =>
+            return new(args.Count == 1 ? TerminalTable.Render(["Name", "ID"], state.Programs.Select(p => new[] { p.Name, p.Id.ToString() })) :
+                TerminalTable.Render(["Name", "Type", "State", "Energy", "District"], state.Programs.Select(p => new[] {
+                    p.Name, p.Kind.ToString(), ResidentFormatting.Status(p), ResidentFormatting.Energy(p), state.Districts.Single(d => d.Id == p.DistrictId).Name })) +
+                "\nDetails: inspect program <name> | Full identifiers: programs ids");
+        }));
+        dispatcher.Register(new("districts", "districts [ids]", "List district populations; ids shows full identifiers.", args =>
         {
+            if (args.Count > 1 || args.Count == 1 && !args[0].Equals("ids", StringComparison.OrdinalIgnoreCase)) return new("Usage: districts [ids]");
             var state = engine.GetSnapshot();
-            return new(string.Join(Environment.NewLine, state.Districts.Select(d =>
-                $"{d.Id} | {d.Name} | Population: {d.ProgramIds.Count}")));
-        });
+            return new(args.Count == 1 ? TerminalTable.Render(["District", "ID"], state.Districts.Select(d => new[] { d.Name, d.Id.ToString() })) :
+                TerminalTable.Render(["District", "Population"], state.Districts.Select(d => new[] { d.Name, d.ProgramIds.Count.ToString() })) +
+                "\nDetails: inspect district <name> | Full identifiers: districts ids");
+        }));
         dispatcher.Register(new("inspect", "inspect <program|district> <id|name>",
             "Inspect a citizen or district (names may contain spaces).", args =>
         {

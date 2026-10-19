@@ -1,5 +1,15 @@
 # Project GRID - Terminal live view
 
+## Planned usability and navigation improvements - 1.11
+
+**Requested 2026-10-19; planned, not implemented by this update.** See checklist 1.11 for clearer formatting, color coding and tables across both command output and live view. Prioritize readable status summaries and aligned comparable data; reserve long IDs/provenance for detail views. Support resizing, paging/wrapping and monochrome/plain-text output. Colors must supplement explicit labels so unknown/stale data is never mistaken for zero or healthy state.
+
+Live view must show a prominent **Back to command prompt: Esc / Q** hint, distinct from **Exit GRID**. Returning restores the prompt without stopping the simulation, changing running/paused state or interrupting telemetry/autosave. Reentering live must work repeatedly. Ctrl+C is the existing shutdown signal, not a navigation shortcut.
+
+**Current implementation:** Q/Esc already return from TerminalLiveView to TerminalHost's command loop; existing tests cover this path. Improve discoverability and verify it in the user's actual terminal. If the reported quit behavior is reproducible, fix that discrepancy. Do not mark this usability task complete solely because the underlying return path already exists.
+
+Acceptance: readable tables at supported sizes, clear empty/unknown states, accessible color labels and no-color behavior, no ANSI pollution in redirected output, and a live → prompt → live round trip that preserves the same world and clock state. This update changes planning documentation only; no runtime tests were run.
+
 ## Program behavior completion - 2026-10-19
 
 **3.1 implemented and verified.** Non-demo residents now have deterministic needs/goals/actions. Applications reflect fresh or unknown observations; explicitly configured Agent/Special residents perform resource-gated simulated occupation work/rest on simulation-time shifts. Schema v5 persists their routines, sourced budgets and progress without restoring live observations or adding offline work. Use behaviors and inspect for last-tick behavior. No OS task execution, movement or named agent services are claimed.

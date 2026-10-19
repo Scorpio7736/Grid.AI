@@ -1,5 +1,9 @@
 # Project GRID - Current Implementation and Verification
 
+## Planned terminal usability follow-up - 2026-10-19
+
+Checklist **1.11** now tracks clearer layouts, aligned tables, accessible color coding and obvious live-view Back navigation. Q/Esc already return to the command prompt in the current source; the pending task improves discoverability and verifies/fixes any environment-specific quitting behavior. This is a documentation-only request, not a completed UI change. See [Terminal Live View](Project_GRID_Terminal_Live_View.md#planned-usability-and-navigation-improvements---111).
+
 ## Program behavior completion - 2026-10-19
 
 **3.1 implemented and verified.** Non-demo residents now have deterministic needs/goals/actions. Applications reflect fresh or unknown observations; explicitly configured Agent/Special residents perform resource-gated simulated occupation work/rest on simulation-time shifts. Schema v5 persists their routines, sourced budgets and progress without restoring live observations or adding offline work. Use behaviors and inspect for last-tick behavior. No OS task execution, movement or named agent services are claimed.

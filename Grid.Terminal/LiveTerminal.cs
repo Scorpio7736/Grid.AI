@@ -10,7 +10,7 @@ public interface ILiveTerminal
     void End();
 }
 
-public sealed class ConsoleLiveTerminal : ILiveTerminal
+public sealed class ConsoleLiveTerminal(bool noColor = false) : ILiveTerminal
 {
     private bool previousCursorVisible;
     private bool active;
@@ -62,7 +62,7 @@ public sealed class ConsoleLiveTerminal : ILiveTerminal
             var fitted = line[..Math.Min(line.Length, width - 1)].PadRight(width - 1);
             if (previousLines[row] == fitted) continue;
             Console.SetCursorPosition(0, row);
-            Console.Write(fitted);
+            TerminalTheme.Write(Console.Out, fitted, TerminalTheme.Enabled(noColor));
             previousLines[row] = fitted;
         }
     }
