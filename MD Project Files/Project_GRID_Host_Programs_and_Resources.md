@@ -67,3 +67,28 @@ GRID-REQ-004 still generates the city once from motherboard, CPU, GPU, RAM, stor
 Required verification includes launch/exit/relaunch, grouped processes and independent instances, PID reuse, denied/stale telemetry, unknown resource requirements, atomic membership updates, restart with a different application set, persistent-agent continuity, legacy migration/rollback, backup recovery followed by live reconciliation, and no host-app mutation from simulated shortages. Zero applications must be a supported state; twenty fictional citizens are a test fixture, not a production acceptance requirement.
 
 **Documentation verification — 2026-10-18:** revised the shared design, checklist, persistence, resource, editing, terminal and visual planning documents. Preserved completed checklist entries and dated implementation evidence. No C# changes, schema migration or runtime tests were performed for this planning update. The prior 200-test result belongs to section 2.2 and does not verify GRID-REQ-005.
+
+## Existing implementation retrofit - planned, 2026-10-18
+
+The new requirement changes assumptions in completed modules; it does not invalidate their original implementation evidence. Keep completed checkboxes and dated tests intact. Track the following work under 2.7 and resource integration under 2.4, and verify each retrofit before claiming compliance.
+
+| Existing area | Required adaptation | Foundation retained |
+|---|---|---|
+| 1.2 program model | Explicit application/agent/special classification, observation bindings and application-run identity distinct from durable resident identity | Validated fields, revision tracking and default-deny editing |
+| 1.4 world management | Atomic application removal and reconciliation; remove district membership consistently; reject edits/transfers targeting expired incarnations | World ownership, membership invariants and shared engine lock |
+| 1.4 Genesis factory / terminal startup | Retain twenty fictional citizens as an explicit demo/test fixture; production builds ordinary population from discovery, including a valid empty population | Deterministic fixtures and stable saved city |
+| 1.5–1.6 clock and energy | Replace application work/movement drain and fixed recharge with the specified 2.4 resource-condition policy; do not manufacture a score when requirements are unknown | Fixed-step clock, no offline catch-up, serialized updates and consistent snapshots |
+| 2.2 save/load and recovery | Filter resident persistence, add versioned classification/migration, preserve recoverable legacy saves and reconcile live applications after load/recovery | Transactions, validation, rolling backup, explicit recovery and orderly shutdown |
+| 1.9.3 editing | Separate observation-owned and user-editable fields; expire incarnation-bound previews after exit/relaunch; ordinary edits remain transient | Typed field registry, revision conflict checks and authorization leases |
+| 1.7 / 1.10 terminal | Display resident class, observation freshness, unknown values and lifecycle changes without inventing host behavior | Extensible commands, snapshot-based reads and bounded live-event display |
+| Existing tests | Keep Genesis fixture tests; add lifecycle, persistence-policy, telemetry and editing regression cases | Historical completion evidence and reusable fake-provider/snapshot testing patterns |
+
+### Dependency order
+
+1. Define classification, durable versus runtime identities, field ownership and the legacy migration policy (2.7).
+2. Implement safe removal/reconciliation with fake application discovery and membership/preview expiry tests (2.7).
+3. Adapt persistence and startup together: versioned migration, filtering, demo/production distinction and recovery reconciliation (2.7). Do not switch production startup while save/load still treats all residents as permanent.
+4. Connect read-only host discovery and resource telemetry; specify and test the energy policy before replacing the placeholder rules (2.4 and 2.7).
+5. Update editing, inspection/live view and end-to-end verification across restart, recovery and changing application sets; only then extend Phase 3 population behavior.
+
+These are dependency priorities, not a renumbering of the roadmap. Section 2.3 history work can proceed using the lifecycle contract, but events must not assume every program is durable. No code retrofit is completed by this documentation update.

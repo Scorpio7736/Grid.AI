@@ -120,3 +120,10 @@ Use the active tool permission mechanism when required. If an operation is block
 Read this guide, the latest checklist and relevant contracts, then inspect the current working tree. Identify the user's requested outcome, the last verified state and any unfinished work. Carry forward their preference for expandable design and completion notes, while treating the present user request as the task boundary.
 
 Do not automatically start the next module, implement a planning request, launch processes or push commits merely because those actions occurred earlier in this conversation. The useful continuity is the project's context and working standards; each action still needs to fit the current request.
+
+
+## Existing-code adaptation plan - 2026-10-18
+
+The user requested explicit retrofit tracking for already completed modules affected by GRID-REQ-005. Use checklist 2.7.1 and the shared retrofit mapping; do not uncheck historic completion entries or claim new compliance from old tests. Address classification and safe lifecycle first, coordinate persistence/startup, then integrate telemetry, editing and live view before more Phase 3 behavior.
+
+See [existing implementation retrofit](../Project_GRID_Host_Programs_and_Resources.md#existing-implementation-retrofit---planned-2026-10-18) and checklist 2.7.1. Documentation only; implementation remains pending.

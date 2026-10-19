@@ -458,6 +458,25 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - [ ] Test changed application sets across restart, persistent-agent continuity, legacy migration/rollback and recovery reconciliation
 - [ ] Add dated implementation/completion verification only after the behavior is built and tested
 
+### 2.7.1 Retrofit existing modules before extending citizen behavior
+
+**Planned follow-up - 2026-10-18; no code changes.** See [retrofit mapping and dependency order](Project_GRID_Host_Programs_and_Resources.md#existing-implementation-retrofit---planned-2026-10-18). Preserve original completion entries for 1.2–1.10 and 2.2.
+
+- [ ] Extend GridProgram with explicit resident classification and application-run identity distinct from durable identity
+- [ ] Add safe world/engine removal and reconciliation, including atomic membership cleanup and rejection of operations on expired incarnations
+- [ ] Retain the Genesis twenty-citizen factory as an explicit demo/test fixture and replace production population seeding with discovery
+- [ ] Adapt 2.2 save/load and backup recovery with classification-aware persistence and a recoverable, versioned legacy migration
+- [ ] Switch production startup only once lifecycle reconciliation and the new persistence policy work together
+- [ ] Replace fixed application energy drain/recharge only after 2.4 specifies measurable inputs, requirement provenance and unknown-data behavior
+- [ ] Adapt editing metadata and preview validation for observation-owned fields, transient edits and application exit/relaunch
+- [ ] Extend terminal inspection/live view for resident type, resource freshness and unknown measurements
+- [ ] Preserve clock/no-offline-time rules, transactions, backups, command registration and consistent snapshots; add regressions around their integration
+- [ ] Verify the complete retrofit before expanding Phase 3 behavior; retain Genesis tests as fixtures rather than production population requirements
+
+**Order:** classification/policy → safe lifecycle with fake discovery → coordinated persistence/startup migration → real telemetry and resource interpretation → editing/UI integration and end-to-end verification. Section 2.3 can proceed against this contract without treating all event subjects as permanent residents.
+
+**Planning verification:** documented adaptations and retained foundations; no implementation completion or new runtime test result is claimed.
+
 **Planning integration notes - 2026-10-18:** Updated the design, resource/persistence contracts, terminal/identity/editing plans, visual guides and agent handoff. Replaced fixed production-population targets with running applications plus persistent residents; retained twenty-citizen fixtures and original completion history. No C# or database changes and no runtime tests were performed. Earlier 200-test verification belongs to 2.2, not GRID-REQ-005.
 
 ---

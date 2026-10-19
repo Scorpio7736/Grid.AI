@@ -384,3 +384,10 @@ An illustrative distribution of development effort might be **65% C#, 25% Python
 **Genesis is complete:** an executable, unit-tested C# world with 5 districts, 20 programs, a clock and terminal inspection. The editing API is also complete. Live view is implemented; the SQLite schema/migration foundation is also implemented; section 2.2 save/recovery is now complete; proceed to section 2.3 history and observability. Session visibility filtering will accompany future login integration. Maintain the Python and C++ integration plan and optionally create a small interoperability smoke test, but do not let cross-language plumbing delay a functioning civilization.
 
 After Genesis, add persistence, meaningful autonomous behavior, and a communication hub. This produces a sound foundation for the later AI, agent, and 3D phases.
+
+
+## Existing-code adaptation plan - 2026-10-18
+
+Prioritize classification and lifecycle foundations, then coordinated persistence/startup migration, then real telemetry and the defined resource-condition policy. Integrate editing and live view and verify the complete path before extending Phase 3. Keep the twenty-citizen factory as a deterministic demo/test fixture; retain the clock, transaction, recovery and snapshot infrastructure.
+
+See [existing implementation retrofit](Project_GRID_Host_Programs_and_Resources.md#existing-implementation-retrofit---planned-2026-10-18) and checklist 2.7.1. Documentation only; implementation remains pending.

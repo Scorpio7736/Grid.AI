@@ -97,3 +97,10 @@ Section 2.2 is implemented. Normal startup creates and saves fixed Genesis once 
 Verification: **200 tests passed**, zero failures/skips (8 Core, 93 Simulation, 50 Terminal, 49 Persistence). The solution build passed with zero warnings/errors. A temporary-world terminal smoke test verified creation, two steps, shutdown save, paused reopen at tick 2, corruption rejection and explicit --recover restoration. --ephemeral --start also passed. The user's default database was not used for verification. See [Persistence Architecture](Project_GRID_Persistence_Architecture.md) for operational details and limits; physical power-loss testing is not claimed.
 
 Remaining work begins with 2.3 durable history/observability. Hardware discovery/generated cities remain 2.6, and login, terminal editing commands, archive retention, quota enforcement and Windows service startup remain planned.
+
+
+## Existing-code adaptation plan - 2026-10-18
+
+The existing implementation needs a planned retrofit of program classification, safe removal/reconciliation, production factory use, all-resident persistence, fixed energy rules, and editing/live-view field semantics. Clock behavior, transactional saves, backup recovery, command structure and consistent snapshots remain reusable. None of these retrofits is implemented by this note.
+
+See [existing implementation retrofit](Project_GRID_Host_Programs_and_Resources.md#existing-implementation-retrofit---planned-2026-10-18) and checklist 2.7.1. Documentation only; implementation remains pending.

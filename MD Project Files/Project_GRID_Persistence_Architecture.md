@@ -113,3 +113,10 @@ On 2026-10-18, `dotnet test Grid7736.slnx --verbosity minimal --no-restore` pass
 A built-terminal smoke test against an isolated temporary database created Genesis, stepped to tick 2, exited, reopened the same world paused at tick 2, rejected injected corruption, and recovered the same world/tick using --recover. --ephemeral --start also reported Running. The user's default world was not opened by this test. These checks do not simulate physical power loss, exhaustive filesystem failure, or promise preservation of changes after the last committed snapshot.
 
 References: [Microsoft.Data.Sqlite backup API](https://learn.microsoft.com/en-us/dotnet/standard/data/sqlite/backup) and [SQLite atomic commit and crash recovery](https://www.sqlite.org/atomiccommit.html).
+
+
+## Existing-code adaptation plan - 2026-10-18
+
+Coordinate classification-aware saves and versioned legacy migration with production startup replacement. Preserve the original schema v1 checksum, recoverable legacy data, transactions, backup publication and final-save ordering. After load or backup recovery, rediscover application residents rather than restoring them. Do not switch production startup while persistence still assumes every resident is durable.
+
+See [existing implementation retrofit](Project_GRID_Host_Programs_and_Resources.md#existing-implementation-retrofit---planned-2026-10-18) and checklist 2.7.1. Documentation only; implementation remains pending.
