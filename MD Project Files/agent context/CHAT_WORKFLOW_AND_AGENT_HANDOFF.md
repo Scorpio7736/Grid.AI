@@ -86,7 +86,7 @@ These are historical observations, not guarantees about the next checkout:
 - Genesis was released under `v0.1.0-genesis`. Later editing/startup changes were separate work; do not move the release tag to include them.
 - The 1.9.3 solution run passed 117 tests on 2026-10-17; the 1.10 live-view run passed 140 tests on 2026-10-18. Do not present that as a new test run or assume the count still matches later changes.
 - The terminal supports optional `--start` automatic ticking. Live view was implemented in section 1.10 on 2026-10-18, with Q/Esc return, paging, bounded event history and console fallback. Check current source before relying on this historical status; login visibility filtering remains deferred.
-- A Grid.Persistence project scaffold was observed later. Its presence alone did not implement save/load.
+- The Grid.Persistence scaffold was subsequently replaced by section 2.1 schema/migration implementation on 2026-10-18. Its 31 tests bring the solution to 171 passing tests. Engine save/load remains section 2.2; do not confuse SQLite row tests with a restored simulation world.
 - GRID-REQ-004 was documented across eight existing documents on 2026-10-18: discover motherboard, CPU, GPU, RAM, storage and network hardware on first-time world creation, generate a unique city, save it and reuse the world on later startups.
 - That requirement was documentation-only. Its detailed contract is in the design specification and its unchecked implementation tasks are in checklist 2.6, with later Phase 7/8 integration.
 - Existing saved worlds take priority over hardware changes or regeneration. Preserve Genesis history and the existing city, atmosphere and fashion direction.

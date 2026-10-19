@@ -2,6 +2,10 @@
 
 **Reviewed:** 2026-10-17. Covers local HEAD `0b659e6` and the current working tree, including uncommitted changes. Remote synchronization was not checked.
 
+## Persistence architecture update - 2026-10-18
+
+Section 2.1 is complete: SQLite schema v1, explicit initialization, existing-file validation, foreign keys and atomic migrations. The solution passes 171 tests (including 31 persistence tests), with zero build warnings/errors. Engine save/load, snapshots/recovery, durable audit and GRID-REQ-004 remain pending. See [Persistence Architecture](Project_GRID_Persistence_Architecture.md). Earlier totals below describe their original verification milestones.
+
 ## Live-view update - 2026-10-18
 
 Section 1.10 is implemented. The full solution now passes 140 tests (8 Core, 93 Simulation, 39 Terminal), and builds with zero warnings/errors. Historical 117-test evidence below remains dated to 1.9.3. See [Terminal Live View](Project_GRID_Terminal_Live_View.md) for controls, limitations and verification. No login, persistence or hardware-generated city functionality is added.
@@ -23,7 +27,7 @@ Section 1.10 is implemented. The full solution now passes 140 tests (8 Core, 93 
 
 ## Runtime and startup
 
-The .NET 10 solution `Grid7736.slnx` contains Grid.Core, Grid.Simulation and Grid.Terminal, plus a matching test project for each. The factory uses seed 7736 and creates twenty citizens distributed across five districts, initially Idle with energy 100. Each process starts a fresh in-memory world.
+The .NET 10 solution `Grid7736.slnx` contains Grid.Core, Grid.Simulation, Grid.Terminal and Grid.Persistence, plus a matching test project for each. The factory uses seed 7736 and creates twenty citizens distributed across five districts, initially Idle with energy 100. Each process starts a fresh in-memory world.
 
 ```powershell
 dotnet run --project Grid.Terminal/Grid.Terminal.csproj

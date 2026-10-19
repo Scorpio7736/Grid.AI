@@ -94,3 +94,11 @@ Administrative editing denies access by default. A trusted IProgramEditAuthorize
 World-owned program setters now reject direct changes. Initialize programs before adding them to a world; use validated engine editing for later administrative changes. Ticks and district transfers update revisions so stale previews cannot overwrite newer state. Receipts are returned in memory; durable audit and save/load remain future work.
 
 See the Program Editing Rules and Session Context and Authorization documents under MD Project Files for the contracts. Section 1.10 is implemented: see [Terminal Live View](MD%20Project%20Files/Project_GRID_Terminal_Live_View.md) for paging controls, event retention, console fallback and extension details. On 2026-10-18, all 140 tests passed and the solution built with zero warnings/errors.
+
+## Persistence foundation (Phase 2.1)
+
+Grid.Persistence now supplies a file-backed SQLite schema and transactional version migrations. `SqliteGridDatabase.Initialize()` explicitly creates schema; `OpenExisting()` validates/upgrades an initialized file and never creates a missing database. Tables cover worlds, districts, programs, district resources and simulation clock state. Foreign keys and constraints enforce stored relationships and basic invariants.
+
+The terminal still creates a fresh in-memory world. Engine save/load, automatic saves, recovery and durable event/audit writing are not integrated yet; those remain 2.2 and later. See [Persistence Architecture](MD%20Project%20Files/Project_GRID_Persistence_Architecture.md) for schema and extension details.
+
+Verification on 2026-10-18: 171 solution tests passed (31 persistence cases); solution build succeeded with zero warnings/errors.

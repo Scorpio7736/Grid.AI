@@ -6,7 +6,7 @@ GRID-REQ-004 is planned: first-time world creation discovers motherboard, CPU, G
 
 The user identified this repository's MD Project Files folder as the supplied document location. Its current eight overview/checklist/design/development/storage/city/environment/fashion documents are the integration baseline. Older Downloads copies were compared and contain no GRID-REQ-004; they were not used to overwrite newer repository content. There is no separate updated copy in that location to merge against. The explicit requirement in the user's message supplies the new functionality.
 
-Preserved all existing completed checklist entries, historical test results, editing/session contracts, newer concept images and source changes. Grid.Persistence now exists as a project scaffold (commit 42dc69a); its presence does not complete the pending persistence layer, SQLite integration or save/load items. This update changes Markdown only and does not rerun or claim new runtime tests.
+Preserved all existing completed checklist entries, historical test results, editing/session contracts, newer concept images and source changes. At that documentation review, Grid.Persistence was a project scaffold (commit 42dc69a). Section 2.1 below records its subsequent schema implementation; save/load remains pending. That earlier requirement-integration update changed Markdown only and did not run runtime tests; later implementation evidence is recorded in the relevant sections.
 
 Resolved planning overlaps: fixed Genesis generation remains the implemented baseline; hardware-derived first creation is future work. Existing saves take priority over regeneration, and hardware does not override the established visual guides. Exact component mappings, discovery APIs and fallback policy remain open design decisions.
 
@@ -336,15 +336,26 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ## 2.1 Persistence architecture
 
-Repository update: Grid.Persistence project/Class1 scaffold exists. The layer implementation and integrations below remain pending.
+**Implemented and verified - 2026-10-18.** SQLite schema and migration foundation complete; engine save/load remains 2.2.
 
-- [ ] Create persistence layer/project when needed
-- [ ] Select and integrate SQLite
-- [ ] Design tables for districts, programs and resources
-- [ ] Design simulation-state and clock storage
-- [ ] Establish primary keys and relationships
-- [ ] Enable transactions and foreign-key enforcement
-- [ ] Create a versioned database schema and migrations
+- [x] Create persistence layer/project when needed
+- [x] Select and integrate SQLite
+- [x] Design tables for districts, programs and resources
+- [x] Design simulation-state and clock storage
+- [x] Establish primary keys and relationships
+- [x] Enable transactions and foreign-key enforcement
+- [x] Create a versioned database schema and migrations
+
+**Completion notes - 2026-10-18**
+
+- Replaced the empty Grid.Persistence scaffold with SqliteGridDatabase and GridSchema, retaining Microsoft.Data.Sqlite 10.0.13. Added persistence and its test project to Grid7736.slnx.
+- Added STRICT schema v1 for Worlds, Districts, Programs, DistrictResources and SimulationStates, plus migration history. Composite keys enforce same-world membership; program district references are the single stored membership source.
+- Stores energy/status/revision and integer simulation clock values with constraints. Durable world identity is distinct from runtime instance/session identity. Seed/version provenance is optional; hardware profiles/layouts remain future migrations.
+- Explicit initialization creates schema only. OpenExisting refuses missing/uninitialized databases. Every managed connection enables foreign keys, FULL synchronization, private cache and a bounded busy timeout.
+- Migration metadata, DDL and version markers share an immediate transaction. Unknown/future/inconsistent databases are rejected; failed upgrades roll back. Tests cover concurrent initialization and synthetic next-version migration; only v1 ships.
+- Verification: 31 new persistence tests passed. Full solution `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed 171 tests (8 Core, 93 Simulation, 39 Terminal, 31 Persistence), zero failed/skipped. Solution build passed with zero warnings/errors.
+- Tests verify SQL row preservation, constraints, relationships, rollback and schema lifecycle. They do not claim engine save/load, crash recovery or power-loss verification. Sections 2.2-2.6 and GRID-REQ-004 remain pending.
+- See [Persistence Architecture and Schema](Project_GRID_Persistence_Architecture.md) for tables, connection/migration policy, identity conventions and future audit/hardware integration.
 
 ## 2.2 Save and recovery
 
@@ -821,7 +832,7 @@ Repository update: Grid.Persistence project/Class1 scaffold exists. The layer im
 1. [x] Complete editable-field and session-context planning in sections 1.9.1–1.9.2.
 2. [x] Implement and verify the validated editing API in section 1.9.3.
 3. [x] Implement the terminal live view in section 1.10; session visibility follows login integration.
-4. [ ] Begin Phase 2 persistence with the identity, edit-result, and audit requirements considered in schema design.
+4. [x] Complete Phase 2.1 persistence architecture with identity, edit-result and audit extension requirements documented. Next implement 2.2 save and recovery.
 5. [ ] Integrate login and Master Control terminal editing in the later GRID-REQ-003 work; preserve the completed Genesis release.
 6. [ ] Record completion notes and verification evidence as each item is finished.
 

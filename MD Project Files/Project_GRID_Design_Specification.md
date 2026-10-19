@@ -39,7 +39,7 @@ Generation must honor the existing architecture, readable streets, human-scale n
 - Test partial discovery, unsupported APIs, multiple components, hardware changes, corrupt saves, failed writes and simultaneous initialization.
 - Exact discovery APIs, field schema, component deduplication, fallback UX, scale limits and mapping algorithms remain decisions to implement and verify.
 
-The existing fixed Genesis factory remains the implemented baseline and a useful test fixture. A Grid.Persistence project scaffold exists, but discovery, generation and durable world reuse are still planned. Checklist 2.6 tracks implementation; Phase 7 renders the saved result and Phase 8 integrates lifecycle behavior.
+The existing fixed Genesis factory remains the implemented baseline and a useful test fixture. Grid.Persistence now provides the section 2.1 SQLite schema and migration foundation; discovery, generation, engine save/load and durable world reuse are still planned. Checklist 2.6 tracks implementation; Phase 7 renders the saved result and Phase 8 integrates lifecycle behavior.
 
 ## Implementation status - 2026-10-17
 
@@ -706,7 +706,7 @@ The preceding sections describe the desired concept and recommended implementati
 
 ## 14. Original implementation sequence and current next work
 
-The headless Genesis foundation and post-release editing API are complete. Checklist 1.10 live view and bounded recent events are implemented as of 2026-10-18; next is Phase 2 persistence. Session visibility filtering remains deferred until login integration. The following original sequence remains context for later communications, agents and viewer work; it is not a list of entirely unstarted projects.
+The headless Genesis foundation and post-release editing API are complete. Checklist 1.10 live view and bounded recent events are implemented as of 2026-10-18; section 2.1 persistence architecture is complete and next is 2.2 save and recovery. Session visibility filtering remains deferred until login integration. The following original sequence remains context for later communications, agents and viewer work; it is not a list of entirely unstarted projects.
 
 Start with the **headless C# simulation and durable communication kernel**, not the entire 3D city:
 
