@@ -39,7 +39,9 @@ public static class LiveViewRenderer
             lines.Add($"{program.Id} | {districts.GetValueOrDefault(program.DistrictId, "Unknown district")}");
         }
         if (state.Programs.Count == 0) lines.Add("No programs.");
-        lines.Add("Status describes current state; no autonomous jobs/routes are implemented.");
+        lines.Add(snapshot.HostResources.Count == 0 ? "Status describes current state; no autonomous jobs/routes are implemented." :
+            "HOST | " + string.Join(" | ", snapshot.HostResources.Where(r => r.Metric is Grid.Simulation.Resources.ResourceMetric.CpuAvailablePercent or Grid.Simulation.Resources.ResourceMetric.RamAvailableBytes)
+                .Select(r => $"{r.Metric}: {(r.Value is { } v ? v.ToString("0.##", CultureInfo.InvariantCulture) + " " + r.Unit : "unknown (" + r.Status + ")")}")) + " | resources: full details");
         lines.Add($"RECENT COMMITTED EVENTS - page {eventPage + 1}/{eventPages} (newest first)");
         lines.Add($"Retained: {snapshot.Events.Count} | Latest sequence: {snapshot.LatestSequence} | Evicted: {snapshot.DroppedEvents}");
         foreach (var item in snapshot.Events.Reverse().Skip(eventPage * eventSlots).Take(eventSlots))

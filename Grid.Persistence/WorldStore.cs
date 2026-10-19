@@ -9,7 +9,7 @@ public sealed record WorldInfo(Guid Id, string Name, DateTimeOffset CreatedAtUtc
 public sealed record SavedWorld(WorldInfo Info, GridSimulationSnapshot State, DateTimeOffset SavedAtUtc);
 
 /// <summary>One world per file. Holds an exclusive GRID session lease until disposed.</summary>
-public sealed class WorldStore : IDisposable
+public sealed partial class WorldStore : IDisposable
 {
     private readonly FileStream lease;
     private readonly object gate = new();
@@ -46,7 +46,8 @@ public sealed class WorldStore : IDisposable
         }
     }
 
-    public void Save(WorldInfo info, GridSimulationSnapshot state, CancellationToken token = default)
+    public void Save(WorldInfo info, GridSimulationSnapshot state, CancellationToken token = default,
+        IReadOnlyList<GridHistoryEvent>? events = null)
     {
         lock (gate)
         {
@@ -56,7 +57,7 @@ public sealed class WorldStore : IDisposable
             Validate(info, state);
             var previous = Read(DatabasePath);
             if (previous.Info != info) throw new InvalidDataException("World metadata does not match the existing world.");
-            Write(info, state, token);
+            Write(info, state, token, events);
         }
     }
 
@@ -71,7 +72,8 @@ public sealed class WorldStore : IDisposable
     private static GridSimulationSnapshot Freeze(GridSimulationSnapshot state) =>
         GridSimulationEngine.Restore(state).GetSnapshot() with { IsRunning = state.IsRunning };
 
-    private void Write(WorldInfo info, GridSimulationSnapshot state, CancellationToken token)
+    private void Write(WorldInfo info, GridSimulationSnapshot state, CancellationToken token,
+        IReadOnlyList<GridHistoryEvent>? events = null)
     {
         using (var connection = new SqliteGridDatabase(DatabasePath).OpenExisting())
         using (var transaction = connection.BeginTransaction())
@@ -100,6 +102,18 @@ public sealed class WorldStore : IDisposable
                     p.Occupation, p.Energy, p.Status.ToString(), p.DistrictId.ToString("D"), p.Revision);
             Execute("INSERT INTO SimulationStates VALUES ($p0,$p1,$p2,$p3,$p4,$p5)", world, state.TickCount,
                 state.ElapsedSimulationTime.Ticks, state.TickDuration.Ticks, state.IsRunning ? 1 : 0, Utc(DateTimeOffset.UtcNow));
+            foreach (var item in events ?? [])
+            {
+                if (item.Id == Guid.Empty || item.Tick < 0 || item.Tick > state.TickCount ||
+                    item.SimulationTime < TimeSpan.Zero || item.SimulationTime > state.ElapsedSimulationTime ||
+                    item.RecordedAtUtc.Offset != TimeSpan.Zero || string.IsNullOrWhiteSpace(item.Kind))
+                    throw new InvalidDataException("Invalid history event.");
+                Execute("""
+                    INSERT INTO WorldEvents VALUES ($p0,$p1,$p2,$p3,$p4,$p5,$p6,$p7,$p8,$p9,$p10)
+                    ON CONFLICT(EventId) DO NOTHING
+                    """, item.Id.ToString("D"), world, Utc(item.RecordedAtUtc), item.Tick, item.SimulationTime.Ticks,
+                    item.Kind, item.Severity, item.EntityId?.ToString("D"), item.EntityName, item.Detail, item.ContextJson);
+            }
             token.ThrowIfCancellationRequested();
             transaction.Commit();
         }

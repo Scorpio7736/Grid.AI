@@ -121,3 +121,19 @@ Implemented and verified on 2026-10-18. Normal launches reuse `%LOCALAPPDATA%\GR
 - Invalid saves stop startup rather than generating a replacement. Abrupt termination can lose changes since the last committed snapshot.
 
 Verification: **200 tests passed** (8 Core, 93 Simulation, 50 Terminal, 49 Persistence), with a successful real-terminal create/reopen/corruption/recovery smoke test using an isolated temporary database. See [Persistence Architecture](MD%20Project%20Files/Project_GRID_Persistence_Architecture.md) for recovery behavior and test limits. Durable event history (2.3), hardware-generated cities (2.6), login and Windows service integration remain planned.
+
+## Durable history (2.3, implemented 2026-10-18)
+
+Normal persistent sessions now save meaningful events with world snapshots. Use `history`, `history kind=Transfer limit=20`, or `history severity=Warning` to query committed history. Filters also include `entity=<guid>`, `since=<round-trip timestamp>`, and `offset=<number>`. Pending events appear after autosave; `--ephemeral` has no saved history command.
+
+Clock transitions, transfers, energy/resource changes and changing edits have timestamps, entity references, severity and structured context. Routine ticks are excluded. A bounded pending journal reports overflow; abrupt termination can lose events since the last save. This is not an exhaustive security audit. Schema v2 upgrades v1 without editing its migration. The application-resident retrofit remains planned.
+
+Verification: **208 tests passed**, zero build warnings/errors; isolated terminal history across restart passed. See [History and Observability](MD%20Project%20Files/Project_GRID_History_and_Observability.md).
+
+## Host resources (2.4 foundation, 2026-10-19)
+
+Use `resources` to inspect read-only CPU headroom, RAM, Windows system-drive space and per-interface network counters. `live` includes a compact CPU/RAM summary. Samples update every two seconds even while simulation time is paused; values expire after ten seconds. GPU/VRAM and disk throughput currently report Unsupported.
+
+A tested resource-condition policy compares explicitly sourced additional-work requirements with available headroom. Application-specific energy remains unknown until the 2.7 application discovery/classification work supplies those bindings and requirements. Existing fictional Genesis citizens still use their old energy rules. No resource observation changes Windows allocations or starts/stops applications.
+
+Verification: **223 tests passed**, build zero warnings/errors, and a real Windows disposable-session smoke passed. See [Resources and Host State](MD%20Project%20Files/Project_GRID_Resources_and_Host_State.md) for units, freshness, formula and integration work still pending.

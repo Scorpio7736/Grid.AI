@@ -64,7 +64,10 @@ public sealed partial class GridSimulationEngine
             if (cancellationToken.IsCancellationRequested) return new(ProgramEditOutcome.Cancelled);
             world.CommitProgram(program, staged.Values);
             preview.Consumed = true;
-            if (changed) RecordEvent("Edit", program.Id, program.Name, eventDetail);
+            if (changed) RecordEvent("Edit", program.Id, program.Name, eventDetail,
+                System.Text.Json.JsonSerializer.Serialize(new { receipt.RequestId, receipt.Identity,
+                    beforeRevision = program.Revision - 1, afterRevision = program.Revision,
+                    changes = staged.Changes.Where(c => c.IsChanged).Select(c => new { c.Field, before = EventValue(c.Before), after = EventValue(c.After) }) }));
             return new(changed ? ProgramEditOutcome.Applied : ProgramEditOutcome.NoChange, Receipt: receipt);
         }
     }

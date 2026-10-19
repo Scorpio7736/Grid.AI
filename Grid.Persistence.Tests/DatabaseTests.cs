@@ -38,14 +38,14 @@ public sealed class DatabaseTests
         files.Database.Initialize();
         using (var connection = files.Database.OpenExisting())
         {
-            Assert.Equal(1L, Scalar(connection, "PRAGMA user_version;"));
+            Assert.Equal((long)GridSchema.CurrentVersion, Scalar(connection, "PRAGMA user_version;"));
             Assert.Equal((long)GridSchema.ApplicationId, Scalar(connection, "PRAGMA application_id;"));
             Assert.Equal(0L, Scalar(connection, "SELECT COUNT(*) FROM Worlds;"));
             Seed(connection);
         }
         files.Database.Initialize();
         using var reopened = files.Database.OpenExisting();
-        Assert.Equal(1L, Scalar(reopened, "SELECT COUNT(*) FROM SchemaMigrations;"));
+        Assert.Equal((long)GridSchema.CurrentVersion, Scalar(reopened, "SELECT COUNT(*) FROM SchemaMigrations;"));
         Assert.Equal(7L, Scalar(reopened, "SELECT Revision FROM Programs;"));
         Assert.Equal(42.5, Scalar(reopened, "SELECT Energy FROM Programs;"));
         Assert.Equal(20000000L, Scalar(reopened, "SELECT ElapsedTicks FROM SimulationStates;"));
@@ -129,16 +129,16 @@ public sealed class DatabaseTests
     {
         using var files = new DatabaseFiles(); files.Database.Initialize();
         using var connection = files.Database.OpenExisting(); Seed(connection);
-        var failed = new SchemaMigration(2, "Broken upgrade", "CREATE TABLE Partial(Value TEXT); INSERT INTO Missing VALUES (1);");
-        Assert.Throws<SqliteException>(() => GridSchema.Migrate(connection, [GridSchema.Migrations[0], failed]));
-        Assert.Equal(1L, Scalar(connection, "PRAGMA user_version;"));
+        var failed = new SchemaMigration(3, "Broken upgrade", "CREATE TABLE Partial(Value TEXT); INSERT INTO Missing VALUES (1);");
+        Assert.Throws<SqliteException>(() => GridSchema.Migrate(connection, [.. GridSchema.Migrations, failed]));
+        Assert.Equal((long)GridSchema.CurrentVersion, Scalar(connection, "PRAGMA user_version;"));
         Assert.Equal(0L, Scalar(connection, "SELECT COUNT(*) FROM sqlite_schema WHERE name = 'Partial';"));
-        Assert.Equal(1L, Scalar(connection, "SELECT COUNT(*) FROM SchemaMigrations;"));
-        var second = new SchemaMigration(2, "Test extension", "CREATE TABLE Extension(Value TEXT) STRICT;");
-        GridSchema.Migrate(connection, [GridSchema.Migrations[0], second]);
-        GridSchema.Migrate(connection, [GridSchema.Migrations[0], second]);
-        Assert.Equal(2L, Scalar(connection, "PRAGMA user_version;"));
-        Assert.Equal(2L, Scalar(connection, "SELECT COUNT(*) FROM SchemaMigrations;"));
+        Assert.Equal((long)GridSchema.CurrentVersion, Scalar(connection, "SELECT COUNT(*) FROM SchemaMigrations;"));
+        var second = new SchemaMigration(3, "Test extension", "CREATE TABLE Extension(Value TEXT) STRICT;");
+        GridSchema.Migrate(connection, [.. GridSchema.Migrations, second]);
+        GridSchema.Migrate(connection, [.. GridSchema.Migrations, second]);
+        Assert.Equal(3L, Scalar(connection, "PRAGMA user_version;"));
+        Assert.Equal(3L, Scalar(connection, "SELECT COUNT(*) FROM SchemaMigrations;"));
         Assert.Equal(42.5, Scalar(connection, "SELECT Energy FROM Programs;"));
     }
 
@@ -217,7 +217,7 @@ public sealed class DatabaseTests
         using var files = new DatabaseFiles();
         await Task.WhenAll(Task.Run(files.Database.Initialize), Task.Run(files.Database.Initialize));
         using var connection = files.Database.OpenExisting();
-        Assert.Equal(1L, Scalar(connection, "SELECT COUNT(*) FROM SchemaMigrations;"));
+        Assert.Equal((long)GridSchema.CurrentVersion, Scalar(connection, "SELECT COUNT(*) FROM SchemaMigrations;"));
     }
 
     [Theory]

@@ -30,7 +30,8 @@ public sealed partial class GridSimulationEngine
         clock = new GridClock(tickDuration);
         this.timeProvider = timeProvider ?? TimeProvider.System;
         world.ProgramMoved += (program, previous, destination) => RecordEvent("Transfer", program.Id, program.Name,
-            $"{world.GetDistrict(previous).Name} ({previous}) -> {world.GetDistrict(destination).Name} ({destination})");
+            $"{world.GetDistrict(previous).Name} ({previous}) -> {world.GetDistrict(destination).Name} ({destination})",
+            System.Text.Json.JsonSerializer.Serialize(new { fromDistrictId = previous, toDistrictId = destination }));
     }
 
     public TimeSpan TickDuration => clock.TickDuration;
@@ -203,7 +204,8 @@ public sealed partial class GridSimulationEngine
         lastTick = result;
         foreach (var change in events.OfType<ProgramEnergyChanged>())
             RecordEvent("Energy", change.ProgramId, world.GetProgram(change.ProgramId).Name,
-                FormattableString.Invariant($"{change.PreviousEnergy:R} -> {change.Energy:R}"));
+                FormattableString.Invariant($"{change.PreviousEnergy:R} -> {change.Energy:R}"),
+                System.Text.Json.JsonSerializer.Serialize(new { before = change.PreviousEnergy, after = change.Energy }));
         RecordEvent("Tick", null, null, $"Tick completed; {changes.Count} energy changes.");
         return result;
     }

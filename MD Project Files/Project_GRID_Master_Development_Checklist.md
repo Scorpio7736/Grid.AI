@@ -387,22 +387,44 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ## 2.3 History and observability
 
-- [ ] Create persistent event log
-- [ ] Record changes with timestamps and involved entities
-- [ ] Record movement, resources and significant world events
-- [ ] Support filtering and querying history
-- [ ] Avoid unnecessary logging of routine ticks
-- [ ] Add structured logs with severity and context
+- [x] Create persistent event log
+- [x] Record changes with timestamps and involved entities
+- [x] Record movement, resources and significant world events
+- [x] Support filtering and querying history
+- [x] Avoid unnecessary logging of routine ticks
+- [x] Add structured logs with severity and context
+
+**Completion notes - 2026-10-18**
+
+- Added schema v2 WorldEvents with transactional upgrade; v1 migration is unchanged. Events and consistent world snapshots commit together during autosave/shutdown, with idempotent event IDs and acknowledgement after successful persistence.
+- Records UTC and simulation timestamps, involved entity IDs/names, severity, details and JSON context for clock transitions, transfers, energy/resource changes and changing edits. Historical references do not require a currently active resident and never resurrect one.
+- Added SetDistrictResource for validated, observable resource changes; ordinary tick-completed messages and no-op updates are excluded from durable history. Current resources are fictional; 2.4 host telemetry is not implemented.
+- Added history command/API filters for kind, entity, severity, since time and bounded limit/offset. Queries show committed history only. Added structured Error diagnostics for scheduler, save and startup/session failures.
+- Pending history is independent of live-view retention, capped at 10,000 events with explicit HistoryGap warnings. Abrupt termination can lose uncommitted history; automatic disk retention and exhaustive security audit remain future work.
+- Verification: 208 solution tests passed (8 Core, 93 Simulation, 56 Persistence, 51 Terminal), zero failed/skipped; build passed with zero warnings/errors. Added eight history/migration/query/failure cases. Isolated terminal restart smoke recovered Clock history and excluded Tick records.
+- See [History and Observability](Project_GRID_History_and_Observability.md) for API contracts, retention/failure boundaries and evidence. GRID-REQ-005 remains planned in 2.4/2.7; previous completion records retain their original scope.
 
 ## 2.4 Resources and host state
 
-- [ ] Define CPU, RAM, GPU/VRAM, storage and network resource categories for application residents (GRID-REQ-005); distinguish measured usage, capacity, pressure and estimated requirements
-- [ ] Establish resource limits and update invariants
-- [ ] Create abstract interfaces for host telemetry
-- [ ] Add fake telemetry provider for repeatable tests
-- [ ] Add approved read-only Windows telemetry
-- [ ] Specify and test bounded, smoothed energy/resource-sufficiency interpretation, including missing/stale metrics and unknown requirements; replace arbitrary application energy drain
-- [ ] Prevent fictional resource changes from affecting Windows allocations
+- [x] Define CPU, RAM, GPU/VRAM, storage and network resource categories for application residents (GRID-REQ-005); distinguish measured usage, capacity, pressure and estimated requirements
+- [x] Establish resource limits and update invariants
+- [x] Create abstract interfaces for host telemetry
+- [x] Add fake telemetry provider for repeatable tests
+- [x] Add approved read-only Windows telemetry
+- [x] Specify and test bounded, smoothed energy/resource-sufficiency interpretation, including missing/stale metrics and unknown requirements (policy API; application binding depends on 2.7)
+- [x] Prevent fictional resource changes from affecting Windows allocations
+
+**Telemetry/policy completion notes - 2026-10-19. Application integration remains pending below.**
+
+- Added typed metric/scope/unit/status/source/timestamp contracts, a read-only provider interface, two-second monitoring and detached engine observations with ten-second freshness. Invalid/nonfinite/duplicate readings are rejected; unsupported/stale/unavailable values remain unknown.
+- Windows collection reads CPU idle headroom, available/total physical RAM, system-volume free/total space, and per-interface network rates/link status. CPU has an initial warm-up; network resets and stale gaps do not fabricate rates. GPU/VRAM and disk throughput are explicitly Unsupported. No host allocations or process state are changed.
+- Added a provenance-required additional-work headroom policy: weakest required ratio, bounded 0–100, EMA 0.25 on distinct samples, unknown/reset on missing/stale required data. This does not infer real application minimum requirements or health.
+- Added resources command and CPU/RAM summary in live view. Monitoring remains independent of simulation ticks and is cancelled/awaited at shutdown; sampling is not saved as current host state or logged on every interval.
+- Verification: 223 tests passed (8 Core, 106 Simulation, 56 Persistence, 53 Terminal), zero failed/skipped; build zero warnings/errors. Fifteen added cases cover fake providers, invariants, freshness, policy smoothing and terminal lifecycle. A real Windows disposable-session smoke verified CPU warm-up/available readings, RAM, explicit unsupported GPU and tick zero while paused.
+- [ ] Bind resource requirements/policy to discovered application residents and replace their arbitrary Genesis energy drain after 2.7 classification/lifecycle exists. Existing fictional citizens retain their old rules; application energy is displayed as unknown rather than a fabricated score.
+- [ ] Extend collectors for GPU/VRAM, disk throughput and additional drives when supported; retain explicit unknown fallback and scoped attribution.
+
+See [Resources and Host State](Project_GRID_Resources_and_Host_State.md) for exact units, formula, coverage and remaining integration. These completion notes do not mark GRID-REQ-005 or the 2.7 retrofit implemented.
 
 ## 2.5 Verification
 
@@ -895,7 +917,7 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 1. [x] Complete editable-field and session-context planning in sections 1.9.1–1.9.2.
 2. [x] Implement and verify the validated editing API in section 1.9.3.
 3. [x] Implement the terminal live view in section 1.10; session visibility follows login integration.
-4. [x] Complete Phase 2.1 persistence architecture with identity, edit-result and audit extension requirements documented. Section 2.2 save/recovery is also complete; next implement 2.3 history and observability.
+4. [x] Complete Phase 2.1 persistence architecture with identity, edit-result and audit extension requirements documented. Section 2.2 save/recovery is also complete; 2.3 history/observability is now complete; next implement 2.4 resources/host state with the 2.7 retrofit dependencies.
 5. [ ] Integrate login and Master Control terminal editing in the later GRID-REQ-003 work; preserve the completed Genesis release.
 6. [ ] Record completion notes and verification evidence as each item is finished.
 

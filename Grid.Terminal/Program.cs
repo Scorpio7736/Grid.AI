@@ -2,6 +2,7 @@ using Grid.Core;
 using Grid.Persistence;
 using Grid.Simulation;
 using Grid.Terminal;
+using Grid.Simulation.Resources;
 
 using var shutdown = new CancellationTokenSource();
 ConsoleCancelEventHandler cancel = (_, eventArgs) => { eventArgs.Cancel = true; shutdown.Cancel(); };
@@ -43,13 +44,20 @@ try
         persistence = new WorldPersistenceSession(store, info, engine);
     }
     if (options.Start) engine.Start();
-    return await new TerminalHost(engine, DefaultCommands.Create(engine), Console.In, Console.Out,
-        showPrompt: !Console.IsInputRedirected, liveTerminal: new ConsoleLiveTerminal(), persistence: persistence).RunAsync(shutdown.Token);
+    var commands = DefaultCommands.Create(engine);
+    if (store is not null) HistoryCommand.Register(commands, store);
+    var telemetry = new HostTelemetryMonitor(new WindowsHostTelemetryProvider(), engine);
+    await telemetry.SampleOnceAsync(shutdown.Token);
+    ResourcesCommand.Register(commands, engine);
+    return await new TerminalHost(engine, commands, Console.In, Console.Out,
+        showPrompt: !Console.IsInputRedirected, liveTerminal: new ConsoleLiveTerminal(), persistence: persistence,
+        telemetry: telemetry).RunAsync(shutdown.Token);
 }
 catch (OperationCanceledException) when (shutdown.IsCancellationRequested) { return 0; }
 catch (Exception exception)
 {
     Console.Error.WriteLine($"GRID stopped: {exception.Message}");
+    await DiagnosticLog.ErrorAsync(Console.Error, "startup-or-session", exception);
     Console.Error.WriteLine("Existing worlds are never regenerated automatically. For a damaged save, use --recover with the same --world path (or the default path). Close other GRID sessions before retrying.");
     return 1;
 }

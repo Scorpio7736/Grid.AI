@@ -16,7 +16,12 @@ public sealed class WorldPersistenceSession(WorldStore store, WorldInfo info, Gr
     public async Task SaveAsync(CancellationToken token = default)
     {
         await gate.WaitAsync(token).ConfigureAwait(false);
-        try { await Task.Run(() => store.Save(info, engine.GetSnapshot(), token), token).ConfigureAwait(false); }
+        try
+        {
+            var batch = engine.CaptureHistory();
+            await Task.Run(() => store.Save(info, batch.State, token, batch.Events), token).ConfigureAwait(false);
+            engine.AcknowledgeHistory(batch);
+        }
         finally { gate.Release(); }
     }
 

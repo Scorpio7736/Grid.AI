@@ -1,17 +1,20 @@
 using Grid.Simulation;
 using Grid.Persistence;
+using Grid.Simulation.Resources;
 
 namespace Grid.Terminal;
 
 /// <summary>Owns input/output and scheduler lifetime; commands are independently registered and tested.</summary>
 public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher commands,
-    TextReader input, TextWriter output, bool showPrompt = true, ILiveTerminal? liveTerminal = null, IWorldPersistenceSession? persistence = null)
+    TextReader input, TextWriter output, bool showPrompt = true, ILiveTerminal? liveTerminal = null, IWorldPersistenceSession? persistence = null,
+    IHostTelemetryMonitor? telemetry = null)
 {
     public async Task<int> RunAsync(CancellationToken cancellationToken = default)
     {
         using var shutdown = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var scheduler = engine.RunAsync(shutdown.Token);
         var autosave = persistence?.RunPeriodicAsync(shutdown.Token) ?? Task.Delay(Timeout.Infinite, shutdown.Token);
+        var monitoring = telemetry?.RunAsync(shutdown.Token) ?? Task.Delay(Timeout.Infinite, shutdown.Token);
         var exitCode = 0;
         try
         {
@@ -23,7 +26,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 // Console.In may block synchronously even through ReadLineAsync. Keep that read
                 // off the control thread so Ctrl+C and scheduler faults can still end the session.
                 var read = Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token);
-                var completed = await Task.WhenAny(read, scheduler, autosave);
+                var completed = await Task.WhenAny(read, scheduler, autosave, monitoring);
                 if (completed != read)
                 {
                     break;
@@ -40,7 +43,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                     var live = new TerminalLiveView(engine, output, liveTerminal).RunAsync(liveCancellation.Token);
                     try
                     {
-                        if (await Task.WhenAny(live, scheduler, autosave) != live) break;
+                        if (await Task.WhenAny(live, scheduler, autosave, monitoring) != live) break;
                         await live;
                     }
                     finally
@@ -60,6 +63,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
             catch (Exception exception)
             {
                 await output.WriteLineAsync($"Simulation stopped with an error: {exception.Message}");
+                await DiagnosticLog.ErrorAsync(output, "scheduler", exception, engine.GetSnapshot().WorldId);
                 exitCode = 1;
             }
             try { await autosave; }
@@ -67,6 +71,15 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
             catch (Exception exception)
             {
                 await output.WriteLineAsync($"Autosave failed: {exception.Message}");
+                await DiagnosticLog.ErrorAsync(output, "autosave", exception, engine.GetSnapshot().WorldId);
+                exitCode = 1;
+            }
+            try { await monitoring; }
+            catch (OperationCanceledException) when (shutdown.IsCancellationRequested) { }
+            catch (Exception exception)
+            {
+                await output.WriteLineAsync($"Host telemetry failed: {exception.Message}");
+                await DiagnosticLog.ErrorAsync(output, "host-telemetry", exception, engine.GetSnapshot().WorldId);
                 exitCode = 1;
             }
             if (persistence is not null)
@@ -75,6 +88,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 catch (Exception exception)
                 {
                     await output.WriteLineAsync($"Shutdown save failed: {exception.Message}");
+                    await DiagnosticLog.ErrorAsync(output, "shutdown-save", exception, engine.GetSnapshot().WorldId);
                     exitCode = 1;
                 }
             }

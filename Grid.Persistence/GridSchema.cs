@@ -12,7 +12,7 @@ internal sealed record SchemaMigration(int Version, string Name, string Sql)
 
 public static class GridSchema
 {
-    public const int CurrentVersion = 1;
+    public const int CurrentVersion = 2;
     public const int ApplicationId = 0x47524944; // ASCII GRID
 
     internal static readonly IReadOnlyList<SchemaMigration> Migrations = Array.AsReadOnly(new[]
@@ -70,6 +70,23 @@ public static class GridSchema
                 CHECK(ElapsedTicks = TickCount * TickDurationTicks),
                 FOREIGN KEY (WorldId) REFERENCES Worlds(WorldId) ON DELETE CASCADE
             ) STRICT;
+            """),
+        new SchemaMigration(2, "Durable event history", """
+            CREATE TABLE WorldEvents (
+                EventId TEXT NOT NULL PRIMARY KEY,
+                WorldId TEXT NOT NULL,
+                RecordedAtUtc TEXT NOT NULL,
+                Tick INTEGER NOT NULL CHECK(Tick >= 0),
+                ElapsedTicks INTEGER NOT NULL CHECK(ElapsedTicks >= 0),
+                Kind TEXT NOT NULL,
+                Severity TEXT NOT NULL CHECK(Severity IN ('Information','Warning','Error')),
+                EntityId TEXT,
+                EntityName TEXT,
+                Detail TEXT NOT NULL,
+                ContextJson TEXT NOT NULL CHECK(json_valid(ContextJson))
+            ) STRICT;
+            CREATE INDEX IX_WorldEvents_Query ON WorldEvents(WorldId,RecordedAtUtc,EventId);
+            CREATE INDEX IX_WorldEvents_Entity ON WorldEvents(WorldId,EntityId,RecordedAtUtc);
             """)
     });
 
