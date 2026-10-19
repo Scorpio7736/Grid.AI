@@ -1,5 +1,13 @@
 # Project GRID
 
+## Hardware city completion - 2026-10-19
+
+**2.6 / GRID-REQ-004 implemented and verified.** First-time creation discovers motherboard, CPU, GPU, RAM, storage and network hardware, generates bounded district/street/building-lot geometry and saves actual layout and provenance in schema v3. Later startups reuse the saved world without discovery or regeneration. Existing worlds are preserved; new generated cities start empty pending 2.7. Inventory is creation provenance, separate from live resource telemetry and application identity. Rendering, atmosphere, fashion and application-resident integration remain planned.
+
+Verification: **250 tests passed** (14 Core, 106 Simulation, 74 Persistence, 56 Terminal); build had zero warnings/errors. A fresh Windows city and unchanged reopen were verified in a temporary directory. Use city to inspect saved generation details; --world with a new filename explicitly creates a separate world.
+
+See [Hardware City Generation](Project_GRID_Hardware_City_Generation.md) for architecture, mappings, fallbacks, persistence and completion evidence. Earlier dated statements that hardware generation is planned or that normal creation always makes twenty fictional citizens describe previous milestones; this update supersedes those status statements while preserving their history.
+
 ## Resource/host foundation update - 2026-10-19
 
 Section 2.4 now provides read-only host observations, explicit units/sources/freshness, fake-provider tests and a provenance-required additional-work resource-condition policy. Use resources for details or live for a compact CPU/RAM summary. Unsupported measurements and unknown application requirements remain unknown. Current observations are transient and cannot be edited into Windows allocations or restored from a save as fresh data.
@@ -23,7 +31,7 @@ See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Res
 
 ## GRID-REQ-004 - Hardware-generated city contract
 
-**Planned requirement - 2026-10-18; not implemented.** First-time world creation discovers motherboard, CPU, GPU, RAM, storage and network hardware, generates a unique city from those components, saves the resulting world and reuses that saved world on subsequent startups.
+**Requirement recorded 2026-10-18; headless implementation completed 2026-10-19 in 2.6.** First-time world creation discovers motherboard, CPU, GPU, RAM, storage and network hardware, generates a unique city from those components, saves the resulting world and reuses that saved world on subsequent startups.
 
 ### Creation and load contract
 
@@ -39,7 +47,7 @@ See [Host programs, lifecycles and resources](Project_GRID_Host_Programs_and_Res
 
 A read-only Windows discovery adapter supplies normalized data to a C# generation service; Core holds world data, Simulation operates it, and Persistence owns durable storage. Godot consumes saved layouts and snapshots and never generates a competing authoritative world. Tests use supplied hardware fixtures, not the developer's live machine.
 
-| Discovered category | Proposed city influence; exact mapping remains open |
+| Discovered category | Design intent; implemented mapping is in Hardware City Generation |
 |---|---|
 | Motherboard | Overall connectivity and regional arrangement |
 | CPU | Processing/industry capacity and district structure |

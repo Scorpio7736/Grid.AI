@@ -25,26 +25,22 @@ try
         }
         store = new WorldStore(path);
         if (options.Recover) store.Recover();
-        WorldInfo info;
-        if (File.Exists(store.DatabasePath))
+        var startup = await WorldStartup.LoadOrCreateAsync(store, new WindowsHardwareDiscovery(), shutdown.Token);
+        var info = startup.Saved.Info;
+        engine = GridSimulationEngine.Restore(startup.Saved.State);
+        Console.WriteLine($"{(startup.Created ? "Created" : "Loaded")} {info.Name} ({info.Id}) at tick {engine.TickCount}.");
+        if (startup.Created)
         {
-            var saved = store.Load();
-            info = saved.Info;
-            engine = GridSimulationEngine.Restore(saved.State);
-            Console.WriteLine($"Loaded {info.Name} ({info.Id}) at tick {engine.TickCount}.");
-        }
-        else
-        {
-            engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
-            info = new(engine.GetSnapshot().WorldId, "Genesis", DateTimeOffset.UtcNow, 7736, "genesis-v1");
-            store.Create(info, engine.GetSnapshot(), shutdown.Token);
-            Console.WriteLine($"Created {info.Name} ({info.Id}).");
+            var profile = startup.Saved.State.City!.Read().Profile;
+            foreach (var category in profile.Categories.Where(c => c.Status != Grid.Core.Generation.DiscoveryStatus.Available || c.Truncated))
+                Console.WriteLine($"Hardware {category.Kind}: {category.Status}; truncated={category.Truncated}. Saved fallback/partial layout; use city for coverage.");
         }
         Console.WriteLine($"World database: {store.DatabasePath}");
         persistence = new WorldPersistenceSession(store, info, engine);
     }
     if (options.Start) engine.Start();
     var commands = DefaultCommands.Create(engine);
+    CityCommand.Register(commands, engine);
     if (store is not null) HistoryCommand.Register(commands, store);
     var telemetry = new HostTelemetryMonitor(new WindowsHostTelemetryProvider(), engine);
     await telemetry.SampleOnceAsync(shutdown.Token);

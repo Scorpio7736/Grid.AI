@@ -8,7 +8,7 @@ public sealed partial class GridSimulationEngine
     public static GridSimulationEngine Restore(GridSimulationSnapshot snapshot, TimeProvider? timeProvider = null)
     {
         ValidateSnapshot(snapshot);
-        var world = new GridWorld(snapshot.WorldId);
+        var world = new GridWorld(snapshot.WorldId, snapshot.City);
         foreach (var saved in snapshot.Districts)
         {
             var district = new GridDistrict { Id = saved.Id, Name = saved.Name, Description = saved.Description };
@@ -57,6 +57,8 @@ public sealed partial class GridSimulationEngine
         }
         if (members.Count != programs.Count || programs.Values.Any(id => !districts.Contains(id)))
             throw new InvalidDataException("Missing district membership.");
+        if (snapshot.City is { } city && !city.Read().Districts.Select(d => d.Id).Order().SequenceEqual(districts.Order()))
+            throw new InvalidDataException("Saved layout and district identities disagree.");
     }
 
     private static bool ValidLabel(string value, int limit) => !string.IsNullOrWhiteSpace(value) &&

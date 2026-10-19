@@ -11,11 +11,13 @@ public sealed class GridWorld
     internal event Action<GridProgram, Guid, Guid>? ProgramMoved;
     public Guid InstanceId { get; } = Guid.NewGuid();
     public Guid Id { get; }
+    public Generation.CityBlueprint? City { get; }
     public IReadOnlyDictionary<Guid, GridProgram> Programs { get; }
     public IReadOnlyDictionary<Guid, GridDistrict> Districts { get; }
-    public GridWorld(Guid? id = null)
+    public GridWorld(Guid? id = null, Generation.CityBlueprint? city = null)
     {
         Id = id ?? Guid.NewGuid();
+        City = city;
         if (Id == Guid.Empty) throw new ArgumentException("World ID must not be empty.", nameof(id));
         Programs = new ReadOnlyDictionary<Guid, GridProgram>(programs);
         Districts = new ReadOnlyDictionary<Guid, GridDistrict>(districts);

@@ -13,13 +13,18 @@ public sealed partial class WorldStore : IDisposable
 {
     private readonly FileStream lease;
     private readonly object gate = new();
+    private readonly Action<SqliteConnection>? configureWriteConnection;
     private bool disposed;
     public string DatabasePath { get; }
     public string BackupPath => DatabasePath + ".backup";
     private string RecoveryMarker => DatabasePath + ".recovering";
 
-    public WorldStore(string path)
+    public WorldStore(string path) : this(path, null) { }
+
+    // Internal connection configuration seam for SQLite capacity/error verification; not a terminal capability.
+    internal WorldStore(string path, Action<SqliteConnection>? configureWriteConnection)
     {
+        this.configureWriteConnection = configureWriteConnection;
         DatabasePath = new SqliteGridDatabase(path).DatabasePath;
         lease = new FileStream(DatabasePath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
     }
@@ -27,6 +32,18 @@ public sealed partial class WorldStore : IDisposable
     public SavedWorld Load()
     {
         lock (gate) { ObjectDisposedException.ThrowIf(disposed, this); EnsureNotRecovering(); return Read(DatabasePath); }
+    }
+
+    public void EnsureCanCreate()
+    {
+        lock (gate)
+        {
+            ObjectDisposedException.ThrowIf(disposed, this);
+            EnsureNotRecovering();
+            if (File.Exists(DatabasePath) || File.Exists(BackupPath) ||
+                new[] { "-journal", "-wal", "-shm" }.Any(s => File.Exists(DatabasePath + s)))
+                throw new IOException("Existing world artifacts found. Load or explicitly recover; do not regenerate.");
+        }
     }
 
     public void Create(WorldInfo info, GridSimulationSnapshot state, CancellationToken token = default)
@@ -57,6 +74,7 @@ public sealed partial class WorldStore : IDisposable
             Validate(info, state);
             var previous = Read(DatabasePath);
             if (previous.Info != info) throw new InvalidDataException("World metadata does not match the existing world.");
+            if (previous.State.City?.Json != state.City?.Json) throw new InvalidDataException("World creation provenance/layout cannot be replaced by an ordinary save.");
             Write(info, state, token, events);
         }
     }
@@ -66,6 +84,10 @@ public sealed partial class WorldStore : IDisposable
         GridSimulationEngine.ValidateSnapshot(state);
         if (info.Id != state.WorldId || string.IsNullOrWhiteSpace(info.Name) || info.CreatedAtUtc.Offset != TimeSpan.Zero)
             throw new InvalidDataException("Invalid world metadata.");
+        if (state.City is { } city && (info.GenerationSeed != city.Read().Seed || info.GeneratorVersion != city.Read().GeneratorVersion))
+            throw new InvalidDataException("City provenance and world metadata disagree.");
+        if (info.GeneratorVersion == Grid.Core.Generation.HardwareCityGenerator.Version && state.City is null)
+            throw new InvalidDataException("Generated world is missing its saved layout.");
     }
 
     // Public callers may supply mutable collection implementations; keep a detached copy for the write.
@@ -75,7 +97,7 @@ public sealed partial class WorldStore : IDisposable
     private void Write(WorldInfo info, GridSimulationSnapshot state, CancellationToken token,
         IReadOnlyList<GridHistoryEvent>? events = null)
     {
-        using (var connection = new SqliteGridDatabase(DatabasePath).OpenExisting())
+        using (var connection = OpenForWrite())
         using (var transaction = connection.BeginTransaction())
         {
             void Execute(string sql, params object?[] values)
@@ -91,6 +113,8 @@ public sealed partial class WorldStore : IDisposable
             Execute("DELETE FROM Programs; DELETE FROM DistrictResources; DELETE FROM SimulationStates; DELETE FROM Districts; DELETE FROM Worlds;");
             var world = info.Id.ToString("D");
             Execute("INSERT INTO Worlds VALUES ($p0,$p1,$p2,$p3,$p4)", world, info.Name, Utc(info.CreatedAtUtc), info.GenerationSeed, info.GeneratorVersion);
+            if (state.City is { } city)
+                Execute("INSERT INTO WorldGeneration VALUES ($p0,$p1)", world, city.Json);
             foreach (var d in state.Districts)
             {
                 Execute("INSERT INTO Districts VALUES ($p0,$p1,$p2,$p3)", world, d.Id.ToString("D"), d.Name, d.Description);
@@ -119,6 +143,13 @@ public sealed partial class WorldStore : IDisposable
         }
         try { CopyValidated(DatabasePath, BackupPath); }
         catch (Exception ex) { throw new IOException("World save committed, but backup refresh failed. The previous backup was retained.", ex); }
+    }
+
+    private SqliteConnection OpenForWrite()
+    {
+        var connection = new SqliteGridDatabase(DatabasePath).OpenExisting();
+        try { configureWriteConnection?.Invoke(connection); return connection; }
+        catch { connection.Dispose(); throw; }
     }
 
     /// <summary>Explicit recovery only. Preserves damaged primary and SQLite sidecars for inspection.</summary>
@@ -220,6 +251,10 @@ public sealed partial class WorldStore : IDisposable
             savedAt = ParseUtc(r.GetString(4));
             if (r.Read()) throw new InvalidDataException("Multiple simulation states.");
         }
+        command.CommandText = "SELECT BlueprintJson FROM WorldGeneration WHERE WorldId=$world";
+        command.Parameters.AddWithValue("$world", info.Id.ToString("D"));
+        if (command.ExecuteScalar() is string blueprint)
+            state = state with { City = Grid.Core.Generation.CityBlueprint.Parse(blueprint) };
         Validate(info, state);
         transaction.Commit();
         return new(info, state, savedAt);

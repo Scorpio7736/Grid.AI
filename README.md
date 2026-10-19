@@ -2,7 +2,7 @@
 
 ## Planned population change - GRID-REQ-005 (2026-10-18)
 
-The target design now represents running PC applications as transient ordinary residents, with persistent agents and explicitly designated special programs. Resources will reflect observed application use, explicit/estimated requirements and host conditions; energy will be a defined GRID interpretation rather than arbitrary stamina. This is **planned, not implemented**: current code still creates twenty fictional citizens, saves every citizen and uses fixed Genesis energy rates.
+The target design now represents running PC applications as transient ordinary residents, with persistent agents and explicitly designated special programs. Resources will reflect observed application use, explicit/estimated requirements and host conditions; energy will be a defined GRID interpretation rather than arbitrary stamina. This is **planned, not implemented**: new hardware-generated cities start empty pending 2.7; legacy saved worlds and ephemeral demos retain fictional citizens and their Genesis energy rules.
 
 See [Host programs, lifecycles and resources](MD%20Project%20Files/Project_GRID_Host_Programs_and_Resources.md) and checklist 2.4/2.7. The existing save/recovery implementation and historical test results below retain their original scope. This update changes Markdown only.
 
@@ -13,7 +13,13 @@ The current implementation record tracks the released Genesis baseline, post-rel
 
 See [Current implementation and verification](MD%20Project%20Files/Project_GRID_Current_Implementation_Status.md).
 
-A local-first digital civilization prototype built with .NET 10. Genesis currently creates five districts and twenty citizens, with a fixed-step simulation engine and an interactive terminal.
+A local-first digital civilization prototype built with .NET 10. New saved worlds create six hardware-informed districts with an empty population pending application discovery. The Genesis demo retains five districts and twenty fictional citizens. Both use the fixed-step engine and interactive terminal.
+
+## Hardware-generated worlds - 2.6 (2026-10-19)
+
+Schema v3 saves the creation profile, seed and actual district/street/building-lot layout. Existing worlds load without rediscovery or regeneration, including after hardware changes. Use `--world "C:\path\to\new-world.db"` with a new filename for a separate city; `--ephemeral` keeps the fixed Genesis demo. Corrupt or incomplete saves are not silently replaced. The layout is headless data; 3D rendering and running-application residents remain planned.
+
+Verification: 250 tests passed and build completed with zero warnings/errors. See [Hardware City Generation](MD%20Project%20Files/Project_GRID_Hardware_City_Generation.md) for the full completion record.
 
 ## Run
 
@@ -23,7 +29,7 @@ Install the .NET 10 SDK, then from this repository:
 dotnet run --project Grid.Terminal/Grid.Terminal.csproj
 ```
 
-The world starts paused with a one-second tick duration. Normal launches create and save Genesis once, then load the same world from `%LOCALAPPDATA%\GRID\world.db`. Autosave runs every 30 seconds; exit, EOF and Ctrl+C save after the scheduler stops. Restored worlds start paused unless `--start` is supplied, with no offline time advancement. Citizens initially remain Idle, so ticking advances simulation time without inventing activities or energy changes.
+The world starts paused with a one-second tick duration. Normal launches discover host hardware and save a generated city once, then load the same world from `%LOCALAPPDATA%\GRID\world.db`. Autosave runs every 30 seconds; exit, EOF and Ctrl+C save after the scheduler stops. Restored worlds start paused unless `--start` is supplied, with no offline time advancement. Citizens initially remain Idle, so ticking advances simulation time without inventing activities or energy changes.
 
 To start automatic ticks immediately:
 
@@ -38,6 +44,7 @@ The application flag is case-insensitive. `--` passes it through dotnet run. `--
 | Command | Behavior |
 |---|---|
 | `help` | Show registered commands and usage. |
+| `city` | Inspect the saved hardware-generated layout and discovery coverage; legacy worlds remain preserved. |
 | `status` | Show clock state, tick count, simulation time, and population. |
 | `programs` | List citizens, IDs, energy, status, and location. |
 | `districts` | List districts, IDs, and populations. |

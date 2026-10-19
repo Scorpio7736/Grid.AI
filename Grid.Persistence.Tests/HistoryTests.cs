@@ -108,7 +108,7 @@ public sealed class HistoryTests : IDisposable
         using var upgraded = new SqliteGridDatabase(PathName).OpenExisting();
         using var query = upgraded.CreateCommand(); query.CommandText = "SELECT Name FROM Worlds";
         Assert.Equal("Legacy", query.ExecuteScalar()); query.CommandText = "SELECT COUNT(*) FROM WorldEvents";
-        Assert.Equal(0L, query.ExecuteScalar()); query.CommandText = "PRAGMA user_version"; Assert.Equal(2L, query.ExecuteScalar());
+        Assert.Equal(0L, query.ExecuteScalar()); query.CommandText = "PRAGMA user_version"; Assert.Equal((long)GridSchema.CurrentVersion, query.ExecuteScalar());
     }
 
     [Fact]

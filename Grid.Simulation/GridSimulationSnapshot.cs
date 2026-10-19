@@ -10,4 +10,5 @@ public sealed record GridSimulationSnapshot(long TickCount, TimeSpan ElapsedSimu
     IReadOnlyList<GridDistrictSnapshot> Districts)
 {
     public Guid WorldId { get; init; }
+    public Grid.Core.Generation.CityBlueprint? City { get; init; }
 }

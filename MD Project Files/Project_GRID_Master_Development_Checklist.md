@@ -1,5 +1,13 @@
 # Project GRID — Master Development Checklist
 
+## Hardware city completion - 2026-10-19
+
+**2.6 / GRID-REQ-004 implemented and verified.** First-time creation discovers motherboard, CPU, GPU, RAM, storage and network hardware, generates bounded district/street/building-lot geometry and saves actual layout and provenance in schema v3. Later startups reuse the saved world without discovery or regeneration. Existing worlds are preserved; new generated cities start empty pending 2.7. Inventory is creation provenance, separate from live resource telemetry and application identity. Rendering, atmosphere, fashion and application-resident integration remain planned.
+
+Verification: **250 tests passed** (14 Core, 106 Simulation, 74 Persistence, 56 Terminal); build had zero warnings/errors. A fresh Windows city and unchanged reopen were verified in a temporary directory. Use city to inspect saved generation details; --world with a new filename explicitly creates a separate world.
+
+See [Hardware City Generation](Project_GRID_Hardware_City_Generation.md) for architecture, mappings, fallbacks, persistence and completion evidence. Earlier dated statements that hardware generation is planned or that normal creation always makes twenty fictional citizens describe previous milestones; this update supersedes those status statements while preserving their history.
+
 ## GRID-REQ-005 - Host-connected programs and resources (planned, 2026-10-18)
 
 New work is tracked in revised 2.4 and added 2.7, with Phase 3/7 acceptance criteria aligned to a changing application population. All completed Genesis and 2.1-2.2 entries remain completed for their original scope; this requirement is not implemented.
@@ -449,22 +457,31 @@ See [Resources and Host State](Project_GRID_Resources_and_Host_State.md) for exa
 
 ## 2.6 Hardware-generated first-time world creation (GRID-REQ-004)
 
-**Planned - 2026-10-18; no implementation completed by this documentation update.** Coordinate with 2.1-2.2 persistence; do not change completed Genesis criteria or the current fixed factory.
+**Implemented and verified - 2026-10-19.** Integrated with persistence; completed Genesis criteria and the fixed demo/test factory are preserved.
 
-- [ ] Define a read-only host discovery adapter for motherboard, CPU, GPU, RAM, storage and network hardware
-- [ ] Specify normalized profile fields, units, stable ordering, multiple-device handling and recorded partial-discovery fallbacks
-- [ ] Keep local adapter discovery separate from network scanning, user-file access and live telemetry
-- [ ] Define bounded component-to-city mappings that preserve the city, atmosphere and fashion design guides
-- [ ] Implement headless C# generation using a normalized creation profile, per-world seed and generator version
-- [ ] Persist world ID, creation profile, seed, versions, component associations, generated layout, entities and simulation state atomically
-- [ ] Mark first creation complete only after durable save; handle simultaneous initialization without duplicate authoritative worlds
-- [ ] Load the actual saved world on later startups instead of rerunning generation, preserving edits, identities, memberships and clock state
-- [ ] Preserve established worlds after hardware upgrades, missing devices, changed drivers or changed discovery order
-- [ ] Distinguish genuinely absent saves from corrupt, inaccessible or incompatible saves; recover or migrate without silent replacement
-- [ ] Keep explicit new-world creation separate from normal startup and preserve prior worlds/history
-- [ ] Test deterministic fixtures, profile-sensitive generation, partial discovery, multiple devices and bounded world size
-- [ ] Test first creation and reopen, changed-hardware reuse, interrupted saves, full disk, corrupt data and concurrent initialization
-- [ ] Add completion notes with actual implementation and verification evidence when finished
+- [x] Define a read-only host discovery adapter for motherboard, CPU, GPU, RAM, storage and network hardware
+- [x] Specify normalized profile fields, units, stable ordering, multiple-device handling and recorded partial-discovery fallbacks
+- [x] Keep local adapter discovery separate from network scanning, user-file access and live telemetry
+- [x] Define bounded component-to-city mappings that preserve the city, atmosphere and fashion design guides
+- [x] Implement headless C# generation using a normalized creation profile, per-world seed and generator version
+- [x] Persist world ID, creation profile, seed, versions, component associations, generated layout, entities and simulation state atomically
+- [x] Mark first creation complete only after durable save; handle simultaneous initialization without duplicate authoritative worlds
+- [x] Load the actual saved world on later startups instead of rerunning generation, preserving edits, identities, memberships and clock state
+- [x] Preserve established worlds after hardware upgrades, missing devices, changed drivers or changed discovery order
+- [x] Distinguish genuinely absent saves from corrupt, inaccessible or incompatible saves; recover or migrate without silent replacement
+- [x] Keep explicit new-world creation separate from normal startup and preserve prior worlds/history
+- [x] Test deterministic fixtures, profile-sensitive generation, partial discovery, multiple devices and bounded world size
+- [x] Test first creation and reopen, changed-hardware reuse, interrupted saves, full disk, corrupt data and concurrent initialization
+- [x] Add completion notes with actual implementation and verification evidence when finished
+
+**Completion notes - 2026-10-19**
+
+- Added six-category Windows CIM discovery, normalized profiles, explicit partial/unsupported fallbacks and bounded deterministic hardware-city-v1 generation. Six districts, connected streets and building lots are semantic data; no renderer is claimed.
+- Schema v3 transactionally saves actual layout, provenance, associations and initial state. Later load/recovery skips discovery; existing worlds remain intact. Explicit separate creation uses --world with a new filename.
+- New generated worlds contain zero residents pending 2.7, preserving the revised host-application vision. Legacy worlds and --ephemeral retain the original Genesis population.
+- Verification: dotnet test passed all 250 tests; dotnet build --no-restore had zero warnings/errors. Nineteen new cases cover determinism, bounded/fallback geometry, save/reopen/recovery, corrupt/artifact refusal, cancellation, concurrent creation and genuine SQLite SQLITE_FULL rollback through a test-only page limit. Existing interrupted-update subprocess tests also pass; physical disk exhaustion and power-loss are not claimed.
+- Real Windows disposable creation captured all six categories with CPU units and RAM/storage capacities; six districts, six streets and 56 lots reopened unchanged at tick 1, paused. The default world was not modified.
+- See [Hardware City Generation](Project_GRID_Hardware_City_Generation.md) for full implementation details and limits. Changes are local working-tree changes at verification, not a release or remote publication claim.
 
 **Later integration:** Phase 7 renders saved layouts; Phase 8 startup uses this same create/load decision. GPU or hardware capacity must not require graphics or AI for headless generation. Hardware details are provenance, not authentication; persisted world IDs do not preserve old session/preview validity after restart.
 
