@@ -33,6 +33,7 @@ public sealed partial class GridSimulationEngine
             }
             engine.behaviors[saved.Id] = behavior;
         }
+        foreach (var app in snapshot.ApplicationCatalog) engine.applicationCatalog.Add(app.Key, app);
         engine.clock.Restore(snapshot.TickCount);
         return engine;
     }
@@ -44,6 +45,10 @@ public sealed partial class GridSimulationEngine
             snapshot.TickCount > long.MaxValue / snapshot.TickDuration.Ticks ||
             snapshot.ElapsedSimulationTime.Ticks != snapshot.TickCount * snapshot.TickDuration.Ticks)
             throw new InvalidDataException("Invalid world identity or simulation clock.");
+        if (snapshot.ApplicationCatalog.Select(a => a.Key).Distinct(StringComparer.Ordinal).Count() != snapshot.ApplicationCatalog.Count ||
+            snapshot.ApplicationCatalog.Any(a => string.IsNullOrWhiteSpace(a.Key) || a.Key.Length > 128 || !ValidLabel(a.Name, 80) ||
+                string.IsNullOrWhiteSpace(a.Source) || a.Source.Length > 256 || a.LastSeenUtc.Offset != TimeSpan.Zero))
+            throw new InvalidDataException("Invalid application catalog.");
         var districts = new HashSet<Guid>();
         var programs = new Dictionary<Guid, Guid>();
         foreach (var p in snapshot.Programs)

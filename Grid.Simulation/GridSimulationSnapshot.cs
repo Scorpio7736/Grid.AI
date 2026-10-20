@@ -11,10 +11,12 @@ public sealed record GridProgramSnapshot(Guid Id, string Name, string Occupation
 }
 public sealed record GridDistrictSnapshot(Guid Id, string Name, string Description,
     IReadOnlyList<Guid> ProgramIds, IReadOnlyDictionary<string, float> Resources);
+public sealed record KnownApplication(string Key, string Name, string Source, DateTimeOffset LastSeenUtc);
 public sealed record GridSimulationSnapshot(long TickCount, TimeSpan ElapsedSimulationTime,
     TimeSpan TickDuration, bool IsRunning, IReadOnlyList<GridProgramSnapshot> Programs,
     IReadOnlyList<GridDistrictSnapshot> Districts)
 {
+    public IReadOnlyList<KnownApplication> ApplicationCatalog { get; init; } = [];
     public Guid WorldId { get; init; }
     public string ApplicationDiscoveryStatus { get; init; } = "Not sampled";
     public Grid.Core.Generation.CityBlueprint? City { get; init; }

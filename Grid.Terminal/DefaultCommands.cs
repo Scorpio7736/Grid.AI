@@ -16,8 +16,8 @@ public static class DefaultCommands
                 return execute();
             }));
 
-        Add("help", "List available commands.", () => new(string.Join(Environment.NewLine,
-            dispatcher.Commands.Select(c => $"{c.Usage} - {c.Description}"))));
+        Add("help", "Display the command reference.", () => new(TerminalPresentation.Help(dispatcher.Commands)));
+        Add("clear", "Clear the visible terminal without changing GRID.", () => new("", ClearRequested: true));
         Add("status", "Show current world and clock state.", () =>
         {
             var state = engine.GetSnapshot();
@@ -25,15 +25,8 @@ public static class DefaultCommands
                 $"Tick: {state.TickCount} | Simulation time: {state.ElapsedSimulationTime:c} | Tick duration: {state.TickDuration:c}{Environment.NewLine}" +
                 $"Districts: {state.Districts.Count} | Programs: {state.Programs.Count}{Environment.NewLine}Application discovery: {state.ApplicationDiscoveryStatus}");
         });
-        dispatcher.Register(new("programs", "programs [ids]", "List residents in a compact table; ids shows full identifiers.", args =>
-        {
-            if (args.Count > 1 || args.Count == 1 && !args[0].Equals("ids", StringComparison.OrdinalIgnoreCase)) return new("Usage: programs [ids]");
-            var state = engine.GetSnapshot();
-            return new(args.Count == 1 ? TerminalTable.Render(["Name", "ID"], state.Programs.Select(p => new[] { p.Name, p.Id.ToString() })) :
-                TerminalTable.Render(["Name", "Type", "State", "Energy", "District"], state.Programs.Select(p => new[] {
-                    p.Name, p.Kind.ToString(), ResidentFormatting.Status(p), ResidentFormatting.Energy(p), state.Districts.Single(d => d.Id == p.DistrictId).Name })) +
-                "\nDetails: inspect program <name> | Full identifiers: programs ids");
-        }));
+        dispatcher.Register(new("programs", "programs [ids] [-active|-possible|-sleeping]", "List residents, running applications, known applications or sleeping/background applications.", args =>
+            ProgramListCommand.Execute(engine.GetSnapshot(), args)));
         dispatcher.Register(new("districts", "districts [ids]", "List district populations; ids shows full identifiers.", args =>
         {
             if (args.Count > 1 || args.Count == 1 && !args[0].Equals("ids", StringComparison.OrdinalIgnoreCase)) return new("Usage: districts [ids]");

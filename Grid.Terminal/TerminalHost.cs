@@ -7,7 +7,7 @@ namespace Grid.Terminal;
 /// <summary>Owns input/output and scheduler lifetime; commands are independently registered and tested.</summary>
 public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher commands,
     TextReader input, TextWriter output, bool showPrompt = true, ILiveTerminal? liveTerminal = null, IWorldPersistenceSession? persistence = null,
-    IHostTelemetryMonitor? telemetry = null)
+    IHostTelemetryMonitor? telemetry = null, Func<bool>? clearScreen = null)
 {
     public async Task<int> RunAsync(CancellationToken cancellationToken = default)
     {
@@ -36,6 +36,13 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 if (line is null) break;
                 var result = commands.Execute(line);
                 if (result.Text.Length != 0) await output.WriteLineAsync(result.Text);
+                if (result.ClearRequested)
+                {
+                    var cleared = false;
+                    try { cleared = clearScreen?.Invoke() == true; }
+                    catch (Exception ex) when (ex is IOException or PlatformNotSupportedException or InvalidOperationException) { }
+                    if (!cleared) await output.WriteLineAsync("Clear unavailable in this output; GRID state is unchanged.");
+                }
                 if (result.ExitRequested) break;
                 if (result.LiveViewRequested)
                 {
@@ -95,6 +102,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 }
             }
         }
+        await output.WriteLineAsync(TerminalPresentation.Farewell(exitCode == 0, persistence is not null));
         return exitCode;
     }
 }

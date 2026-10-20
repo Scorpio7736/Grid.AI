@@ -9,9 +9,15 @@ using var shutdown = new CancellationTokenSource();
 ConsoleCancelEventHandler cancel = (_, eventArgs) => { eventArgs.Cancel = true; shutdown.Cancel(); };
 Console.CancelKeyPress += cancel;
 WorldStore? store = null;
+ConsoleColor? originalForeground = null;
 try
 {
     var options = TerminalOptions.Parse(args);
+    if (TerminalTheme.Enabled(options.NoColor))
+    {
+        originalForeground = Console.ForegroundColor;
+        Console.ForegroundColor = ConsoleColor.Cyan;
+    }
     GridSimulationEngine engine;
     IWorldPersistenceSession? persistence = null;
     if (options.Ephemeral) engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
@@ -53,7 +59,11 @@ try
     ResourcesCommand.Register(commands, engine);
     return await new TerminalHost(engine, commands, Console.In, new TerminalOutput(Console.Out, TerminalTheme.Enabled(options.NoColor)),
         showPrompt: !Console.IsInputRedirected, liveTerminal: new ConsoleLiveTerminal(options.NoColor), persistence: persistence,
-        telemetry: applications is null ? telemetry : new CombinedHostMonitor(telemetry, applications)).RunAsync(shutdown.Token);
+        telemetry: applications is null ? telemetry : new CombinedHostMonitor(telemetry, applications), clearScreen: () =>
+        {
+            if (Console.IsOutputRedirected || Console.IsInputRedirected || Environment.GetEnvironmentVariable("TERM") == "dumb") return false;
+            Console.Clear(); return true;
+        }).RunAsync(shutdown.Token);
 }
 catch (OperationCanceledException) when (shutdown.IsCancellationRequested) { return 0; }
 catch (Exception exception)
@@ -67,4 +77,5 @@ finally
 {
     store?.Dispose();
     Console.CancelKeyPress -= cancel;
+    if (originalForeground is { } foreground) Console.ForegroundColor = foreground;
 }

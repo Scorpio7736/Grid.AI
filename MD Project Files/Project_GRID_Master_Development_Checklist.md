@@ -379,6 +379,25 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 
 ---
 
+## 1.12 Terminal command reference, population filters and farewell
+
+**Implemented and verified - 2026-10-19.** Extends completed 1.11 without changing its completion record.
+
+- [x] Add display-only `clear` with safe plain-output fallback
+- [x] Group `help` into Simulation Control, World & Population, Monitoring & Analytics, System & Terminal, and Command Options
+- [x] Add `programs -active` for Running application residents
+- [x] Add `programs -possible` for installed/previously observed applications, retaining unknown/provenance labels
+- [x] Add `programs -sleeping` for On call and Sleeping application residents, keeping their labels distinct
+- [x] Preserve bare `programs`, support `ids` with one filter, and validate flags/empty results
+- [x] Persist minimal previously seen application catalog metadata across restarts separately from live/resident state; verify migration and stale/uninstalled entries
+- [x] Add a GRID7736 ASCII shutdown banner with truthful save/failure/ephemeral messages and no blocking key prompt; updated to the user-supplied artwork with light-blue default text (75 terminal tests passed)
+- [x] Verify normal-terminal versus Visual Studio host behavior; do not claim the application can replace Visual Studio's post-exit footer
+- [x] Test help/filter/clear/catalog/shutdown behavior and update dated completion notes when implemented
+
+See [Terminal Command and Shutdown Plan](Project_GRID_Terminal_Command_and_Shutdown_Plan.md) for the command layout, filter semantics, proposed artwork, persistence dependency and verification criteria. Completion evidence: **297 Release tests passed**; built-terminal save/reopen/filter/help/farewell smoke passed. Clear success/fallback is tested with an injected screen action; the tool PTY used fallback. User-console visual assessment remains separate. Schema v6 catalogs metadata without restoring ordinary resident activity. Visual Studio retains control of its post-exit footer.
+
+---
+
 # Phase 2 — The Core
 
 ## 2.1 Persistence architecture

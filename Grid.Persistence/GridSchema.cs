@@ -12,7 +12,7 @@ internal sealed record SchemaMigration(int Version, string Name, string Sql)
 
 public static class GridSchema
 {
-    public const int CurrentVersion = 5;
+    public const int CurrentVersion = 6;
     public const int ApplicationId = 0x47524944; // ASCII GRID
 
     internal static readonly IReadOnlyList<SchemaMigration> Migrations = Array.AsReadOnly(new[]
@@ -105,6 +105,16 @@ public static class GridSchema
                 BehaviorJson TEXT NOT NULL CHECK(json_valid(BehaviorJson) AND length(BehaviorJson) <= 20000),
                 PRIMARY KEY (WorldId, ProgramId),
                 FOREIGN KEY (WorldId, ProgramId) REFERENCES Programs(WorldId, ProgramId) ON DELETE CASCADE
+            ) STRICT;
+            """),
+        new SchemaMigration(6, "Known application catalog", """
+            CREATE TABLE ApplicationCatalog (
+                WorldId TEXT NOT NULL REFERENCES Worlds(WorldId) ON DELETE CASCADE,
+                ApplicationKey TEXT NOT NULL CHECK(length(ApplicationKey) BETWEEN 1 AND 128),
+                Name TEXT NOT NULL CHECK(length(Name) BETWEEN 1 AND 80),
+                Source TEXT NOT NULL CHECK(length(Source) BETWEEN 1 AND 256),
+                LastSeenUtc TEXT NOT NULL,
+                PRIMARY KEY (WorldId, ApplicationKey)
             ) STRICT;
             """)
     });

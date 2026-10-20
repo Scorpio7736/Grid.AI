@@ -116,6 +116,8 @@ public sealed partial class WorldStore : IDisposable
             Execute("INSERT INTO Worlds VALUES ($p0,$p1,$p2,$p3,$p4)", world, info.Name, Utc(info.CreatedAtUtc), info.GenerationSeed, info.GeneratorVersion);
             if (state.City is { } city)
                 Execute("INSERT INTO WorldGeneration VALUES ($p0,$p1)", world, city.Json);
+            foreach (var app in state.ApplicationCatalog)
+                Execute("INSERT INTO ApplicationCatalog VALUES ($p0,$p1,$p2,$p3,$p4)", world, app.Key, app.Name, app.Source, Utc(app.LastSeenUtc));
             foreach (var d in state.Districts)
             {
                 Execute("INSERT INTO Districts VALUES ($p0,$p1,$p2,$p3)", world, d.Id.ToString("D"), d.Name, d.Description);
@@ -269,6 +271,15 @@ public sealed partial class WorldStore : IDisposable
         command.Parameters.AddWithValue("$world", info.Id.ToString("D"));
         if (command.ExecuteScalar() is string blueprint)
             state = state with { City = Grid.Core.Generation.CityBlueprint.Parse(blueprint) };
+        Validate(info, state);
+        command.CommandText = "SELECT ApplicationKey,Name,Source,LastSeenUtc FROM ApplicationCatalog WHERE WorldId=$catalogWorld";
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("$catalogWorld", info.Id.ToString("D"));
+        var catalog = new List<KnownApplication>();
+        using (var reader = command.ExecuteReader())
+            while (reader.Read()) catalog.Add(new(reader.GetString(0), reader.GetString(1), reader.GetString(2),
+                ParseUtc(reader.GetString(3))));
+        state = state with { ApplicationCatalog = catalog.AsReadOnly() };
         Validate(info, state);
         transaction.Commit();
         return new(info, state, savedAt);

@@ -5,6 +5,7 @@ namespace Grid.Simulation;
 
 public sealed partial class GridSimulationEngine
 {
+    private readonly Dictionary<string, KnownApplication> applicationCatalog = new(StringComparer.Ordinal);
     private DateTimeOffset lastApplicationSample = DateTimeOffset.MinValue;
     private string applicationDiscoveryStatus = "Not sampled";
     private string CurrentDiscoveryStatus => timeProvider.GetUtcNow() < lastApplicationSample ||
@@ -59,6 +60,8 @@ public sealed partial class GridSimulationEngine
                 now - observation.ObservedAtUtc > TimeSpan.FromSeconds(10)) return;
             if (world.Districts.Count == 0 && apps.Length != 0) throw new InvalidOperationException("Application residents require a district.");
             lastApplicationSample = observation.ObservedAtUtc;
+            foreach (var app in apps)
+                applicationCatalog[app.Key] = new(app.Key, app.Name, observation.Source, observation.ObservedAtUtc);
             applicationDiscoveryStatus = $"{(observation.Complete ? "Complete" : "Partial/unavailable")} | {observation.Source} | Observed groups: {apps.Length}";
             var existing = world.Programs.Values.Where(p => p.Kind == ResidentKind.Application).ToArray();
             var incoming = apps.ToDictionary(a => a.Key, StringComparer.Ordinal);

@@ -110,7 +110,8 @@ public sealed class TerminalTests
         var (_, _, commands) = Setup();
         commands.Register(new("echo", "echo <text>", "Echo text.", args => new(string.Join("|", args))));
         Assert.Equal("hello world|test", commands.Execute("ECHO \"hello world\" test").Text);
-        Assert.Contains("echo <text> - Echo text.", commands.Execute("help").Text);
+        Assert.Contains("echo <text>", commands.Execute("help").Text);
+        Assert.Contains("Echo text.", commands.Execute("help").Text);
         Assert.Throws<ArgumentException>(() => commands.Register(new("ECHO", "", "", _ => new(""))));
         Assert.Throws<ArgumentException>(() => commands.Register(new("two words", "", "", _ => new(""))));
     }

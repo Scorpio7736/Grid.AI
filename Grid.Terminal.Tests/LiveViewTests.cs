@@ -13,7 +13,7 @@ public sealed class LiveViewTests
         var commands = DefaultCommands.Create(engine);
         Assert.True(commands.Execute("LIVE").LiveViewRequested);
         Assert.False(commands.Execute("live extra").LiveViewRequested);
-        Assert.Contains("live -", commands.Execute("help").Text);
+        Assert.Contains("Live status", commands.Execute("help").Text);
         Assert.False(engine.IsRunning);
         Assert.Equal(0, engine.TickCount);
     }
