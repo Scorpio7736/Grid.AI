@@ -74,6 +74,7 @@ public static class DefaultCommands
         }
         Add("step", "Advance one tick while paused.", Step);
         Add("tick", "Alias for step; advance one tick while paused.", Step);
+        Add("nge", "Nullify Grid Existence: delete this world after interactive y/N confirmation.", () => new("", NullificationRequested: true));
         Add("exit", "Stop the simulation and exit.", () => new("Stopping GRID.", true));
         return dispatcher;
     }

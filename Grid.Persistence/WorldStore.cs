@@ -164,6 +164,7 @@ public sealed partial class WorldStore : IDisposable
         lock (gate)
         {
             ObjectDisposedException.ThrowIf(disposed, this);
+            if (nullificationStarted || File.Exists(NullificationMarker)) throw new IOException("NGE interruption requires manual review; recovery is blocked.");
             var staged = DatabasePath + ".recover-" + Guid.NewGuid().ToString("N");
             CopyValidated(BackupPath, staged);
             try
@@ -292,6 +293,8 @@ public sealed partial class WorldStore : IDisposable
         DateTimeStyles.None, out var value) && value.Offset == TimeSpan.Zero ? value : throw new InvalidDataException("Invalid UTC timestamp.");
     private void EnsureNotRecovering()
     {
+        if (nullificationStarted || File.Exists(NullificationMarker))
+            throw new IOException("World nullification started. Startup/save/recovery is blocked; inspect the .nullifying marker and remaining files before explicit cleanup.");
         if (File.Exists(RecoveryMarker)) throw new IOException("An interrupted recovery must be completed with --recover.");
     }
     public void Dispose() { lock (gate) { if (disposed) return; disposed = true; lease.Dispose(); } }

@@ -10,14 +10,23 @@ public interface IWorldPersistenceSession
 
 /// <summary>Serializes snapshot capture and disk writes. The host stops the scheduler before its final save.</summary>
 public sealed class WorldPersistenceSession(WorldStore store, WorldInfo info, GridSimulationEngine engine,
-    TimeSpan? interval = null, TimeProvider? timeProvider = null) : IWorldPersistenceSession
+    TimeSpan? interval = null, TimeProvider? timeProvider = null) : IWorldPersistenceSession, IWorldNullificationSession
 {
+    private bool nullificationRequested;
+    public NullificationPlan PrepareNullification() => store.PrepareNullification(info.Id);
+    public async Task NullifyAsync(NullificationPlan plan)
+    {
+        await gate.WaitAsync().ConfigureAwait(false);
+        try { nullificationRequested = true; store.Nullify(plan); }
+        finally { gate.Release(); }
+    }
     private readonly SemaphoreSlim gate = new(1, 1);
     public async Task SaveAsync(CancellationToken token = default)
     {
         await gate.WaitAsync(token).ConfigureAwait(false);
         try
         {
+            if (nullificationRequested) throw new InvalidOperationException("Saving is disabled after NGE confirmation.");
             var batch = engine.CaptureHistory();
             await Task.Run(() => store.Save(info, batch.State, token, batch.Events), token).ConfigureAwait(false);
             engine.AcknowledgeHistory(batch);

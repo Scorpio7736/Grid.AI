@@ -58,7 +58,7 @@ try
     if (applications is not null) await applications.SampleOnceAsync(shutdown.Token);
     ResourcesCommand.Register(commands, engine);
     return await new TerminalHost(engine, commands, Console.In, new TerminalOutput(Console.Out, TerminalTheme.Enabled(options.NoColor)),
-        showPrompt: !Console.IsInputRedirected, liveTerminal: new ConsoleLiveTerminal(options.NoColor), persistence: persistence,
+        showPrompt: !Console.IsInputRedirected, interactiveConfirmation: !Console.IsInputRedirected && !Console.IsOutputRedirected, liveTerminal: new ConsoleLiveTerminal(options.NoColor), persistence: persistence,
         telemetry: applications is null ? telemetry : new CombinedHostMonitor(telemetry, applications), clearScreen: () =>
         {
             if (Console.IsOutputRedirected || Console.IsInputRedirected || Environment.GetEnvironmentVariable("TERM") == "dumb") return false;

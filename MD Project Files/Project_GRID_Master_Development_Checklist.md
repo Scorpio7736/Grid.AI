@@ -398,6 +398,24 @@ See [Terminal Command and Shutdown Plan](Project_GRID_Terminal_Command_and_Shutd
 
 ---
 
+## 1.13 NGE - Nullify Grid Existence
+
+**Initial local confirmation implemented and verified - 2026-10-19.** Delete the current GRID world's save after a clear warning and explicit y/n confirmation. Initial local-operator confirmation is not authenticated admin enforcement; future access is human user admin / Master Control only.
+
+- [x] Add case-insensitive `NGE` with an interactive warning naming the world and exact deletion paths; default to No
+- [x] Safely handle cancellation, invalid answers, redirected input and ephemeral sessions
+- [x] Validate the active-world deletion manifest, including managed backup/recovery artifacts; preserve unrelated files/worlds
+- [x] Stop workers and serialize persistence; suppress final save and prevent save recreation during shutdown
+- [x] Handle partial failures/interruption explicitly; exit without replacement-world creation or false success claims
+- [x] Show NGE-specific GRID7736 farewell instead of saved-world messages
+- [x] Verify a later startup creates a fresh world and that cancel preserves the existing world
+- [ ] Add authenticated human-admin-only enforcement when login/authorization is implemented; prohibit agent delegation
+- [x] Complete disposable-world regression tests and dated documentation verification
+
+See [NGE plan](Project_GRID_NGE_Nullify_Grid_Existence_Plan.md) for confirmation, ownership, lifecycle and future authorization details. **Completion:** 306 Release tests passed; all deletion checks used disposable worlds. Current deletion covers the active primary, rolling backup and exact SQLite sidecars; historical archives/external copies remain. A failure marker blocks startup/recovery after interruption and requires manual review; automatic retry is deferred. No user save was deleted.
+
+---
+
 # Phase 2 — The Core
 
 ## 2.1 Persistence architecture

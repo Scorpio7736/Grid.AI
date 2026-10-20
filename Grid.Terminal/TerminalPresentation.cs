@@ -8,7 +8,7 @@ public static class TerminalPresentation
             ("SIMULATION CONTROL", ["start", "pause", "step", "tick"]),
             ("WORLD & POPULATION", ["status", "city", "districts", "programs", "inspect"]),
             ("MONITORING & ANALYTICS", ["live", "behaviors", "resources", "history"]),
-            ("SYSTEM & TERMINAL", ["clear", "help", "exit"])
+            ("SYSTEM & TERMINAL", ["clear", "help", "nge", "exit"])
         };
         var lines = new List<string> { "PROJECT GRID TERMINAL", "COMMAND REFERENCE", new('=', Math.Min(68, TerminalTable.Width)) };
         var listed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
