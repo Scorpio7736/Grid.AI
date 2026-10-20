@@ -116,6 +116,7 @@ public sealed partial class WorldStore : IDisposable
             Execute("INSERT INTO Worlds VALUES ($p0,$p1,$p2,$p3,$p4)", world, info.Name, Utc(info.CreatedAtUtc), info.GenerationSeed, info.GeneratorVersion);
             if (state.City is { } city)
                 Execute("INSERT INTO WorldGeneration VALUES ($p0,$p1)", world, city.Json);
+            Execute("INSERT INTO WorldIdentities VALUES ($p0,$p1)", world, System.Text.Json.JsonSerializer.Serialize(state.Identities));
             Execute("INSERT INTO WorldCommunications VALUES ($p0,$p1)", world, System.Text.Json.JsonSerializer.Serialize(state.Communications));
             Execute("INSERT INTO WorldSocialState VALUES ($p0,$p1)", world, System.Text.Json.JsonSerializer.Serialize(state.Social));
             foreach (var app in state.ApplicationCatalog)
@@ -291,6 +292,10 @@ public sealed partial class WorldStore : IDisposable
         if (command.ExecuteScalar() is string communicationJson)
             state = state with { Communications = System.Text.Json.JsonSerializer.Deserialize<Grid.Communication.CommunicationState>(communicationJson)
                 ?? throw new InvalidDataException("Missing communications state.") };
+        command.CommandText = "SELECT StateJson FROM WorldIdentities WHERE WorldId=$catalogWorld";
+        if (command.ExecuteScalar() is string identityJson)
+            state = state with { Identities = System.Text.Json.JsonSerializer.Deserialize<Grid.Communication.LocalIdentityState>(identityJson)
+                ?? throw new InvalidDataException("Missing identity registry.") };
         Validate(info, state);
         transaction.Commit();
         return new(info, state, savedAt);

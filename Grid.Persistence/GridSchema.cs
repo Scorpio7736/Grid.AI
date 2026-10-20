@@ -12,7 +12,7 @@ internal sealed record SchemaMigration(int Version, string Name, string Sql)
 
 public static class GridSchema
 {
-    public const int CurrentVersion = 10;
+    public const int CurrentVersion = 11;
     public const int ApplicationId = 0x47524944; // ASCII GRID
 
     internal static readonly IReadOnlyList<SchemaMigration> Migrations = Array.AsReadOnly(new[]
@@ -132,6 +132,12 @@ public static class GridSchema
             CREATE TABLE WorldCommunications (
                 WorldId TEXT NOT NULL PRIMARY KEY REFERENCES Worlds(WorldId) ON DELETE CASCADE,
                 StateJson TEXT NOT NULL CHECK(json_valid(StateJson) AND length(StateJson) <= 60000000)
+            ) STRICT;
+            """),
+        new SchemaMigration(11, "Local operator and registered agent identities", """
+            CREATE TABLE WorldIdentities (
+                WorldId TEXT NOT NULL PRIMARY KEY REFERENCES Worlds(WorldId) ON DELETE CASCADE,
+                StateJson TEXT NOT NULL CHECK(json_valid(StateJson) AND length(StateJson) <= 50000)
             ) STRICT;
             """)
     });

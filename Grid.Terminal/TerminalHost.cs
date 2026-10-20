@@ -21,10 +21,11 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
         {
             await output.WriteLineAsync("PROJECT GRID");
             await output.WriteLineAsync(persistence is null ? "Type help for commands. This session is in memory; exit does not save the world." : "Type help for commands. Autosave every 30 seconds; exit saves after the clock stops.");
+            if (commands.LoginRequired) await output.WriteLineAsync("Login required: login master authenticates the current Windows account. First login binds this world owner.");
             await output.WriteLineAsync("Navigation: live opens dashboard | Esc/Q returns to commands | exit or Ctrl+C shuts down GRID.");
             while (!shutdown.IsCancellationRequested)
             {
-                if (showPrompt) { await output.WriteAsync("grid> "); await output.FlushAsync(); }
+                if (showPrompt) { await output.WriteAsync(commands.Prompt); await output.FlushAsync(); }
                 // Console.In may block synchronously even through ReadLineAsync. Keep that read
                 // off the control thread so Ctrl+C and scheduler faults can still end the session.
                 var read = Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token);
@@ -59,7 +60,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                                 { shutdown.Cancel(); shutdown.Token.ThrowIfCancellationRequested(); }
                                 var answer = await confirmationRead;
                                 if (string.Equals(answer?.Trim(), "y", StringComparison.OrdinalIgnoreCase))
-                                { nullification = plan; break; }
+                                { if (!commands.IsAllowed("nge")) throw new UnauthorizedAccessException("NGE authorization was revoked."); nullification = plan; break; }
                                 if (string.IsNullOrWhiteSpace(answer) || string.Equals(answer.Trim(), "n", StringComparison.OrdinalIgnoreCase))
                                 { await output.WriteLineAsync("NGE cancelled. World retained."); break; }
                                 await output.WriteLineAsync("Enter y to delete or n to cancel. [y/N]");
@@ -85,10 +86,18 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                     // No ReadLine is outstanding while live mode owns the keyboard.
                     using var liveCancellation = CancellationTokenSource.CreateLinkedTokenSource(shutdown.Token);
                     var live = new TerminalLiveView(engine, output, liveTerminal).RunAsync(liveCancellation.Token);
+                    var authorizationWatch = Task.Run(async () => {
+                        try {
+                            while (!liveCancellation.IsCancellationRequested) {
+                                await Task.Delay(1000, liveCancellation.Token);
+                                if (!commands.IsAllowed("live")) liveCancellation.Cancel();
+                            }
+                        } catch (OperationCanceledException) when (liveCancellation.IsCancellationRequested) { }
+                    });
                     try
                     {
                         if (await Task.WhenAny(live, scheduler, autosave, monitoring) != live) break;
-                        await live;
+                        try { await live; } catch (OperationCanceledException) when (liveCancellation.IsCancellationRequested) { }
                         await output.WriteLineAsync("Back at command prompt. World session remains open; type live to return or exit to shut down.");
                     }
                     finally
@@ -96,6 +105,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                         liveCancellation.Cancel();
                         try { await live; }
                         catch (OperationCanceledException) when (liveCancellation.IsCancellationRequested) { }
+                        await authorizationWatch;
                     }
                 }
             }
@@ -131,7 +141,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
             {
                 if (exitCode == 0)
                 {
-                    try { await ((IWorldNullificationSession)persistence!).NullifyAsync(nullification); }
+                    try { if (!commands.IsAllowed("nge")) throw new UnauthorizedAccessException("NGE authorization expired or was revoked."); await ((IWorldNullificationSession)persistence!).NullifyAsync(nullification); }
                     catch (Exception ex)
                     { await output.WriteLineAsync("NGE incomplete/refused: " + ex.Message); exitCode = 1; }
                 }

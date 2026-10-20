@@ -8,6 +8,7 @@ public static class TerminalPresentation
             ("SIMULATION CONTROL", ["start", "pause", "step", "tick"]),
             ("WORLD & POPULATION", ["status", "city", "districts", "programs", "inspect", "jobs"]),
             ("MONITORING & ANALYTICS", ["live", "behaviors", "activity", "social", "resources", "history"]),
+            ("IDENTITY & ADMINISTRATION", ["login", "logout", "whoami", "switch", "self", "register-agent", "edit", "apply-edit", "cancel-edit"]),
             ("CONVERSATIONS", ["connect", "talk", "conversations", "transcript", "resume", "disconnect"]),
             ("SYSTEM & TERMINAL", ["clear", "help", "nge", "exit"])
         };
@@ -31,9 +32,9 @@ public static class TerminalPresentation
         lines.Add("\nCOMMAND OPTIONS");
         // Keep exact registered syntax available, including extension usage and history filters.
         lines.Add(string.Join("\n", commands.Select(c => c.Usage)));
-        lines.Add("inspect program <id|name>\ninspect district <id|name>\nprograms ids\ndistricts ids");
-        lines.Add("resources details: include source, freshness, timestamps and measurement detail.");
-        lines.Add("programs -active: Running | -sleeping: On call or Sleeping | -possible: known installed/observed catalog.");
+        if (listed.Contains("inspect")) lines.Add("inspect program <id|name>\ninspect district <id|name>\nprograms ids\ndistricts ids");
+        if (listed.Contains("resources")) lines.Add("resources details: include source, freshness, timestamps and measurement detail.");
+        if (listed.Contains("programs")) lines.Add("programs -active: Running | -sleeping: On call or Sleeping | -possible: known installed/observed catalog.");
         return string.Join("\n", lines);
     }
 

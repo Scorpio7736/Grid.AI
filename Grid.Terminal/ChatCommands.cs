@@ -7,22 +7,25 @@ public sealed class ChatCommands
 {
     private readonly GridSimulationEngine engine;
     private Guid? active;
+    private TerminalIdentitySession? identity;
+    private Recipient Actor => identity?.CurrentRecipient ?? engine.LocalOperator;
     private ChatCommands(GridSimulationEngine engine) => this.engine = engine;
-    public static void Register(CommandDispatcher commands, GridSimulationEngine engine)
+    public static void Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession? identity = null)
     {
-        var chat = new ChatCommands(engine);
+        var chat = new ChatCommands(engine) { identity = identity };
+        if (identity is not null) identity.Changed += () => chat.active = null;
         commands.Register(new("connect", "connect [program-id|name]", "Start a conversation; default contact is ARCHON.", chat.Connect));
         commands.Register(new("talk", "talk <message>", "Send to the connected program and receive a labeled deterministic reply.", chat.Talk));
-        commands.Register(new("conversations", "conversations", "List this local operator's stored conversations.", chat.List));
+        commands.Register(new("conversations", "conversations", "List the active identity's stored conversations.", chat.List));
         commands.Register(new("transcript", "transcript [conversation-id]", "Read a stored conversation; defaults to the connected one.", chat.Transcript));
         commands.Register(new("resume", "resume <conversation-id>", "Reconnect to an open conversation by its full ID.", chat.Resume));
         commands.Register(new("disconnect", "disconnect", "End the connected conversation and return to ordinary commands.", chat.Disconnect));
     }
-    private bool Owned(Conversation c) => c.Participants.Any(p => CommunicationState.SameIdentity(p, engine.LocalOperator));
+    private bool Owned(Conversation c) => c.Participants.Any(p => CommunicationState.SameIdentity(p, Actor));
     private Conversation Find(Guid id)
     {
         var c = engine.GetSnapshot().Communications.Conversations.SingleOrDefault(c => c.Id == id && Owned(c));
-        return c ?? throw new ArgumentException("No conversation for this local operator with that ID. Use conversations.");
+        return c ?? throw new ArgumentException("No conversation for this identity with that ID. Use conversations.");
     }
     private CommandResult Connect(IReadOnlyList<string> args)
     {
@@ -30,20 +33,20 @@ public sealed class ChatCommands
         if (engine.GetSnapshot().Communications.Conversations.Count >= CommunicationState.MaxConversations)
             return new("Conversation capacity reached. Use resume with an existing open conversation.");
         var name = args.Count == 0 ? "ARCHON" : string.Join(" ", args);
-        var recipient = name.Equals("ARCHON", StringComparison.OrdinalIgnoreCase) ? engine.EnsureCoordinator() : engine.ResolveProgram(name);
-        active = engine.StartConversation(engine.LocalOperator, recipient);
-        return new($"Connected to {TerminalTable.Safe(recipient.Name)} | Conversation {active}\nLocal operator identity only; no login/admin privilege. Replies are deterministic GRID dialogue.\nUse talk <message>, transcript, or disconnect. Ordinary GRID commands still work.");
+        var recipient = name.Equals("ARCHON", StringComparison.OrdinalIgnoreCase) && (identity is null || identity.IsMaster) ? engine.EnsureCoordinator() : engine.ResolveProgram(name);
+        active = engine.StartConversation(Actor, recipient);
+        return new($"Connected to {TerminalTable.Safe(recipient.Name)} | Conversation {active}\nReplies are deterministic GRID dialogue; no host tasks are executed.\nUse talk <message>, transcript, or disconnect. Ordinary GRID commands still work.");
     }
     private CommandResult Talk(IReadOnlyList<string> args)
     {
         if (args.Count == 0) return new("Usage: talk <message>");
         if (active is not { } id) return new("No conversation connected. Use connect [program-id|name], or resume <conversation-id>.");
-        var pair = engine.Talk(id, engine.LocalOperator, string.Join(" ", args));
+        var pair = engine.Talk(id, Actor, string.Join(" ", args));
         return new(Render(pair));
     }
     private CommandResult List(IReadOnlyList<string> args) => args.Count != 0 ? new("Usage: conversations") :
         new(TerminalTable.Render(["Conversation ID", "Contact", "Status", "Messages"], engine.GetSnapshot().Communications.Conversations.Where(Owned)
-            .Select(c => new[] { c.Id.ToString(), c.Participants.Single(p => !CommunicationState.SameIdentity(p, engine.LocalOperator)).Name, c.Status.ToString(), c.Messages.Count.ToString() })));
+            .Select(c => new[] { c.Id.ToString(), c.Participants.Single(p => !CommunicationState.SameIdentity(p, Actor)).Name, c.Status.ToString(), c.Messages.Count.ToString() })));
     private CommandResult Transcript(IReadOnlyList<string> args)
     {
         if (args.Count > 1 || args.Count == 1 && !Guid.TryParse(args[0], out _)) return new("Usage: transcript [conversation-id]");
@@ -65,7 +68,7 @@ public sealed class ChatCommands
     {
         if (args.Count != 0) return new("Usage: disconnect");
         if (active is not { } id) return new("No conversation connected.");
-        engine.EndConversation(id, engine.LocalOperator); active = null;
+        engine.EndConversation(id, Actor); active = null;
         return new($"Ended conversation {id}. Transcript retained.");
     }
     private static string Render(IEnumerable<GridMessage> messages) => string.Join("\n", messages.Select(m =>

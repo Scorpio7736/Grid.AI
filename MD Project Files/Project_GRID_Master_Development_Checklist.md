@@ -723,33 +723,35 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 4.2A Planned terminal login and identity sessions (GRID-REQ-003)
 
-**Planning addition — 2026-10-16; not implemented.** See [Terminal Login and Master Control Plan](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md). This extends the terminal after Genesis and does not change section 1.7's completed status.
+**Implemented and verified - 2026-10-20.** Originally planned on 2026-10-16. See [Terminal Login and Master Control Plan](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md). This extends the terminal after Genesis and does not change section 1.7's completed status.
 
-- [ ] Choose local authentication method and final Master Control/Master Admin label
-- [ ] Define persistent operator/agent identities, role policies, and audit records with Phase 2 storage
-- [ ] Begin future terminal sessions with login
-- [ ] Support the User's Master Control identity and each registered agent identity
-- [ ] Pass operator identity, active program identity, and capabilities through command/session context
-- [ ] Show active identity in prompts and implement whoami, logout, and authorized switching
-- [ ] Provide role-specific views of real tasks, messages, history, and world state
-- [ ] Extend command registration with capabilities and identity-aware help
-- [ ] Clear or rescope context on logout and identity changes
-- [ ] Verify login failures, switching, logout, context isolation, and expandable identity registration
+- [x] Choose local authentication method and final Master Control/Master Admin label
+- [x] Define persistent operator/agent identities, role policies, and audit records with Phase 2 storage
+- [x] Begin future terminal sessions with login
+- [x] Support the User's Master Control identity and each registered agent identity
+- [x] Pass operator identity, active program identity, and capabilities through command/session context
+- [x] Show active identity in prompts and implement whoami, logout, and authorized switching
+- [x] Provide role-specific views of messages, history and world state; report real tasks unavailable until the task service exists
+- [x] Extend command registration with capabilities and identity-aware help
+- [x] Clear or rescope context on logout and identity changes
+- [x] Verify login failures, switching, logout, context isolation, and expandable identity registration
 
-### Planned Master Admin program editing (GRID-REQ-003)
+### Master Control program editing (GRID-REQ-003)
 
-**Terminal integration remains planned; backend API completed in 1.9.3.** Master Admin and Master Control refer to the same planned human administrator role. Checked items below refer to backend functionality, not a working login/editing UI.
+**Terminal integration implemented - 2026-10-20; backend API completed in 1.9.3.** Master Control is the selected role label. Preview/apply/cancel uses the existing service authorizer and revision contract.
 
-- [ ] Add terminal commands to inspect and edit programs and their values as Master Control
-- [ ] Initially support name, occupation, energy, status, and district assignment
+- [x] Add terminal commands to inspect and edit programs and their values as Master Control
+- [x] Initially support name, occupation, energy, status, and district assignment
 - [x] Define an expandable registry of editable fields, types, and validation rules
 - [x] Enforce Master Control authorization in the editing service
-- [ ] Preview target and old/new values; report committed results
+- [x] Preview target and old/new values; report committed results
 - [x] Serialize edits with ticks and reject stale/conflicting updates
 - [x] Use world-management transfers for district changes; preserve stable identity and membership
 - [x] Separate profile edits from credential, permission, and host-capability management
-- [ ] Audit edits and integrate persistence; define one-time edits versus ongoing overrides
-- [ ] Test authorized/denied edits, invalid values, atomicity, population consistency, and saved results
+- [x] Audit edits and integrate persistence; define one-time edits versus ongoing overrides
+- [x] Test authorized/denied edits, invalid values, atomicity, population consistency, and saved results
+
+**Completion notes - 2026-10-20.** Windows-token SID owner authentication, eight-hour local sessions, registered agent selection, capability metadata/dispatch, scoped prompts/help/conversations, logout/switch invalidation and Master Control edit preview/apply/cancel are implemented. Schema v11 persists the owner/agent registry; owner binding saves before production login grants access. **362 tests passed** (14 Core, 155 Simulation, 90 Persistence, 103 Terminal), plus an isolated real-Windows login/switch/deny/edit/restart smoke. No OS elevation, agent password or real task service is claimed. Observation-owned energy/status remain protected. See [Local Login and Identity Implementation](Project_GRID_Local_Login_and_Identity_Implementation.md) for trust boundaries, commands, audit and remaining work.
 
 ## 4.3 User-supplied context (GRID-REQ-002)
 

@@ -5,7 +5,7 @@ namespace Grid.Simulation;
 public sealed partial class GridSimulationEngine
 {
     /// <summary>Restores durable state into a new, paused session. Wall time and edit authority are never replayed.</summary>
-    public static GridSimulationEngine Restore(GridSimulationSnapshot snapshot, TimeProvider? timeProvider = null)
+    public static GridSimulationEngine Restore(GridSimulationSnapshot snapshot, TimeProvider? timeProvider = null, Grid.Simulation.Editing.IProgramEditAuthorizer? editAuthorizer = null)
     {
         ValidateSnapshot(snapshot);
         var world = new GridWorld(snapshot.WorldId, snapshot.City);
@@ -22,7 +22,7 @@ public sealed partial class GridSimulationEngine
             world.AddProgram(program, saved.DistrictId);
             program.Commit(program.Values, saved.Revision);
         }
-        var engine = new GridSimulationEngine(world, snapshot.TickDuration, timeProvider);
+        var engine = new GridSimulationEngine(world, snapshot.TickDuration, timeProvider, editAuthorizer);
         foreach (var saved in snapshot.Programs.Where(p => p.Behavior is not null))
         {
             var behavior = saved.Behavior!;
@@ -35,6 +35,7 @@ public sealed partial class GridSimulationEngine
             engine.behaviors[saved.Id] = behavior;
         }
         foreach (var app in snapshot.ApplicationCatalog) engine.applicationCatalog.Add(app.Key, app);
+        engine.identities = snapshot.Identities with { RegisteredAgents = Array.AsReadOnly(snapshot.Identities.RegisteredAgents.ToArray()) };
         engine.communications = Grid.Communication.CommunicationState.Copy(snapshot.Communications);
         engine.social = Social.SocialState.Copy(snapshot.Social);
         engine.clock.Restore(snapshot.TickCount);
@@ -90,6 +91,9 @@ public sealed partial class GridSimulationEngine
             throw new InvalidDataException("Saved layout and district identities disagree.");
         Behavior.WorkplacePolicy.ValidateAssignments(snapshot);
         Social.SocialState.Validate(snapshot);
+        Grid.Communication.LocalIdentityState.Validate(snapshot.Identities);
+        if (snapshot.Identities.RegisteredAgents.Any(id => !snapshot.Programs.Any(p => p.Id == id && p.Kind == ResidentKind.Agent)))
+            throw new InvalidDataException("Registered agent identity is missing or has the wrong resident kind.");
         Grid.Communication.CommunicationState.Validate(snapshot.Communications, snapshot.TickCount);
     }
 

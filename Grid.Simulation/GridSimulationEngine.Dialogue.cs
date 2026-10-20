@@ -35,8 +35,8 @@ public sealed partial class GridSimulationEngine
         lock (gate)
         {
             var c = GetConversation(conversationId); human = Canonical(human);
-            if (human.Kind != ParticipantKind.Human || !c.Participants.Any(p => CommunicationState.SameIdentity(p, human)))
-                throw new ArgumentException("Dialogue requires the human participant identity.");
+            if (!c.Participants.Any(p => CommunicationState.SameIdentity(p, human)))
+                throw new ArgumentException("Dialogue requires the active participant identity.");
             if (c.Status != ConversationStatus.Open) throw new InvalidOperationException("Conversation has ended; connect to start another.");
             if (!CommunicationState.ValidContent(text)) throw new ArgumentException("Message must contain 1..4096 characters of valid text.");
             var other = c.Participants.Single(p => !CommunicationState.SameIdentity(p, human));
@@ -47,6 +47,7 @@ public sealed partial class GridSimulationEngine
             var snapshot = GetSnapshot(); var program = snapshot.Programs.Single(p => p.Id == other.Id);
             var query = text.Trim().ToLowerInvariant();
             var reply = query switch {
+                "status" when human.Kind == ParticipantKind.Program => $"[VERIFIED OWN STATE at tick {snapshot.TickCount}] Active identity {human.Name} ({human.Id}); no global history or task visibility is granted.",
                 "status" => $"[VERIFIED GRID STATE at tick {snapshot.TickCount}] Clock: {(snapshot.IsRunning ? "running" : "paused")}; elapsed: {snapshot.ElapsedSimulationTime}; districts: {snapshot.Districts.Count}; residents: {snapshot.Programs.Count}.",
                 "who are you" or "who are you?" => $"[VERIFIED GRID STATE at tick {snapshot.TickCount}] {program.Name}; resident ID {program.Id}; kind {program.Kind}; occupation {program.Occupation}. This reply is produced by GRID's deterministic adapter, not the host application.",
                 "help" => "[SIMULATED DIALOGUE] Ask status or who are you for verified GRID facts. I can provide local coordination guidance; task execution, delegation and LLM replies are not implemented.",

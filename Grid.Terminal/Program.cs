@@ -20,9 +20,11 @@ try
     }
     if (TerminalEnvironment.Ensure() is { } environmentMessage)
         Console.WriteLine(environmentMessage);
+    var startupMessages = new List<string>();
+    var identity = new TerminalIdentitySession(TerminalIdentitySession.WindowsSubject);
     GridSimulationEngine engine;
     IWorldPersistenceSession? persistence = null;
-    if (options.Ephemeral) engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
+    if (options.Ephemeral) engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis(), editAuthorizer: identity);
     else
     {
         var path = options.WorldPath;
@@ -37,31 +39,36 @@ try
         var startup = await WorldStartup.LoadOrCreateAsync(store, new WindowsHardwareDiscovery(), shutdown.Token);
         var info = startup.Saved.Info;
         var converted = store.ArchiveLegacyResidents(shutdown.Token);
-        if (converted.ArchivePath is { } archive) Console.WriteLine($"Legacy fictional residents archived to {archive}; production population now follows observed applications.");
-        engine = GridSimulationEngine.Restore(converted.Saved.State);
-        Console.WriteLine($"{(startup.Created ? "Created" : "Loaded")} {info.Name} ({info.Id}) at tick {engine.TickCount}.");
+        if (converted.ArchivePath is { } archive) startupMessages.Add($"Legacy fictional residents archived to {archive}; production population now follows observed applications.");
+        engine = GridSimulationEngine.Restore(converted.Saved.State, editAuthorizer: identity);
+        startupMessages.Add($"{(startup.Created ? "Created" : "Loaded")} {info.Name} ({info.Id}) at tick {engine.TickCount}.");
         if (startup.Created)
         {
             var profile = startup.Saved.State.City!.Read().Profile;
             foreach (var category in profile.Categories.Where(c => c.Status != Grid.Core.Generation.DiscoveryStatus.Available || c.Truncated))
-                Console.WriteLine($"Hardware {category.Kind}: {category.Status}; truncated={category.Truncated}. Saved fallback/partial layout; use city for coverage.");
+                startupMessages.Add($"Hardware {category.Kind}: {category.Status}; truncated={category.Truncated}. Saved fallback/partial layout; use city for coverage.");
         }
-        Console.WriteLine($"World database: {store.DatabasePath}");
+        startupMessages.Add($"World database: {store.DatabasePath}");
         persistence = new WorldPersistenceSession(store, info, engine);
     }
-    if (options.Start) engine.Start();
+    identity.Attach(engine);
+    if (persistence is not null) identity.PersistIdentity = () => persistence.SaveAsync().GetAwaiter().GetResult();
+    var pendingStart = options.Start;
+    identity.LoginSucceeded += () => { foreach (var message in startupMessages) Console.WriteLine(message); startupMessages.Clear(); if (pendingStart) { pendingStart = false; engine.Start(); } };
     var commands = DefaultCommands.Create(engine);
     CityCommand.Register(commands, engine);
     BehaviorCommand.Register(commands, engine);
     WorkplaceCommands.Register(commands, engine);
     SocialCommand.Register(commands, engine);
-    ChatCommands.Register(commands, engine);
+    ChatCommands.Register(commands, engine, identity);
     if (store is not null) HistoryCommand.Register(commands, store);
     var telemetry = new HostTelemetryMonitor(new WindowsHostTelemetryProvider(), engine);
     await telemetry.SampleOnceAsync(shutdown.Token);
     var applications = options.Ephemeral ? null : new ApplicationMonitor(new WindowsApplicationDiscovery(), engine);
     if (applications is not null) await applications.SampleOnceAsync(shutdown.Token);
     ResourcesCommand.Register(commands, engine);
+    IdentityCommands.Register(commands, engine, identity);
+    commands.UseIdentity(identity);
     return await new TerminalHost(engine, commands, Console.In, new TerminalOutput(Console.Out, TerminalTheme.Enabled(options.NoColor)),
         showPrompt: !Console.IsInputRedirected, interactiveConfirmation: !Console.IsInputRedirected && !Console.IsOutputRedirected, liveTerminal: new ConsoleLiveTerminal(options.NoColor), persistence: persistence,
         telemetry: applications is null ? telemetry : new CombinedHostMonitor(telemetry, applications), clearScreen: () =>

@@ -5,7 +5,24 @@ namespace Grid.Terminal;
 public sealed class CommandDispatcher
 {
     private readonly Dictionary<string, TerminalCommand> commands = new(StringComparer.OrdinalIgnoreCase);
-    public IReadOnlyList<TerminalCommand> Commands => commands.Values.OrderBy(c => c.Name).ToArray();
+    private TerminalIdentitySession? identity;
+    public string Prompt => identity?.Prompt ?? "grid> ";
+    public bool LoginRequired => identity is not null;
+    public bool IsAllowed(string name) => commands.TryGetValue(name, out var command) && (identity?.Allows(command.Capability) ?? true);
+    public IReadOnlyList<TerminalCommand> Commands => commands.Values.Where(c => identity?.Allows(c.Capability) ?? true).OrderBy(c => c.Name).ToArray();
+    public void UseIdentity(TerminalIdentitySession session)
+    {
+        identity = session;
+        foreach (var key in commands.Keys.ToArray())
+        {
+            var capability = key switch {
+                "help" or "exit" or "clear" => "public",
+                "connect" or "talk" or "conversations" or "transcript" or "resume" or "disconnect" => "chat",
+                _ => commands[key].Capability
+            };
+            commands[key] = commands[key] with { Capability = capability };
+        }
+    }
 
     public void Register(TerminalCommand command)
     {
@@ -25,7 +42,8 @@ public sealed class CommandDispatcher
             if (tokens.Count == 0) return new("");
             if (!commands.TryGetValue(tokens[0], out var command))
                 return new($"Unknown command '{tokens[0]}'. Type help for available commands.");
-            return command.Execute(tokens.Skip(1).ToArray());
+            return identity is null ? command.Execute(tokens.Skip(1).ToArray()) :
+                identity.Execute(command.Capability, () => command.Execute(tokens.Skip(1).ToArray()), command.Name);
         }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or OverflowException)
         {

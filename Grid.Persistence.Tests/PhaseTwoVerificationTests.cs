@@ -45,7 +45,7 @@ public sealed class PhaseTwoVerificationTests : IDisposable
         var error = process.StandardError.ReadToEndAsync();
         try
         {
-            await process.StandardInput.WriteAsync(input);
+            await process.StandardInput.WriteAsync("login master\n" + input);
             process.StandardInput.Close();
             await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(30));
             return (process.ExitCode, await output, await error);
