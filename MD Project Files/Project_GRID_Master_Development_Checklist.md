@@ -711,13 +711,15 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 4.2 Terminal communication
 
-- [ ] Build interactive GRID chat commands
-- [ ] Support directed messages and replies
-- [ ] Support ARCHON as general coordination point
-- [ ] Implement deterministic replies for early development
-- [ ] Distinguish verified state from simulated dialogue
-- [ ] Add command validation and helpful errors
-- [ ] Support ongoing conversations in the same session
+- [x] Build interactive GRID chat commands
+- [x] Support directed messages and replies
+- [x] Support ARCHON as general coordination point
+- [x] Implement deterministic replies for early development
+- [x] Distinguish verified state from simulated dialogue
+- [x] Add command validation and helpful errors
+- [x] Support ongoing conversations in the same session
+
+**Implemented and verified - 2026-10-20.** Added connect/talk/conversations/transcript/resume/disconnect, lazy persistent ARCHON coordination, stable local-operator conversation continuity and atomic deterministic reply pairs. Verified snapshot replies are labeled separately from simulated dialogue; commands do not execute or delegate host tasks. **353 tests passed** (14 Core, 155 Simulation, 88 Persistence, 96 Terminal); three-launch isolated terminal save/resume/end smoke passed. Existing schema v10 is reused. Authentication and admin identities remain 4.2A. See [Terminal Conversations](Project_GRID_Terminal_Conversations.md) for command examples, bounds and verification.
 
 ## 4.2A Planned terminal login and identity sessions (GRID-REQ-003)
 

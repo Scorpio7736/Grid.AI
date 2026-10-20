@@ -1,0 +1,64 @@
+using Grid.Communication;
+using Grid.Core;
+using System.Security.Cryptography;
+using System.Text;
+namespace Grid.Simulation;
+
+public sealed partial class GridSimulationEngine
+{
+    // Stable per-world local operator handle; this is not a login or an administrator grant.
+    public Recipient LocalOperator => new(ParticipantKind.Human, DialogueId("local-operator-v1"), "Local operator");
+    private Guid DialogueId(string key) => new(SHA256.HashData(Encoding.UTF8.GetBytes($"{world.Id:D}:{key}")).AsSpan(0, 16));
+
+    public Recipient EnsureCoordinator()
+    {
+        lock (gate)
+        {
+            var matches = world.Programs.Values.Where(p => p.Name.Equals("ARCHON", StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (matches.Length > 1 || matches.Any(p => p.Kind != ResidentKind.Agent))
+                throw new InvalidOperationException("ARCHON name is ambiguous or belongs to a non-agent; use an explicit recipient ID.");
+            if (matches.Length == 1) return ResolveProgram(matches[0].Id.ToString());
+            var id = DialogueId("archon-v1");
+            if (world.Programs.ContainsKey(id)) throw new InvalidOperationException("Coordinator identity already exists under another name; use its ID.");
+            var district = world.City?.Read().Districts.Single(d => d.Category == Grid.Core.Generation.HardwareKind.Motherboard).Id
+                ?? world.Districts.Keys.Order().FirstOrDefault();
+            if (district == Guid.Empty) throw new InvalidOperationException("A district is required before creating ARCHON.");
+            world.AddProgram(new GridProgram { Id = id, Name = "ARCHON", Kind = ResidentKind.Agent, Occupation = "Local coordinator" }, district);
+            RecordEvent("CoordinatorCreated", id, "ARCHON", "Created persistent deterministic dialogue coordinator; no authority or host execution granted.");
+            return ResolveProgram(id.ToString());
+        }
+    }
+
+    /// <summary>Atomic deterministic local dialogue pair. Does not execute requests or call an external model.</summary>
+    public IReadOnlyList<GridMessage> Talk(Guid conversationId, Recipient human, string text, CancellationToken token = default)
+    {
+        lock (gate)
+        {
+            var c = GetConversation(conversationId); human = Canonical(human);
+            if (human.Kind != ParticipantKind.Human || !c.Participants.Any(p => CommunicationState.SameIdentity(p, human)))
+                throw new ArgumentException("Dialogue requires the human participant identity.");
+            if (c.Status != ConversationStatus.Open) throw new InvalidOperationException("Conversation has ended; connect to start another.");
+            if (!CommunicationState.ValidContent(text)) throw new ArgumentException("Message must contain 1..4096 characters of valid text.");
+            var other = c.Participants.Single(p => !CommunicationState.SameIdentity(p, human));
+            if (other.Kind != ParticipantKind.Program) throw new ArgumentException("Dialogue requires a program recipient.");
+            other = Canonical(other);
+            if (communications.Conversations.Sum(x => x.Messages.Count) > CommunicationState.MaxMessages - 2)
+                throw new InvalidOperationException("Two message slots are required; no part of this turn was stored.");
+            var snapshot = GetSnapshot(); var program = snapshot.Programs.Single(p => p.Id == other.Id);
+            var query = text.Trim().ToLowerInvariant();
+            var reply = query switch {
+                "status" => $"[VERIFIED GRID STATE at tick {snapshot.TickCount}] Clock: {(snapshot.IsRunning ? "running" : "paused")}; elapsed: {snapshot.ElapsedSimulationTime}; districts: {snapshot.Districts.Count}; residents: {snapshot.Programs.Count}.",
+                "who are you" or "who are you?" => $"[VERIFIED GRID STATE at tick {snapshot.TickCount}] {program.Name}; resident ID {program.Id}; kind {program.Kind}; occupation {program.Occupation}. This reply is produced by GRID's deterministic adapter, not the host application.",
+                "help" => "[SIMULATED DIALOGUE] Ask status or who are you for verified GRID facts. I can provide local coordination guidance; task execution, delegation and LLM replies are not implemented.",
+                _ => "[SIMULATED DIALOGUE] Your message is recorded. No task has been executed or delegated. Ask status, who are you, or help."
+            };
+            var utc = timeProvider.GetUtcNow().ToUniversalTime();
+            var pair = new[] { new GridMessage(Guid.NewGuid(), c.Messages.Count + 1, human, text, MessageOrigin.Terminal, clock.TickCount, utc),
+                new GridMessage(Guid.NewGuid(), c.Messages.Count + 2, other, reply, MessageOrigin.SystemEvent, clock.TickCount, utc) };
+            token.ThrowIfCancellationRequested();
+            ReplaceConversation(c with { Messages = Array.AsReadOnly(c.Messages.Concat(pair).ToArray()) });
+            RecordEvent("DialogueTurnStored", conversationId, null, "Human input and deterministic reply stored atomically; no host action.");
+            return Array.AsReadOnly(pair);
+        }
+    }
+}

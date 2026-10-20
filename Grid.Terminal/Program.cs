@@ -55,6 +55,7 @@ try
     BehaviorCommand.Register(commands, engine);
     WorkplaceCommands.Register(commands, engine);
     SocialCommand.Register(commands, engine);
+    ChatCommands.Register(commands, engine);
     if (store is not null) HistoryCommand.Register(commands, store);
     var telemetry = new HostTelemetryMonitor(new WindowsHostTelemetryProvider(), engine);
     await telemetry.SampleOnceAsync(shutdown.Token);
