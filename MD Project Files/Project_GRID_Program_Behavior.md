@@ -1,5 +1,9 @@
 # Project GRID - Program needs and behavior
 
+## Latest population revision - 2026-10-19
+
+The current population includes discoverable installed applications and current-session background processes. States are **Sleeping**, **On call**, **Running**, or **unknown** when evidence is insufficient. This supersedes earlier windowed-only/removal-on-exit descriptions below; those remain historical completion records. Ordinary application state is still rediscovered rather than persisted, and the saved city is reused. Full-machine coverage is not complete: see [Installed Application Availability](Project_GRID_Installed_Application_Availability.md) for implemented scope, Windows inventory limits, remaining work and **290-test** verification.
+
 **3.1 implemented and verified - 2026-10-19.** Deterministic needs/goals and simulated occupation routines now run within the authoritative tick. Host applications remain observation-driven. Movement, workplaces, social behavior, real task execution and named agent services remain later work.
 
 ## Model and ownership

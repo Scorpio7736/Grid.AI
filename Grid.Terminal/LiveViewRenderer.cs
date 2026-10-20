@@ -43,7 +43,7 @@ public static class LiveViewRenderer
             lines.Add($"{program.Id} | {districts.GetValueOrDefault(program.DistrictId, "Unknown district")} | {(program.Application is { } a ? (a.Confirmed ? "fresh" : "unknown/stale") + " run " + a.Incarnation : program.Kind.ToString())}");
         }
         if (state.Programs.Count == 0) lines.Add("No programs.");
-        lines.Add(snapshot.HostResources.Count == 0 ? "Status describes current state; no autonomous jobs/routes are implemented." :
+        lines.Add(snapshot.HostResources.Count == 0 ? "Status reflects current state; configured agents can perform simulated work." :
             "HOST | " + string.Join(" | ", snapshot.HostResources.Where(r => r.Metric is Grid.Simulation.Resources.ResourceMetric.CpuAvailablePercent or Grid.Simulation.Resources.ResourceMetric.RamAvailableBytes)
                 .Select(r => $"{r.Metric}: {(r.Value is { } v ? v.ToString("0.##", CultureInfo.InvariantCulture) + " " + r.Unit : "unknown (" + r.Status + ")")}")) + " | resources: full details");
         lines.Add($"RECENT COMMITTED EVENTS - page {eventPage + 1}/{eventPages} (newest first)");

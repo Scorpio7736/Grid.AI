@@ -11,7 +11,7 @@ public static class TerminalTheme
     {
         if (line.Contains("failed", StringComparison.OrdinalIgnoreCase) || line.Contains("error", StringComparison.OrdinalIgnoreCase)) return ConsoleColor.Red;
         if (new[] { "unknown", "stale", "unavailable", "waiting", "warning", "unsupported" }.Any(w => line.Contains(w, StringComparison.OrdinalIgnoreCase))) return ConsoleColor.Yellow;
-        if (new[] { "Running", "Available", "saved", "Working", "Observing" }.Any(w => line.Contains(w, StringComparison.OrdinalIgnoreCase))) return ConsoleColor.Green;
+        if (new[] { "Running", "On call", "Available", "saved", "Working", "Observing" }.Any(w => line.Contains(w, StringComparison.OrdinalIgnoreCase))) return ConsoleColor.Green;
         if (line.Contains("Back", StringComparison.OrdinalIgnoreCase) || line.StartsWith("GRID") || line.StartsWith("PROJECT") || line.Contains(" | ")) return ConsoleColor.Cyan;
         return null;
     }

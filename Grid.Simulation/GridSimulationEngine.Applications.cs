@@ -20,7 +20,7 @@ public sealed partial class GridSimulationEngine
     private ResourceCondition? CurrentCondition(GridProgram p)
     {
         if (p.Kind == ResidentKind.Legacy) return null;
-        if (p.Kind == ResidentKind.Application && CurrentBinding(p)?.Confirmed != true)
+        if (p.Kind == ResidentKind.Application && (CurrentBinding(p)?.Confirmed != true || p.Application?.Activity == ApplicationActivity.Sleeping))
             return new(null, "Application observation unavailable or stale.");
         if (!conditions.TryGetValue(p.Id, out var policy)) conditions[p.Id] = policy = new();
         return policy.Evaluate(hostResources, requirements.GetValueOrDefault(p.Id) ?? [], timeProvider.GetUtcNow());
@@ -50,7 +50,7 @@ public sealed partial class GridSimulationEngine
             apps.SelectMany(a => a.Processes).Distinct().Count() != apps.Sum(a => a.Processes.Count) ||
             apps.Sum(a => a.Processes.Count) > 4096 || apps.SelectMany(a => a.Processes).Any(exited.Contains) || exited.Count > 8192 ||
             apps.Any(a => string.IsNullOrWhiteSpace(a.Key) || a.Key.Length > 128 || !ValidLabel(a.Name, 80) ||
-                a.WorkingSetBytes < 0 || a.Processes.Count is < 1 or > 4096 || a.Processes.Any(p => p.Pid <= 0 || p.StartedAtUtc.Offset != TimeSpan.Zero || p.StartedAtUtc > observation.ObservedAtUtc)))
+                a.WorkingSetBytes < 0 || a.Processes.Count > 4096 || !Enum.IsDefined(a.Activity) || (a.Processes.Count == 0 && a.Activity is ApplicationActivity.Running or ApplicationActivity.OnCall) || a.Processes.Any(p => p.Pid <= 0 || p.StartedAtUtc.Offset != TimeSpan.Zero || p.StartedAtUtc > observation.ObservedAtUtc)))
             throw new ArgumentException("Invalid application observation.");
         lock (gate)
         {
@@ -66,6 +66,17 @@ public sealed partial class GridSimulationEngine
             {
                 var binding = p.Application!;
                 var found = incoming.GetValueOrDefault(binding.ApplicationKey);
+                if (found is not null && (found.Processes.Count == 0 || binding.Processes.Count == 0))
+                {
+                    p.Application = binding with { Processes = found.Processes, Activity = found.Activity,
+                        Incarnation = binding.Processes.Count == 0 && found.Processes.Count > 0 ? Guid.NewGuid() : binding.Incarnation,
+                        ObservedAtUtc = observation.ObservedAtUtc, Confirmed = found.Activity != ApplicationActivity.Unknown,
+                        WorkingSetBytes = found.WorkingSetBytes, Source = observation.Source };
+                    incoming.Remove(found.Key); missingApplications.Remove(p.Id); conditions.Remove(p.Id);
+                    if (binding.Activity != found.Activity)
+                        RecordEvent("ApplicationActivity", p.Id, p.Name, $"{binding.Activity} -> {found.Activity}", "{}");
+                    continue;
+                }
                 // A changed PID lifetime is a new incarnation even if the executable key is unchanged.
                 if (found is not null && binding.Processes.Intersect(found.Processes).Any())
                 {
@@ -73,7 +84,9 @@ public sealed partial class GridSimulationEngine
                         .Concat(found.Processes).Distinct().ToArray());
                     if (members.Count <= 4096)
                         p.Application = binding with { Processes = members, ObservedAtUtc = observation.ObservedAtUtc,
-                            Confirmed = true, WorkingSetBytes = observation.Complete ? found.WorkingSetBytes : null, Source = observation.Source };
+                            Activity = found.Activity, Confirmed = found.Activity != ApplicationActivity.Unknown, WorkingSetBytes = observation.Complete ? found.WorkingSetBytes : null, Source = observation.Source };
+                    if (binding.Activity != p.Application!.Activity)
+                        RecordEvent("ApplicationActivity", p.Id, p.Name, $"{binding.Activity} -> {p.Application.Activity}", "{}");
                     missingApplications.Remove(p.Id); incoming.Remove(found.Key);
                 }
                 else if (binding.Processes.All(exited.Contains) || observation.Complete && (found is not null || missingApplications.GetValueOrDefault(p.Id) >= 1))
@@ -97,11 +110,11 @@ public sealed partial class GridSimulationEngine
             {
                 var program = new GridProgram { Name = a.Name, Occupation = "Observed application", Kind = ResidentKind.Application,
                     Application = new(a.Key, Guid.NewGuid(), a.Processes, observation.ObservedAtUtc, true,
-                        observation.Complete ? a.WorkingSetBytes : null, observation.Source) };
+                        observation.Complete ? a.WorkingSetBytes : null, observation.Source) { Activity = a.Activity, Confirmed = a.Activity != ApplicationActivity.Unknown } };
                 var district = world.City?.Read().Districts.Single(d => d.Category == Grid.Core.Generation.HardwareKind.Cpu).Id
                     ?? world.Districts.Values.OrderBy(d => d.Id).First().Id;
                 world.AddProgram(program, district);
-                RecordEvent("ApplicationObserved", program.Id, program.Name, "Observed running application; no offline activity inferred.",
+                RecordEvent("ApplicationObserved", program.Id, program.Name, $"Application discovered: {a.Activity}; no offline activity inferred.",
                     System.Text.Json.JsonSerializer.Serialize(new { program.Application.Incarnation, source = observation.Source }));
             }
         }

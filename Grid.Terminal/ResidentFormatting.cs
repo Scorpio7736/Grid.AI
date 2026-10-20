@@ -6,7 +6,7 @@ namespace Grid.Terminal;
 public static class ResidentFormatting
 {
     public static string Status(GridProgramSnapshot p) => p.Kind == ResidentKind.Application
-        ? p.Application?.Confirmed == true ? "Observed running" : "Observation unknown" : p.Behavior?.Action.ToString() ?? p.Status.ToString();
+        ? p.Application?.Confirmed == true ? (p.Application.Activity == ApplicationActivity.OnCall ? "On call" : p.Application.Activity.ToString()) : "Observation unknown" : p.Behavior?.Action.ToString() ?? p.Status.ToString();
     public static string Energy(GridProgramSnapshot p) => p.Kind == ResidentKind.Legacy
         ? p.Energy.ToString("0.###", CultureInfo.InvariantCulture)
         : p.Condition?.Score is { } score ? score.ToString("0.###", CultureInfo.InvariantCulture) + " (interpreted)" : "unknown";

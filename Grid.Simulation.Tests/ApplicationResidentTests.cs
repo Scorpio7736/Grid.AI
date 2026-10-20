@@ -32,6 +32,35 @@ public sealed class ApplicationResidentTests
     }
 
     [Fact]
+    public void CatalogResidentSleepsWakesAndChangesWindowStateWithoutLosingIdentity()
+    {
+        var f = new Fixture();
+        var sleeping = f.App() with { Processes = [], WorkingSetBytes = null, Activity = ApplicationActivity.Sleeping };
+        f.Sample(true, sleeping);
+        var first = Assert.Single(f.Engine.GetSnapshot().Programs);
+        Assert.Equal(ApplicationActivity.Sleeping, first.Application!.Activity);
+        Assert.Null(first.Condition!.Score);
+        f.Sample(true, f.App() with { Activity = ApplicationActivity.OnCall });
+        var background = Assert.Single(f.Engine.GetSnapshot().Programs);
+        Assert.Equal(first.Id, background.Id);
+        Assert.NotEqual(first.Application.Incarnation, background.Application!.Incarnation);
+        Assert.Equal(ApplicationActivity.OnCall, background.Application.Activity);
+        f.Sample(true, f.App());
+        Assert.Equal(ApplicationActivity.Running, Assert.Single(f.Engine.GetSnapshot().Programs).Application!.Activity);
+        f.Sample(true, sleeping);
+        Assert.Equal(first.Id, Assert.Single(f.Engine.GetSnapshot().Programs).Id);
+        f.Sample(false, sleeping with { Activity = ApplicationActivity.Unknown });
+        Assert.False(Assert.Single(f.Engine.GetSnapshot().Programs).Application!.Confirmed);
+    }
+
+    [Fact]
+    public void EmptyRunningObservationIsRejected()
+    {
+        var f = new Fixture();
+        Assert.Throws<ArgumentException>(() => f.Sample(true, f.App() with { Processes = [] }));
+    }
+
+    [Fact]
     public void GroupsRetainIdentityAcrossHelperChurnButPidReuseCreatesNewIncarnation()
     {
         var f = new Fixture(); var a = f.App(); f.Sample(true, a);

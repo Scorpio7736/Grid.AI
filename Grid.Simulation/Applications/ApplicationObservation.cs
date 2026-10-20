@@ -2,7 +2,11 @@ using Grid.Core;
 using Grid.Simulation.Resources;
 namespace Grid.Simulation.Applications;
 
-public sealed record ObservedApplication(string Key, string Name, IReadOnlyList<ProcessLifetime> Processes, long? WorkingSetBytes);
+public sealed record ObservedApplication(string Key, string Name, IReadOnlyList<ProcessLifetime> Processes, long? WorkingSetBytes)
+{
+    public string? ExecutableName { get; init; }
+    public ApplicationActivity Activity { get; init; } = ApplicationActivity.Running;
+}
 public sealed record ApplicationObservation(DateTimeOffset ObservedAtUtc, bool Complete,
     IReadOnlyList<ObservedApplication> Applications, string Source)
 {

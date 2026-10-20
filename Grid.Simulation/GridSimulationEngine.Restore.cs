@@ -54,7 +54,7 @@ public sealed partial class GridSimulationEngine
                 Behavior.ResidentBehavior.Validate(behavior, p.Kind);
             }
             if (p.Application is { } a && (string.IsNullOrWhiteSpace(a.ApplicationKey) || a.ApplicationKey.Length > 128 ||
-                a.Incarnation == Guid.Empty || a.ObservedAtUtc.Offset != TimeSpan.Zero || a.Processes is null || a.Processes.Count is < 1 or > 4096 ||
+                a.Incarnation == Guid.Empty || a.ObservedAtUtc.Offset != TimeSpan.Zero || a.Processes is null || a.Processes.Count > 4096 || !Enum.IsDefined(a.Activity) || (a.Processes.Count == 0 && a.Activity is ApplicationActivity.Running or ApplicationActivity.OnCall) ||
                 a.Processes.Distinct().Count() != a.Processes.Count || a.WorkingSetBytes < 0 ||
                 a.Processes.Any(l => l is null || l.Pid <= 0 || l.StartedAtUtc.Offset != TimeSpan.Zero || l.StartedAtUtc > a.ObservedAtUtc)))
                 throw new InvalidDataException("Invalid application binding.");

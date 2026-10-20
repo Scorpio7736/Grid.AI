@@ -5,9 +5,11 @@ using Grid.Core;
 using Grid.Simulation.Applications;
 namespace Grid.Terminal;
 
-/// <summary>Read-only, current-session windowed executable groups. Never captures titles/arguments.</summary>
+/// <summary>Read-only, installed inventory and current-session executable groups. Never captures titles/arguments.</summary>
 public sealed class WindowsApplicationDiscovery : IApplicationDiscovery
 {
+    private readonly ApplicationCatalog catalog = new();
+    private DateTimeOffset inventoryAt;
     private readonly HashSet<string> knownApplications = new(StringComparer.Ordinal);
     private readonly HashSet<ProcessLifetime> previouslyObserved = new();
     public Task<ApplicationObservation> SampleAsync(CancellationToken cancellationToken)
@@ -16,11 +18,23 @@ public sealed class WindowsApplicationDiscovery : IApplicationDiscovery
         if (!OperatingSystem.IsWindows()) return Task.FromResult(new ApplicationObservation(DateTimeOffset.UtcNow, false, [], "Unsupported platform"));
         using var self = Process.GetCurrentProcess();
         var session = self.SessionId;
+        if (DateTimeOffset.UtcNow - inventoryAt > TimeSpan.FromMinutes(5))
+        {
+            catalog.AddInstalled(WindowsInstalledApplications.Read(session));
+            inventoryAt = DateTimeOffset.UtcNow;
+        }
         var rows = new List<ApplicationProcess>();
         var budget = Stopwatch.StartNew();
         var complete = true;
         var processes = Process.GetProcesses();
         var liveIds = processes.Select(p => p.Id).ToHashSet();
+        HashSet<string>? processNames = new(StringComparer.OrdinalIgnoreCase);
+        foreach (var process in processes)
+        {
+            try { processNames.Add(process.ProcessName); }
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException or NotSupportedException)
+            { processNames = null; break; }
+        }
         try
         {
             foreach (var process in processes)
@@ -60,6 +74,8 @@ public sealed class WindowsApplicationDiscovery : IApplicationDiscovery
         previouslyObserved.UnionWith(apps.SelectMany(a => a.Processes));
         if (previouslyObserved.Count > 8192)
             previouslyObserved.IntersectWith(previouslyObserved.OrderByDescending(p => p.StartedAtUtc).Take(8192).ToArray());
-        return Task.FromResult(new ApplicationObservation(DateTimeOffset.UtcNow, complete, apps.AsReadOnly(), "Windows Process current-session windowed executable grouping v1") { ConfirmedExited = exited });
+        apps = catalog.Observe(apps, complete, exited.ToHashSet(), processNames).ToList();
+        if (apps.Count > 512) { apps = apps.Take(512).ToList(); complete = false; }
+        return Task.FromResult(new ApplicationObservation(DateTimeOffset.UtcNow, complete, apps.AsReadOnly(), "Windows installed inventory + current-session processes v2; 512 resident limit") { ConfirmedExited = exited });
     }
 }

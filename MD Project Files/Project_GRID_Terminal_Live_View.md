@@ -1,14 +1,16 @@
 # Project GRID - Terminal live view
 
-## Planned usability and navigation improvements - 1.11
+## Latest population revision - 2026-10-19
 
-**Requested 2026-10-19; planned, not implemented by this update.** See checklist 1.11 for clearer formatting, color coding and tables across both command output and live view. Prioritize readable status summaries and aligned comparable data; reserve long IDs/provenance for detail views. Support resizing, paging/wrapping and monochrome/plain-text output. Colors must supplement explicit labels so unknown/stale data is never mistaken for zero or healthy state.
+The current population includes discoverable installed applications and current-session background processes. States are **Sleeping**, **On call**, **Running**, or **unknown** when evidence is insufficient. This supersedes earlier windowed-only/removal-on-exit descriptions below; those remain historical completion records. Ordinary application state is still rediscovered rather than persisted, and the saved city is reused. Full-machine coverage is not complete: see [Installed Application Availability](Project_GRID_Installed_Application_Availability.md) for implemented scope, Windows inventory limits, remaining work and **290-test** verification.
 
-Live view must show a prominent **Back to command prompt: Esc / Q** hint, distinct from **Exit GRID**. Returning restores the prompt without stopping the simulation, changing running/paused state or interrupting telemetry/autosave. Reentering live must work repeatedly. Ctrl+C is the existing shutdown signal, not a navigation shortcut.
+## Terminal usability completion - 1.11 (2026-10-19)
 
-**Current implementation:** Q/Esc already return from TerminalLiveView to TerminalHost's command loop; existing tests cover this path. Improve discoverability and verify it in the user's actual terminal. If the reported quit behavior is reproducible, fix that discrepancy. Do not mark this usability task complete solely because the underlying return path already exists.
+Implemented aligned/wrapped tables for programs, districts, resources, behaviors and history. Narrow output falls back to labeled records; empty tables are explicit. `programs ids` and `districts ids` expose full identifiers; `resources details`, `history details` and `inspect` retain detailed provenance. Live view retains paging and resize handling, with prominent Esc/Q Back hints and a return-to-prompt message.
 
-Acceptance: readable tables at supported sizes, clear empty/unknown states, accessible color labels and no-color behavior, no ANSI pollution in redirected output, and a live → prompt → live round trip that preserves the same world and clock state. This update changes planning documentation only; no runtime tests were run.
+Colors supplement labels: green for running/available/work, yellow for unknown/stale/waiting/warnings, red for errors, cyan for navigation/table headings; default terminal color otherwise. Use `--no-color`, `NO_COLOR`, or `TERM=dumb` for monochrome. Redirected output suppresses application color changes. Compact tables sanitize controls and use ASCII-safe text; original names remain available in inspection.
+
+Esc/Q return to commands; `exit` or Ctrl+C shuts down. Automated tests cover repeated live/prompt round trips, same-world and clock preservation, no save/dispose on Back, final save on exit, width20/60/120, long values, empty data, color policy and plain output. Existing tests cover resize, paging and high event volume. The actual PTY smoke used the single-frame fallback because this tool's terminal did not meet interactive redraw requirements; it returned to a Running prompt and advanced to tick5. Full-screen visual color/contrast assessment in the user's terminal remains a manual check, not claimed as verified. Combined suite: **290 tests passed**.
 
 ## Program behavior completion - 2026-10-19
 
