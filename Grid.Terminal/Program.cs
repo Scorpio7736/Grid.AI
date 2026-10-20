@@ -18,6 +18,8 @@ try
         originalForeground = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Cyan;
     }
+    if (TerminalEnvironment.Ensure() is { } environmentMessage)
+        Console.WriteLine(environmentMessage);
     GridSimulationEngine engine;
     IWorldPersistenceSession? persistence = null;
     if (options.Ephemeral) engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
@@ -51,6 +53,7 @@ try
     var commands = DefaultCommands.Create(engine);
     CityCommand.Register(commands, engine);
     BehaviorCommand.Register(commands, engine);
+    WorkplaceCommands.Register(commands, engine);
     if (store is not null) HistoryCommand.Register(commands, store);
     var telemetry = new HostTelemetryMonitor(new WindowsHostTelemetryProvider(), engine);
     await telemetry.SampleOnceAsync(shutdown.Token);

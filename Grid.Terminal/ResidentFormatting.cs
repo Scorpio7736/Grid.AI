@@ -13,5 +13,6 @@ public static class ResidentFormatting
     public static string Details(GridProgramSnapshot p) => $"Resident type: {p.Kind}" +
         (p.Application is { } a ? $" | Incarnation: {a.Incarnation} | Processes: {a.Processes.Count} | Observation: {(a.Confirmed ? "fresh" : "unknown/stale")} at {a.ObservedAtUtc:O} | Source: {a.Source}\nWorking set: {(a.Confirmed && a.WorkingSetBytes is { } bytes ? bytes + " bytes (measured; shared pages may overlap)" : "unknown")} | CPU/GPU/storage/network attribution: unknown" : "") +
         (p.Behavior is { } b ? $"\nBehavior (last tick): {b.Action} | Goal: {b.Goal} | Need: {b.Need} | Priority: {b.Priority} | Simulated work units: {b.CompletedUnits}" : "") +
+        (p.Behavior?.Travel is { } travel ? $"\nWorkstation: {travel.WorkstationId} | Remaining road edges: {travel.Route.Count - 1} | Edge time remaining: {TimeSpan.FromTicks(travel.RemainingEdgeTicks):c} | Route: {string.Join(" -> ", travel.Route)}" : "") +
         (p.Kind != ResidentKind.Legacy ? "\nCondition: " + (p.Condition?.Explanation ?? "No explicit resource requirements are known.") : "");
 }

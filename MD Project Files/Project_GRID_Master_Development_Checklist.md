@@ -416,6 +416,20 @@ See [NGE plan](Project_GRID_NGE_Nullify_Grid_Existence_Plan.md) for confirmation
 
 ---
 
+## 1.14 Startup environment-variable launcher
+
+**Implemented and verified - 2026-10-20.**
+
+- [x] Ensure Windows user variable `Grid7736` points to an available terminal executable at startup
+- [x] Preserve valid existing installation paths; repair missing/empty/broken values without writing shell quotes
+- [x] Keep environment-update failures nonfatal and skip Windows-specific registration on other platforms
+- [x] Document PowerShell `& $env:Grid7736`, Command Prompt `"%Grid7736%"`, refresh behavior and development-build path limitations
+- [x] Verify behavior with injected environment tests and an ephemeral Windows startup
+
+**Completion evidence:** 87 terminal tests passed. Actual user variable registered to the Release apphost and its existence verified. The smoke session did not open the user's saved world. Follow-up: managed `Grid7736.cmd` and deduplicated user PATH registration now support the bare `Grid7736` command. 89 terminal tests passed and a bare-command ephemeral launch succeeded.
+
+---
+
 # Phase 2 — The Core
 
 ## 2.1 Persistence architecture
@@ -643,12 +657,16 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 3.2 Movement and occupations
 
-- [ ] Define district connections and movement rules
-- [ ] Add movement goals and route selection
-- [ ] Add jobs and workstations
-- [ ] Assign programs to suitable jobs
-- [ ] Connect application presentation to measured resource activity; keep optional fictional civic production separate
-- [ ] Prevent impossible or invalid movements
+**Implemented and verified - 2026-10-20.**
+
+- [x] Define district connections and movement rules
+- [x] Add movement goals and route selection
+- [x] Add jobs and workstations
+- [x] Assign programs to suitable jobs
+- [x] Connect application presentation to measured resource activity; keep optional fictional civic production separate
+- [x] Prevent impossible or invalid movements
+
+**Completion notes:** Deterministic saved-road routes, five-second edge travel, compatible/exclusive civic workstations, trusted assignment/release, atomic membership updates and v7 route persistence are implemented. `jobs` and `activity` expose assignments and measured application evidence. Existing unassigned routines retain 3.1 behavior; host applications do not perform fictional civic work. 323 tests passed across isolated Verification builds; disposable terminal save/reopen passed. User-console Release binaries were locked by a running session, which was not stopped. This is district-level simulation; visual walking, terminal admin assignment, social behavior and sustained autonomy remain later work. See [Movement and Occupations](Project_GRID_Movement_and_Occupations.md).
 
 ## 3.3 Social civilization
 

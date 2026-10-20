@@ -33,6 +33,8 @@ public sealed partial class GridSimulationEngine
             var staged = Stage(program.Values, request.Fields.ToArray());
             if (program.Kind != ResidentKind.Legacy && (staged.Values.Energy != program.Energy || staged.Values.Status != program.Status))
                 return Invalid("", "Observation-owned values cannot be changed through an alias field.");
+            if (BehaviorOf(program)?.Travel is not null && staged.Values.DistrictId != program.CurrentDistrictId)
+                return Invalid("district", "Release the workstation assignment before a manual district transfer.");
             if (staged.Errors.Count != 0) return new(ProgramEditOutcome.ValidationFailed, Errors: staged.Errors);
             if (cancellationToken.IsCancellationRequested) return new(ProgramEditOutcome.Cancelled);
             var preview = new ProgramEditPreview(previewIssuer, Guid.NewGuid(), lease!.Identity,
@@ -62,6 +64,8 @@ public sealed partial class GridSimulationEngine
             var staged = Stage(program.Values, preview.Changes.Select(c => new ProgramFieldEdit(c.Field, c.After)).ToArray());
             if (program.Kind != ResidentKind.Legacy && (staged.Values.Energy != program.Energy || staged.Values.Status != program.Status))
                 return Invalid("", "Observation-owned values cannot be changed through an alias field.");
+            if (BehaviorOf(program)?.Travel is not null && staged.Values.DistrictId != program.CurrentDistrictId)
+                return Invalid("district", "Release the workstation assignment before a manual district transfer.");
             if (staged.Errors.Count != 0) return new(ProgramEditOutcome.ValidationFailed, Errors: staged.Errors);
             var changed = staged.Values != program.Values;
             if (changed && program.Revision == long.MaxValue) return Invalid("", "Program revision is exhausted.");

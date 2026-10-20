@@ -28,6 +28,7 @@ public sealed partial class GridSimulationEngine
     private List<(GridProgram Program, ResidentBehavior Before, ResidentBehavior After)> StageBehaviors(TimeSpan nextTime)
     {
         var staged = new List<(GridProgram, ResidentBehavior, ResidentBehavior)>();
+        if (behaviors.Values.Any(b => b.Travel is not null)) WorkplacePolicy.ValidateAssignments(GetSnapshot());
         foreach (var p in world.Programs.Values.Where(p => p.Kind != ResidentKind.Legacy).OrderBy(p => p.Id))
         {
             var before = BehaviorOf(p)!;
@@ -46,8 +47,16 @@ public sealed partial class GridSimulationEngine
         foreach (var (p, before, after) in staged)
         {
             behaviors[p.Id] = after;
-            var status = after.Action == ResidentAction.Working ? GridProgramStatus.Working : GridProgramStatus.Idle;
-            p.Commit(p.Values with { Status = status }, p.Revision + 1);
+            var status = after.Action == ResidentAction.Working ? GridProgramStatus.Working :
+                after.Action == ResidentAction.Moving ? GridProgramStatus.Moving : GridProgramStatus.Idle;
+            var revision = p.Revision + 1;
+            var previous = p.CurrentDistrictId;
+            var destination = after.Travel?.Route[0] ?? previous;
+            world.CommitProgram(p, p.Values with { Status = status, DistrictId = destination });
+            p.Commit(p.Values, revision);
+            if (previous != destination)
+                RecordEvent("Movement", p.Id, p.Name, $"Work route: {world.GetDistrict(previous).Name} -> {world.GetDistrict(destination).Name}",
+                    System.Text.Json.JsonSerializer.Serialize(new { fromDistrictId = previous, toDistrictId = destination, workstationId = after.Travel!.WorkstationId }));
             if (before.Action != after.Action)
                 RecordEvent("Behavior", p.Id, p.Name, $"{before.Action} -> {after.Action}: {after.Goal}");
             if (after.CompletedUnits != before.CompletedUnits)

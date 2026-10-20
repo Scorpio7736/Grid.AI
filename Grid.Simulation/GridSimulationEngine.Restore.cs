@@ -31,6 +31,7 @@ public sealed partial class GridSimulationEngine
                 behavior = behavior with { Routine = Behavior.ResidentBehavior.Copy(routine) };
                 engine.requirements[saved.Id] = behavior.Routine.Requirements.ToArray();
             }
+            if (behavior.Travel is { } travel) behavior = behavior with { Travel = travel with { Route = Array.AsReadOnly(travel.Route.ToArray()) } };
             engine.behaviors[saved.Id] = behavior;
         }
         foreach (var app in snapshot.ApplicationCatalog) engine.applicationCatalog.Add(app.Key, app);
@@ -85,6 +86,7 @@ public sealed partial class GridSimulationEngine
             throw new InvalidDataException("Missing district membership.");
         if (snapshot.City is { } city && !city.Read().Districts.Select(d => d.Id).Order().SequenceEqual(districts.Order()))
             throw new InvalidDataException("Saved layout and district identities disagree.");
+        Behavior.WorkplacePolicy.ValidateAssignments(snapshot);
     }
 
     private static bool ValidLabel(string value, int limit) => !string.IsNullOrWhiteSpace(value) &&

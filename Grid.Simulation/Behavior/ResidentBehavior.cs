@@ -2,13 +2,14 @@ using Grid.Core;
 using Grid.Simulation.Resources;
 namespace Grid.Simulation.Behavior;
 
-public enum ResidentAction { Unknown, Observing, Idle, Working, Resting, WaitingForResources, OffDuty }
+public enum ResidentAction { Unknown, Observing, Idle, Working, Resting, WaitingForResources, OffDuty, Moving }
 public enum RoutineOccupation { Administrator, Archivist, Researcher, Technician }
 public sealed record WorkRoutine(RoutineOccupation Occupation, long WorkBurstTicks, long RestTicks,
     long UnitTicks, int ShiftStartHour, int ShiftHours, IReadOnlyList<ResourceRequirement> Requirements);
 public sealed record ResidentBehavior(ResidentAction Action, string Goal, string Need, int Priority,
     long WorkTicks, long RestRemainingTicks, long CompletedUnits, WorkRoutine? Routine)
 {
+    public WorkTravel? Travel { get; init; }
     public static ResidentBehavior Initial => new(ResidentAction.Idle, "Await assigned work", "Assignment", 0, 0, 0, 0, null);
     public static WorkRoutine Copy(WorkRoutine r) => r with { Requirements = Array.AsReadOnly(r.Requirements.ToArray()) };
     public static void Validate(ResidentBehavior b, ResidentKind kind)
@@ -17,6 +18,13 @@ public sealed record ResidentBehavior(ResidentAction Action, string Goal, string
             string.IsNullOrWhiteSpace(b.Need) || b.Need.Length > 80 || b.Need.Any(char.IsControl) || b.Priority is < 0 or > 100 ||
             b.WorkTicks < 0 || b.RestRemainingTicks < 0 || b.CompletedUnits < 0)
             throw new InvalidDataException("Invalid resident behavior.");
+        if (b.Travel is { } travel && (travel.WorkstationId == Guid.Empty || travel.Route is null || travel.Route.Count == 0 ||
+            travel.Route.Any(id => id == Guid.Empty) || travel.RemainingEdgeTicks < 0 || travel.RemainingEdgeTicks > WorkplacePolicy.EdgeTicks))
+            throw new InvalidDataException("Invalid work travel.");
+        if (b.Action == ResidentAction.Moving && b.Travel is null)
+            throw new InvalidDataException("Moving behavior requires a work route.");
+        if (b.Travel is not null && (b.Routine is null || kind is not (ResidentKind.Agent or ResidentKind.Special)))
+            throw new InvalidDataException("Only configured persistent residents may own work travel.");
         if (b.Routine is not { } r)
         {
             if (b.WorkTicks != 0 || b.RestRemainingTicks != 0 || b.CompletedUnits != 0 ||
@@ -59,6 +67,14 @@ public static class ResidentBehaviorPolicy
         // Hysteresis: entering/re-entering work needs 60; continuing work needs at least 40.
         if (condition < (current.Action == ResidentAction.Working ? 40 : 60))
             return current with { Action = ResidentAction.WaitingForResources, Goal = "Wait for sufficient headroom", Need = "Resources", Priority = 100 };
+        if (current.Travel is { Route.Count: > 1 } travel)
+        {
+            var remaining = Math.Max(0, travel.RemainingEdgeTicks - Math.Min(step.Ticks, travel.RemainingEdgeTicks));
+            var route = remaining == 0 ? Array.AsReadOnly(travel.Route.Skip(1).ToArray()) : travel.Route;
+            if (remaining == 0 && route.Count > 1) remaining = WorkplacePolicy.EdgeTicks;
+            return current with { Action = ResidentAction.Moving, Goal = "Travel to assigned workstation", Need = "Workplace", Priority = 70,
+                Travel = travel with { Route = route, RemainingEdgeTicks = remaining } };
+        }
         if (current.RestRemainingTicks > 0)
             return current with { Action = ResidentAction.Resting, Goal = "Scheduled simulated rest", Need = "Rest", Priority = 80,
                 RestRemainingTicks = Math.Max(0, current.RestRemainingTicks - Math.Min(step.Ticks, current.RestRemainingTicks)) };

@@ -47,7 +47,7 @@ public sealed class ApplicationCatalogPersistenceTests
             using var command = upgraded.CreateCommand();
             command.CommandText = "SELECT COUNT(*) FROM ApplicationCatalog";
             Assert.Equal(0L, command.ExecuteScalar());
-            command.CommandText = "PRAGMA user_version"; Assert.Equal(6L, command.ExecuteScalar());
+            command.CommandText = "PRAGMA user_version"; Assert.Equal((long)GridSchema.CurrentVersion, command.ExecuteScalar());
         }
         finally { File.Delete(path); }
     }
