@@ -7,7 +7,7 @@ public static class TerminalPresentation
         var groups = new (string Title, string[] Names)[] {
             ("SIMULATION CONTROL", ["start", "pause", "step", "tick"]),
             ("WORLD & POPULATION", ["status", "city", "districts", "programs", "inspect", "jobs"]),
-            ("MONITORING & ANALYTICS", ["live", "behaviors", "activity", "resources", "history"]),
+            ("MONITORING & ANALYTICS", ["live", "behaviors", "activity", "social", "resources", "history"]),
             ("SYSTEM & TERMINAL", ["clear", "help", "nge", "exit"])
         };
         var lines = new List<string> { "PROJECT GRID TERMINAL", "COMMAND REFERENCE", new('=', Math.Min(68, TerminalTable.Width)) };

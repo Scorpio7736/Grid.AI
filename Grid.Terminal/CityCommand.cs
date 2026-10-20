@@ -13,7 +13,7 @@ public static class CityCommand
             var city = blueprint.Read();
             var lines = new List<string> { $"Generator: {city.GeneratorVersion} | Seed: {city.Seed}",
                 $"Saved layout: {city.Districts.Count} districts, {city.Roads.Count} streets, {city.Districts.Sum(d => d.Lots.Count)} building lots.",
-                "Semantic geometry in metres; 3D rendering and application residents are not implemented." };
+                "Saved geometry in metres; district simulation is implemented, 3D rendering remains planned." };
             foreach (var category in city.Profile.Categories)
                 lines.Add($"{category.Kind}: {category.Status} | Components: {category.Components.Count} | Truncated: {category.Truncated}" +
                     $" | Capacity fields: {category.Components.Count(c => c.CapacityBytes.HasValue)} | Unit fields: {category.Components.Count(c => c.Units.HasValue)}");

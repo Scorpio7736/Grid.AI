@@ -12,7 +12,7 @@ internal sealed record SchemaMigration(int Version, string Name, string Sql)
 
 public static class GridSchema
 {
-    public const int CurrentVersion = 7;
+    public const int CurrentVersion = 8;
     public const int ApplicationId = 0x47524944; // ASCII GRID
 
     internal static readonly IReadOnlyList<SchemaMigration> Migrations = Array.AsReadOnly(new[]
@@ -119,7 +119,13 @@ public static class GridSchema
             """),
         // Travel lives in the existing bounded behavior JSON. Version gate prevents old binaries
         // from silently discarding assignments/routes when they deserialize and save that JSON.
-        new SchemaMigration(7, "Workstation travel behavior contract", "SELECT 1;")
+        new SchemaMigration(7, "Workstation travel behavior contract", "SELECT 1;"),
+        new SchemaMigration(8, "Bounded social civilization", """
+            CREATE TABLE WorldSocialState (
+                WorldId TEXT NOT NULL PRIMARY KEY REFERENCES Worlds(WorldId) ON DELETE CASCADE,
+                StateJson TEXT NOT NULL CHECK(json_valid(StateJson) AND length(StateJson) <= 2000000)
+            ) STRICT;
+            """)
     });
 
     internal static void Migrate(SqliteConnection connection, bool allowCreate = true) => Migrate(connection, Migrations, allowCreate);

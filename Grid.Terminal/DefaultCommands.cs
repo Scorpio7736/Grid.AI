@@ -52,7 +52,8 @@ public static class DefaultCommands
                 var p = matches[0];
                 return new($"Program: {p.Name}{Environment.NewLine}ID: {p.Id}{Environment.NewLine}" +
                     $"{ResidentFormatting.Details(p)}{Environment.NewLine}Occupation: {p.Occupation}{Environment.NewLine}Status: {ResidentFormatting.Status(p)}{Environment.NewLine}" +
-                    $"Energy: {ResidentFormatting.Energy(p)}{Environment.NewLine}District: {state.Districts.Single(d => d.Id == p.DistrictId).Name} ({p.DistrictId})");
+                    $"Energy: {ResidentFormatting.Energy(p)}{Environment.NewLine}District: {state.Districts.Single(d => d.Id == p.DistrictId).Name} ({p.DistrictId})" +
+                    (SocialCommand.Details(state, p.Id) is { Length: > 0 } social ? "\n" + social : ""));
             }
             var districts = state.Districts.Where(d => Matches(d.Id, d.Name)).ToArray();
             if (districts.Length != 1) return LookupFailure(districts.Length, query);

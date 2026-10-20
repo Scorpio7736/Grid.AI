@@ -116,6 +116,7 @@ public sealed partial class WorldStore : IDisposable
             Execute("INSERT INTO Worlds VALUES ($p0,$p1,$p2,$p3,$p4)", world, info.Name, Utc(info.CreatedAtUtc), info.GenerationSeed, info.GeneratorVersion);
             if (state.City is { } city)
                 Execute("INSERT INTO WorldGeneration VALUES ($p0,$p1)", world, city.Json);
+            Execute("INSERT INTO WorldSocialState VALUES ($p0,$p1)", world, System.Text.Json.JsonSerializer.Serialize(state.Social));
             foreach (var app in state.ApplicationCatalog)
                 Execute("INSERT INTO ApplicationCatalog VALUES ($p0,$p1,$p2,$p3,$p4)", world, app.Key, app.Name, app.Source, Utc(app.LastSeenUtc));
             foreach (var d in state.Districts)
@@ -281,6 +282,10 @@ public sealed partial class WorldStore : IDisposable
             while (reader.Read()) catalog.Add(new(reader.GetString(0), reader.GetString(1), reader.GetString(2),
                 ParseUtc(reader.GetString(3))));
         state = state with { ApplicationCatalog = catalog.AsReadOnly() };
+        command.CommandText = "SELECT StateJson FROM WorldSocialState WHERE WorldId=$catalogWorld";
+        if (command.ExecuteScalar() is string socialJson)
+            state = state with { Social = System.Text.Json.JsonSerializer.Deserialize<Grid.Simulation.Social.SocialState>(socialJson)
+                ?? throw new InvalidDataException("Missing social state.") };
         Validate(info, state);
         transaction.Commit();
         return new(info, state, savedAt);

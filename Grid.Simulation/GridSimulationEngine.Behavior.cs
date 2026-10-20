@@ -18,7 +18,9 @@ public sealed partial class GridSimulationEngine
             var program = world.GetProgram(id);
             ResidentBehavior.Validate(behavior, program.Kind);
             var revision = checked(program.Revision + 1);
+            var nextSocial = WithOccupation(id, copy.Occupation);
             behaviors[id] = behavior;
+            social = nextSocial;
             requirements[id] = copy.Requirements.ToArray(); conditions.Remove(id);
             program.Commit(program.Values with { Occupation = copy.Occupation.ToString(), Status = GridProgramStatus.Idle }, revision);
             RecordEvent("RoutineConfigured", id, program.Name, $"Assigned {copy.Occupation} simulated routine; progress reset.");

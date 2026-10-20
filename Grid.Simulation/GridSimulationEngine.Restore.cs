@@ -35,6 +35,7 @@ public sealed partial class GridSimulationEngine
             engine.behaviors[saved.Id] = behavior;
         }
         foreach (var app in snapshot.ApplicationCatalog) engine.applicationCatalog.Add(app.Key, app);
+        engine.social = Social.SocialState.Copy(snapshot.Social);
         engine.clock.Restore(snapshot.TickCount);
         return engine;
     }
@@ -87,6 +88,7 @@ public sealed partial class GridSimulationEngine
         if (snapshot.City is { } city && !city.Read().Districts.Select(d => d.Id).Order().SequenceEqual(districts.Order()))
             throw new InvalidDataException("Saved layout and district identities disagree.");
         Behavior.WorkplacePolicy.ValidateAssignments(snapshot);
+        Social.SocialState.Validate(snapshot);
     }
 
     private static bool ValidLabel(string value, int limit) => !string.IsNullOrWhiteSpace(value) &&

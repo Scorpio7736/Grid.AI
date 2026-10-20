@@ -54,7 +54,7 @@ public sealed partial class GridSimulationEngine
                     new System.Collections.ObjectModel.ReadOnlyDictionary<string, float>(
                         new Dictionary<string, float>(d.Resources)))).ToArray();
             return new(clock.TickCount, clock.ElapsedSimulationTime, clock.TickDuration, clock.IsRunning,
-                Array.AsReadOnly(programs), Array.AsReadOnly(districts)) { WorldId = world.Id, City = world.City, ApplicationDiscoveryStatus = CurrentDiscoveryStatus, ApplicationCatalog = Array.AsReadOnly(applicationCatalog.Values.OrderBy(a => a.Name).ToArray()) };
+                Array.AsReadOnly(programs), Array.AsReadOnly(districts)) { WorldId = world.Id, City = world.City, ApplicationDiscoveryStatus = CurrentDiscoveryStatus, Social = social, ApplicationCatalog = Array.AsReadOnly(applicationCatalog.Values.OrderBy(a => a.Name).ToArray()) };
         }
     }
 
@@ -191,6 +191,7 @@ public sealed partial class GridSimulationEngine
             }
         }
         var behaviorChanges = StageBehaviors(nextTime);
+        var socialChanges = StageSocial(nextTick, nextTime, behaviorChanges);
         events.Add(new SimulationTickCompleted(nextTick, nextTime, world.Programs.Count, world.Districts.Count));
         var result = new GridTickResult(nextTick, nextTime, events.AsReadOnly());
 
@@ -205,6 +206,7 @@ public sealed partial class GridSimulationEngine
         foreach (var change in changes)
             world.CommitProgram(change.Program, change.Program.Values with { Energy = change.Energy });
         CommitBehaviors(behaviorChanges);
+        CommitSocial(socialChanges);
         lastTick = result;
         foreach (var change in events.OfType<ProgramEnergyChanged>())
             RecordEvent("Energy", change.ProgramId, world.GetProgram(change.ProgramId).Name,

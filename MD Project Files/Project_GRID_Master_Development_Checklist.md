@@ -670,12 +670,14 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 3.3 Social civilization
 
-- [ ] Implement program-to-program interactions
-- [ ] Introduce relationships and social preferences
-- [ ] Add simple memories and meaningful experiences
-- [ ] Track occupation and social history
-- [ ] Allow cooperative and competing goals
-- [ ] Introduce bounded resource scarcity and recovery
+- [x] Implement program-to-program interactions
+- [x] Introduce relationships and social preferences
+- [x] Add simple memories and meaningful experiences
+- [x] Track occupation and social history
+- [x] Allow cooperative and competing goals
+- [x] Introduce bounded resource scarcity and recovery
+
+**Implemented and verified - 2026-10-20.** Opt-in Agent/Special interactions, cooperative/competitive/reserved preferences, bounded relationships and experiences, occupation history, and separate simulated civic scarcity/recovery are complete. Schema v8 preserves social state and partial rounds; `social [id|name]` and program inspection expose it read-only. **336 tests passed** (14 Core, 144 Simulation, 86 Persistence, 92 Terminal), including v7 upgrade and recovery; isolated terminal create/save/reopen passed. Automatic agent creation, terminal admin configuration, real communications and 3.4 autonomy remain pending. See [Social Civilization](Project_GRID_Social_Civilization.md) for rules, limits and completion evidence.
 
 ## 3.4 Autonomy and tests
 
