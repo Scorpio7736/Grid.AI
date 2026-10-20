@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Grid.Core\Grid.Core.csproj" />
+    <ProjectReference Include="..\Grid.Communication\Grid.Communication.csproj" />
   </ItemGroup>
 
 </Project>

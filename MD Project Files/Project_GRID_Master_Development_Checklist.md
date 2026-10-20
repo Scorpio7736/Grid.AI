@@ -699,13 +699,15 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 4.1 Communications foundation
 
-- [ ] Create communication hub and routing contracts
-- [ ] Define message, conversation and recipient models
-- [ ] Support program identity addressing
-- [ ] Support messages to named agents and civilian programs
-- [ ] Implement conversation start/continue/end
-- [ ] Persist messages in SQLite
-- [ ] Recover conversations after restart
+- [x] Create communication hub and routing contracts
+- [x] Define message, conversation and recipient models
+- [x] Support program identity addressing
+- [x] Support messages to named agents and civilian programs
+- [x] Implement conversation start/continue/end
+- [x] Persist messages in SQLite
+- [x] Recover conversations after restart
+
+**Implemented and verified - 2026-10-20.** Grid.Communication contracts and the engine-hosted local hub provide explicit recipient identity, exact name/ID routing and start/send/end/read lifecycle. Schema v10 saves bounded transcripts with world state, preserving open/ended conversations and historical participants through restart/recovery. **346 tests passed** (14 Core, 152 Simulation, 88 Persistence, 92 Terminal), including routing failures, cancellation, limits, concurrency, v9 migration and failed-save rollback. Message storage does not execute tasks, authenticate users or generate replies. Terminal chat remains 4.2. See [Communications Foundation](Project_GRID_Communication_Foundation.md) for API, limits and verification.
 
 ## 4.2 Terminal communication
 

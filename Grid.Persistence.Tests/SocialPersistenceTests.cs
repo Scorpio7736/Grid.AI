@@ -22,7 +22,7 @@ public sealed class SocialPersistenceTests
             using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Pooling = false }.ToString()))
             {
                 connection.Open(); using var command = connection.CreateCommand();
-                command.CommandText = "DROP TABLE WorldSocialState; DELETE FROM SchemaMigrations WHERE Version>=8; PRAGMA user_version=7;";
+                command.CommandText = "DROP TABLE WorldCommunications; DROP TABLE WorldSocialState; DELETE FROM SchemaMigrations WHERE Version>=8; PRAGMA user_version=7;";
                 command.ExecuteNonQuery();
             }
             using var reopened = new WorldStore(path);

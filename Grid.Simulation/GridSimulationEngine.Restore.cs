@@ -35,6 +35,7 @@ public sealed partial class GridSimulationEngine
             engine.behaviors[saved.Id] = behavior;
         }
         foreach (var app in snapshot.ApplicationCatalog) engine.applicationCatalog.Add(app.Key, app);
+        engine.communications = Grid.Communication.CommunicationState.Copy(snapshot.Communications);
         engine.social = Social.SocialState.Copy(snapshot.Social);
         engine.clock.Restore(snapshot.TickCount);
         return engine;
@@ -89,6 +90,7 @@ public sealed partial class GridSimulationEngine
             throw new InvalidDataException("Saved layout and district identities disagree.");
         Behavior.WorkplacePolicy.ValidateAssignments(snapshot);
         Social.SocialState.Validate(snapshot);
+        Grid.Communication.CommunicationState.Validate(snapshot.Communications, snapshot.TickCount);
     }
 
     private static bool ValidLabel(string value, int limit) => !string.IsNullOrWhiteSpace(value) &&
