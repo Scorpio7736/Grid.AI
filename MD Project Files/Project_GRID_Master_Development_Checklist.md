@@ -681,14 +681,17 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 3.4 Autonomy and tests
 
-- [ ] Implement program decision loop
-- [ ] Use seeded randomness for reproducibility
-- [ ] Ensure each action follows world rules
-- [ ] Run a changing fake application population and persistent agents for an hour; cover zero applications, starts/exits and high churn
-- [ ] Verify coherent movement and event records
-- [ ] Measure CPU and memory consumption
-- [ ] Verify autonomy works without an LLM
-- [ ] Keep the simulation responsive when background load increases
+- [x] Implement program decision loop
+- [x] Use seeded randomness for reproducibility
+- [x] Ensure each action follows world rules
+- [x] Run a changing fake application population and persistent agents for one simulated hour (accelerated test); cover zero applications, starts/exits and high churn
+- [x] Verify coherent movement and event records
+- [x] Measure CPU and memory consumption
+- [x] Verify autonomy works without an LLM
+- [x] Keep the simulation responsive when background load increases
+
+
+**Implemented and verified - 2026-10-20.** The composed behavior/travel/social decision loop follows world rules without an LLM. Persisted world identity seeds stateless social tie choices; schema v9 gates the changed policy. A 3,600-tick scenario with eight agents, zero-to-512 application churn, resource pressure and concurrent readers passed. **338 tests passed** (14 Core, 146 Simulation, 86 Persistence, 92 Terminal). Focused run: 4.215 s wall, 5.031 s process CPU, 105.4 MB peak working set; tick p95 2.260 ms, snapshot-read p95 17.028 ms. This verifies an accelerated simulation hour, not a real-time hour-long production soak or universal performance guarantees. See [Autonomy and Verification](Project_GRID_Autonomy_and_Verification.md) for methodology, repeat commands and remaining validation.
 
 ---
 

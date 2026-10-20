@@ -39,6 +39,7 @@ public static class SocialPolicy
                     .OrderBy(r => first.Preference == SocialPreference.Cooperative
                         ? -first.Relationships.FirstOrDefault(x => x.PeerId == r.ProgramId)?.Affinity ?? 0
                         : first.Relationships.FirstOrDefault(x => x.PeerId == r.ProgramId)?.Affinity ?? 0)
+                    .ThenBy(r => DecisionRandom.Rank(projected.WorldId, state.Round, first.ProgramId, r.ProgramId))
                     .ThenBy(r => r.ProgramId).FirstOrDefault();
                 if (second is null)
                 { residents[first.ProgramId] = first with { Goal = SocialGoal.SeekPartner }; continue; }

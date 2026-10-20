@@ -12,7 +12,7 @@ internal sealed record SchemaMigration(int Version, string Name, string Sql)
 
 public static class GridSchema
 {
-    public const int CurrentVersion = 8;
+    public const int CurrentVersion = 9;
     public const int ApplicationId = 0x47524944; // ASCII GRID
 
     internal static readonly IReadOnlyList<SchemaMigration> Migrations = Array.AsReadOnly(new[]
@@ -125,7 +125,9 @@ public static class GridSchema
                 WorldId TEXT NOT NULL PRIMARY KEY REFERENCES Worlds(WorldId) ON DELETE CASCADE,
                 StateJson TEXT NOT NULL CHECK(json_valid(StateJson) AND length(StateJson) <= 2000000)
             ) STRICT;
-            """)
+            """),
+        // Older binaries must not resume a world with a different social choice policy.
+        new SchemaMigration(9, "Seeded autonomous decision contract", "SELECT 1;")
     });
 
     internal static void Migrate(SqliteConnection connection, bool allowCreate = true) => Migrate(connection, Migrations, allowCreate);
