@@ -1,10 +1,10 @@
 # Project GRID - Terminal UX and Portable Credentials Implementation
 
-## Password requirements - next fix (2026-10-20)
+## Password requirements - completed follow-up (2026-10-20)
 
-**Requested; not implemented yet.** New passwords and password changes must accept **6–24 characters inclusive**. Uppercase letters, lowercase letters, numbers and symbols are allowed; no character category or mixture is mandatory. Preserve password case and exact characters; do not silently trim or truncate passwords.
+**Implemented.** New passwords and password changes accept **6–24 characters inclusive**. Uppercase letters, lowercase letters, numbers and symbols are allowed; no character category or mixture is mandatory. Preserve password case and exact characters; do not silently trim or truncate passwords.
 
-Current runtime validation still uses **12–256 characters**. Update creation/change validation, masked setup prompts, error messages and help together. Preserve login compatibility for existing saved credentials, including passwords longer than 24 characters, until their owner explicitly changes the password. Keep masked input, salted hashing and authorization unchanged. Verify lengths 5/6/24/25, each allowed character category, mixed input, confirmation matching and existing-credential login before marking complete.
+Creation/change validation, masked setup prompts, error messages and help now use **6–24 characters**. Existing saved credentials remain verifiable up to the former 256-character limit until the owner explicitly changes the password; the input reader retains that capacity for legacy login. Masked input, salted hashing and authorization are unchanged. Control characters remain rejected. **Completion verification: 390 tests passed** (14 Core, 155 Simulation, 91 Persistence, 130 Terminal), including 13 new cases for boundaries, permitted categories, exact case/spacing, confirmation mismatch, legacy 25/256-character login after restore, and authenticated rotation to the new policy. No saved credential migration or password reset is required.
 
 
 ## 4.2B completion - 2026-10-20
@@ -15,7 +15,7 @@ Implemented terminal help blocks with dashed options, usage lines and examples; 
 
 Run `login master` on the original Windows owner account, then `credentials`. Enter a username and matching password at the prompts. Migration saves the new credential before access can be granted, revokes the current session, and requires `login` again. Once configured, Windows-token login cannot bypass the password. The owner identity, registered agents, roles, world, city and transcripts are preserved. Subsequent `credentials` requires Master Control and rotates credentials without replacing identities.
 
-New interactive worlds guide setup automatically. Passwords are 12..256 characters; usernames are normalized, trimmed, 1..64 printable characters, and matched case-insensitively. Passwords never belong in command arguments. Redirected setup/password login is refused; existing unmigrated Windows-owned worlds retain Windows-token login. Redirected logout cancels rather than implying confirmation. EOF/Ctrl+C follow orderly shutdown/save; a pending confirmation never authorizes logout or destructive actions.
+New interactive worlds guide setup automatically. New passwords are 6..24 characters; usernames are normalized, trimmed, 1..64 printable characters, and matched case-insensitively. Passwords never belong in command arguments. Redirected setup/password login is refused; existing unmigrated Windows-owned worlds retain Windows-token login. Redirected logout cancels rather than implying confirmation. EOF/Ctrl+C follow orderly shutdown/save; a pending confirmation never authorizes logout or destructive actions.
 
 ### Storage and security boundary
 

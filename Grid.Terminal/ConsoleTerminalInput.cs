@@ -48,7 +48,7 @@ public sealed class ConsoleTerminalInput(CommandDispatcher commands, bool color)
                         case ConsoleKey.Backspace: if (cursor > 0) text.Remove(--cursor, 1); break;
                         case ConsoleKey.Delete: if (cursor < text.Length) text.Remove(cursor, 1); break;
                         default:
-                            if (!char.IsControl(key.KeyChar) && text.Length < (secret ? 256 : 8192)) text.Insert(cursor++, key.KeyChar);
+                            if (!char.IsControl(key.KeyChar) && text.Length < (secret ? Grid.Communication.PasswordCredential.LegacyMaximumPasswordLength : 8192)) text.Insert(cursor++, key.KeyChar);
                             break;
                     }
                 }

@@ -7,7 +7,20 @@ namespace Grid.Terminal;
 /// <summary>Local Windows owner session. Serializes commands, switching and edit leases in authorization-before-engine order.</summary>
 public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, TimeProvider? clock = null) : IProgramEditAuthorizer
 {
-    private readonly object gate = new();
+    private object gate = new();
+    private TerminalIdentitySession? parent;
+    private long parentGeneration;
+    private Guid? attachmentAgent;
+    public bool IsAttachment => parent is not null;
+    public Guid SessionId => sessionId;
+    public TerminalIdentitySession CreateAttachment()
+    {
+        lock (gate)
+        {
+            if (!OwnerMatches()) throw new UnauthorizedAccessException("Login required to open a window.");
+            return new TerminalIdentitySession(verifiedOsSubject, clock) { gate = gate, engine = Engine, parent = this, parentGeneration = generation, attachmentAgent = agent, agent = agent, authenticated = true, authenticatedCredential = authenticatedCredential, expiresAt = expiresAt };
+        }
+    }
     private GridSimulationEngine? engine;
     private readonly Guid sessionId = Guid.NewGuid();
     private long generation;
@@ -28,6 +41,7 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
     {
         lock (gate)
         {
+            if (IsAttachment) return "Access denied. Change credentials in the original host terminal.";
             if (!NeedsSetup && !IsMaster) return "Access denied. Authenticate the existing owner as Master Control before configuring credentials.";
             if (password != confirmation) return "Error: passwords do not match.";
             var credential = PasswordCredential.Create(username, password);
@@ -40,6 +54,7 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
     {
         lock (gate)
         {
+            if (IsAttachment) return "Login denied. Reopen ntm from an authenticated terminal.";
             if (OwnerMatches()) return "Already logged in.";
             var now = (clock ?? TimeProvider.System).GetUtcNow();
             if (now < retryAfter) return "Login denied. Wait 30 seconds after repeated failures before retrying.";
@@ -64,6 +79,7 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
     public static string? WindowsSubject() => OperatingSystem.IsWindows() ? WindowsIdentity.GetCurrent().User?.Value : null;
     private bool OwnerMatches()
     {
+        if (parent is not null && (!parent.IsAuthenticated || parent.Generation != parentGeneration)) return false;
         if (!authenticated || (clock ?? TimeProvider.System).GetUtcNow() >= expiresAt) return false;
         var saved = Engine.GetSnapshot().Identities;
         return saved.Credential is { } credential ? credential == authenticatedCredential :
@@ -104,6 +120,7 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
     {
         lock (gate)
         {
+            if (IsAttachment) return "Login denied. Reopen ntm from an authenticated terminal.";
             if (UsesPassword) return "Login denied: local credentials are configured; use interactive login.";
             if (OwnerMatches()) return "Already logged in. Use switch master or switch <agent-id|name>, or logout.";
             if (authenticated) { authenticated = false; agent = null; Reset(); }
@@ -128,6 +145,7 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
                 if (!Engine.GetSnapshot().Identities.RegisteredAgents.Contains(next.Value))
                 { Engine.AuditIdentity("Switch", next, generation, false); return "Agent identity is not registered. Master Control must use register-agent first."; }
             }
+            if (attachmentAgent is { } ceiling && next != ceiling) return "Access denied. This window is scoped to its opening agent.";
             agent = next; Reset(); Engine.AuditIdentity("Switch", agent, generation, true);
             return agent is null ? "Active identity: Master Control." : $"Active agent: {Engine.ResolveProgram(agent.Value.ToString()).Name}. Admin capabilities are disabled.";
         }

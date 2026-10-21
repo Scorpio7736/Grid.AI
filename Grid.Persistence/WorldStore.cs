@@ -116,6 +116,7 @@ public sealed partial class WorldStore : IDisposable
             Execute("INSERT INTO Worlds VALUES ($p0,$p1,$p2,$p3,$p4)", world, info.Name, Utc(info.CreatedAtUtc), info.GenerationSeed, info.GeneratorVersion);
             if (state.City is { } city)
                 Execute("INSERT INTO WorldGeneration VALUES ($p0,$p1)", world, city.Json);
+            Execute("INSERT INTO WorldContext VALUES ($p0,$p1)", world, System.Text.Json.JsonSerializer.Serialize(state.Context));
             Execute("INSERT INTO WorldIdentities VALUES ($p0,$p1)", world, System.Text.Json.JsonSerializer.Serialize(state.Identities));
             Execute("INSERT INTO WorldCommunications VALUES ($p0,$p1)", world, System.Text.Json.JsonSerializer.Serialize(state.Communications));
             Execute("INSERT INTO WorldSocialState VALUES ($p0,$p1)", world, System.Text.Json.JsonSerializer.Serialize(state.Social));
@@ -292,6 +293,10 @@ public sealed partial class WorldStore : IDisposable
         if (command.ExecuteScalar() is string communicationJson)
             state = state with { Communications = System.Text.Json.JsonSerializer.Deserialize<Grid.Communication.CommunicationState>(communicationJson)
                 ?? throw new InvalidDataException("Missing communications state.") };
+        command.CommandText = "SELECT StateJson FROM WorldContext WHERE WorldId=$catalogWorld";
+        if (command.ExecuteScalar() is string contextJson)
+            state = state with { Context = System.Text.Json.JsonSerializer.Deserialize<Grid.Communication.ContextState>(contextJson)
+                ?? throw new InvalidDataException("Missing captured context.") };
         command.CommandText = "SELECT StateJson FROM WorldIdentities WHERE WorldId=$catalogWorld";
         if (command.ExecuteScalar() is string identityJson)
             state = state with { Identities = System.Text.Json.JsonSerializer.Deserialize<Grid.Communication.LocalIdentityState>(identityJson)

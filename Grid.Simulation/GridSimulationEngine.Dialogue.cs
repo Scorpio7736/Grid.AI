@@ -50,6 +50,7 @@ public sealed partial class GridSimulationEngine
                 "status" when human.Kind == ParticipantKind.Program => $"[VERIFIED OWN STATE at tick {snapshot.TickCount}] Active identity {human.Name} ({human.Id}); no global history or task visibility is granted.",
                 "status" => $"[VERIFIED GRID STATE at tick {snapshot.TickCount}] Clock: {(snapshot.IsRunning ? "running" : "paused")}; elapsed: {snapshot.ElapsedSimulationTime}; districts: {snapshot.Districts.Count}; residents: {snapshot.Programs.Count}.",
                 "who are you" or "who are you?" => $"[VERIFIED GRID STATE at tick {snapshot.TickCount}] {program.Name}; resident ID {program.Id}; kind {program.Kind}; occupation {program.Occupation}. This reply is produced by GRID's deterministic adapter, not the host application.",
+                "context" => $"[VERIFIED CONTEXT AVAILABILITY] {ContextFor(other.Id, Guid.Empty).Count} captured files are explicitly shared with this recipient. No file contents were executed or copied into this transcript. Use context list/read as the permitted identity; task execution and LLM ingestion are not implemented.",
                 "help" => "[SIMULATED DIALOGUE] Ask status or who are you for verified GRID facts. I can provide local coordination guidance; task execution, delegation and LLM replies are not implemented.",
                 _ => "[SIMULATED DIALOGUE] Your message is recorded. No task has been executed or delegated. Ask status, who are you, or help."
             };

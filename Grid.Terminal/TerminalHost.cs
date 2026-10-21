@@ -7,7 +7,7 @@ namespace Grid.Terminal;
 /// <summary>Owns input/output and scheduler lifetime; commands are independently registered and tested.</summary>
 public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher commands,
     TextReader input, TextWriter output, bool showPrompt = true, ILiveTerminal? liveTerminal = null, IWorldPersistenceSession? persistence = null,
-    IHostTelemetryMonitor? telemetry = null, Func<bool>? clearScreen = null, bool interactiveConfirmation = false, TerminalSessionUi? sessionUi = null, GridTransfer? transfer = null)
+    IHostTelemetryMonitor? telemetry = null, Func<bool>? clearScreen = null, bool interactiveConfirmation = false, TerminalSessionUi? sessionUi = null, GridTransfer? transfer = null, Func<Task>? stopAttachments = null)
 {
     public async Task<int> RunAsync(CancellationToken cancellationToken = default)
     {
@@ -149,6 +149,11 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
         finally
         {
             shutdown.Cancel();
+            if (stopAttachments is not null)
+            {
+                try { await stopAttachments(); }
+                catch (Exception e) { await output.WriteLineAsync("Attached window shutdown failed: " + e.Message); exitCode = 1; }
+            }
             try { await scheduler; }
             catch (Exception exception)
             {

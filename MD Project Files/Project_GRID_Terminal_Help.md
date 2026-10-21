@@ -2,7 +2,7 @@
 
 **Implemented - 4.2B, 2026-10-20.** This bundled reference is available offline through `help -md`, which displays its path and Markdown in the terminal. Live `help` and Tab suggestions are capability-scoped; this full manual does not grant command access.
 
-New worlds prompt for a username and masked password (12..256 characters), then use `login`. Existing Windows-owned worlds use `login master`, then `credentials` to migrate or rotate credentials as Master Control. Passwords are entered only at masked prompts, never as command arguments. Password login/setup refuse redirected input. Examples containing placeholders require actual values; `nge` deletes the selected world after confirmation.
+New worlds prompt for a username and masked password (6..24 characters), then use `login`. Existing Windows-owned worlds use `login master`, then `credentials` to migrate or rotate credentials as Master Control. Passwords are entered only at masked prompts, never as command arguments. Password login/setup refuse redirected input. Examples containing placeholders require actual values; `nge` deletes the selected world after confirmation.
 
 ## Login and identity
 
@@ -326,23 +326,28 @@ Opening GRID7736 graphic -> first-run credential setup if needed -> login -> cle
 
 Base text is light blue (Console Cyan), input white, tables/dividers yellow, and errors red. `--no-color` and redirected output remain plain text. Tab cycles permitted command/static option prefixes without executing. Arrow keys, Home/End, Backspace/Delete edit input. Quoted names remain editable, but completion inside quotes is suppressed; no resident names, private IDs, paths, or secret values are suggested. Password entry is masked and has no completion or history. Q/Esc in live view returns to commands.
 
-## Planned commands - not currently supported (4.2C)
-
-These entries document future syntax; current runtime help/Tab completion does not advertise them.
+## Additional windows (4.2C)
 
 ```text
 <read-only-command>
     - <read-only-command> -opninwin
-      # USAGE: PLANNED: open supported command data in a separate window for easier viewing and scrolling.
-    # EXAMPLE: programs -opninwin
+      # USAGE: Open supported data as a labeled snapshot in a separate window; combine with normal command arguments.
+    # EXAMPLE: programs -active ids -opninwin
+
+live
+    - live -opninwin
+      # USAGE: Open an updating view of the same GRID; Q/Esc closes this view.
+    # EXAMPLE: live -opninwin
 
 ntm
     - ntm
-      # USAGE: PLANNED: open a new terminal window connected to the same running GRID, simulation and world.
+      # USAGE: Open another terminal connected to the same running GRID, with its own command/chat/edit context and scoped authority.
     # EXAMPLE: ntm
 ```
 
-Attached windows must retain authorization and share one simulation/save owner. Closing an attached window should detach it; whole-GRID shutdown behavior will be defined before implementation. See [window plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md#additional-windows---planned-42c-2026-10-20).
+Snapshot commands: status, city, districts, programs, inspect, behaviors, resources, history, jobs, activity, social, self, whoami, conversations, transcript and help. Permissions still apply; mutating commands cannot use the flag. Scroll a snapshot and press Enter to close. Live supports PageUp/PageDown and left/right event paging.
+
+Attached `exit` detaches only that window. Original-host `exit` saves and disconnects all attachments. Logout/expiry/role changes revoke dependent windows. Agent attachments cannot promote themselves. Run NGE, transfers and credential changes in the original host. Reopen from an authenticated terminal after disconnection; clients never load another world automatically. See [window implementation](Project_GRID_Shared_Terminal_Windows_Implementation.md).
 
 ## Move/copy commands (4.2D)
 
@@ -360,10 +365,29 @@ copexist
     # EXAMPLE: copexist "E:\GRID7736 Copy"
 ```
 
-Use `launch.cmd` at the destination; a compatible .NET 10 runtime is required. For moves, wait for `transfer-status.txt` to report completion. Source cleanup failures retain the verified destination and report incomplete status. The transfer excludes unrelated host files, source repositories and other installed worlds. Configure local password credentials before using a different PC. See [transfer implementation](Project_GRID_Transfer_Implementation.md) for scope and recovery limits. These commands do not create attached terminals; `ntm` remains planned.
+Use `launch.cmd` at the destination; a compatible .NET 10 runtime is required. For moves, wait for `transfer-status.txt` to report completion. Source cleanup failures retain the verified destination and report incomplete status. The transfer excludes unrelated host files, source repositories and other installed worlds. Configure local password credentials before using a different PC. See [transfer implementation](Project_GRID_Transfer_Implementation.md) for scope and recovery limits. These commands do not create attached terminals; use `ntm` for that. Transfers disconnect attachments before saving/copying.
 
-## Password requirements - next fix (2026-10-20)
+## Password requirements - completed follow-up (2026-10-20)
 
-**Requested; not implemented yet.** New passwords and password changes must accept **6–24 characters inclusive**. Uppercase letters, lowercase letters, numbers and symbols are allowed; no character category or mixture is mandatory. Preserve password case and exact characters; do not silently trim or truncate passwords.
+**Implemented.** New passwords and password changes accept **6–24 characters inclusive**. Uppercase letters, lowercase letters, numbers and symbols are allowed; no character category or mixture is mandatory. Preserve password case and exact characters; do not silently trim or truncate passwords.
 
-Current runtime validation still uses **12–256 characters**. Update creation/change validation, masked setup prompts, error messages and help together. Preserve login compatibility for existing saved credentials, including passwords longer than 24 characters, until their owner explicitly changes the password. Keep masked input, salted hashing and authorization unchanged. Verify lengths 5/6/24/25, each allowed character category, mixed input, confirmation matching and existing-credential login before marking complete.
+Creation/change validation, masked setup prompts, error messages and help now use **6–24 characters**. Existing saved credentials remain verifiable up to the former 256-character limit until the owner explicitly changes the password; the input reader retains that capacity for legacy login. Masked input, salted hashing and authorization are unchanged. Control characters remain rejected. **Completion verification: 390 tests passed** (14 Core, 155 Simulation, 91 Persistence, 130 Terminal), including 13 new cases for boundaries, permitted categories, exact case/spacing, confirmation mismatch, legacy 25/256-character login after restore, and authenticated rotation to the new policy. No saved credential migration or password reset is required.
+
+## User-supplied context (4.3)
+
+```text
+context
+    - context add "file" <temporary|persistent> "project" [registered-agent-id|name]
+      # USAGE: Master Control imports one explicit local file. Omit agent for owner-only access. Persistent imports save with the world; temporary imports end when the importing session changes identity/logs out or the host exits.
+    - context list [project]
+      # USAGE: List only context visible to the active identity, optionally filtered by project name.
+    - context read <id>
+      # USAGE: Read captured text and source/version provenance without reopening the source.
+    - context revoke <id>
+      # USAGE: Master Control removes agent access, retaining the owner's captured content.
+    - context remove <id>
+      # USAGE: Master Control removes the active import; historical backups/already-read output are not erased.
+    # EXAMPLE: context add "C:\Work\notes.md" persistent "My Project" ARCHON
+```
+
+Register the agent before granting access. Supported inputs: UTF-8 text/Markdown/common source code and DOCX body text. Limits: 1 MiB source, 256 Ki text characters per import, 64 imports and 1 Mi total text characters. No folder grants, automatic rereads, network paths, macro execution or silent truncation. PDF/DOC/RTF and unsupported encodings require exporting to a supported format. Re-import for a new captured version. `talk context` reports the recipient's granted-file count; it does not analyze or copy file bodies into transcripts. See [implementation and limits](Project_GRID_User_Supplied_Context_Implementation.md).

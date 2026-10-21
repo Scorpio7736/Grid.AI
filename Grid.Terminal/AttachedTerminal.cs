@@ -1,0 +1,117 @@
+using System.IO.Pipes;
+namespace Grid.Terminal;
+
+/// <summary>UI-only process: no engine, world file, password or runtime workers are created here.</summary>
+public static class AttachedTerminal
+{
+    public static async Task<int> RunAsync(string name, bool noColor = false)
+    {
+        if (!name.StartsWith("GRID7736-", StringComparison.Ordinal) || !Guid.TryParseExact(name[9..], "N", out _))
+        { Console.Error.WriteLine("Invalid GRID attachment endpoint."); return 1; }
+        using var stop = new CancellationTokenSource();
+        ConsoleCancelEventHandler cancel = (_, e) => { e.Cancel = true; stop.Cancel(); };
+        Console.CancelKeyPress += cancel;
+        var color = Console.ForegroundColor;
+        try
+        {
+            await using var pipe = new NamedPipeClientStream(".", name, PipeDirection.InOut, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+            await pipe.ConnectAsync(10000, stop.Token);
+            var output = new TerminalOutput(Console.Out, TerminalTheme.Enabled(noColor));
+            async Task<WindowReply> Receive()
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stop.Token); timeout.CancelAfter(TimeSpan.FromSeconds(10));
+                return await WindowProtocol.ReadAsync<WindowReply>(pipe, timeout.Token);
+            }
+            async Task<WindowReply> Send(WindowRequest request)
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stop.Token); timeout.CancelAfter(TimeSpan.FromSeconds(10));
+                await WindowProtocol.WriteAsync(pipe, request, timeout.Token); return await Receive();
+            }
+            var reply = await Receive();
+            if (!Console.IsOutputRedirected) Console.Title = "GRID7736 // " + reply.Mode;
+            await output.WriteLineAsync(reply.Text);
+            if (reply.Closed) return 1;
+            async Task<string?> Read(ConsoleTerminalInput input, string prompt)
+            {
+                await output.WriteAsync(prompt); await output.FlushAsync();
+                using var readStop = CancellationTokenSource.CreateLinkedTokenSource(stop.Token);
+                var read = input.ReadAsync(false, readStop.Token);
+                try
+                {
+                    while (!read.IsCompleted)
+                    {
+                        if (await Task.WhenAny(read, Task.Delay(500, stop.Token)) == read) break;
+                        stop.Token.ThrowIfCancellationRequested();
+                        var heartbeat = await Send(new("ping"));
+                        if (heartbeat.Closed) throw new IOException(heartbeat.Text);
+                    }
+                    return await read;
+                }
+                finally { readStop.Cancel(); try { await read; } catch (OperationCanceledException) { } }
+            }
+            async Task Live()
+            {
+                var programPage = 0; var eventPage = 0;
+                do
+                {
+                    if (!Console.IsInputRedirected && Console.KeyAvailable)
+                    {
+                        var key = Console.ReadKey(true).Key;
+                        if (key is ConsoleKey.Q or ConsoleKey.Escape) break;
+                        if (key == ConsoleKey.PageDown) programPage++;
+                        if (key == ConsoleKey.PageUp) programPage = Math.Max(0, programPage - 1);
+                        if (key == ConsoleKey.LeftArrow) eventPage++;
+                        if (key == ConsoleKey.RightArrow) eventPage = Math.Max(0, eventPage - 1);
+                    }
+                    var width = Console.IsOutputRedirected ? 120 : Console.WindowWidth;
+                    var height = Console.IsOutputRedirected ? 40 : Math.Max(18, Console.WindowHeight - 2);
+                    var frame = await Send(new("frame", ProgramPage: programPage, EventPage: eventPage, Width: width, Height: height));
+                    if (frame.Closed) throw new IOException(frame.Text);
+                    if (!Console.IsOutputRedirected) Console.Clear();
+                    await output.WriteLineAsync("LIVE // connected to original GRID host // Q/Esc returns or closes this view");
+                    await output.WriteLineAsync(frame.Text);
+                    if (!frame.Live || Console.IsInputRedirected || Console.IsOutputRedirected) break;
+                    await Task.Delay(250, stop.Token);
+                } while (!stop.IsCancellationRequested);
+            }
+            if (reply.Mode == "live") { await Live(); await Send(new("close")); return 0; }
+            if (reply.Mode == "snapshot")
+            {
+                await output.WriteLineAsync("Scroll to inspect this snapshot. Press Enter to close.");
+                await Read(new ConsoleTerminalInput(new CommandDispatcher(), TerminalTheme.Enabled(noColor)), "");
+                await Send(new("close")); return 0;
+            }
+            while (!stop.IsCancellationRequested && !reply.Closed)
+            {
+                var metadata = new CommandDispatcher();
+                foreach (var command in reply.Commands ?? []) metadata.Register(new(command.Name, command.Usage, command.Description, _ => new("")));
+                var input = new ConsoleTerminalInput(metadata, TerminalTheme.Enabled(noColor));
+                var line = await Read(input, reply.Prompt);
+                if (line is null) break;
+                reply = await Send(new("command", line));
+                if (reply.ConfirmLogout)
+                {
+                    while (true)
+                    {
+                        var answer = await Read(input, "Log out and detach this window? [y/N] ");
+                        if (answer is null || string.IsNullOrWhiteSpace(answer) || answer.Trim().Equals("n", StringComparison.OrdinalIgnoreCase)) { await output.WriteLineAsync("Logout cancelled."); break; }
+                        if (answer.Trim().Equals("y", StringComparison.OrdinalIgnoreCase)) { reply = await Send(new("logout")); break; }
+                        await output.WriteLineAsync("Enter y or n.");
+                    }
+                }
+                if (reply.Clear && !Console.IsOutputRedirected) Console.Clear();
+                if (reply.Text.Length > 0) await output.WriteLineAsync(reply.Text);
+                if (reply.Live) await Live();
+            }
+            return 0;
+        }
+        catch (OperationCanceledException) when (stop.IsCancellationRequested) { return 0; }
+        catch (Exception e) when (e is IOException or TimeoutException or OperationCanceledException or UnauthorizedAccessException or System.Text.Json.JsonException)
+        {
+            if (!Console.IsOutputRedirected) Console.Clear();
+            Console.Error.WriteLine("GRID DISCONNECTED: " + e.Message + "\nThis window will not reload or create a world.");
+            return 1;
+        }
+        finally { Console.CancelKeyPress -= cancel; Console.ForegroundColor = color; }
+    }
+}

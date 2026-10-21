@@ -4,10 +4,9 @@
 
 Master Control `tranexist "location"` and `copexist "location"` are implemented for the running installation and selected save inventory. Both preview/confirm, stop workers, save and close. Copies retain the original; moves defer verified source cleanup until process exit. Destination packages use a local launcher/default save, require login and currently need an installed .NET 10 runtime. Verification: 377 passing tests. See [transfer implementation](Project_GRID_Transfer_Implementation.md) for exact exclusions, pending/incomplete status, security and recovery limits. Future attached-terminal and full PC/Flash edition integration remains unchecked in 4.2D/8.6.
 
-## Additional windows - planned 4.2C (2026-10-20)
+## Additional windows - implemented 4.2C (2026-10-20)
 
-`<command> -opninwin` will open supported data in a separate window; `ntm` will open another terminal attached to the same running GRID. Both are planned only. The implementation must share one simulation/save owner, enforce per-window authorization and define detach/shutdown behavior. Current single-terminal behavior remains unchanged. See the [window plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md#additional-windows---planned-42c-2026-10-20) and unchecked master checklist 4.2C.
-
+`<command> -opninwin` opens permitted snapshot data or an updating `live` view in a separate window; `ntm` opens another terminal attached to the same running GRID. One host retains the engine/workers/save lease. Attached exit detaches; original-host exit disconnects attachments before saving. Sessions have independent context and scoped, revocable authority. NGE, transfers and credentials remain host-only. **404 tests passed**, including a real attached subprocess. See [implementation and limits](Project_GRID_Shared_Terminal_Windows_Implementation.md) and completed checklist 4.2C.
 
 ## New UI, portable-package and offline requirements - 2026-10-20
 

@@ -780,28 +780,32 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 **Completion verification - 2026-10-20.** 368 tests passed (14 Core, 155 Simulation, 91 Persistence, 108 Terminal). Schema v12 adds salted password credentials, preserves existing Windows ownership for authenticated migration, and retains agent/role/world state. Offline help renders directly in the terminal. Quoted input remains editable; Tab suggestions are static and suppressed inside quotes/passwords. Automated UI coverage uses injected input; physical terminal appearance and two-PC packaging are not claimed as verified. See [implementation notes](Project_GRID_Terminal_UX_Implementation.md) for commands, security boundaries and remaining Phase 8 work.
 
-### 4.2B follow-up - password requirements (next fix, 2026-10-20)
+### 4.2B follow-up - password requirements (completed, 2026-10-20)
 
-**Planned; current runtime remains 12–256 characters.**
+**Implemented: new/changed passwords use 6–24 characters; existing passwords remain usable.**
 
-- [ ] Change new-password/password-change limits to **6–24 characters inclusive**
-- [ ] Allow uppercase, lowercase, numbers and symbols without requiring any category or combination; preserve case and exact input
-- [ ] Synchronize validation, masked setup prompts, error messages and Markdown help; never silently truncate passwords
-- [ ] Preserve verification of existing saved credentials, including longer passwords, until explicitly changed by the owner
-- [ ] Verify 5/6/24/25-character boundaries, allowed categories, confirmation matching and backward-compatible login; record completion evidence
+- [x] Change new-password/password-change limits to **6–24 characters inclusive**
+- [x] Allow uppercase, lowercase, numbers and symbols without requiring any category or combination; preserve case and exact input
+- [x] Synchronize validation, masked setup prompts, error messages and Markdown help; never silently truncate passwords
+- [x] Preserve verification of existing saved credentials, including longer passwords, until explicitly changed by the owner
+- [x] Verify 5/6/24/25-character boundaries, allowed categories, confirmation matching and backward-compatible login; record completion evidence
+
+**Completion verification - 2026-10-20.** 390 tests passed (14 Core, 155 Simulation, 91 Persistence, 130 Terminal). Thirteen new test cases verify 5/6/24/25-character boundaries, individual categories/mixed symbols, exact case/spacing, confirmation mismatch, existing 25/256-character passwords after restore, and authenticated rotation. Existing hashing, credential records and authorization remain unchanged. See [password implementation notes](Project_GRID_Terminal_UX_Implementation.md#password-requirements---completed-follow-up-2026-10-20).
 
 ## 4.2C Additional data windows and shared terminals (GRID-REQ-006)
 
-**Planned - 2026-10-20.** User-requested `-opninwin` and `ntm`; neither is implemented. See [additional-window design](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md#additional-windows---planned-42c-2026-10-20). Completed 4.2B scope is unchanged.
+**Implemented - 2026-10-20.** `-opninwin` opens supported snapshot/live data windows; `ntm` opens a scoped terminal attached to the same host. See [additional-window design](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md#additional-windows---planned-42c-2026-10-20). Completed 4.2B scope is unchanged.
 
-- [ ] Add `<command> -opninwin` to open supported data output in a separate readable/scrollable window
-- [ ] Define supported read-only commands, snapshot/live labeling, and unsupported-option errors
-- [ ] Add `ntm` to open another terminal attached to the same running GRID and saved world
-- [ ] Maintain one authoritative simulation clock and save writer using local offline attachment; preserve exclusive world ownership
-- [ ] Preserve scoped authentication/capabilities and independent per-window input/chat/edit context; never transfer plaintext credentials
-- [ ] Define detach versus whole-GRID shutdown, including main/last-window closure, logout/expiry, NGE and host disconnection
-- [ ] Add help examples and capability-aware completion when implemented; preserve portable launch paths and useful window-launch errors
-- [ ] Verify shared state, authorization isolation, lifecycle, single-writer persistence and recovery; record completion evidence
+- [x] Add `<command> -opninwin` to open supported data output in a separate readable/scrollable window
+- [x] Define supported read-only commands, snapshot/live labeling, and unsupported-option errors
+- [x] Add `ntm` to open another terminal attached to the same running GRID and saved world
+- [x] Maintain one authoritative simulation clock and save writer using local offline attachment; preserve exclusive world ownership
+- [x] Preserve scoped authentication/capabilities and independent per-window input/chat/edit context; never transfer plaintext credentials
+- [x] Define detach versus whole-GRID shutdown, including main/last-window closure, logout/expiry, NGE and host disconnection
+- [x] Add help examples and capability-aware completion when implemented; preserve portable launch paths and useful window-launch errors
+- [x] Verify shared state, authorization isolation, lifecycle, single-writer persistence and recovery; record completion evidence
+
+**Completion verification - 2026-10-20.** 404 tests passed (14 Core, 155 Simulation, 91 Persistence, 144 Terminal), including 14 new window tests and a real attached subprocess. One host owns simulation/storage; attached exit detaches, original-host exit stops all attachments before final save. NGE/transfer/credentials remain host-only. See [shared-window implementation](Project_GRID_Shared_Terminal_Windows_Implementation.md) for capability, lifecycle, transport and verification limits.
 
 ## 4.2D Master Control move/copy commands (GRID-REQ-003 / GRID-REQ-007)
 
@@ -815,20 +819,25 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 - [x] Keep copies independent, retaining originals and requiring login; preserve saved world/city/identities/history
 - [x] Provide package-relative launch/default world and conditionally retarget an existing matching managed launcher after a move
 - [x] Add help/completion metadata and nine transfer regression tests
-- [ ] Integrate future 4.2C attached terminals and complete 8.6 PC/Flash edition migration/provisioning
+- [x] Integrate 4.2C attachment shutdown/draining before transfer or NGE; keep these actions on the original host
+- [ ] Complete 8.6 PC/Flash edition migration/provisioning
 - [ ] Add automatic interrupted-move recovery and exhaustive low-space, power-loss, drive-removal and physical cross-machine acceptance
 
 **Completion verification - 2026-10-20.** 377 tests passed (14 Core, 155 Simulation, 91 Persistence, 117 Terminal), including the actual cleanup helper on disposable files. Zero build warnings/errors. Current transfers require an available .NET 10 runtime. No user files were relocated during verification; remaining gates above are not claimed complete.
 
 ## 4.3 User-supplied context (GRID-REQ-002)
 
-- [ ] Support selecting or uploading local files as task context
-- [ ] Support text, Markdown, source code and documents initially
-- [ ] Record source file paths, versions and provenance
-- [ ] Define temporary versus persistent project context
-- [ ] Prevent context access outside approved scopes
-- [ ] Allow users to revoke or remove shared context
-- [ ] Implement safe handling of oversized or unsupported files
+**Implemented - 2026-10-20.** Terminal `context add/list/read/revoke/remove` captures explicit local files with project labels, version fingerprints, retention and optional registered-Agent grants. Text/source support is strict UTF-8; initial document support is DOCX main-body text. Unsupported formats are refused.
+
+- [x] Support selecting or uploading local files as task context
+- [x] Support text, Markdown, source code and documents initially
+- [x] Record source file paths, versions and provenance
+- [x] Define temporary versus persistent project context
+- [x] Prevent context access outside approved scopes
+- [x] Allow users to revoke or remove shared context
+- [x] Implement safe handling of oversized or unsupported files
+
+**Completion verification - 2026-10-20.** 420 tests passed (14 Core, 155 Simulation, 95 Persistence, 156 Terminal), including 16 new context cases. Schema v13 persists captured project context; temporary content stays out of saves/backups. No file execution or LLM analysis is implied. See [context implementation](Project_GRID_User_Supplied_Context_Implementation.md) for supported formats, bounds, scope, commands and recovery/revocation limitations.
 
 ## 4.4 Voice communication
 

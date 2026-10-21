@@ -1,10 +1,10 @@
 # Project GRID - Terminal UX, Portability and Offline Operation
 
-## Password requirements - next fix (2026-10-20)
+## Password requirements - completed follow-up (2026-10-20)
 
-**Requested; not implemented yet.** New passwords and password changes must accept **6–24 characters inclusive**. Uppercase letters, lowercase letters, numbers and symbols are allowed; no character category or mixture is mandatory. Preserve password case and exact characters; do not silently trim or truncate passwords.
+**Implemented.** New passwords and password changes accept **6–24 characters inclusive**. Uppercase letters, lowercase letters, numbers and symbols are allowed; no character category or mixture is mandatory. Preserve password case and exact characters; do not silently trim or truncate passwords.
 
-Current runtime validation still uses **12–256 characters**. Update creation/change validation, masked setup prompts, error messages and help together. Preserve login compatibility for existing saved credentials, including passwords longer than 24 characters, until their owner explicitly changes the password. Keep masked input, salted hashing and authorization unchanged. Verify lengths 5/6/24/25, each allowed character category, mixed input, confirmation matching and existing-credential login before marking complete.
+Creation/change validation, masked setup prompts, error messages and help now use **6–24 characters**. Existing saved credentials remain verifiable up to the former 256-character limit until the owner explicitly changes the password; the input reader retains that capacity for legacy login. Masked input, salted hashing and authorization are unchanged. Control characters remain rejected. **Completion verification: 390 tests passed** (14 Core, 155 Simulation, 91 Persistence, 130 Terminal), including 13 new cases for boundaries, permitted categories, exact case/spacing, confirmation mismatch, legacy 25/256-character login after restore, and authenticated rotation to the new policy. No saved credential migration or password reset is required.
 
 
 **4.2B implemented - 2026-10-20; packaging/rendering/offline release gates remain planned.**
@@ -136,20 +136,20 @@ Track completed terminal work in 4.2B and remaining package/offline acceptance i
 
 ## Additional windows - planned 4.2C (2026-10-20)
 
-User-requested additions to GRID-REQ-006; documentation only, not implemented. Preserve the requested spelling `-opninwin`.
+**Implemented in 4.2C.** The original requirements below are fulfilled by local scoped attachments; see [implementation and completion evidence](Project_GRID_Shared_Terminal_Windows_Implementation.md). The requested spelling `-opninwin` is retained.
 
 - `<command> -opninwin` opens supported data output in a separate window so the user can inspect and scroll it without displacing the main terminal. Examples: `programs -opninwin`, `status -opninwin`, `resources details -opninwin`. Default data windows show a labeled snapshot; if `live -opninwin` is supported, label it as updating and show connection/freshness status. Define the supported read-only command list during implementation and reject unsupported combinations clearly. Opening a data view must not execute a mutating command or grant extra permissions.
 - `ntm` opens a new terminal window attached to the same running GRID instance and world. It is another command interface to the existing simulation, not a second simulation process independently loading/writing the save. Commands and state changes are shared through the authoritative host; each window has its own input, view, active conversation and pending edit context.
 
 Use local, offline communication between windows and a single authoritative simulation/save owner. Do not bypass the existing exclusive world lease by launching a second ordinary writer against the same database. New windows must authenticate or receive a securely scoped attachment; never pass passwords in launch arguments, environment variables or files. Revalidate capabilities, expiry and revocation for each request; opening a window must not promote an agent to Master Control.
 
-Closing a data window or attached terminal detaches that view without stopping the shared GRID. Before implementation, define and document host ownership, main-window closure, last-window closure and explicit whole-GRID shutdown behavior; preserve orderly save/flush and NGE authorization/confirmation. All windows must show disconnection if the host stops or NGE removes the world, and must not silently create/reload another world. The existing single-terminal `exit` behavior is unchanged until this lifecycle work is implemented.
+Closing a data window or attached terminal detaches that view without stopping the shared GRID. The original terminal owns the host: attached exit/closure detaches, and original-host exit/Ctrl+C stops attachments before final save; preserve orderly save/flush and NGE authorization/confirmation. All windows must show disconnection if the host stops or NGE removes the world, and must not silently create/reload another world. Original-host `exit` retains its save/shutdown behavior; attached `exit` only detaches.
 
 Provide a clear error and retain the current terminal if window creation or attachment fails. Keep paths portable and compatible with the planned PC GRID/Flash GRID editions; no internet service is required. Verify shared state, one simulation clock/writer, per-window authorization/context, logout/expiry, window closure, host loss and save recovery before marking 4.2C complete.
 
 ## Move or copy GRID - planned 4.2D (2026-10-20)
 
-**Implementation update:** current-host transfers are implemented with 377 passing tests. Read [actual scope and limits](Project_GRID_Transfer_Implementation.md). The following original requirements retain the broader target, including future attached-window/PC/Flash integration; they are not all complete.
+**Implementation update:** current-host transfers are implemented with 377 passing tests. Read [actual scope and limits](Project_GRID_Transfer_Implementation.md). The following original requirements retain the broader target, including PC/Flash integration; attached-window shutdown is now integrated; they are not all complete.
 
 User-requested Master Admin commands (the existing Master Control authority):
 

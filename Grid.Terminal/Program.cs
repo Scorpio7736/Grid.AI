@@ -5,6 +5,7 @@ using Grid.Terminal;
 using Grid.Simulation.Resources;
 using Grid.Simulation.Applications;
 
+if ((args.Length == 2 || args.Length == 3 && args[2] == "--no-color") && args[0] == "--attach") return await AttachedTerminal.RunAsync(args[1], args.Length == 3);
 if (args.SequenceEqual(new[] { "--finish-move" })) return await GridTransfer.FinishMoveAsync(AppContext.BaseDirectory);
 var packageRoot = GridTransfer.PackageRoot(AppContext.BaseDirectory);
 if (packageRoot is not null && File.Exists(Path.Combine(packageRoot, "transfer-status.txt")) &&
@@ -27,9 +28,10 @@ try
         Console.WriteLine(environmentMessage);
     var startupMessages = new List<string>();
     var identity = new TerminalIdentitySession(TerminalIdentitySession.WindowsSubject);
+    var identities = new TerminalSessionRegistry(); identities.Add(identity);
     GridSimulationEngine engine;
     IWorldPersistenceSession? persistence = null;
-    if (options.Ephemeral) engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis(), editAuthorizer: identity);
+    if (options.Ephemeral) engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis(), editAuthorizer: identities);
     else
     {
         var path = options.WorldPath ?? (packageRoot is null ? null : Path.Combine(packageRoot, "data", "world.db"));
@@ -45,7 +47,7 @@ try
         var info = startup.Saved.Info;
         var converted = store.ArchiveLegacyResidents(shutdown.Token);
         if (converted.ArchivePath is { } archive) startupMessages.Add($"Legacy fictional residents archived to {archive}; production population now follows observed applications.");
-        engine = GridSimulationEngine.Restore(converted.Saved.State, editAuthorizer: identity);
+        engine = GridSimulationEngine.Restore(converted.Saved.State, editAuthorizer: identities);
         startupMessages.Add($"{(startup.Created ? "Created" : "Loaded")} {info.Name} ({info.Id}) at tick {engine.TickCount}.");
         if (startup.Created)
         {
@@ -60,21 +62,26 @@ try
     if (persistence is not null) identity.PersistIdentity = () => persistence.SaveAsync().GetAwaiter().GetResult();
     var pendingStart = options.Start;
     identity.LoginSucceeded += () => { foreach (var message in startupMessages) Console.WriteLine(message); startupMessages.Clear(); if (pendingStart) { pendingStart = false; engine.Start(); } };
-    var commands = DefaultCommands.Create(engine);
-    CityCommand.Register(commands, engine);
-    BehaviorCommand.Register(commands, engine);
-    WorkplaceCommands.Register(commands, engine);
-    SocialCommand.Register(commands, engine);
-    ChatCommands.Register(commands, engine, identity);
-    if (store is not null) HistoryCommand.Register(commands, store);
+    CommandDispatcher CreateCommands(TerminalIdentitySession session)
+    {
+        var dispatcher = DefaultCommands.Create(engine);
+        CityCommand.Register(dispatcher, engine); BehaviorCommand.Register(dispatcher, engine);
+        WorkplaceCommands.Register(dispatcher, engine); SocialCommand.Register(dispatcher, engine);
+        ChatCommands.Register(dispatcher, engine, session); ResourcesCommand.Register(dispatcher, engine);
+        ContextCommands.Register(dispatcher, engine, session, persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult());
+        if (store is not null) HistoryCommand.Register(dispatcher, store);
+        IdentityCommands.Register(dispatcher, engine, session, interactiveUi: true);
+        if (!session.IsAttachment) GridTransfer.Register(dispatcher);
+        else foreach (var command in new[] { "login", "credentials", "nge" }) dispatcher.Remove(command);
+        dispatcher.UseIdentity(session); return dispatcher;
+    }
+    var commands = CreateCommands(identity);
+    await using var windows = new WindowHub(engine, identities, CreateCommands, noColor: options.NoColor);
+    windows.Register(commands, identity);
     var telemetry = new HostTelemetryMonitor(new WindowsHostTelemetryProvider(), engine);
     await telemetry.SampleOnceAsync(shutdown.Token);
     var applications = options.Ephemeral ? null : new ApplicationMonitor(new WindowsApplicationDiscovery(), engine);
     if (applications is not null) await applications.SampleOnceAsync(shutdown.Token);
-    ResourcesCommand.Register(commands, engine);
-    IdentityCommands.Register(commands, engine, identity, interactiveUi: true);
-    GridTransfer.Register(commands);
-    commands.UseIdentity(identity);
     bool ClearScreen()
     {
         if (Console.IsOutputRedirected || Console.IsInputRedirected || Environment.GetEnvironmentVariable("TERM") == "dumb") return false;
@@ -87,7 +94,7 @@ try
         showPrompt: terminalInput.Interactive, interactiveConfirmation: terminalInput.Interactive,
         liveTerminal: new ConsoleLiveTerminal(options.NoColor), persistence: persistence,
         telemetry: applications is null ? telemetry : new CombinedHostMonitor(telemetry, applications),
-        clearScreen: ClearScreen, sessionUi: sessionUi, transfer: store is null ? null : new GridTransfer(AppContext.BaseDirectory, store.DatabasePath)).RunAsync(shutdown.Token);
+        clearScreen: ClearScreen, sessionUi: sessionUi, stopAttachments: windows.StopAsync, transfer: store is null ? null : new GridTransfer(AppContext.BaseDirectory, store.DatabasePath)).RunAsync(shutdown.Token);
 }
 catch (OperationCanceledException) when (shutdown.IsCancellationRequested) { return 0; }
 catch (Exception exception)

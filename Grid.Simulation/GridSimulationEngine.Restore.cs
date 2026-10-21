@@ -36,6 +36,7 @@ public sealed partial class GridSimulationEngine
         }
         foreach (var app in snapshot.ApplicationCatalog) engine.applicationCatalog.Add(app.Key, app);
         engine.identities = snapshot.Identities with { RegisteredAgents = Array.AsReadOnly(snapshot.Identities.RegisteredAgents.ToArray()) };
+        engine.context = Grid.Communication.ContextState.Copy(snapshot.Context);
         engine.communications = Grid.Communication.CommunicationState.Copy(snapshot.Communications);
         engine.social = Social.SocialState.Copy(snapshot.Social);
         engine.clock.Restore(snapshot.TickCount);
@@ -91,6 +92,8 @@ public sealed partial class GridSimulationEngine
             throw new InvalidDataException("Saved layout and district identities disagree.");
         Behavior.WorkplacePolicy.ValidateAssignments(snapshot);
         Social.SocialState.Validate(snapshot);
+        Grid.Communication.ContextState.Validate(snapshot.Context);
+        if (snapshot.Context.Documents.Any(d => d.GrantedAgentId is { } agent && !snapshot.Identities.RegisteredAgents.Contains(agent))) throw new InvalidDataException("Context grant references an unregistered agent.");
         Grid.Communication.LocalIdentityState.Validate(snapshot.Identities);
         if (snapshot.Identities.RegisteredAgents.Any(id => !snapshot.Programs.Any(p => p.Id == id && p.Kind == ResidentKind.Agent)))
             throw new InvalidDataException("Registered agent identity is missing or has the wrong resident kind.");

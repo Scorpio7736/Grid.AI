@@ -1,5 +1,15 @@
 # Project GRID - Chat workflow and agent handoff
 
+## Local task context - 4.3 (2026-10-20)
+
+Implemented `context add/list/read/revoke/remove` for explicit file captures, scoped Agent grants, project labels and temporary/persistent retention. Schema v13 and 420 passing tests. Read [context implementation](../Project_GRID_User_Supplied_Context_Implementation.md) for syntax, limits and privacy/backup behavior; AI ingestion/task execution remain future work.
+
+
+## Shared terminal windows - 4.2C (2026-10-20)
+
+Implemented `ntm` and `<command> -opninwin` with one authoritative host and scoped per-window contexts. Attached exit detaches; original-host exit disconnects clients before save. Lifecycle/credential commands remain host-only. 404 tests passed. See [window implementation](../Project_GRID_Shared_Terminal_Windows_Implementation.md) for commands, transport, authorization and verification limits.
+
+
 ## Installation editions and rendering - planned 2026-10-20
 
 Installation will offer **PC GRID** (permanent machine installation, with advanced 3D options) or **Flash GRID** (mobile flash-drive package, with very simple lightweight 3D). The installer must explain the choice, validate the destination and retain the selected edition. Both share simulation/save/identity behavior and must run supported tasks offline after provisioning. Flash GRID keeps managed files with the portable package and requires no persistent host integration; graphics still run on the host PC. Quality differences must not regenerate or change the world.

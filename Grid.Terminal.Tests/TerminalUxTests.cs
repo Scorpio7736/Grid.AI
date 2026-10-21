@@ -92,4 +92,62 @@ public sealed class TerminalUxTests
         Assert.Contains("OFFLINE MARKDOWN HELP", commands.Execute("help -md").Text);
         Assert.Contains("# GRID7736", commands.Execute("help -md").Text);
     }
+
+    [Theory]
+    [InlineData("abcdef")]
+    [InlineData("ABCDEF")]
+    [InlineData("123456")]
+    [InlineData("!@#$%^")]
+    [InlineData("Ab1!xy")]
+    [InlineData("abcdefghijklmnopqrstuvwx")]
+    [InlineData(" Ab1! ")]
+    public void PasswordPolicyAcceptsAllowedCharactersWithoutMandatoryMixture(string password)
+    {
+        var credential = PasswordCredential.Create("Owner", password);
+        Assert.True(credential.Verify("Owner", password));
+        Assert.False(credential.Verify("Owner", password + "x"));
+        if (password.Trim() != password) Assert.False(credential.Verify("Owner", password.Trim()));
+        if (password.ToLowerInvariant() != password) Assert.False(credential.Verify("Owner", password.ToLowerInvariant()));
+    }
+    [Theory]
+    [InlineData("abcde")]
+    [InlineData("abcdefghijklmnopqrstuvwxy")]
+    [InlineData("abc\ndef")]
+    public void PasswordPolicyRejectsInvalidNewPasswords(string password)
+    {
+        var error = Assert.Throws<ArgumentException>(() => PasswordCredential.Create("Owner", password));
+        Assert.Contains("6..24", error.Message);
+    }
+    [Fact]
+    public async Task SixCharacterSetupDisplaysNewPolicyAndMismatchDoesNotCreateCredential()
+    {
+        var (_, identity, commands) = Fixture(); var output = new StringWriter();
+        var ui = new TerminalSessionUi(identity, new Input("Owner", "Ab1!xy", "Ab1!xz", "Owner", "Ab1!xy", "Ab1!xy"), output);
+        await ui.StartAsync(default);
+        Assert.True(identity.NeedsSetup); Assert.Contains("passwords do not match", output.ToString());
+        await ui.HandleAsync(commands.Execute("login"), default);
+        Assert.True(identity.UsesPassword); Assert.Contains("Password: 6..24", output.ToString());
+        Assert.Contains("Logged in", identity.LoginPassword("Owner", "Ab1!xy"));
+        Assert.DoesNotContain("Ab1!xy", output.ToString());
+    }
+    [Theory]
+    [InlineData(25)]
+    [InlineData(256)]
+    public void ExistingLongPasswordSurvivesRestoreAndCanBeRotated(int length)
+    {
+        var (engine, identity, _) = Fixture();
+        var password = new string('A', length);
+        var salt = System.Security.Cryptography.RandomNumberGenerator.GetBytes(16);
+        var hash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(password, salt, PasswordCredential.WorkFactor, System.Security.Cryptography.HashAlgorithmName.SHA256, 32);
+        engine.SetLocalCredential(new("Owner", Convert.ToBase64String(salt), Convert.ToBase64String(hash), PasswordCredential.WorkFactor));
+        var restoredIdentity = new TerminalIdentitySession(() => "another-machine");
+        var restored = GridSimulationEngine.Restore(engine.GetSnapshot(), editAuthorizer: restoredIdentity); restoredIdentity.Attach(restored);
+        Assert.Contains("Logged in", restoredIdentity.LoginPassword("Owner", password));
+        Assert.Throws<ArgumentException>(() => restoredIdentity.ConfigureCredentials("Owner", password, password));
+        Assert.True(restoredIdentity.IsMaster);
+        Assert.Contains("saved", restoredIdentity.ConfigureCredentials("Owner", "Ab1!xy", "Ab1!xy"));
+        Assert.False(restoredIdentity.IsAuthenticated);
+        Assert.Contains("denied", restoredIdentity.LoginPassword("Owner", password));
+        Assert.Contains("Logged in", restoredIdentity.LoginPassword("Owner", "Ab1!xy"));
+    }
 }

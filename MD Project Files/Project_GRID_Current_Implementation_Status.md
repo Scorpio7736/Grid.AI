@@ -1,20 +1,24 @@
 # Project GRID - Current Implementation and Verification
 
-## Password requirements - next fix (2026-10-20)
+## User-supplied context - 4.3 completed (2026-10-20)
 
-**Requested; not implemented yet.** New passwords and password changes must accept **6–24 characters inclusive**. Uppercase letters, lowercase letters, numbers and symbols are allowed; no character category or mixture is mandatory. Preserve password case and exact characters; do not silently trim or truncate passwords.
+Implemented explicit local `context add/list/read/revoke/remove` with project names, source SHA-256/provenance, temporary or persistent retention, and optional registered-Agent grants. Master Control selects files; agents only read granted captures. Strict UTF-8 text/source and DOCX main-body text are supported with bounded parsing. Schema v13 stores persistent captures transactionally; temporary bodies are excluded from save/backup. `talk context` reports availability without executing/ingesting file contents. **420 tests passed.** See [context implementation and limits](Project_GRID_User_Supplied_Context_Implementation.md). Earlier dated schema/status notes below retain their historical scope.
 
-Current runtime validation still uses **12–256 characters**. Update creation/change validation, masked setup prompts, error messages and help together. Preserve login compatibility for existing saved credentials, including passwords longer than 24 characters, until their owner explicitly changes the password. Keep masked input, salted hashing and authorization unchanged. Verify lengths 5/6/24/25, each allowed character category, mixed input, confirmation matching and existing-credential login before marking complete.
+
+## Password requirements - completed follow-up (2026-10-20)
+
+**Implemented.** New passwords and password changes accept **6–24 characters inclusive**. Uppercase letters, lowercase letters, numbers and symbols are allowed; no character category or mixture is mandatory. Preserve password case and exact characters; do not silently trim or truncate passwords.
+
+Creation/change validation, masked setup prompts, error messages and help now use **6–24 characters**. Existing saved credentials remain verifiable up to the former 256-character limit until the owner explicitly changes the password; the input reader retains that capacity for legacy login. Masked input, salted hashing and authorization are unchanged. Control characters remain rejected. **Completion verification: 390 tests passed** (14 Core, 155 Simulation, 91 Persistence, 130 Terminal), including 13 new cases for boundaries, permitted categories, exact case/spacing, confirmation mismatch, legacy 25/256-character login after restore, and authenticated rotation to the new policy. No saved credential migration or password reset is required.
 
 
 ## GRID move/copy commands - current-host implementation (2026-10-20)
 
 Master Control `tranexist "location"` and `copexist "location"` are implemented for the running installation and selected save inventory. Both preview/confirm, stop workers, save and close. Copies retain the original; moves defer verified source cleanup until process exit. Destination packages use a local launcher/default save, require login and currently need an installed .NET 10 runtime. Verification: 377 passing tests. See [transfer implementation](Project_GRID_Transfer_Implementation.md) for exact exclusions, pending/incomplete status, security and recovery limits. Future attached-terminal and full PC/Flash edition integration remains unchecked in 4.2D/8.6.
 
-## Additional windows - planned 4.2C (2026-10-20)
+## Additional windows - implemented 4.2C (2026-10-20)
 
-`<command> -opninwin` will open supported data in a separate window; `ntm` will open another terminal attached to the same running GRID. Both are planned only. The implementation must share one simulation/save owner, enforce per-window authorization and define detach/shutdown behavior. Current single-terminal behavior remains unchanged. See the [window plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md#additional-windows---planned-42c-2026-10-20) and unchecked master checklist 4.2C.
-
+`<command> -opninwin` opens permitted snapshot data or an updating `live` view in a separate window; `ntm` opens another terminal attached to the same running GRID. One host retains the engine/workers/save lease. Attached exit detaches; original-host exit disconnects attachments before saving. Sessions have independent context and scoped, revocable authority. NGE, transfers and credentials remain host-only. **404 tests passed**, including a real attached subprocess. See [implementation and limits](Project_GRID_Shared_Terminal_Windows_Implementation.md) and completed checklist 4.2C.
 
 ## Current 4.2B completion - 2026-10-20
 

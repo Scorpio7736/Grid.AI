@@ -2,8 +2,10 @@ namespace Grid.Terminal;
 
 public static class CommandHelp
 {
-    public static IReadOnlyList<string> Options(TerminalCommand c) => c.Name switch {
+    public static IReadOnlyList<string> Options(TerminalCommand c) => BaseOptions(c).Concat(WindowCommands.Supports(c.Name) ? new[] { c.Name + " -opninwin" } : Array.Empty<string>()).ToArray();
+    private static IReadOnlyList<string> BaseOptions(TerminalCommand c) => c.Name switch {
         "help" => ["help", "help -md"],
+        "context" => ["context add \"file\" <temporary|persistent> \"project\" [registered-agent-id|name]", "context list [project]", "context read <id>", "context revoke <id>", "context remove <id>"],
         "login" => ["login", "login master"],
         "programs" => ["programs", "programs -active", "programs -possible", "programs -sleeping", "programs ids"],
         "districts" => ["districts", "districts ids"],
@@ -15,7 +17,7 @@ public static class CommandHelp
     };
     public static string Render(TerminalCommand command) => command.Name + "\n" + string.Join("\n", Options(command).Select(option =>
         $"    - {option}\n      # USAGE: {Description(command, option)}")) + $"\n    # EXAMPLE: {Example(command)}";
-    private static string Description(TerminalCommand command, string option) => option switch {
+    private static string Description(TerminalCommand command, string option) => option.EndsWith(" -opninwin") ? "Open permitted data in a separate window; live updates, other data is a snapshot. Combine with supported command arguments." : option switch {
         "help -md" => "Read the bundled Markdown help reference offline in this terminal.",
         "programs -active" => "List freshly observed Running applications.",
         "programs -possible" => "List current and previously known application candidates.",
@@ -27,7 +29,7 @@ public static class CommandHelp
         "programs" => "programs -active ids", "inspect" => "inspect program ARCHON", "talk" => "talk status",
         "edit" => "edit ARCHON occupation \"Local coordinator\"", "switch" => "switch master", "login" => "login",
         "tranexist" => "tranexist \"E:\\GRID7736\"", "copexist" => "copexist \"E:\\GRID7736 Copy\"",
-        "connect" => "connect ARCHON", "history" => "history kind=Edit limit=20", _ => c.Usage
+        "context" => "context list", "connect" => "connect ARCHON", "history" => "history kind=Edit limit=20", _ => c.Usage
     };
     public static string Markdown()
     {
@@ -42,6 +44,6 @@ public static class CommandHelp
         if (!line.Contains(' ')) return commands.Select(c => c.Name).Where(n => n.StartsWith(line, StringComparison.OrdinalIgnoreCase)).Order().ToArray();
         var name = line.Split(' ')[0]; var command = commands.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         if (command is null) return [];
-        return Options(command).Select(o => o.Split(" <")[0]).Where(o => !o.Contains('[') && !o.Contains('<') && o.StartsWith(line, StringComparison.OrdinalIgnoreCase)).Distinct().Order().ToArray();
+        return Options(command).Select(o => o.Split(" <")[0].Split(" [")[0].Split(" \"")[0]).Where(o => !o.Contains('[') && !o.Contains('<') && o.StartsWith(line, StringComparison.OrdinalIgnoreCase)).Distinct().Order().ToArray();
     }
 }
