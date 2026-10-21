@@ -877,13 +877,15 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 4.5 Verification
 
-- [ ] Test message recipient routing
-- [ ] Test persistent conversation history
-- [ ] Test invalid recipients and malformed messages
-- [ ] Test cross-session context recovery
-- [ ] Test STT-to-message equivalence
-- [ ] Test audio unavailable fallback
-- [ ] Verify communication still works without AI
+- [x] Test message recipient routing
+- [x] Test persistent conversation history
+- [x] Test invalid recipients and malformed messages
+- [x] Test cross-session context recovery
+- [x] Test STT-to-message equivalence
+- [x] Test audio unavailable fallback
+- [x] Verify communication still works without AI
+
+**Completion verification - 2026-10-21.** 455 tests passed (14 Core, 155 Simulation, 97 Persistence, 189 Terminal). Added three end-to-end tests spanning authenticated command routing, malformed-message atomicity, unrelated-agent privacy, real SQLite reopen, persistent/temporary context, grants/revocation and continued transcripts. Existing voice tests verify reviewed-STT/typed-message equivalence, real generated-speech transcription, cancellation and missing-audio fallback without an AI provider. See [communications verification matrix](Project_GRID_Communications_Verification.md). Physical microphone/playback/device-unplug checks remain manual; advanced providers and real task delegation remain planned.
 
 ---
 

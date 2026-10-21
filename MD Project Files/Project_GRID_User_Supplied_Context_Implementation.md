@@ -1,5 +1,10 @@
 # Project GRID - User-Supplied Context Implementation
 
+## Communications verification - 4.5 completed (2026-10-21)
+
+All seven 4.5 checklist items have automated coverage. **455 tests passed** (14 Core, 155 Simulation, 97 Persistence, 189 Terminal), including three new end-to-end tests for authenticated conversation/context recovery through SQLite, malformed input without transcript mutation, and unrelated-agent privacy with logout revocation. Existing suites cover recipient routing, durable history/recovery, reviewed speech/typed-message equivalence, audio failure fallback and deterministic communication without AI. No production-code/schema change was needed. Physical microphone/playback/device-unplug checks remain manual; advanced voice and task-delegation features remain planned. See [verification matrix and limits](Project_GRID_Communications_Verification.md). Earlier milestone counts below are historical.
+
+
 ## 4.3A Context picker and multi-file reading - implemented 2026-10-21
 
 - `context add -search` opens the Windows multi-file dialog (Ctrl/Shift selects several files). Defaults: temporary retention, project `Inbox`, owner-only access.
