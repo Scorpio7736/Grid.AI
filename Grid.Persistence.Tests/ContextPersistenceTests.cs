@@ -34,6 +34,30 @@ public sealed class ContextPersistenceTests : IDisposable
         connection.Open(); using var command = connection.CreateCommand(); command.CommandText = sql; command.ExecuteNonQuery();
     }
     [Fact]
+    public void VoiceProfilesAndMicrophoneMessagesSurviveSaveRestoreAndRecovery()
+    {
+        var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
+        var profile = new VoiceProfile(agent.Id, "Offline Test Voice", -1, 75); engine.SetVoiceProfile(authority.Session, profile);
+        var conversation = engine.StartConversation(engine.LocalOperator, agent);
+        engine.Talk(conversation, engine.LocalOperator, "help", origin: MessageOrigin.Microphone);
+        using (var store = new WorldStore(PathName)) store.Create(info, engine.GetSnapshot());
+        using var reopened = new WorldStore(PathName); var restored = GridSimulationEngine.Restore(reopened.Load().State);
+        Assert.Equal(profile, Assert.Single(restored.GetSnapshot().Communications.VoiceProfiles));
+        Assert.Equal(MessageOrigin.Microphone, restored.GetConversation(conversation).Messages[0].Origin);
+        restored.EndConversation(conversation, restored.LocalOperator);
+        Assert.Equal(profile, Assert.Single(restored.GetSnapshot().Communications.VoiceProfiles));
+        File.WriteAllText(PathName, "damaged"); reopened.Recover();
+        Assert.Equal(profile, Assert.Single(reopened.Load().State.Communications.VoiceProfiles));
+    }
+    [Fact]
+    public void OldCommunicationJsonDefaultsToNoVoicesAndCorruptProfilesAreRejected()
+    {
+        var legacy = System.Text.Json.JsonSerializer.Deserialize<CommunicationState>("{\"Conversations\":[]}")!;
+        Assert.Empty(legacy.VoiceProfiles); CommunicationState.Validate(legacy, 0);
+        var bad = legacy with { VoiceProfiles = [new(Guid.NewGuid(), "test", 99)] };
+        Assert.Throws<InvalidDataException>(() => CommunicationState.Validate(bad, 0));
+    }
+    [Fact]
     public void PersistentContextAndGrantsSurviveRestartRecoveryWhileTemporaryDoesNot()
     {
         var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);

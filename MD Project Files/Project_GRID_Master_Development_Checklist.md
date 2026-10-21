@@ -1,5 +1,14 @@
 # Project GRID — Master Development Checklist
 
+## Voice transcription repair - 2026-10-21
+
+A user-reported microphone transcription failure was reproduced with generated speech through the real C# helper connection: repeated synchronous `Recognize()` calls could reach an already-finished stream and throw `InvalidOperationException` (0x80131509), discarding recognized text. Recognition now uses `RecognizeAsync(Multiple)` and waits for `RecognizeCompleted`, gathering recognized phrases until completion. Speech/audio remain local and in memory. Explicit typed constructors avoid PowerShell overload ambiguity.
+
+Failures now report a bounded stage, exception type and HRESULT rather than hiding the error or exposing raw helper stderr/audio. Capture reports duration and rejects recordings shorter than 0.25 seconds with a hold-Space hint. `voice 0` is a shortcut for `voice microphone 0`; no-draft hints recognize an already-connected conversation, and fallback advice is no longer duplicated.
+
+**Verification:** 186 terminal tests pass, including four new real silent-PCM/generated-speech/invalid-audio and UI shortcut cases. The generated-speech case reproduced the failure before the completion-event fix and passes after it. No physical microphone recording or speaker playback was used; physical-device verification remains interactive. Earlier 448-test completion counts below are the original milestone's history.
+
+
 ## New UI, portable-package and offline requirements - 2026-10-20
 
 **4.2B implemented - 2026-10-20.** GRID-REQ-006 provides dashed per-command option lists with usage/examples, bundled `help -md`, opening artwork, username/password setup when not configured, clear/welcome/authority/Enter after login, confirmed logout returning to welcome, a light-blue/white/yellow/red palette, and capability-aware Tab completion. The [Markdown help reference](Project_GRID_Terminal_Help.md) is bundled and displayed offline by `help -md`.
@@ -854,13 +863,17 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 4.4 Voice communication
 
-- [ ] Implement microphone selection and push-to-talk
-- [ ] Integrate local speech-to-text, e.g. whisper.cpp
-- [ ] Add speech transcript review
-- [ ] Integrate local text-to-speech, e.g. Piper
-- [ ] Create persistent voice profiles for named agents
-- [ ] Implement mute, interruption and cancellation
-- [ ] Route typed and spoken commands through the same communication hub
+**Implemented Windows offline MVP - 2026-10-21.** Main host `voice` commands add hold-Space microphone capture, installed local Windows recognition/synthesis, mandatory unsent-transcript review and explicit playback. No cloud service or automatic speech.
+
+- [x] Implement microphone selection and push-to-talk (hold Space, release to transcribe; 20-second bound)
+- [x] Integrate local speech-to-text (installed Windows System.Speech provider; whisper.cpp remains an optional future adapter)
+- [x] Add speech transcript review, correction, explicit send and discard
+- [x] Integrate local text-to-speech (installed Windows voices; Piper remains an optional future adapter)
+- [x] Create persistent voice profiles for registered named agents (voice, rate, volume)
+- [x] Implement default mute, interruption and cancellation (Esc during audio operations)
+- [x] Route typed and spoken conversation input through the same communication hub; speech never executes terminal commands
+
+**Completion verification - 2026-10-21.** 448 tests passed (14 Core, 155 Simulation, 97 Persistence, 182 Terminal), including 18 new voice cases. Real offline recognizer/voice enumeration succeeded without recording or playback. Profile and microphone-origin message save/recovery passed. Physical capture/playback and device unplug behavior remain manual checks. Voice hardware is original-host-only; attached terminals retain typed chat. No raw audio is written to disk. See [offline voice implementation](Project_GRID_Offline_Voice_Implementation.md) for commands, prerequisites, limits, persistence and future provider/device options.
 
 ## 4.5 Verification
 

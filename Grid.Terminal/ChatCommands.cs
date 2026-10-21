@@ -10,7 +10,7 @@ public sealed class ChatCommands
     private TerminalIdentitySession? identity;
     private Recipient Actor => identity?.CurrentRecipient ?? engine.LocalOperator;
     private ChatCommands(GridSimulationEngine engine) => this.engine = engine;
-    public static void Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession? identity = null)
+    public static ChatCommands Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession? identity = null)
     {
         var chat = new ChatCommands(engine) { identity = identity };
         if (identity is not null) identity.Changed += () => chat.active = null;
@@ -20,6 +20,13 @@ public sealed class ChatCommands
         commands.Register(new("transcript", "transcript [conversation-id]", "Read a stored conversation; defaults to the connected one.", chat.Transcript));
         commands.Register(new("resume", "resume <conversation-id>", "Reconnect to an open conversation by its full ID.", chat.Resume));
         commands.Register(new("disconnect", "disconnect", "End the connected conversation and return to ordinary commands.", chat.Disconnect));
+        return chat;
+    }
+    public Guid? ActiveConversation => active;
+    public CommandResult SendVoice(Guid conversation, string text)
+    {
+        if (active != conversation) return new("Voice draft belongs to a different conversation; record again.");
+        return new(Render(engine.Talk(conversation, Actor, text, origin: MessageOrigin.Microphone)));
     }
     private bool Owned(Conversation c) => c.Participants.Any(p => CommunicationState.SameIdentity(p, Actor));
     private Conversation Find(Guid id)

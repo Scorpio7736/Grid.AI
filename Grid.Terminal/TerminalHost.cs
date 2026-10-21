@@ -41,6 +41,32 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 if (line is null) break;
                 if (sessionUi is not null) await sessionUi.RefreshAsync();
                 var result = commands.Execute(line);
+                if (result.Voice is { } voice)
+                {
+                    if (!interactiveConfirmation) result = new("Voice requires an interactive host terminal; typed talk remains available.");
+                    else
+                    {
+                        using var voiceStop = CancellationTokenSource.CreateLinkedTokenSource(shutdown.Token);
+                        voiceStop.CancelAfter(TimeSpan.FromMinutes(2));
+                        var operation = voice.Run(output, voiceStop.Token);
+                        try
+                        {
+                            while (!operation.IsCompleted)
+                            {
+                                if (await Task.WhenAny(operation, scheduler, autosave, monitoring, Task.Delay(40, voiceStop.Token)) == operation) break;
+                                if (voiceStop.IsCancellationRequested || !voice.IsValid() || WindowsMicrophone.EscapePressed || scheduler.IsCompleted || autosave.IsCompleted || monitoring.IsCompleted)
+                                { voiceStop.Cancel(); break; }
+                            }
+                            result = await operation;
+                            if (!voice.IsValid()) result = new("Voice session expired; operation stopped.");
+                        }
+                        catch (OperationCanceledException) { result = new("Voice cancelled. Nothing sent automatically."); }
+                        catch (Exception e) when (e is IOException or InvalidOperationException or UnauthorizedAccessException or ArgumentException)
+                        { result = new("Voice unavailable: " + e.Message + (e.Message.Contains("typed talk remains available", StringComparison.OrdinalIgnoreCase) ? "" : " Typed talk remains available.")); }
+                        finally { voiceStop.Cancel(); }
+                        if (scheduler.IsCompleted || autosave.IsCompleted || monitoring.IsCompleted) break;
+                    }
+                }
                 if (result.ContextPicker is { } completeSelection)
                 {
                     if (!interactiveConfirmation) result = new("File picker requires an interactive terminal; use context add with an absolute file path.");

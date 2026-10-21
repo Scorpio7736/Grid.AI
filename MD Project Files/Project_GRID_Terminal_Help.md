@@ -398,3 +398,47 @@ context
 ```
 
 Register the agent before granting access. Supported inputs: UTF-8 text/Markdown/common source code and DOCX body text. Limits: 1 MiB source, 256 Ki text characters per import, 64 imports and 1 Mi total text characters. No folder grants, automatic rereads, network paths, macro execution or silent truncation. PDF/DOC/RTF and unsupported encodings require exporting to a supported format. Re-import for a new captured version. `talk context` reports the recipient's granted-file count; it does not analyze or copy file bodies into transcripts. See [implementation and limits](Project_GRID_User_Supplied_Context_Implementation.md).
+
+## Offline voice communication (4.4)
+
+```text
+voice
+    - voice status
+      # USAGE: Show microphone, language, mute status and unsent draft.
+    - voice devices
+      # USAGE: List local microphones, installed offline recognizers and Windows voice names.
+    - voice microphone <-1|id>
+      # USAGE: Choose a microphone; -1 uses the Windows default. IDs come from voice devices.
+    - voice <microphone-id>
+      # USAGE: Shortcut for microphone selection; voice 0 selects device 0.
+    - voice language <culture>
+      # USAGE: Choose an installed recognition culture, such as en-US.
+    - voice listen
+      # USAGE: Connect first. Hold Space to record, release to transcribe, Esc to cancel. Maximum 20 seconds; nothing sends automatically.
+    - voice review
+      # USAGE: Read the unsent transcript and intended conversation.
+    - voice edit <replacement text>
+      # USAGE: Correct the current draft before sending.
+    - voice send
+      # USAGE: Explicitly send the reviewed draft as a conversation message, never as a terminal command.
+    - voice cancel
+      # USAGE: Discard the draft. During recording/transcription/playback press Esc instead.
+    - voice mute <on|off>
+      # USAGE: Playback starts muted. Unmuting only permits explicit voice speak; no automatic audio.
+    - voice speak
+      # USAGE: Speak the connected agent's latest reply locally; Esc interrupts.
+    - voice profile
+      # USAGE: List visible saved per-agent voice settings.
+    - voice profile <agent-id|name> "voice name" <rate> <volume>
+      # USAGE: Master Control saves a registered Agent's voice; rate -10..10, volume 0..100. Requires a saved world.
+    # EXAMPLE: voice profile ARCHON "Microsoft David Desktop" 0 80
+    # EXAMPLE: voice listen
+    # EXAMPLE: voice review
+    # EXAMPLE: voice send
+    # EXAMPLE: voice mute off
+    # EXAMPLE: voice speak
+```
+
+Voice hardware requires the original interactive Windows host terminal and installed offline recognition/voice assets. Use `connect ARCHON` first; registration is required for profiles, not ordinary conversation. Attached terminals continue using `talk` and `resume`. Missing audio/language/voice support leaves typed chat available. No raw recordings are saved. See [offline voice implementation](Project_GRID_Offline_Voice_Implementation.md) for verification and limits.
+
+Voice troubleshooting (2026-10-21): capture reports its duration; recordings shorter than 0.25 seconds are refused with a retry hint. Transcription waits for the recognizer completion event. If recognition still fails, report the displayed stage/exception/HRESULT. No raw audio or helper input is included in that diagnostic. `voice speak` requires a reply from `voice send` or `talk` first.

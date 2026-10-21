@@ -9,10 +9,11 @@ public sealed record Conversation(Guid Id, IReadOnlyList<Recipient> Participants
     long StartedTick, long? EndedTick, IReadOnlyList<GridMessage> Messages);
 public sealed record CommunicationState(IReadOnlyList<Conversation> Conversations)
 {
+    public IReadOnlyList<VoiceProfile> VoiceProfiles { get; init; } = Array.Empty<VoiceProfile>();
     public static CommunicationState Empty => new([]);
     public const int MaxConversations = 128, MaxMessages = 2048, MaxContent = 4096;
     public static CommunicationState Copy(CommunicationState state) => new(Array.AsReadOnly(state.Conversations.Select(c => c with {
-        Participants = Array.AsReadOnly(c.Participants.ToArray()), Messages = Array.AsReadOnly(c.Messages.ToArray()) }).ToArray()));
+        Participants = Array.AsReadOnly(c.Participants.ToArray()), Messages = Array.AsReadOnly(c.Messages.ToArray()) }).ToArray())) { VoiceProfiles = Array.AsReadOnly(state.VoiceProfiles.ToArray()) };
     public static bool SameIdentity(Recipient a, Recipient b) => a.Kind == b.Kind && a.Id == b.Id;
     public static bool ValidRecipient(Recipient? r) => r is not null && Enum.IsDefined(r.Kind) && r.Id != Guid.Empty &&
         !string.IsNullOrWhiteSpace(r.Name) && r.Name.Length <= 80 && !r.Name.Any(char.IsControl);
@@ -22,6 +23,7 @@ public sealed record CommunicationState(IReadOnlyList<Conversation> Conversation
     {
         if (state is null || state.Conversations is null || state.Conversations.Count > MaxConversations || state.Conversations.Any(c => c is null))
             throw new InvalidDataException("Invalid communication state.");
+        VoiceProfile.Validate(state.VoiceProfiles);
         var ids = new HashSet<Guid>(); var messages = new HashSet<Guid>();
         foreach (var c in state.Conversations)
         {

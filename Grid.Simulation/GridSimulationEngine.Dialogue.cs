@@ -30,7 +30,7 @@ public sealed partial class GridSimulationEngine
     }
 
     /// <summary>Atomic deterministic local dialogue pair. Does not execute requests or call an external model.</summary>
-    public IReadOnlyList<GridMessage> Talk(Guid conversationId, Recipient human, string text, CancellationToken token = default)
+    public IReadOnlyList<GridMessage> Talk(Guid conversationId, Recipient human, string text, CancellationToken token = default, MessageOrigin origin = MessageOrigin.Terminal)
     {
         lock (gate)
         {
@@ -38,6 +38,7 @@ public sealed partial class GridSimulationEngine
             if (!c.Participants.Any(p => CommunicationState.SameIdentity(p, human)))
                 throw new ArgumentException("Dialogue requires the active participant identity.");
             if (c.Status != ConversationStatus.Open) throw new InvalidOperationException("Conversation has ended; connect to start another.");
+            if (origin is not (MessageOrigin.Terminal or MessageOrigin.Microphone)) throw new ArgumentException("Invalid dialogue origin.");
             if (!CommunicationState.ValidContent(text)) throw new ArgumentException("Message must contain 1..4096 characters of valid text.");
             var other = c.Participants.Single(p => !CommunicationState.SameIdentity(p, human));
             if (other.Kind != ParticipantKind.Program) throw new ArgumentException("Dialogue requires a program recipient.");
@@ -55,7 +56,7 @@ public sealed partial class GridSimulationEngine
                 _ => "[SIMULATED DIALOGUE] Your message is recorded. No task has been executed or delegated. Ask status, who are you, or help."
             };
             var utc = timeProvider.GetUtcNow().ToUniversalTime();
-            var pair = new[] { new GridMessage(Guid.NewGuid(), c.Messages.Count + 1, human, text, MessageOrigin.Terminal, clock.TickCount, utc),
+            var pair = new[] { new GridMessage(Guid.NewGuid(), c.Messages.Count + 1, human, text, origin, clock.TickCount, utc),
                 new GridMessage(Guid.NewGuid(), c.Messages.Count + 2, other, reply, MessageOrigin.SystemEvent, clock.TickCount, utc) };
             token.ThrowIfCancellationRequested();
             ReplaceConversation(c with { Messages = Array.AsReadOnly(c.Messages.Concat(pair).ToArray()) });

@@ -4,6 +4,7 @@ public static class CommandHelp
 {
     public static IReadOnlyList<string> Options(TerminalCommand c) => BaseOptions(c).Concat(WindowCommands.Supports(c.Name) ? new[] { c.Name + " -opninwin" } : Array.Empty<string>()).ToArray();
     private static IReadOnlyList<string> BaseOptions(TerminalCommand c) => c.Name switch {
+        "voice" => ["voice status", "voice devices", "voice microphone <-1|id>", "voice <microphone-id>", "voice language <culture>", "voice listen", "voice review", "voice edit <text>", "voice send", "voice cancel", "voice mute <on|off>", "voice speak", "voice profile [agent-id|name \"voice name\" rate volume]"],
         "help" => ["help", "help -md"],
         "context" => ["context add \"file\" <temporary|persistent> \"project\" [registered-agent-id|name]", "context list [project]", "context add -search [temporary|persistent \"project\" [agent]]", "context select <id|name> [id|name ...]", "context select clear", "context read [id|name ...|-selected]", "context revoke <id|name>", "context remove <id|name>"],
         "login" => ["login", "login master"],

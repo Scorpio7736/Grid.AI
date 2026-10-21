@@ -33,7 +33,7 @@ public sealed partial class GridSimulationEngine : IGridCommunicationHub
             var conversation = new Conversation(Guid.NewGuid(), Array.AsReadOnly(new[] { sender, recipient }), ConversationStatus.Open,
                 clock.TickCount, null, Array.AsReadOnly(Array.Empty<GridMessage>()));
             cancellationToken.ThrowIfCancellationRequested();
-            communications = new(Array.AsReadOnly(communications.Conversations.Append(conversation).ToArray()));
+            communications = communications with { Conversations = Array.AsReadOnly(communications.Conversations.Append(conversation).ToArray()) };
             RecordEvent("ConversationStarted", conversation.Id, null, "Local conversation started; no external delivery or generated reply.");
             return conversation.Id;
         }
@@ -73,8 +73,8 @@ public sealed partial class GridSimulationEngine : IGridCommunicationHub
         }
     }
 
-    private void ReplaceConversation(Conversation changed) => communications = new(Array.AsReadOnly(
-        communications.Conversations.Select(c => c.Id == changed.Id ? changed : c).ToArray()));
+    private void ReplaceConversation(Conversation changed) => communications = communications with { Conversations = Array.AsReadOnly(
+        communications.Conversations.Select(c => c.Id == changed.Id ? changed : c).ToArray()) };
 
     public Conversation GetConversation(Guid conversationId)
     {
