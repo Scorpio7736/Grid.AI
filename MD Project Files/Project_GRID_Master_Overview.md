@@ -46,7 +46,7 @@ See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) 
 
 ## Terminal conversations completion - 4.2 (2026-10-20)
 
-**Implemented and verified.** Use connect (default ARCHON), talk, conversations, transcript, resume and disconnect. ARCHON is created on first explicit connection as a persistent coordinator Agent; a stable world-local operator handle supports reopening saved conversations. Replies to status/who are you are labeled verified GRID state; other replies are labeled deterministic simulated dialogue and claim no task execution/delegation. Input/reply pairs commit atomically and reuse schema v10.
+**Implemented and verified.** Use connect (default MCP), talk, conversations, transcript, resume and disconnect. MCP is created on first explicit connection as a persistent coordinator Agent; a stable world-local operator handle supports reopening saved conversations. Replies to status/who are you are labeled verified GRID state; other replies are labeled deterministic simulated dialogue and claim no task execution/delegation. Input/reply pairs commit atomically and reuse schema v10.
 
 **353 tests passed**, plus a three-launch isolated terminal save/resume/end smoke. See [Terminal Conversations](Project_GRID_Terminal_Conversations.md) for syntax, identity/capacity limits and completion evidence. This local operator handle grants no authentication or admin authority; 4.2A login, real task delegation and LLM dialogue remain planned. Earlier dated pending-terminal-chat/agent-creation statements describe previous milestones.
 
@@ -186,14 +186,14 @@ The initial named agents are:
 
 | Agent | Responsibility |
 |---|---|
-| **ARCHON** | Administration, task coordination, briefings, permission requests |
+| **MCP** | Administration, task coordination, briefings, permission requests |
 | **SENTINEL** | Read-only security monitoring, alerts, incident reporting |
-| **FORGE** | Approved software builds, unit tests, repository diagnostics |
-| **ARCHIVIST** | GRID storage management, approved file inventories, cleanup and expansion proposals |
+| **MAXIS** | Approved software builds, unit tests, repository diagnostics |
+| **JN** | GRID storage management, approved file inventories, cleanup and expansion proposals |
 | **VOLT** | PC resource monitoring and GRID performance throttling |
 | **RELAY** | Text, voice, messaging, notifications, transmissions |
 
-Agents have stable identities, roles, memories, personalities, and potentially relationships. Their personalities affect communication, not their permissions. The proposed first useful agent workflow is: **ask ARCHON to assign FORGE an approved unit-test run and receive the verified result**.
+Agents have stable identities, roles, memories, personalities, and potentially relationships. Their personalities affect communication, not their permissions. The proposed first useful agent workflow is: **ask MCP to assign MAXIS an approved unit-test run and receive the verified result**.
 
 ## 4. Communication and interaction
 
@@ -206,7 +206,7 @@ All interaction uses a **unified communications hub** shared by:
 
 The system preserves conversations, messages, relevant agent memories, task updates, and event history in local storage. A conversation may begin in the terminal and continue through voice or the 3D viewer. Optional incoming transmissions can notify the User of significant changes.
 
-Users should be able to address ARCHON for coordination or speak directly to a specialist, with RELAY maintaining continuity across interfaces. Uploaded material and conversation context must be associated with the correct request, permissions, and conversation history.
+Users should be able to address MCP for coordination or speak directly to a specialist, with RELAY maintaining continuity across interfaces. Uploaded material and conversation context must be associated with the correct request, permissions, and conversation history.
 
 Commands are handled deterministically; conversational AI can interpret questions and propose plans, but **never becomes the authoritative source of world state or gains the right to execute arbitrary commands**.
 
@@ -224,7 +224,7 @@ System agents act through explicitly registered capabilities, bounded parameters
 
 Key constraints:
 
-- ARCHON coordinates agents but does not inherit all of their privileges.
+- MCP coordinates agents but does not inherit all of their privileges.
 - Untrusted model output must never be executed directly as PowerShell, SQL, or other system commands.
 - No unrestricted access to private files, silent deletion, or self-elevation of privileges.
 - Sensitive changes require explicit User authorization.
@@ -240,10 +240,10 @@ The User should be able to treat GRID as a **local personal assistant and coordi
 
 | Mode | Expected behavior | Example |
 |---|---|---|
-| **Discuss / advise** | Explain, critique, compare options, summarize supplied context, answer grounded questions; no changes to the User's files | “FORGE, review this design and recommend an architecture.” |
-| **Analyze / prepare** | Inspect approved content and produce a draft, plan, patch, or preview without changing an original | “ARCHIVIST, review these documents and propose an organization.” |
-| **Execute approved work** | Use allowlisted capabilities in specified files, folders, or repositories; show results and relevant diffs | “FORGE, apply the approved fix to this repository and run its tests.” |
-| **Coordinate multiple agents** | ARCHON decomposes a request, routes scoped subtasks, collects verified results and reports progress | “ARCHON, have FORGE review the code and ARCHIVIST summarize the attached specifications.” |
+| **Discuss / advise** | Explain, critique, compare options, summarize supplied context, answer grounded questions; no changes to the User's files | “MAXIS, review this design and recommend an architecture.” |
+| **Analyze / prepare** | Inspect approved content and produce a draft, plan, patch, or preview without changing an original | “JN, review these documents and propose an organization.” |
+| **Execute approved work** | Use allowlisted capabilities in specified files, folders, or repositories; show results and relevant diffs | “MAXIS, apply the approved fix to this repository and run its tests.” |
+| **Coordinate multiple agents** | MCP decomposes a request, routes scoped subtasks, collects verified results and reports progress | “MCP, have MAXIS review the code and JN summarize the attached specifications.” |
 
 ### Context and uploaded material
 
@@ -257,9 +257,9 @@ The User should be able to treat GRID as a **local personal assistant and coordi
 ### Agent responsibilities for user requests
 
 - **RELAY:** receives text/voice requests, handles attachments, maintains conversation continuity and presents outcomes.
-- **ARCHON:** clarifies objectives when necessary, routes tasks to authorized specialists, tracks progress, merges outputs and obtains approvals; it does not inherit specialist permissions.
-- **FORGE:** supports programming tasks such as reviewing code, explaining systems, drafting changes, running approved builds/tests and applying reviewed patches to authorized repositories.
-- **ARCHIVIST:** organizes user-provided material, inventories approved folders, summarizes documents, tracks project context and proposes reversible file changes.
+- **MCP:** clarifies objectives when necessary, routes tasks to authorized specialists, tracks progress, merges outputs and obtains approvals; it does not inherit specialist permissions.
+- **MAXIS:** supports programming tasks such as reviewing code, explaining systems, drafting changes, running approved builds/tests and applying reviewed patches to authorized repositories.
+- **JN:** organizes user-provided material, inventories approved folders, summarizes documents, tracks project context and proposes reversible file changes.
 - **SENTINEL:** advises on security and reports approved security findings; initially read-only for host security.
 - **VOLT:** provides host resource insights and manages GRID's own resource usage, not unrestricted system optimization.
 - **Other specialists or civilian programs:** may participate in fictional or advisory workflows only according to defined capabilities; in-world citizenship alone confers no host privileges.
@@ -268,7 +268,7 @@ The User should be able to treat GRID as a **local personal assistant and coordi
 
 1. **Request:** The User addresses GRID or an agent and states the desired result (advice, draft, analysis, or change).
 2. **Supply context:** The User attaches files, selects an approved workspace, or explicitly authorizes access to particular resources.
-3. **Interpret and route:** RELAY captures the request; ARCHON or the addressed specialist determines the task and proposes validated, typed actions when needed.
+3. **Interpret and route:** RELAY captures the request; MCP or the addressed specialist determines the task and proposes validated, typed actions when needed.
 4. **Inspect safely:** Agents read only the approved context and distinguish sourced facts from assumptions and generated suggestions.
 5. **Plan and approve:** Read-only advice needs no write approval; actions with side effects follow capability and approval policy. Destructive, sensitive, external, or broad operations require explicit User confirmation.
 6. **Execute or advise:** An authorized service performs the allowed operation; model-generated commands are never executed directly.
@@ -288,10 +288,10 @@ The User should be able to treat GRID as a **local personal assistant and coordi
 
 ### Example end-to-end use cases
 
-1. **Code assistance:** “FORGE, here is my C# project. Find bugs and give me recommendations.” FORGE inspects authorized files and responds with findings without making changes.
-2. **Approved code edits:** “FORGE, implement the accepted fix and test it.” GRID previews the target changes, requests necessary approval, applies the patch in the approved repository and returns a diff and actual test output.
-3. **Document assistance:** “ARCHIVIST, use these uploaded documents to summarize the project and identify missing requirements.” The response cites or identifies source files and separates conclusions from speculation.
-4. **Planning:** “ARCHON, use this project context to break my goal into tasks and ask the appropriate agents to help.” ARCHON creates a reviewable task plan and delegates only allowed work.
+1. **Code assistance:** “MAXIS, here is my C# project. Find bugs and give me recommendations.” MAXIS inspects authorized files and responds with findings without making changes.
+2. **Approved code edits:** “MAXIS, implement the accepted fix and test it.” GRID previews the target changes, requests necessary approval, applies the patch in the approved repository and returns a diff and actual test output.
+3. **Document assistance:** “JN, use these uploaded documents to summarize the project and identify missing requirements.” The response cites or identifies source files and separates conclusions from speculation.
+4. **Planning:** “MCP, use this project context to break my goal into tasks and ask the appropriate agents to help.” MCP creates a reviewable task plan and delegates only allowed work.
 5. **Advisory-only:** “SENTINEL, look at this security log and explain the concerns; do not modify anything.” SENTINEL reports findings and possible next steps without host changes.
 
 ### Acceptance criteria (future capability)
@@ -300,7 +300,7 @@ The User should be able to treat GRID as a **local personal assistant and coordi
 - The User can import at least one supported local text/document format and see what context was used, with a clear unsupported-format error when needed.
 - The User can request a draft or patch and review it before applying it to the original.
 - At least one scoped edit task can be authorized, executed and verified end-to-end, while attempts outside the approved workspace are rejected.
-- A coordinated request can involve ARCHON, RELAY and a specialist without granting ARCHON the specialist's privileges.
+- A coordinated request can involve MCP, RELAY and a specialist without granting MCP the specialist's privileges.
 - Context, approvals, actions and outcomes persist locally and can be inspected after restart, subject to retention settings.
 - With local AI unavailable, deterministic commands and previously defined tasks remain functional; conversational assistance may degrade to explicit limited capabilities.
 
@@ -333,11 +333,11 @@ The recommended initial GRID storage **quota is 20 GB**, not a preallocated 20 G
 
 A planning-only example allocates **5 GB for AI/voice models, 4 GB for 3D assets, 2 GB for software, 3 GB for civilization data and backups, and 6 GB as reserve**.
 
-**ARCHIVIST → ARCHON → User** is the expansion path:
+**JN → MCP → User** is the expansion path:
 
-1. ARCHIVIST measures usage and forecasts capacity needs.
-2. ARCHIVIST proposes cleanup or a larger quota.
-3. ARCHON verifies policy and host free-space constraints and requests approval.
+1. JN measures usage and forecasts capacity needs.
+2. JN proposes cleanup or a larger quota.
+3. MCP verifies policy and host free-space constraints and requests approval.
 4. The User approves or denies a specific increase (a suggested increment is 10 GB).
 5. A deterministic controller changes the logical quota and audits the decision.
 
@@ -384,7 +384,7 @@ All inhabitants should be **human or human-adjacent**: recognizable, expressive 
 
 **Officers and major agents:** The approved uniform is a tailored light/medium-gray high-collar jacket or tunic, charcoal/black side panels, broad black belt with simple rectangular buckle, gray trousers tucked into polished tall black boots, and narrow ice-blue or cool-white seams. No hats, ribbon bars, medals, pens, or decorative chest badges. Command variants may use longer formal coats; specialist variants remain distinct while sharing consistent tailoring.
 
-Role lighting may vary subtly: ARCHON (pale gold/white), SENTINEL (blue), FORGE (amber), ARCHIVIST (teal), VOLT (warm yellow), and RELAY (violet/cyan). Rank is not communicated by color alone.
+Role lighting may vary subtly: MCP (pale gold/white), SENTINEL (blue), MAXIS (amber), JN (teal), VOLT (warm yellow), and RELAY (violet/cyan). Rank is not communicated by color alone.
 
 ## 11. Software architecture and programming languages
 
@@ -404,7 +404,7 @@ Build the engine and validate it before investing heavily in visualization:
 | **2. The Core** | SQLite state, snapshots, events, shutdown and restart recovery |
 | **3. First Programs** | Autonomous jobs, needs, movement, utility-based decisions |
 | **4. Communications** | Persistent terminal dialogue, microphone transcription, spoken replies, request-scoped context intake |
-| **5. System Agents** | ARCHON, FORGE, SENTINEL, ARCHIVIST, VOLT, RELAY, user-authorized task execution, scoped file/repository operations |
+| **5. System Agents** | MCP, MAXIS, SENTINEL, JN, VOLT, RELAY, user-authorized task execution, scoped file/repository operations |
 | **6. Intelligence** | Shared locally hosted AI, grounded conversations over supplied context, advice, drafts and validated action proposals |
 | **7. The City** | Godot streets, districts, citizens, inspection and interaction |
 | **8. Integration** | Startup, quotas, notifications, throttling, backups, crash recovery |

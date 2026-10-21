@@ -27,10 +27,10 @@ public static class CommandHelp
         _ => command.Description
     };
     private static string Example(TerminalCommand c) => c.Name switch {
-        "programs" => "programs -active ids", "inspect" => "inspect program ARCHON", "talk" => "talk status",
-        "edit" => "edit ARCHON occupation \"Local coordinator\"", "switch" => "switch master", "login" => "login",
+        "programs" => "programs -active ids", "inspect" => "inspect program MCP", "talk" => "talk status",
+        "edit" => "edit MCP occupation \"Local coordinator\"", "switch" => "switch master", "login" => "login",
         "tranexist" => "tranexist \"E:\\GRID7736\"", "copexist" => "copexist \"E:\\GRID7736 Copy\"",
-        "context" => "context list", "connect" => "connect ARCHON", "history" => "history kind=Edit limit=20", _ => c.Usage
+        "context" => "context list", "connect" => "connect MCP", "history" => "history kind=Edit limit=20", _ => c.Usage
     };
     public static string Markdown()
     {

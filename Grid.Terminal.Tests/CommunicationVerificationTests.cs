@@ -31,12 +31,12 @@ public sealed class CommunicationVerificationTests
         try
         {
             var source = Path.Combine(folder, "notes.md"); File.WriteAllText(source, "PERSISTENT CAPTURE");
-            var first = new Session(); first.Identity.Login(); first.Commands.Execute("connect ARCHON");
+            var first = new Session(); first.Identity.Login(); first.Commands.Execute("connect MCP");
             var agent = first.Engine.EnsureCoordinator(); first.Engine.RegisterAgentIdentity(agent.Id);
             first.Commands.Execute("talk remember this conversation"); var conversation = first.Chat.ActiveConversation!.Value;
-            Assert.Contains("Imported", first.Commands.Execute($"context add \"{source}\" persistent project ARCHON").Text);
+            Assert.Contains("Imported", first.Commands.Execute($"context add \"{source}\" persistent project MCP").Text);
             File.WriteAllText(source, "TEMPORARY CAPTURE");
-            Assert.Contains("Imported", first.Commands.Execute($"context add \"{source}\" temporary project ARCHON").Text);
+            Assert.Contains("Imported", first.Commands.Execute($"context add \"{source}\" temporary project MCP").Text);
             first.Engine.SetVoiceProfile(first.Identity.Reference, new(agent.Id, "Portable Voice Preference", 1, 75));
             var info = new WorldInfo(first.Engine.GetSnapshot().WorldId, "Verification", DateTimeOffset.UtcNow);
             var path = Path.Combine(folder, "world.db");
@@ -96,7 +96,7 @@ public sealed class CommunicationVerificationTests
         Assert.Contains("No conversation", commands.Execute("resume " + privateId).Text);
         Assert.Contains("No conversation", commands.Execute("talk unauthorized turn").Text);
         Assert.Equal(2, session.Engine.GetConversation(privateId).Messages.Count);
-        session.Commands.Execute("disconnect"); session.Commands.Execute("connect ARCHON"); session.Commands.Execute("talk SHARED MESSAGE");
+        session.Commands.Execute("disconnect"); session.Commands.Execute("connect MCP"); session.Commands.Execute("talk SHARED MESSAGE");
         var shared = session.Chat.ActiveConversation!.Value;
         Assert.Contains("SHARED MESSAGE", commands.Execute("transcript " + shared).Text);
         session.Identity.Logout(); Assert.Contains("denied", commands.Execute("transcript " + shared).Text);

@@ -180,7 +180,7 @@ The language model **must not be the source of truth** for Windows state or Grid
 
 ### Local runtime behavior
 
-- Run a single shared model or shared inference queue for ARCHON and specialist programs.
+- Run a single shared model or shared inference queue for MCP and specialist programs.
 - Keep model inference idle when no conversation or reasoning task requires it; unload idle models if memory pressure warrants.
 - Queue or defer expensive requests when CPU/GPU/RAM are needed for ordinary PC activity.
 - Simulate most citizens with rules; reserve richer AI for selected system programs or conversations.
@@ -236,12 +236,12 @@ These ranges are **not additive fixed requirements**. Installed runtimes, develo
 
 ## 6. Storage Allocation Governance
 
-**Requirement / proposed policy:** ARCHIVIST manages storage planning, but cannot authorize more capacity on its own. ARCHON coordinates decisions and requests permission from the User.
+**Requirement / proposed policy:** JN manages storage planning, but cannot authorize more capacity on its own. MCP coordinates decisions and requests permission from the User.
 
 ### Responsibilities
 
-- **ARCHIVIST (data management):** track actual Grid usage, growth rates, model cache usage, event history, snapshots and logs; estimate future need; identify safe cleanup candidates; prepare expansion or reclamation proposal.
-- **ARCHON (coordinator):** review ARCHIVIST’s proposal, verify host disk free space and system policies, aggregate recommendations, and ask the User to approve or deny.
+- **JN (data management):** track actual Grid usage, growth rates, model cache usage, event history, snapshots and logs; estimate future need; identify safe cleanup candidates; prepare expansion or reclamation proposal.
+- **MCP (coordinator):** review JN’s proposal, verify host disk free space and system policies, aggregate recommendations, and ask the User to approve or deny.
 - **USER (owner):** sole authority for quota increases and sensitive deletion or system-level storage changes.
 - **Storage controller (deterministic subsystem):** enforce quotas, minimum host free space, approved changes, and audit history; agents do not bypass it.
 
@@ -259,13 +259,13 @@ Thresholds apply to **Grid-attributed storage**, not to the entire SSD. The host
 
 ### Expansion workflow
 
-1. ARCHIVIST measures used bytes, quota, recent rate of growth, and reclaimable bytes.
-2. When a threshold or forecast is met, ARCHIVIST prepares a report with measurement period, confidence, and alternatives.
-3. ARCHON validates the host’s available disk space and the policy minimum reserve.
-4. ARCHON sends a terminal/dashboard notification and, if enabled, a spoken request through RELAY.
+1. JN measures used bytes, quota, recent rate of growth, and reclaimable bytes.
+2. When a threshold or forecast is met, JN prepares a report with measurement period, confidence, and alternatives.
+3. MCP validates the host’s available disk space and the policy minimum reserve.
+4. MCP sends a terminal/dashboard notification and, if enabled, a spoken request through RELAY.
 5. User approves an explicit amount, denies it, or chooses cleanup.
 6. Storage controller records the decision and changes only the **logical Grid quota**—not disk partitions.
-7. ARCHIVIST verifies the result and updates projections.
+7. JN verifies the result and updates projections.
 
 ### Example approval scenario (hypothetical)
 
@@ -273,7 +273,7 @@ Thresholds apply to **Grid-attributed storage**, not to the entire SSD. The host
 - Current usage: **16.8 GB** (84%)
 - Requested allocation: **30 GB**
 - Increase: **10 GB**
-- Forecast cited by ARCHIVIST: usage may exceed 90% in approximately 14 days **if supported by actual observed growth**.
+- Forecast cited by JN: usage may exceed 90% in approximately 14 days **if supported by actual observed growth**.
 
 Potential terminal commands:
 
@@ -350,7 +350,7 @@ One conceptual 20 GB city could feature:
 
 - Thousands of simulated citizens with persistent identities and compressed memories.
 - Five or more districts with buildings and transit routes.
-- Six main system agents: **ARCHON, SENTINEL, ARCHIVIST, FORGE, VOLT, RELAY**.
+- Six main system agents: **MCP, SENTINEL, JN, MAXIS, VOLT, RELAY**.
 - A shared local language model and separate voice components.
 - A 3D environment using reusable assets, materials, and animations.
 - Persistent conversation and city event histories spanning long periods, provided retention is managed.
@@ -388,7 +388,7 @@ This is arithmetic based on illustrative assumptions, **not measured Grid perfor
 | Initial storage quota | 20 GB |
 | Default requested expansion | +10 GB, user approval required |
 | Starting population | Running application representatives plus persistent agents/special programs; no fixed citizen target |
-| Key system agents | ARCHON, SENTINEL, ARCHIVIST, FORGE, VOLT, RELAY |
+| Key system agents | MCP, SENTINEL, JN, MAXIS, VOLT, RELAY |
 | City layout | Five interconnected districts |
 | Language models | One shared local inference service, optional when idle |
 | Persistence | SQLite with snapshots, audit/event logs |
@@ -409,9 +409,9 @@ A low-cost development sequence was recommended:
 5. **Local AI** — shared Ollama-hosted model for richer dialogue, not mandatory for core operations.
 6. **Offline voice** — whisper.cpp and Piper with provider-swappable interfaces.
 7. **Godot 3D viewer** — city visualization layered on the already-running simulation.
-8. **ARCHIVIST storage governance** — quotas, forecasts, reclaim recommendations, and ARCHON/user approval.
+8. **JN storage governance** — quotas, forecasts, reclaim recommendations, and MCP/user approval.
 
-In implementation, the basic storage quota guardrails and crash-safe persistence should be built **early**, alongside step 3; the sophisticated ARCHIVIST negotiation workflow can mature later.
+In implementation, the basic storage quota guardrails and crash-safe persistence should be built **early**, alongside step 3; the sophisticated JN negotiation workflow can mature later.
 
 ## 12. Decisions and Open Questions
 
@@ -420,7 +420,7 @@ In implementation, the basic storage quota guardrails and crash-safe persistence
 - Free/local-first is preferred over paid managed services.
 - Favor extra development work over recurring provider bills.
 - Begin with a **20 GB logical storage allocation**.
-- Agent-initiated storage expansion requires a chain of approval: **ARCHIVIST → ARCHON → User**.
+- Agent-initiated storage expansion requires a chain of approval: **JN → MCP → User**.
 - Preserve a minimum amount of free host disk space.
 - Programs provide progress updates and can speak to the user through local TTS.
 - The Grid should scale its civilization by shared assets and mostly inexpensive AI behaviors.
@@ -441,7 +441,7 @@ In implementation, the basic storage quota guardrails and crash-safe persistence
 
 A **20 GB initial budget is a reasonable starting point for a local-first Grid** with a small shared language model, offline speech services, persistent databases, a modest 3D city, and room for growth. It could store records for thousands of citizens and a substantial amount of history, but the **number simultaneously simulated with detailed AI** will depend primarily on host hardware and optimization.
 
-Treat **20 GB as a configurable logical quota, not disk space consumed immediately**. ARCHIVIST should track actual usage and propose cleanup or an increase; ARCHON should present the evidence and obtain explicit user approval before the storage controller changes that quota.
+Treat **20 GB as a configurable logical quota, not disk space consumed immediately**. JN should track actual usage and propose cleanup or an increase; MCP should present the evidence and obtain explicit user approval before the storage controller changes that quota.
 
 ---
 

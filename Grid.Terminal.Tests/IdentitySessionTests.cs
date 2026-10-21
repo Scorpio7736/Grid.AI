@@ -48,15 +48,15 @@ public sealed class IdentitySessionTests
     {
         var (engine, session, commands) = Fixture(); commands.Execute("login master"); commands.Execute("connect"); commands.Execute("talk hello");
         var conversation = engine.GetSnapshot().Communications.Conversations.Single().Id;
-        Assert.Contains("not registered", commands.Execute("switch ARCHON").Text);
-        commands.Execute("register-agent ARCHON"); commands.Execute("switch ARCHON");
+        Assert.Contains("not registered", commands.Execute("switch MCP").Text);
+        commands.Execute("register-agent MCP"); commands.Execute("switch MCP");
         Assert.False(session.IsMaster); Assert.Contains("agent:", commands.Prompt);
         foreach (var cmd in new[] { "status", "step", "live", "nge", "programs", "edit whatever name x" })
             Assert.Contains("denied", commands.Execute(cmd).Text);
         Assert.Contains("No conversation", commands.Execute("talk hi").Text);
-        // ARCHON participates in the earlier conversation, so that transcript belongs to its scope too.
+        // MCP participates in the earlier conversation, so that transcript belongs to its scope too.
         Assert.Contains("hello", commands.Execute("transcript " + conversation).Text);
-        Assert.Contains("ARCHON", commands.Execute("self").Text);
+        Assert.Contains("MCP", commands.Execute("self").Text);
         Assert.DoesNotContain("apply-edit", commands.Execute("help").Text);
         commands.Execute("switch master"); Assert.True(session.IsMaster);
         Assert.Contains("No conversation", commands.Execute("talk hi").Text);
@@ -113,9 +113,9 @@ public sealed class IdentitySessionTests
     public void AgentCannotAcquireEditLeaseAndObservationOwnedFieldsStayProtected()
     {
         var (engine, session, commands) = Fixture(); commands.Execute("login master"); commands.Execute("connect");
-        var archon = engine.ResolveProgram("ARCHON");
+        var archon = engine.ResolveProgram("MCP");
         Assert.Contains("observation/service-owned", commands.Execute($"edit {archon.Id} energy 5").Text);
-        commands.Execute("register-agent ARCHON"); commands.Execute("switch ARCHON");
+        commands.Execute("register-agent MCP"); commands.Execute("switch MCP");
         Assert.Null(session.Acquire(session.Reference, engine.WorldInstanceId));
         Assert.Equal(ProgramEditOutcome.Forbidden, engine.PrepareEdit(session.Reference, new(archon.Id, [new("name", new TextValue("Changed"))])).Outcome);
     }

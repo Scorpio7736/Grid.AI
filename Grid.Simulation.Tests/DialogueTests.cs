@@ -5,6 +5,37 @@ namespace Grid.Simulation.Tests;
 public sealed class DialogueTests
 {
     [Fact]
+    public void LegacyAgentRenamesPreserveIdsRegistrationAndHistoricalMessages()
+    {
+        var world = new GridWorld(); var district = new GridDistrict { Name = "Core" }; world.AddDistrict(district);
+        foreach (var name in new[] { "ARCHON", "FORGE", "ARCHIVIST" }) world.AddProgram(new GridProgram { Name = name, Occupation = "Unassigned", Kind = ResidentKind.Agent }, district.Id);
+        var engine = new GridSimulationEngine(world); var old = engine.ResolveProgram("ARCHON");
+        engine.BindLocalOwner("test-owner"); engine.RegisterAgentIdentity(old.Id);
+        var conversation = engine.StartConversation(engine.LocalOperator, old); engine.Talk(conversation, engine.LocalOperator, "hello ARCHON");
+        var state = engine.GetSnapshot();
+        var restored = GridSimulationEngine.Restore(state);
+        Assert.Equal(old.Id, restored.EnsureCoordinator().Id);
+        Assert.Equal(new[] { "JN", "MAXIS", "MCP" }, restored.GetSnapshot().Programs.Select(p => p.Name).Order());
+        Assert.Contains(old.Id, restored.GetSnapshot().Identities.RegisteredAgents);
+        Assert.Contains(restored.GetConversation(conversation).Participants, p => p.Id == old.Id && p.Name == "MCP");
+        Assert.Equal("hello ARCHON", restored.GetConversation(conversation).Messages[0].Content);
+        Assert.Equal("ARCHON", restored.GetConversation(conversation).Messages[1].Sender.Name);
+        var again = GridSimulationEngine.Restore(restored.GetSnapshot());
+        Assert.Equal(restored.GetSnapshot().Programs.Select(p => p.Revision), again.GetSnapshot().Programs.Select(p => p.Revision));
+    }
+    [Fact]
+    public void RenameCollisionDoesNotMergeOrPromoteResidents()
+    {
+        var world = new GridWorld(); var district = new GridDistrict { Name = "Core" }; world.AddDistrict(district);
+        world.AddProgram(new GridProgram { Name = "ARCHON", Occupation = "Unassigned", Kind = ResidentKind.Agent }, district.Id);
+        world.AddProgram(new GridProgram { Name = "MCP", Occupation = "Unassigned", Kind = ResidentKind.Special }, district.Id);
+        var restored = GridSimulationEngine.Restore(new GridSimulationEngine(world).GetSnapshot());
+        Assert.Equal(2, restored.GetSnapshot().Programs.Count);
+        Assert.Equal(ResidentKind.Agent, restored.GetSnapshot().Programs.Single(p => p.Name == "ARCHON").Kind);
+        Assert.Throws<InvalidOperationException>(() => restored.EnsureCoordinator());
+        Assert.Contains(restored.CaptureHistory().Events, e => e.Kind == "AgentRenameSkipped");
+    }
+    [Fact]
     public void TurnIsAtomicAtCapacityAndCancellationAndDoesNotExecuteRequests()
     {
         var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
@@ -21,7 +52,7 @@ public sealed class DialogueTests
     public void CoordinatorNameCollisionDoesNotPromoteExistingCitizen()
     {
         var world = new GridWorld(); var district = new GridDistrict { Name = "Core" }; world.AddDistrict(district);
-        var civilian = new GridProgram { Name = "ARCHON", Occupation = "Unassigned", Kind = ResidentKind.Special };
+        var civilian = new GridProgram { Name = "MCP", Occupation = "Unassigned", Kind = ResidentKind.Special };
         world.AddProgram(civilian, district.Id); var engine = new GridSimulationEngine(world);
         Assert.Throws<InvalidOperationException>(() => engine.EnsureCoordinator());
         Assert.Equal(ResidentKind.Special, engine.GetSnapshot().Programs.Single().Kind);

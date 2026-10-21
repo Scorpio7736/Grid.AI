@@ -19,18 +19,18 @@ public sealed class ChatCommandTests
     public void DefaultCoordinatorSupportsConversationAndOrdinaryCommands()
     {
         var (engine, commands) = Fixture();
-        Assert.DoesNotContain(engine.GetSnapshot().Programs, p => p.Name == "ARCHON");
-        Assert.Contains("Connected to ARCHON", commands.Execute("connect").Text);
+        Assert.DoesNotContain(engine.GetSnapshot().Programs, p => p.Name == "MCP");
+        Assert.Contains("Connected to MCP", commands.Execute("connect").Text);
         Assert.Contains("VERIFIED GRID STATE", commands.Execute("talk status").Text);
-        Assert.Contains("ARCHON", commands.Execute("talk who are you").Text);
+        Assert.Contains("MCP", commands.Execute("talk who are you").Text);
         Assert.Contains("SIMULATED DIALOGUE", commands.Execute("talk delete my files").Text);
         commands.Execute("step"); Assert.Equal(1, engine.TickCount);
         Assert.Contains("delete my files", commands.Execute("transcript").Text);
         Assert.Contains("CONVERSATIONS", commands.Execute("help").Text);
-        Assert.Contains("ARCHON", commands.Execute("conversations").Text);
+        Assert.Contains("MCP", commands.Execute("conversations").Text);
         Assert.Contains("Ended conversation", commands.Execute("disconnect").Text);
         Assert.Contains("No conversation", commands.Execute("talk hi").Text);
-        Assert.Single(engine.GetSnapshot().Programs, p => p.Name == "ARCHON");
+        Assert.Single(engine.GetSnapshot().Programs, p => p.Name == "MCP");
         Assert.Equal(6, engine.GetSnapshot().Communications.Conversations[0].Messages.Count);
     }
     [Fact]
@@ -44,7 +44,7 @@ public sealed class ChatCommandTests
         Assert.Contains("Resumed", next.Execute("resume " + id).Text);
         Assert.Contains("VERIFIED", next.Execute("talk status").Text);
         next.Execute("disconnect"); Assert.Contains("has ended", next.Execute("resume " + id).Text);
-        next.Execute("connect"); Assert.Single(restored.GetSnapshot().Programs, p => p.Name == "ARCHON");
+        next.Execute("connect"); Assert.Single(restored.GetSnapshot().Programs, p => p.Name == "MCP");
         Assert.Equal(4, restored.GetConversation(id).Messages.Count);
     }
     [Fact]
@@ -69,6 +69,6 @@ public sealed class ChatCommandTests
         Assert.Contains("Connected", commands.Execute("connect " + target.Id).Text);
         Assert.Contains("SIMULATED DIALOGUE", commands.Execute("talk \"Hello café 世界\"").Text);
         Assert.Contains("Hello café 世界", commands.Execute("transcript").Text);
-        Assert.DoesNotContain(engine.GetSnapshot().Programs, p => p.Name == "ARCHON");
+        Assert.DoesNotContain(engine.GetSnapshot().Programs, p => p.Name == "MCP");
     }
 }

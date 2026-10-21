@@ -210,7 +210,7 @@ public sealed class ContextTests : IDisposable
     {
         var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
         Import(FileWith("private-context.md", "Never copy this body into dialogue"), "temporary", agent.Id.ToString());
-        commands.Execute("connect ARCHON");
+        commands.Execute("connect MCP");
         var reply = commands.Execute("talk context").Text;
         Assert.Contains("1 captured files", reply); Assert.DoesNotContain("Never copy", reply);
         Assert.DoesNotContain("Never copy", commands.Execute("transcript").Text);

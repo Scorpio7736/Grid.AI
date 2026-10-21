@@ -43,7 +43,7 @@ See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) 
 ## Commands
 
 ```text
-connect                         Start a new conversation with ARCHON.
+connect                         Start a new conversation with MCP.
 connect <program-id|name>        Start a new directed conversation.
 talk <message>                  Send a turn to the connected program.
 conversations                   List this local operator's conversations.
@@ -67,11 +67,11 @@ Names with spaces are accepted by connect, as are full resident IDs. Use IDs for
 
 There is one active conversation per terminal instance. Ordinary commands such as status, step, live and exit continue working while connected; text without `talk` is still interpreted as a command. Starting/resuming another conversation requires ending the active one first. `disconnect` permanently ends that conversation; it is not a temporary detach. Normal exit leaves the conversation open so another launch can use conversations/resume. After restart the active selection is empty; open/ended transcripts and sequence numbers remain saved. Ended conversations can be read but not resumed.
 
-## ARCHON and operator identity
+## MCP and operator identity
 
-The first `connect` (or `connect ARCHON`) creates a persistent Agent resident named ARCHON in the motherboard/Core district, with a stable world-derived UUID and occupation Local coordinator. In worlds without hardware geometry it uses the first district by stable ID. Existing uniquely named ARCHON agents are reused; conflicting non-agent names or ambiguous names fail without promoting/overwriting anyone. A reserved-ID collision also fails. Merely launching the terminal does not create ARCHON.
+The first `connect` (or `connect MCP`) creates a persistent Agent resident named MCP in the motherboard/Core district, with a stable world-derived UUID and occupation Local coordinator. In worlds without hardware geometry it uses the first district by stable ID. Existing uniquely named MCP agents are reused; conflicting non-agent names or ambiguous names fail without promoting/overwriting anyone. A reserved-ID collision also fails. Merely launching the terminal does not create MCP.
 
-ARCHON is the early general coordination contact. It supplies deterministic local guidance and state summaries, not task delegation, an LLM, operating-system privileges or an autonomous job assignment. It has no automatic work routine or social opt-in. Other recipients use the same explicitly labeled dialogue adapter; host applications do not actually read or author these replies.
+MCP is the early general coordination contact. It supplies deterministic local guidance and state summaries, not task delegation, an LLM, operating-system privileges or an autonomous job assignment. It has no automatic work routine or social opt-in. Other recipients use the same explicitly labeled dialogue adapter; host applications do not actually read or author these replies.
 
 A Local operator human UUID is derived from the saved world UUID and a versioned namespace. It remains stable across restarts and differs across worlds. This is a convenience handle, **not login, authentication or Master Admin authority**. Conversation list/read/resume commands select this handle's conversations; this is not a security boundary against direct trusted API access. 4.2A login, role-specific access and identity switching remain planned.
 
@@ -88,12 +88,12 @@ Engine Talk stages both the human message and generated reply, validates the hum
 
 ## Persistence and scope
 
-Existing schema v10 holds the unchanged conversation model; no migration is required for these commands. ARCHON persists as an Agent, conversations save with the world, and ordinary applications retain discovery-only population semantics. Autosave and orderly exit provide durability; unsaved turns can be lost on abrupt termination. Missing original program recipients block new turns while allowing transcript reads and human closure. Capacity remains 128 conversations, 2,048 total messages and 4,096 input characters; a dialogue turn consumes two messages. Transcript retention/deletion tools remain future work, so closed conversations still count toward limits.
+Existing schema v10 holds the unchanged conversation model; no migration is required for these commands. MCP persists as an Agent, conversations save with the world, and ordinary applications retain discovery-only population semantics. Autosave and orderly exit provide durability; unsaved turns can be lost on abrupt termination. Missing original program recipients block new turns while allowing transcript reads and human closure. Capacity remains 128 conversations, 2,048 total messages and 4,096 input characters; a dialogue turn consumes two messages. Transcript retention/deletion tools remain future work, so closed conversations still count toward limits.
 
 ## Completion verification
 
 **353 tests passed:** 14 Core, 155 Simulation, 88 Persistence and 96 Terminal. Each project ran with `dotnet test <project>/<project>.csproj -c Verification --no-restore`, without build warnings. New coverage verifies default/directed conversations, deterministic and verified labels, normal commands during chat, cancellation/capacity atomicity, coordinator collision, no task execution, invalid commands, Unicode rendering, restored operator identity, open conversation continuation and ended-conversation rejection.
 
-A real Verification terminal smoke used a fresh temporary world over three launches: connect/create ARCHON, talk status/help, save/exit, restart/resume, talk who are you, read/end, then reopen/read and reject resume of the ended conversation. The user's default save and running terminal were untouched. Rebuild/restart the normal launcher target to use these commands.
+A real Verification terminal smoke used a fresh temporary world over three launches: connect/create MCP, talk status/help, save/exit, restart/resume, talk who are you, read/end, then reopen/read and reject resume of the ended conversation. The user's default save and running terminal were untouched. Rebuild/restart the normal launcher target to use these commands.
 
-Still planned: 4.2A production login, authenticated admin/agent sessions, real task delegation, LLM-generated dialogue, voice/viewer adapters, richer intent recognition, group conversations and transcript retention UI. Earlier completion notes describing terminal chat/agent creation as deferred refer to earlier milestones; this milestone adds only the explicitly requested lazy ARCHON coordinator.
+Still planned: 4.2A production login, authenticated admin/agent sessions, real task delegation, LLM-generated dialogue, voice/viewer adapters, richer intent recognition, group conversations and transcript retention UI. Earlier completion notes describing terminal chat/agent creation as deferred refer to earlier milestones; this milestone adds only the explicitly requested lazy MCP coordinator.

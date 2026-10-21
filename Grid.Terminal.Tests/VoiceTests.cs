@@ -98,7 +98,7 @@ public sealed class VoiceTests
     public async Task PlaybackStartsMutedAndUsesSavedProfileOnlyOnExplicitSpeak()
     {
         commands.Execute("connect"); var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
-        Assert.Contains("saved", commands.Execute("voice profile ARCHON \"Test Voice\" -2 70").Text); Assert.Equal(1, saves);
+        Assert.Contains("saved", commands.Execute("voice profile MCP \"Test Voice\" -2 70").Text); Assert.Equal(1, saves);
         commands.Execute("talk hello"); Assert.Null(provider.Spoken);
         Assert.Contains("muted", commands.Execute("voice speak").Text);
         commands.Execute("voice mute off"); await Run("voice speak");
@@ -109,12 +109,12 @@ public sealed class VoiceTests
     public void ProfileRejectsInvalidValuesUnregisteredAgentsAndUnauthorizedServiceCalls()
     {
         commands.Execute("connect"); var agent = engine.EnsureCoordinator();
-        Assert.Contains("Register", commands.Execute("voice profile ARCHON test 0 80").Text);
+        Assert.Contains("Register", commands.Execute("voice profile MCP test 0 80").Text);
         engine.RegisterAgentIdentity(agent.Id);
-        Assert.Contains("Invalid", commands.Execute("voice profile ARCHON test 11 80").Text);
-        Assert.Contains("Invalid", commands.Execute("voice profile ARCHON test 0 101").Text);
+        Assert.Contains("Invalid", commands.Execute("voice profile MCP test 11 80").Text);
+        Assert.Contains("Invalid", commands.Execute("voice profile MCP test 0 101").Text);
         Assert.Empty(engine.GetSnapshot().Communications.VoiceProfiles); Assert.Equal(0, saves);
-        identity.Switch(agent.Id.ToString()); Assert.Contains("denied", commands.Execute("voice profile ARCHON test 0 80").Text);
+        identity.Switch(agent.Id.ToString()); Assert.Contains("denied", commands.Execute("voice profile MCP test 0 80").Text);
         Assert.Throws<UnauthorizedAccessException>(() => engine.SetVoiceProfile(identity.Reference, new(agent.Id, "test")));
     }
     [Fact]

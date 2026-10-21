@@ -38,7 +38,7 @@ public sealed class VoiceCommands
             return await operation(output, token);
         }, Valid));
     }
-    private string Review() => draft is null ? (chat.ActiveConversation is null ? "No voice draft. Use connect ARCHON, then voice listen." : "No voice draft. Already connected; use voice listen.") :
+    private string Review() => draft is null ? (chat.ActiveConversation is null ? "No voice draft. Use connect MCP, then voice listen." : "No voice draft. Already connected; use voice listen.") :
         $"UNSENT VOICE TRANSCRIPT // conversation {draftConversation}\n{draft}\nReview carefully. voice edit <text> corrects it; voice send stores it as a message; voice cancel discards it.";
     private CommandResult Execute(IReadOnlyList<string> args)
     {
@@ -46,7 +46,7 @@ public sealed class VoiceCommands
         if (args.Count == 0 || args.Count == 1 && args[0] == "status")
             return new($"Offline Windows voice | microphone {microphone} | language {language} | playback {(muted ? "muted" : "enabled on explicit voice speak")}\nNo background listening. Use voice devices, voice listen, voice review, voice send, voice mute off, voice speak. Esc interrupts audio.\n" + Review());
         if (args.Count == 1 && int.TryParse(args[0], out var microphoneId) && microphoneId >= -1)
-        { microphone = microphoneId; return new($"Microphone {microphoneId} selected. Use voice listen after connect ARCHON."); }
+        { microphone = microphoneId; return new($"Microphone {microphoneId} selected. Use voice listen after connect MCP."); }
         switch (args[0].ToLowerInvariant())
         {
             case "devices" when args.Count == 1:

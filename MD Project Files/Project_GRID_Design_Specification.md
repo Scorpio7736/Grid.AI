@@ -41,7 +41,7 @@ See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) 
 
 ## Terminal conversations completion - 4.2 (2026-10-20)
 
-**Implemented and verified.** Use connect (default ARCHON), talk, conversations, transcript, resume and disconnect. ARCHON is created on first explicit connection as a persistent coordinator Agent; a stable world-local operator handle supports reopening saved conversations. Replies to status/who are you are labeled verified GRID state; other replies are labeled deterministic simulated dialogue and claim no task execution/delegation. Input/reply pairs commit atomically and reuse schema v10.
+**Implemented and verified.** Use connect (default MCP), talk, conversations, transcript, resume and disconnect. MCP is created on first explicit connection as a persistent coordinator Agent; a stable world-local operator handle supports reopening saved conversations. Replies to status/who are you are labeled verified GRID state; other replies are labeled deterministic simulated dialogue and claim no task execution/delegation. Input/reply pairs commit atomically and reuse schema v10.
 
 **353 tests passed**, plus a three-launch isolated terminal save/resume/end smoke. See [Terminal Conversations](Project_GRID_Terminal_Conversations.md) for syntax, identity/capacity limits and completion evidence. This local operator handle grants no authentication or admin authority; 4.2A login, real task delegation and LLM dialogue remain planned. Earlier dated pending-terminal-chat/agent-creation statements describe previous milestones.
 
@@ -290,24 +290,24 @@ Routine simulation does **not** require a large language model for every action.
 | Program | Role | Real capabilities (scoped) | Example update |
 |---|---|---|---|
 | **SENTINEL** | Security, inspired by TRON | Read Windows Defender/firewall status and permitted security events, investigate and report anomalies | “A security alert was recorded. No protective action has been taken.” |
-| **ARCHON** | Coordinator/administrator, inspired by CLU | Assign tasks, gather summaries, track queues, coordinate simulation administration | “Sentinel completed its review; Forge has three tasks pending.” |
-| **ARCHIVIST** | Data management | Inventory approved folders, identify duplicates, prepare organization proposals and perform approved reversible moves | “18 possible duplicates are ready for review.” |
-| **FORGE** | Development and builds | Inspect explicitly authorized repositories, run configured tests/builds, produce diagnostics and propose patches in isolated workspaces | “Two unit tests failed; a report is available.” |
+| **MCP** | Coordinator/administrator, inspired by CLU | Assign tasks, gather summaries, track queues, coordinate simulation administration | “Sentinel completed its review; Forge has three tasks pending.” |
+| **JN** | Data management | Inventory approved folders, identify duplicates, prepare organization proposals and perform approved reversible moves | “18 possible duplicates are ready for review.” |
+| **MAXIS** | Development and builds | Inspect explicitly authorized repositories, run configured tests/builds, produce diagnostics and propose patches in isolated workspaces | “Two unit tests failed; a report is available.” |
 | **VOLT** | Resource monitoring | Observe CPU/GPU/RAM/disk/thermal metrics where supported and adjust *Grid’s own* resource budget | “I reduced Grid background work while host load is high.” |
 | **RELAY** | Communication | Route messages, transcribe audio, synthesize replies, manage notifications, and deliver briefings | “Forge's report is complete. Shall I read it aloud?” |
 
-**Organizational rule:** ARCHON may coordinate other agents but does not inherit their permissions. SENTINEL should independently monitor security conditions. RELAY is the universal communications layer.
+**Organizational rule:** MCP may coordinate other agents but does not inherit their permissions. SENTINEL should independently monitor security conditions. RELAY is the universal communications layer.
 
-Potential first trio for useful system functionality: **ARCHON + SENTINEL + FORGE**. Basic RELAY functionality must still exist early to deliver terminal messages.
+Potential first trio for useful system functionality: **MCP + SENTINEL + MAXIS**. Basic RELAY functionality must still exist early to deliver terminal messages.
 
 ### 4.1 Agent personality
 
 Personality should change how a program communicates, not grant it extra access. For example:
 
 - SENTINEL: precise, vigilant, concise.
-- ARCHON: calm, strategic, administrative.
-- ARCHIVIST: thorough and methodical.
-- FORGE: curious, engineering-focused.
+- MCP: calm, strategic, administrative.
+- JN: thorough and methodical.
+- MAXIS: curious, engineering-focused.
 - VOLT: factual, resource-conscious.
 - RELAY: clear and responsive.
 
@@ -319,11 +319,11 @@ Example request: “Archon, have Forge run my unit tests and ask Archivist to ch
 
 1. RELAY receives the typed or spoken message.
 2. The communication layer identifies the requested intent and recipient(s).
-3. ARCHON breaks the request into discrete task proposals.
+3. MCP breaks the request into discrete task proposals.
 4. The system validates each proposal against specific tools, directories, repositories, and approved parameters.
-5. FORGE runs tests through a configured test runner in an authorized workspace; ARCHIVIST inventories the approved Downloads folder.
+5. MAXIS runs tests through a configured test runner in an authorized workspace; JN inventories the approved Downloads folder.
 6. Results and failures are stored in durable task/event records.
-7. ARCHON combines the results into a report; RELAY presents the text and optionally reads it aloud.
+7. MCP combines the results into a report; RELAY presents the text and optionally reads it aloud.
 
 ### 5.1 Task lifecycle
 
@@ -360,8 +360,8 @@ A durable SQLite-backed queue should retain requests over restarts, use transact
 |---|---|---|
 | 0 — Observer | Read permitted data | SENTINEL reads security status |
 | 1 — Reporter | Analyze and notify | VOLT reports high sustained CPU use |
-| 2 — Operator | Perform narrowly preapproved, bounded actions | FORGE executes a fixed test command in an allowed repository |
-| 3 — Approval required | Propose higher-risk changes; execute only after user authorization | ARCHIVIST proposes deletions or major file moves |
+| 2 — Operator | Perform narrowly preapproved, bounded actions | MAXIS executes a fixed test command in an allowed repository |
+| 3 — Approval required | Propose higher-risk changes; execute only after user authorization | JN proposes deletions or major file moves |
 
 These are **application policy levels**, not Windows administrator privileges. Actual access must be separately enforced by capability-specific tool interfaces, operating-system permissions, allowlists, and user approval.
 
@@ -396,7 +396,7 @@ These are future command examples. Current commands are help, status, programs, 
 ```text
 grid status
 grid programs list
-grid agent inspect archon
+grid agent inspect mcp
 grid connect CL-047
 grid talk CL-047 "How is the reactor?"
 grid broadcast "Prepare for system maintenance."
@@ -580,7 +580,7 @@ Current startup is manual through dotnet run. It creates and saves Genesis only 
 2. Grid validates persistent data and loads the latest consistent saved state; only genuinely new worlds use the GRID-REQ-004 hardware discovery, generation and durable initialization flow. Failed loads use recovery rather than regeneration.
 3. The host establishes read-only telemetry subscriptions or polling.
 4. The simulation engine starts its clock and agent scheduler.
-5. RELAY and ARCHON can offer an optional concise startup briefing.
+5. RELAY and MCP can offer an optional concise startup briefing.
 6. The terminal, voice console, and 3D viewer may connect independently.
 
 A cinematic full-screen startup sequence **after Windows login** is practical. Rendering a custom interactive Grid *before* Windows login is a substantially different, constrained operating-system integration and is **not** an MVP dependency. The motherboard/Gigabyte firmware splash screen is separate from the Grid application.
@@ -667,7 +667,7 @@ The communication hub belongs to the always-running Grid host, **not** to the vi
 
 ### 10.1 Morning startup briefing
 
-> **ARCHON:** “Welcome back, User. The Grid has resumed. All six system programs are responding. Sentinel has no outstanding alerts from its last completed check. Forge has three development tasks pending. Would you like a full briefing?”
+> **MCP:** “Welcome back, User. The Grid has resumed. All six system programs are responding. Sentinel has no outstanding alerts from its last completed check. Forge has three development tasks pending. Would you like a full briefing?”
 
 The briefing must distinguish the time of the latest check from actual live scan results.
 
@@ -675,7 +675,7 @@ The briefing must distinguish the time of the latest check from actual live scan
 
 **User:** “Archon, have Forge run my unit tests and ask Archivist to check Downloads.”
 
-**Process:** RELAY transcribes → ARCHON coordinates → permissions checked → FORGE and ARCHIVIST operate only within granted scopes → task records update → results delivered by text and speech.
+**Process:** RELAY transcribes → MCP coordinates → permissions checked → MAXIS and JN operate only within granted scopes → task records update → results delivered by text and speech.
 
 ### 10.3 Program conversation
 
@@ -746,10 +746,10 @@ Proposed MVP scale:
 
 ### 11.5 Agent task release
 
-- ARCHON coordinator, SENTINEL security status, FORGE test/build capabilities.
+- MCP coordinator, SENTINEL security status, MAXIS test/build capabilities.
 - Durable task queue, approvals and execution audit.
 - RELAY delivery and text/voice notifications.
-- Add ARCHIVIST and VOLT capabilities next.
+- Add JN and VOLT capabilities next.
 
 ### 11.6 3D integration
 
@@ -828,8 +828,8 @@ Start with the **headless C# simulation and durable communication kernel**, not 
 2. Implement a world clock, five districts, three simulated resources, and twenty simple citizens.
 3. Add deterministic fake host telemetry and event logging.
 4. Add persistent CLI conversations (`grid status`, `grid programs list`, `grid connect`, `grid talk`, `grid events`).
-5. Introduce ARCHON as a coordinator and a task broker that initially exposes only safe mock capabilities.
-6. Implement SENTINEL's read-only status inspection and FORGE's narrowly configured test runner.
+5. Introduce MCP as a coordinator and a task broker that initially exposes only safe mock capabilities.
+6. Implement SENTINEL's read-only status inspection and MAXIS's narrowly configured test runner.
 7. Add push-to-talk, speech recognition, and TTS when terminal communications are stable.
 8. Add the Godot renderer last, observing the same world state and conversations.
 

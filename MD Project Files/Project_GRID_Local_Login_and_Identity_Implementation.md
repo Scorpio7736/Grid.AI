@@ -30,15 +30,15 @@ The prompt shows locked, Master Control or a short active-agent ID. Startup worl
 ```text
 login master
 whoami
-connect                         # lazily creates/reuses ARCHON under Master Control
-register-agent ARCHON           # registers an existing Agent resident
-switch ARCHON
+connect                         # lazily creates/reuses MCP under Master Control
+register-agent MCP           # registers an existing Agent resident
+switch MCP
 self
 switch master
 logout
 ```
 
-`register-agent <id|name>` requires Master Control and an existing Agent kind. Renaming a resident, editing an occupation or calling an application ARCHON does not confer rights. Registry capacity is 256 agents. Additional agents can be registered without modifying the input loop. Creation of arbitrary agents and registration removal/policy editing are not provided by this milestone.
+`register-agent <id|name>` requires Master Control and an existing Agent kind. Renaming a resident, editing an occupation or calling an application MCP does not confer rights. Registry capacity is 256 agents. Additional agents can be registered without modifying the input loop. Creation of arbitrary agents and registration removal/policy editing are not provided by this milestone.
 
 Sessions carry the stable world-local operator ID, random session ID, monotonically increasing generation, active agent ID and capability policy version. They expire eight hours after login. Expiry blocks protected commands and edit leases; login again renews authentication and clears old context. Logout/switch invalidates pending previews and clears the active chat selection without deleting or ending its transcript. A restored world always starts with a new unauthenticated session.
 
@@ -84,6 +84,6 @@ The same world database/backup/NGE boundaries apply to the identity registry. A 
 
 **362 tests passed:** 14 Core, 155 Simulation, 90 Persistence, 103 Terminal. Each test project ran with `dotnet test <project>/<project>.csproj -c Verification --no-restore`. New coverage includes locked commands/scoped help, default-deny extensions, wrong/missing OS identity, owner restore, registered agent restrictions, unrelated transcript isolation, chat/preview reset, service-level edit denial, stale leases, expiry, failed owner persistence, observation-owned fields, schema v10 migration and registry/edit backup recovery. Existing editing tests retain invalid values, concurrency, revision, atomicity and membership coverage.
 
-A real Windows-token terminal smoke used a disposable world: denied pre-login status; login; create/register ARCHON; switch to agent and deny pause; return to master; preview/confirm an occupation edit; logout and deny status; restart requiring login; verify retained edit/registration and agent switching. The user's default save and running GRID instance were untouched. Build/restart the normal launcher target to use this login flow.
+A real Windows-token terminal smoke used a disposable world: denied pre-login status; login; create/register MCP; switch to agent and deny pause; return to master; preview/confirm an occupation edit; logout and deny status; restart requiring login; verify retained edit/registration and agent switching. The user's default save and running GRID instance were untouched. Build/restart the normal launcher target to use this login flow.
 
 Remaining: independent passwords/MFA or alternate OS providers, owner-transfer/recovery UI, agent deregistration/custom policy UI, transcript retention UI, real task services and their scoped views, autonomous agent execution, remote clients and stronger storage protections. Earlier dated notes that login/admin editing are planned remain historical milestones; this implementation supplies the Windows local-terminal scope described here.

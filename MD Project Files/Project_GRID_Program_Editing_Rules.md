@@ -80,7 +80,7 @@ Energy uses the current float model. Preview/result formatting must show the act
 
 - Program GUID, world ownership, district membership lists, simulation clock, and revision metadata are not editable fields.
 - Credentials, security roles, effective capabilities and host-task approvals belong to separate administration APIs.
-- Renaming FORGE or changing an occupation to "Master Control" never changes authorization. Stable identity IDs carry identity; display text does not.
+- Renaming MAXIS or changing an occupation to "Master Control" never changes authorization. Stable identity IDs carry identity; display text does not.
 - Named agents and civilians share these profile/simulation rules where applicable. Setting Offline does not stop a real Windows service or cancel an agent task. Setting Moving does not create a journey.
 - District reassignment updates the source membership, destination membership, and program location together. It preserves total population and does not implicitly change status or energy.
 - Same-value edits and moves to the current district return `NoChange`; they do not emit a fabricated change or increment the program revision.

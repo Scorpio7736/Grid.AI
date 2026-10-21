@@ -209,7 +209,7 @@ The city is not a normal historical city with neon pasted onto it. Its infrastru
 
 ## 7. District Design
 
-### 7.1 Central Civic / Administrative District — ARCHON
+### 7.1 Central Civic / Administrative District — MCP
 
 - Grand but credible civic buildings in masonry and marble
 - Offices, ministry-like halls, formal entrances, institutional squares
@@ -224,7 +224,7 @@ The city is not a normal historical city with neon pasted onto it. Its infrastru
 - Darker stone and cooler light accents
 - A secure architectural feel without turning the entire district into a fortress
 
-### 7.3 Engineering / Processing District — FORGE
+### 7.3 Engineering / Processing District — MAXIS
 
 - Functional urban-industrial architecture embedded in the city
 - Brick, stone, steel, restrained utilitarian glass
@@ -238,7 +238,7 @@ The city is not a normal historical city with neon pasted onto it. Its infrastru
 - Select high-contrast luminous conduits and reactor-facing facilities
 - City infrastructure remains believable and navigable
 
-### 7.5 Archives and Memory — ARCHIVIST
+### 7.5 Archives and Memory — JN
 
 - Libraries, records halls, repositories, quiet courtyards
 - Elegant colonnades, stone staircases, refined detail

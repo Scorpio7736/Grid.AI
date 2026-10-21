@@ -114,7 +114,7 @@ Principles:
 4. **No dependency on AI for basic operation.** Core behavior, task routing, and deterministic commands run without a language model.
 5. **Permission-controlled task execution.** AI-generated text never becomes arbitrary PowerShell, SQL, or native commands.
 6. **Build incrementally, test each subsystem, profile before optimizing.** Add languages and processes when their value is clear.
-7. **Respect host performance and storage.** Rendering and AI yield to ordinary PC activity, and the 20 GB initial storage quota remains governed by ARCHIVIST → ARCHON → User approval.
+7. **Respect host performance and storage.** Rendering and AI yield to ordinary PC activity, and the 20 GB initial storage quota remains governed by JN → MCP → User approval.
 
 ## 2. Eight-milestone development roadmap
 
@@ -124,7 +124,7 @@ Principles:
 | 2 | The Core | SQLite persistence, snapshots, event log, pause/recovery, clock | 2–3 weeks |
 | 3 | First Programs | Autonomous citizens, needs, movement, jobs, utility decisions | 2–4 weeks |
 | 4 | Communications | Terminal messaging, persistence, microphone/STT, TTS | 2–4 weeks |
-| 5 | System Agents | ARCHON coordination; FORGE, SENTINEL, ARCHIVIST; VOLT/RELAY functions | 3–5 weeks |
+| 5 | System Agents | MCP coordination; MAXIS, SENTINEL, JN; VOLT/RELAY functions | 3–5 weeks |
 | 6 | Intelligence | One shared local model, grounded dialogue, memory retrieval, safe action proposals | 2–4 weeks |
 | 7 | The City | Godot 3D scene, districts, agent visualization, interaction | 4–8 weeks |
 | 8 | Integration | Startup, throttling, quotas, backups, notifications, robustness | 3–5 weeks |
@@ -135,7 +135,7 @@ Principles:
 
 - **GRID Genesis (`v0.1.0-genesis`):** console simulation with five districts and twenty uniquely identified citizens; start/pause/tick/status; passing tests.
 - **GRID Foundation:** persistent world, autonomous activity, conversational terminal, and optional voice.
-- **GRID Operator:** authorized local task execution coordinated by ARCHON, including FORGE builds/tests and SENTINEL/ARCHIVIST reports.
+- **GRID Operator:** authorized local task execution coordinated by MCP, including MAXIS builds/tests and SENTINEL/JN reports.
 - **GRID City:** 3D observer connected to the existing authoritative simulation, not a parallel simulation.
 
 ## 3. Milestone 1: Genesis — detailed plan
@@ -232,14 +232,14 @@ The planned Master Control terminal also includes program-value editing. Add typ
 
 ### Milestone 5 — System Agents
 
-- **ARCHON:** assign work, coordinate programs, synthesize status and approval requests.
-- **FORGE:** execute only approved build/test capabilities in approved local repositories.
+- **MCP:** assign work, coordinate programs, synthesize status and approval requests.
+- **MAXIS:** execute only approved build/test capabilities in approved local repositories.
 - **SENTINEL:** monitor permitted Windows security status, initially read-only.
-- **ARCHIVIST:** monitor data usage and prepare cleanup or quota-expansion proposals.
+- **JN:** monitor data usage and prepare cleanup or quota-expansion proposals.
 - **VOLT:** observe system resources and throttle the Grid's own workload.
 - **RELAY:** route messages, voice output, briefings, and notifications.
 
-First end-to-end task: `ARCHON, ask FORGE to run the GRID unit tests.` The typed command becomes a validated task, FORGE executes a fixed allowable operation, and ARCHON reports the verified result. Use audited, idempotent task execution with cancellation and safe retries.
+First end-to-end task: `MCP, ask MAXIS to run the GRID unit tests.` The typed command becomes a validated task, MAXIS executes a fixed allowable operation, and MCP reports the verified result. Use audited, idempotent task execution with cancellation and safe retries.
 
 ### Milestone 6 — Local Intelligence
 
@@ -436,7 +436,7 @@ An illustrative distribution of development effort might be **65% C#, 25% Python
 - Agent tasks pass through permission, capability, audit and approval checks.
 - Real-world system effects are distinct from fictional world events.
 - World history persists across PC restarts while *simulated time remains frozen* when the engine is stopped.
-- ARCHIVIST monitors the **20 GB initial logical quota**, proposes cleanup or ~10 GB increments through ARCHON, and requires User approval. Quota expansion is **not** drive repartitioning.
+- JN monitors the **20 GB initial logical quota**, proposes cleanup or ~10 GB increments through MCP, and requires User approval. Quota expansion is **not** drive repartitioning.
 - Godot viewer may close while a lightweight simulation service continues.
 - Prefer storing text transcripts, not raw microphone recordings, by default.
 

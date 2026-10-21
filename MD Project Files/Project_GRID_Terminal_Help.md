@@ -31,7 +31,7 @@ whoami
 register-agent
     - register-agent <id|name>
       # USAGE: Master Control registers an existing Agent identity.
-    # EXAMPLE: register-agent ARCHON
+    # EXAMPLE: register-agent MCP
 ```
 
 ```text
@@ -40,7 +40,7 @@ switch
       # USAGE: Select Master Control.
     - switch <agent-id|name>
       # USAGE: Select a registered agent identity.
-    # EXAMPLE: switch ARCHON
+    # EXAMPLE: switch MCP
 ```
 
 ```text
@@ -126,7 +126,7 @@ inspect
       # USAGE: Inspect one program.
     - inspect district <id|name>
       # USAGE: Inspect one district.
-    # EXAMPLE: inspect program ARCHON
+    # EXAMPLE: inspect program MCP
 ```
 
 ```text
@@ -165,7 +165,7 @@ social
       # USAGE: List opted-in social residents and fictional civic pools.
     - social <id|name>
       # USAGE: Show one resident's social memories/relationships.
-    # EXAMPLE: social ARCHON
+    # EXAMPLE: social MCP
 ```
 
 ```text
@@ -203,10 +203,10 @@ history
 ```text
 connect
     - connect
-      # USAGE: Start a new conversation with ARCHON; Master Control can create it lazily.
+      # USAGE: Start a new conversation with MCP; Master Control can create it lazily.
     - connect <id|name>
       # USAGE: Start a directed conversation; identities must be distinct.
-    # EXAMPLE: connect ARCHON
+    # EXAMPLE: connect MCP
 ```
 
 ```text
@@ -252,7 +252,7 @@ disconnect
 edit
     - edit <program-id|quoted-name> <field> <value>
       # USAGE: Preview name, occupation, energy, status or district. District needs a full ID. Non-demo energy/status are service-owned and cannot be edited.
-    # EXAMPLE: edit ARCHON occupation "Local coordinator"
+    # EXAMPLE: edit MCP occupation "Local coordinator"
 ```
 
 ```text
@@ -391,7 +391,7 @@ context
       # USAGE: Master Control removes agent access, retaining the owner's captured content.
     - context remove <id|name>
       # USAGE: Master Control removes the active import; historical backups/already-read output are not erased.
-    # EXAMPLE: context add -search persistent "My Project" ARCHON
+    # EXAMPLE: context add -search persistent "My Project" MCP
     # EXAMPLE: context select "notes.md" "design.docx"
     # EXAMPLE: context read
     # EXAMPLE: context read "notes.md" "design.docx"
@@ -431,7 +431,7 @@ voice
       # USAGE: List visible saved per-agent voice settings.
     - voice profile <agent-id|name> "voice name" <rate> <volume>
       # USAGE: Master Control saves a registered Agent's voice; rate -10..10, volume 0..100. Requires a saved world.
-    # EXAMPLE: voice profile ARCHON "Microsoft David Desktop" 0 80
+    # EXAMPLE: voice profile MCP "Microsoft David Desktop" 0 80
     # EXAMPLE: voice listen
     # EXAMPLE: voice review
     # EXAMPLE: voice send
@@ -439,6 +439,6 @@ voice
     # EXAMPLE: voice speak
 ```
 
-Voice hardware requires the original interactive Windows host terminal and installed offline recognition/voice assets. Use `connect ARCHON` first; registration is required for profiles, not ordinary conversation. Attached terminals continue using `talk` and `resume`. Missing audio/language/voice support leaves typed chat available. No raw recordings are saved. See [offline voice implementation](Project_GRID_Offline_Voice_Implementation.md) for verification and limits.
+Voice hardware requires the original interactive Windows host terminal and installed offline recognition/voice assets. Use `connect MCP` first; registration is required for profiles, not ordinary conversation. Attached terminals continue using `talk` and `resume`. Missing audio/language/voice support leaves typed chat available. No raw recordings are saved. See [offline voice implementation](Project_GRID_Offline_Voice_Implementation.md) for verification and limits.
 
 Voice troubleshooting (2026-10-21): capture reports its duration; recordings shorter than 0.25 seconds are refused with a retry hint. Transcription waits for the recognizer completion event. If recognition still fails, report the displayed stage/exception/HRESULT. No raw audio or helper input is included in that diagnostic. `voice speak` requires a reply from `voice send` or `talk` first.

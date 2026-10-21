@@ -40,6 +40,7 @@ public sealed partial class GridSimulationEngine
         engine.communications = Grid.Communication.CommunicationState.Copy(snapshot.Communications);
         engine.social = Social.SocialState.Copy(snapshot.Social);
         engine.clock.Restore(snapshot.TickCount);
+        engine.RenameLegacySystemAgents();
         return engine;
     }
 

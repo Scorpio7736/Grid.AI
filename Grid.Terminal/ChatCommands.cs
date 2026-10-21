@@ -14,7 +14,7 @@ public sealed class ChatCommands
     {
         var chat = new ChatCommands(engine) { identity = identity };
         if (identity is not null) identity.Changed += () => chat.active = null;
-        commands.Register(new("connect", "connect [program-id|name]", "Start a conversation; default contact is ARCHON.", chat.Connect));
+        commands.Register(new("connect", "connect [program-id|name]", "Start a conversation; default contact is MCP.", chat.Connect));
         commands.Register(new("talk", "talk <message>", "Send to the connected program and receive a labeled deterministic reply.", chat.Talk));
         commands.Register(new("conversations", "conversations", "List the active identity's stored conversations.", chat.List));
         commands.Register(new("transcript", "transcript [conversation-id]", "Read a stored conversation; defaults to the connected one.", chat.Transcript));
@@ -39,8 +39,8 @@ public sealed class ChatCommands
         if (active is not null) return new("Already connected. Use disconnect to end it before connecting elsewhere.");
         if (engine.GetSnapshot().Communications.Conversations.Count >= CommunicationState.MaxConversations)
             return new("Conversation capacity reached. Use resume with an existing open conversation.");
-        var name = args.Count == 0 ? "ARCHON" : string.Join(" ", args);
-        var recipient = name.Equals("ARCHON", StringComparison.OrdinalIgnoreCase) && (identity is null || identity.IsMaster) ? engine.EnsureCoordinator() : engine.ResolveProgram(name);
+        var name = args.Count == 0 ? "MCP" : string.Join(" ", args);
+        var recipient = name.Equals("MCP", StringComparison.OrdinalIgnoreCase) && (identity is null || identity.IsMaster) ? engine.EnsureCoordinator() : engine.ResolveProgram(name);
         active = engine.StartConversation(Actor, recipient);
         return new($"Connected to {TerminalTable.Safe(recipient.Name)} | Conversation {active}\nReplies are deterministic GRID dialogue; no host tasks are executed.\nUse talk <message>, transcript, or disconnect. Ordinary GRID commands still work.");
     }

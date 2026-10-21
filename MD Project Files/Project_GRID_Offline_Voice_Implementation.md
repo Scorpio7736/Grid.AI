@@ -23,7 +23,7 @@ The initial provider uses installed Windows `System.Speech` recognition and synt
 ## Commands and first use
 
 ```text
-connect ARCHON
+connect MCP
 voice devices
 voice microphone -1
 voice language en-US
@@ -47,8 +47,8 @@ Recognition never sends automatically. Review displays the unsent draft and its 
 Playback starts muted at every login/identity change and happens only on `voice speak`, even after unmuting. There is no automatic or unattended speech. The command speaks only the connected conversation's latest deterministic agent reply through the default Windows output device. Text remains visible. One original host processes one voice operation at a time, providing single-speaker arbitration. Missing saved voices fail explicitly; they are not silently replaced. Speech helper operations have a 60-second timeout; the overall UI request is bounded to two minutes, including waiting for the key gesture.
 
 ```text
-register-agent ARCHON
-voice profile ARCHON "Microsoft David Desktop" 0 80
+register-agent MCP
+voice profile MCP "Microsoft David Desktop" 0 80
 voice profile
 voice status
 ```

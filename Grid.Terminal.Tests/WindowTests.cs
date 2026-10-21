@@ -89,12 +89,12 @@ public sealed class WindowTests
         await first.Send("command", "connect");
         Assert.Contains("No conversation", (await second.Send("command", "talk hello")).Text);
         Assert.Contains("No conversation", f.Commands.Execute("talk hello").Text);
-        var preview = await first.Send("command", "edit ARCHON occupation WindowTest");
+        var preview = await first.Send("command", "edit MCP occupation WindowTest");
         var id = System.Text.RegularExpressions.Regex.Match(preview.Text, @"Preview ([0-9a-f-]+)").Groups[1].Value;
         Assert.NotEmpty(id);
         Assert.Contains("No matching preview", (await second.Send("command", "apply-edit " + id)).Text);
         Assert.Contains("Applied", (await first.Send("command", "apply-edit " + id)).Text);
-        Assert.Equal("WindowTest", f.Engine.GetSnapshot().Programs.Single(p => p.Name == "ARCHON").Occupation);
+        Assert.Equal("WindowTest", f.Engine.GetSnapshot().Programs.Single(p => p.Name == "MCP").Occupation);
     }
     [Fact]
     public async Task AgentAttachmentCannotPromoteOrMutateAndParentLogoutRevokesIt()

@@ -26,7 +26,7 @@ GRID now imports an explicitly selected local file as captured task data, groupe
 
 ```text
 context add "C:\Work\notes.md" persistent "My Project"
-context add "C:\Work\design.docx" temporary "My Project" ARCHON
+context add "C:\Work\design.docx" temporary "My Project" MCP
 context list
 context list "My Project"
 context read <context-id>
@@ -34,7 +34,7 @@ context revoke <context-id>
 context remove <context-id>
 ```
 
-The optional agent must already be registered (`connect ARCHON`, then `register-agent ARCHON` for the coordinator if needed). Omitting the agent keeps content owner-only. Temporary imports clear when the importing session changes identity, logs out, detaches or ends; use a separately attached agent terminal to inspect a temporary grant without changing the importing session. Persistent imports require a saved world; ephemeral sessions can use temporary imports. Import/revoke/remove require Master Control, including service-side edit-authorization leases. Agents can only list/read explicitly granted imports; they cannot select a host file, grant, revoke or remove context.
+The optional agent must already be registered (`connect MCP`, then `register-agent MCP` for the coordinator if needed). Omitting the agent keeps content owner-only. Temporary imports clear when the importing session changes identity, logs out, detaches or ends; use a separately attached agent terminal to inspect a temporary grant without changing the importing session. Persistent imports require a saved world; ephemeral sessions can use temporary imports. Import/revoke/remove require Master Control, including service-side edit-authorization leases. Agents can only list/read explicitly granted imports; they cannot select a host file, grant, revoke or remove context.
 
 ### Approved scope and captured versions
 

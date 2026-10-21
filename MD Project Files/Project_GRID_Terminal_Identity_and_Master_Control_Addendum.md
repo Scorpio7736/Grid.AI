@@ -16,7 +16,7 @@ See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) 
 
 ## Terminal conversations completion - 4.2 (2026-10-20)
 
-**Implemented and verified.** Use connect (default ARCHON), talk, conversations, transcript, resume and disconnect. ARCHON is created on first explicit connection as a persistent coordinator Agent; a stable world-local operator handle supports reopening saved conversations. Replies to status/who are you are labeled verified GRID state; other replies are labeled deterministic simulated dialogue and claim no task execution/delegation. Input/reply pairs commit atomically and reuse schema v10.
+**Implemented and verified.** Use connect (default MCP), talk, conversations, transcript, resume and disconnect. MCP is created on first explicit connection as a persistent coordinator Agent; a stable world-local operator handle supports reopening saved conversations. Replies to status/who are you are labeled verified GRID state; other replies are labeled deterministic simulated dialogue and claim no task execution/delegation. Input/reply pairs commit atomically and reuse schema v10.
 
 **353 tests passed**, plus a three-launch isolated terminal save/resume/end smoke. See [Terminal Conversations](Project_GRID_Terminal_Conversations.md) for syntax, identity/capacity limits and completion evidence. This local operator handle grants no authentication or admin authority; 4.2A login, real task delegation and LLM dialogue remain planned. Earlier dated pending-terminal-chat/agent-creation statements describe previous milestones.
 
@@ -68,7 +68,7 @@ See [Current implementation and verification](Project_GRID_Current_Implementatio
 
 ## Goal
 
-Eventually, opening a GRID terminal should begin with a login. The User can enter as their own Master Control identity or operate through a named agent program: ARCHON, FORGE, SENTINEL, ARCHIVIST, VOLT, or RELAY. Each agent session provides that program's view of the world and its available actions.
+Eventually, opening a GRID terminal should begin with a login. The User can enter as their own Master Control identity or operate through a named agent program: MCP, MAXIS, SENTINEL, JN, VOLT, or RELAY. Each agent session provides that program's view of the world and its available actions.
 
 The identity list should be expandable as new agent programs are added. This is a future addition to the existing terminal, not a change to the completed v0.1.0-genesis release.
 
@@ -76,7 +76,7 @@ The identity list should be expandable as new agent programs are added. This is 
 
 1. Open a terminal and authenticate the human operator using a local method to be decided.
 2. Choose an authorized identity: Master Control or a named agent.
-3. Show the active identity in the prompt and status output, such as `master-control>` or `forge>`.
+3. Show the active identity in the prompt and status output, such as `master-control>` or `maxis>`.
 4. Display commands, tasks, messages, history, and relevant world information for that identity.
 5. Execute actions within the selected identity's capabilities.
 6. Log out or switch identities through an explicit session action. Switching to Master Control requires its authorization.
@@ -88,20 +88,20 @@ Proposed commands include `login`, `logout`, `whoami`, and `switch`; exact synta
 | Identity | Intended experience |
 |---|---|
 | Master Control | The User's top-level GRID administration identity: inspect the whole system, manage identities and role policies, review activity, approve scoped tasks, and enter authorized agent sessions. |
-| ARCHON | View coordination, assignments, briefings, and approval requests. |
-| FORGE | View development projects, builds, tests, and authorized code tasks. |
+| MCP | View coordination, assignments, briefings, and approval requests. |
+| MAXIS | View development projects, builds, tests, and authorized code tasks. |
 | SENTINEL | View security findings and permitted monitoring actions. |
-| ARCHIVIST | View archives, storage, retained context, and authorized file tasks. |
+| JN | View archives, storage, retained context, and authorized file tasks. |
 | VOLT | View resource readings and GRID performance controls. |
 | RELAY | View communications, conversations, notifications, and permitted messaging actions. |
 
-These are intended role views, not claims that these services already exist. Master Control is the human administrator role within GRID; ARCHON remains a separate agent responsible for coordination. Master Control does not automatically grant Windows administrator privileges.
+These are intended role views, not claims that these services already exist. Master Control is the human administrator role within GRID; MCP remains a separate agent responsible for coordination. Master Control does not automatically grant Windows administrator privileges.
 
 ## Identity and action model
 
 Section 1.9.2 now defines the [Session Context and Authorization Contract](Project_GRID_Session_Context_and_Authorization.md), including trusted session issuance, effective permissions, identity switching, preview invalidation and audit attribution. The editing authorization boundary is now implemented in 1.9.3 with default denial; authentication and general session lifecycle remain pending.
 
-- Keep the authenticated human operator separate from the active program identity. A human operating as FORGE is recorded as that human acting through FORGE, rather than as an autonomous FORGE action.
+- Keep the authenticated human operator separate from the active program identity. A human operating as MAXIS is recorded as that human acting through MAXIS, rather than as an autonomous MAXIS action.
 - Carry a session context through command dispatch and task execution, including operator ID, active identity ID, and effective capabilities.
 - Agent sessions expose their own permitted views and actions. The effective permissions must fit both the operator's authorization and the chosen identity's role; adopting an agent identity does not inherit Master Control powers.
 - Enforce authorization in the underlying service/capability layer as well as in command presentation. Hiding a command from help is not access control.

@@ -16,7 +16,7 @@ See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) 
 
 ## Terminal conversations completion - 4.2 (2026-10-20)
 
-**Implemented and verified.** Use connect (default ARCHON), talk, conversations, transcript, resume and disconnect. ARCHON is created on first explicit connection as a persistent coordinator Agent; a stable world-local operator handle supports reopening saved conversations. Replies to status/who are you are labeled verified GRID state; other replies are labeled deterministic simulated dialogue and claim no task execution/delegation. Input/reply pairs commit atomically and reuse schema v10.
+**Implemented and verified.** Use connect (default MCP), talk, conversations, transcript, resume and disconnect. MCP is created on first explicit connection as a persistent coordinator Agent; a stable world-local operator handle supports reopening saved conversations. Replies to status/who are you are labeled verified GRID state; other replies are labeled deterministic simulated dialogue and claim no task execution/delegation. Input/reply pairs commit atomically and reuse schema v10.
 
 **353 tests passed**, plus a three-launch isolated terminal save/resume/end smoke. See [Terminal Conversations](Project_GRID_Terminal_Conversations.md) for syntax, identity/capacity limits and completion evidence. This local operator handle grants no authentication or admin authority; 4.2A login, real task delegation and LLM dialogue remain planned. Earlier dated pending-terminal-chat/agent-creation statements describe previous milestones.
 
@@ -69,7 +69,7 @@ Separate the authenticated operator from the identity used for an action:
 - **Effective permissions:** the intersection of operator grants, active-identity policy, and resource/world scope. Host actions also require their existing capability and approval checks.
 - **Execution source:** HumanSession, AutonomousAgent, or SimulationSystem. Autonomous and simulation execution contexts are issued by their own trusted services, not created by typing a terminal identity name.
 
-"Master Admin" and "Master Control" are display aliases for the same proposed administrator role. Display names and occupations never determine permissions. ARCHON remains an agent coordinator, not the human administrator.
+"Master Admin" and "Master Control" are display aliases for the same proposed administrator role. Display names and occupations never determine permissions. MCP remains an agent coordinator, not the human administrator.
 
 ## 2. Proposed session contract
 
@@ -176,8 +176,8 @@ The editing suite covers default denial, forged references, agent denial, switch
 
 - Missing/forged session claims cannot authorize an edit.
 - Authenticated Master Control can perform a valid scoped edit.
-- The same operator acting as FORGE cannot perform that administrative edit.
-- ARCHON and autonomous agents cannot self-promote or approve their own escalation.
+- The same operator acting as MAXIS cannot perform that administrative edit.
+- MCP and autonomous agents cannot self-promote or approve their own escalation.
 - Direct service calls without terminal dispatch still enforce authorization.
 - Logout, expiry, identity switches and policy revocation invalidate pending edits.
 - Switching away and back does not revive an old preview.

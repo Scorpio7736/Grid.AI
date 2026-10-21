@@ -14,17 +14,18 @@ public sealed partial class GridSimulationEngine
     {
         lock (gate)
         {
-            var matches = world.Programs.Values.Where(p => p.Name.Equals("ARCHON", StringComparison.OrdinalIgnoreCase)).ToArray();
+            var matches = world.Programs.Values.Where(p => p.Name.Equals("MCP", StringComparison.OrdinalIgnoreCase)).ToArray();
             if (matches.Length > 1 || matches.Any(p => p.Kind != ResidentKind.Agent))
-                throw new InvalidOperationException("ARCHON name is ambiguous or belongs to a non-agent; use an explicit recipient ID.");
+                throw new InvalidOperationException("MCP name is ambiguous or belongs to a non-agent; use an explicit recipient ID.");
             if (matches.Length == 1) return ResolveProgram(matches[0].Id.ToString());
+            // Keep the original identity seed so existing MCP/legacy coordinator references remain stable.
             var id = DialogueId("archon-v1");
             if (world.Programs.ContainsKey(id)) throw new InvalidOperationException("Coordinator identity already exists under another name; use its ID.");
             var district = world.City?.Read().Districts.Single(d => d.Category == Grid.Core.Generation.HardwareKind.Motherboard).Id
                 ?? world.Districts.Keys.Order().FirstOrDefault();
-            if (district == Guid.Empty) throw new InvalidOperationException("A district is required before creating ARCHON.");
-            world.AddProgram(new GridProgram { Id = id, Name = "ARCHON", Kind = ResidentKind.Agent, Occupation = "Local coordinator" }, district);
-            RecordEvent("CoordinatorCreated", id, "ARCHON", "Created persistent deterministic dialogue coordinator; no authority or host execution granted.");
+            if (district == Guid.Empty) throw new InvalidOperationException("A district is required before creating MCP.");
+            world.AddProgram(new GridProgram { Id = id, Name = "MCP", Kind = ResidentKind.Agent, Occupation = "Local coordinator" }, district);
+            RecordEvent("CoordinatorCreated", id, "MCP", "Created persistent deterministic dialogue coordinator; no authority or host execution granted.");
             return ResolveProgram(id.ToString());
         }
     }

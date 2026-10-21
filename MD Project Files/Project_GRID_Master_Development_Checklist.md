@@ -1,5 +1,33 @@
 # Project GRID — Master Development Checklist
 
+## System-agent names updated - 2026-10-21
+
+ARCHON is now **MCP** (coordination), FORGE is now **MAXIS** (development), and ARCHIVIST is now **JN** (storage/files). Current commands, examples, plans and checklist labels use the new names. These names do not grant privileges or implement the planned specialist services. The human **Master Control** role remains separate from MCP.
+
+On world load, legacy-named Agent residents are renamed without changing IDs, registrations, context grants, voice-profile links or conversation ownership. Conversation participant labels update; historical messages/sender labels and event history remain intact. The coordinator retains its original identity-generation seed to avoid duplicate residents. Changes persist on the next normal save. A conflicting target name or exhausted revision skips the rename and records `AgentRenameSkipped`; resolve by ID rather than merging identities. Ordinary application/civilian names and the generic Archivist occupation are unchanged.
+
+Verification: 457 tests passed (14 Core, 157 Simulation, 97 Persistence, 189 Terminal), including new legacy-name/idempotence and collision cases. Earlier completion dates and test counts remain historical evidence; documentation examples now use current names.
+
+
+## Current completion audit - 2026-10-21
+
+Reviewed against the implemented modules, completion notes, source authorization paths and existing verification evidence. **Latest full run: 455 tests passed** (14 Core, 155 Simulation, 97 Persistence, 189 Terminal), recorded in [4.5 verification](Project_GRID_Communications_Verification.md). This reconciliation changes documentation only; tests were not rerun for checkbox edits. Older dated notes and test totals below are historical, not current status.
+
+| Area | Current status |
+|---|---|
+| Phase 1 - Genesis and terminal follow-ups | Implemented through 1.14, including live-view authorization and authenticated NGE |
+| Phase 2 - The Core | 2.1-2.7.2 implemented for their recorded scope; expanded telemetry/application discovery remain open |
+| Phase 3 - First Programs | 3.1-3.4 implemented and verified |
+| Phase 4 - Communications | 4.1-4.5 and 4.2A-D/4.3A implemented for documented scope; 4.2D edition/disaster acceptance and physical voice checks remain outstanding |
+| Phase 5 - System Agents | Next development phase; identity separation exists, task broker/queue/specialist execution and delegation remain planned |
+| Phases 6-7 - Intelligence and City | Planned; deterministic dialogue/context intake are not LLM analysis or a 3D viewer |
+| Phase 8 - Integration | Existing world loading, no offline catch-up, and world backup/recovery are complete foundations; full product integration/portable/offline release acceptance remains planned |
+
+**Reconciled completed entries:** 1.10 session visibility, 1.13 authenticated NGE, 2.4 application resource policy/no artificial drain, Phase 5 human-versus-agent authority separation, 8.1 saved-city loading and no offline catch-up, 8.3 world backup/recovery, and the post-Genesis login/editing and completion-note recommendations. Evidence includes `TerminalHost` live/deletion rechecks, `TerminalIdentitySession` capabilities, `ApplicationResidentTests.ConditionRequiresSourcedBudgetsAndAppEnergyDoesNotDrainOnTicks`, city persistence/recovery tests, and the 4.2A/4.5 verification notes.
+
+**Not marked complete:** real agent tasks/approvals/delegation; unavailable telemetry and comprehensive application discovery; model/3D integration; edition provisioning and cross-PC acceptance; exhaustive failure/release testing; physical microphone, playback and unplug checks. Current terminal identity/audit/context/voice foundations do not satisfy the broader future task-service, AI or deployment requirements.
+
+
 ## Voice transcription repair - 2026-10-21
 
 A user-reported microphone transcription failure was reproduced with generated speech through the real C# helper connection: repeated synchronous `Recognize()` calls could reach an already-finished stream and throw `InvalidOperationException` (0x80131509), discarding recognized text. Recognition now uses `RecognizeAsync(Multiple)` and waits for `RecognizeCompleted`, gathering recognized phrases until completion. Speech/audio remain local and in memory. Explicit typed constructors avoid PowerShell overload ambiguity.
@@ -62,9 +90,9 @@ See [Current implementation and verification](Project_GRID_Current_Implementatio
 
 **Project:** GRID — Local-first Digital Civilization and Personal Task Assistant  
 **Roadmap:** Eight milestones  
-**Checklist baseline:** Local repository HEAD `0b659e6` plus working-tree changes reviewed on 2026-10-17. Released Genesis is tagged `v0.1.0-genesis` at `0c1de64`; post-release API/startup changes are not part of that tag. Remote synchronization was not checked during this documentation audit.
+**Original checklist baseline (historical):** Local repository HEAD `0b659e6` plus working-tree changes reviewed on 2026-10-17. Released Genesis is tagged `v0.1.0-genesis` at `0c1de64`; post-release API/startup changes are not part of that tag. Remote synchronization was not checked during this documentation audit.
 **Status convention:** `[x]` = observed in the reviewed repository or current working tree (independent verification is noted where performed); `[ ]` = pending or not verified.
-**Scope:** Includes GRID-REQ-002 task assistance, GRID-REQ-003 terminal identities and program editing, and the requested live status/events view in 1.10.
+**Scope:** Full eight-phase roadmap, including GRID-REQ-002 through GRID-REQ-008, terminal/context/voice follow-ups, and current implementation through 4.5.
 
 > **Architecture principles:** C#/.NET owns authoritative world state; agent behavior does not require AI; Windows tasks are explicitly permission-scoped and auditable; essential operation is local-first and requires no subscriptions; the 3D viewer observes the simulation instead of owning it. Simulation time advances only while GRID operates.
 
@@ -76,7 +104,7 @@ See [Current implementation and verification](Project_GRID_Current_Implementatio
 | 2 | The Core | SQLite persistence, snapshots, events, recovery | 2–3 weeks |
 | 3 | First Programs | Needs, jobs, movement, utility-based autonomy | 2–4 weeks |
 | 4 | Communications | Messaging, context intake, conversation persistence, voice | 2–4 weeks |
-| 5 | System Agents | ARCHON, FORGE, SENTINEL, ARCHIVIST, VOLT, RELAY | 3–5 weeks |
+| 5 | System Agents | MCP, MAXIS, SENTINEL, JN, VOLT, RELAY | 3–5 weeks |
 | 6 | Intelligence | Shared local AI, grounded assistance, safe edit proposals | 2–4 weeks |
 | 7 | The City | Godot 3D streets, districts, inhabitants, interactions | 4–8 weeks |
 | 8 | Integration | Windows lifecycle, resource control, backups, release | 3–5 weeks |
@@ -360,7 +388,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - [x] Add an easy key to leave live view and return to the command prompt without stopping the world
 - [x] Handle Ctrl+C, terminal resizing, and redirected/unsupported output with a clean fallback
 - [x] Avoid flooding scrollback or retaining an unbounded event list; keep refresh/resource usage modest
-- [ ] Apply session visibility rules once login is implemented (deferred dependency; no login/provider exists yet)
+- [x] Apply session visibility rules: live view requires Master Control, checks authorization while open, and exits on revoked/expired access (4.2A/4.2C)
 - [x] Test refresh consistency, event ordering, bounded history, paused display, and return-to-prompt behavior
 - [x] Add completion notes and verification results after implementation
 
@@ -426,7 +454,7 @@ See [Terminal Command and Shutdown Plan](Project_GRID_Terminal_Command_and_Shutd
 - [x] Handle partial failures/interruption explicitly; exit without replacement-world creation or false success claims
 - [x] Show NGE-specific GRID7736 farewell instead of saved-world messages
 - [x] Verify a later startup creates a fresh world and that cancel preserves the existing world
-- [ ] Add authenticated human-admin-only enforcement when login/authorization is implemented; prohibit agent delegation
+- [x] Enforce authenticated human Master Control for NGE, including authorization recheck before deletion; agent sessions cannot invoke it (4.2A)
 - [x] Complete disposable-world regression tests and dated documentation verification
 
 See [NGE plan](Project_GRID_NGE_Nullify_Grid_Existence_Plan.md) for confirmation, ownership, lifecycle and future authorization details. **Completion:** 306 Release tests passed; all deletion checks used disposable worlds. Current deletion covers the active primary, rolling backup and exact SQLite sidecars; historical archives/external copies remain. A failure marker blocks startup/recovery after interruption and requires manual review; automatic retry is deferred. No user save was deleted.
@@ -529,7 +557,7 @@ See [NGE plan](Project_GRID_NGE_Nullify_Grid_Existence_Plan.md) for confirmation
 - Added a provenance-required additional-work headroom policy: weakest required ratio, bounded 0–100, EMA 0.25 on distinct samples, unknown/reset on missing/stale required data. This does not infer real application minimum requirements or health.
 - Added resources command and CPU/RAM summary in live view. Monitoring remains independent of simulation ticks and is cancelled/awaited at shutdown; sampling is not saved as current host state or logged on every interval.
 - Verification: 223 tests passed (8 Core, 106 Simulation, 56 Persistence, 53 Terminal), zero failed/skipped; build zero warnings/errors. Fifteen added cases cover fake providers, invariants, freshness, policy smoothing and terminal lifecycle. A real Windows disposable-session smoke verified CPU warm-up/available readings, RAM, explicit unsupported GPU and tick zero while paused.
-- [ ] Bind resource requirements/policy to discovered application residents and replace their arbitrary Genesis energy drain after 2.7 classification/lifecycle exists. Existing fictional citizens retain their old rules; application energy is displayed as unknown rather than a fabricated score.
+- [x] Bind sourced resource requirements/policy to discovered application residents and exclude them from arbitrary Genesis energy drain (2.7/3.1). Unknown requirements/observations remain unknown; no fabricated application condition score.
 - [ ] Extend collectors for GPU/VRAM, disk throughput and additional drives when supported; retain explicit unknown fallback and scoped attribution.
 
 See [Resources and Host State](Project_GRID_Resources_and_Host_State.md) for exact units, formula, coverage and remaining integration. These completion notes do not mark GRID-REQ-005 or the 2.7 retrofit implemented.
@@ -730,15 +758,15 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 - [x] Build interactive GRID chat commands
 - [x] Support directed messages and replies
-- [x] Support ARCHON as general coordination point
+- [x] Support MCP as general coordination point
 - [x] Implement deterministic replies for early development
 - [x] Distinguish verified state from simulated dialogue
 - [x] Add command validation and helpful errors
 - [x] Support ongoing conversations in the same session
 
-**Implemented and verified - 2026-10-20.** Added connect/talk/conversations/transcript/resume/disconnect, lazy persistent ARCHON coordination, stable local-operator conversation continuity and atomic deterministic reply pairs. Verified snapshot replies are labeled separately from simulated dialogue; commands do not execute or delegate host tasks. **353 tests passed** (14 Core, 155 Simulation, 88 Persistence, 96 Terminal); three-launch isolated terminal save/resume/end smoke passed. Existing schema v10 is reused. Authentication and admin identities remain 4.2A. See [Terminal Conversations](Project_GRID_Terminal_Conversations.md) for command examples, bounds and verification.
+**Implemented and verified - 2026-10-20.** Added connect/talk/conversations/transcript/resume/disconnect, lazy persistent MCP coordination, stable local-operator conversation continuity and atomic deterministic reply pairs. Verified snapshot replies are labeled separately from simulated dialogue; commands do not execute or delegate host tasks. **353 tests passed** (14 Core, 155 Simulation, 88 Persistence, 96 Terminal); three-launch isolated terminal save/resume/end smoke passed. Existing schema v10 is reused. Authentication and admin identities remain 4.2A. See [Terminal Conversations](Project_GRID_Terminal_Conversations.md) for command examples, bounds and verification.
 
-## 4.2A Planned terminal login and identity sessions (GRID-REQ-003)
+## 4.2A Terminal login and identity sessions (GRID-REQ-003) — completed
 
 **Implemented and verified - 2026-10-20.** Originally planned on 2026-10-16. See [Terminal Login and Master Control Plan](Project_GRID_Terminal_Identity_and_Master_Control_Addendum.md). This extends the terminal after Genesis and does not change section 1.7's completed status.
 
@@ -904,15 +932,17 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ### Planned Master Control and agent action permissions (GRID-REQ-003)
 
+Terminal/session authorization and edit auditing are implemented in 4.2A. Except for the explicitly completed authority-separation item below, these entries concern the future host-task broker and autonomous agent actions, so remain open.
+
 - [ ] Define Master Control administration and each agent's allowed capabilities
 - [ ] Enforce effective operator/agent permissions in services as well as terminal commands
-- [ ] Keep human Master Control authority distinct from ARCHON coordination
+- [x] Keep human Master Control authority distinct from MCP coordination (4.2A). Registered agent identity does not confer human administration or host-task execution privileges.
 - [ ] Audit the human operator and active agent identity for manually initiated actions
 - [ ] Preserve scoped host-task approvals when operating through an agent session
 - [ ] Define coordination between manual agent sessions and autonomous task execution
 - [ ] Test denied actions, privilege escalation attempts, and manual/autonomous attribution
 
-## 5.2 ARCHON — Administration
+## 5.2 MCP — Administration
 
 - [ ] Implement task coordination and delegation
 - [ ] Receive user requests and split into approved subtasks
@@ -921,7 +951,7 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 - [ ] Request permissions rather than bypass them
 - [ ] Produce verified operational briefings
 
-## 5.3 FORGE — Development
+## 5.3 MAXIS — Development
 
 - [ ] Register approved repositories and workspaces
 - [ ] Implement read-only source inspection
@@ -940,14 +970,14 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 - [ ] Keep initial security functions read-only
 - [ ] Require approval for sensitive remediation
 
-## 5.5 ARCHIVIST — Storage and files
+## 5.5 JN — Storage and files
 
 - [ ] Inventory explicitly approved files and directories
 - [ ] Monitor GRID database, model and asset storage
 - [ ] Detect possible duplicate files
 - [ ] Prepare non-destructive cleanup proposals
 - [ ] Track the initial 20 GB logical GRID quota
-- [ ] Escalate quota expansion proposals through ARCHON
+- [ ] Escalate quota expansion proposals through MCP
 - [ ] Require user approval for sensitive deletion and quota changes
 
 ## 5.6 VOLT and RELAY
@@ -961,7 +991,7 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 5.7 End-to-end task verification
 
-- [ ] Ask ARCHON to delegate a unit-test run to FORGE
+- [ ] Ask MCP to delegate a unit-test run to MAXIS
 - [ ] Validate scope and permissions
 - [ ] Execute approved test operation
 - [ ] Record actual results and logs
@@ -999,7 +1029,7 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 - [ ] Read and analyze user-supplied context within permitted scope
 - [ ] Provide recommendations without changing files when requested
 - [ ] Support project-context retrieval across conversations
-- [ ] Allow agents to collaborate through ARCHON
+- [ ] Allow agents to collaborate through MCP
 - [ ] Produce structured typed task proposals
 - [ ] Validate each proposal against registered capabilities
 
@@ -1104,12 +1134,12 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 8.1 Windows lifecycle
 
-- [ ] Integrate GRID-REQ-004 first creation versus saved-world loading; hardware changes and failed loads must not silently regenerate the city
+- [x] Integrate GRID-REQ-004 first creation versus saved-world loading; hardware changes and failed loads do not silently regenerate the city (2.2/2.6)
 - [ ] Run GRID headless at Windows sign-in if enabled
 - [ ] Allow independent startup and shutdown of viewer
 - [ ] Handle Windows sleep and wake
 - [ ] Handle clean shutdown and unexpected termination
-- [ ] Resume saved state without offline simulation catch-up
+- [x] Resume saved state without offline simulation catch-up (2.2/3.1; simulation advances only while running)
 - [ ] Coordinate local service startup order
 
 ## 8.2 Resource and storage governance
@@ -1118,13 +1148,13 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 - [ ] Throttle simulation, AI and rendering appropriately
 - [ ] Enforce GRID logical storage quota
 - [ ] Track model caches and external asset storage
-- [ ] Trigger quota warnings and ARCHIVIST proposals
-- [ ] Approve quota increases through ARCHON → User
+- [ ] Trigger quota warnings and JN proposals
+- [ ] Approve quota increases through MCP → User
 - [ ] Prevent GRID from exhausting host disk free space
 
 ## 8.3 Safety and reliability
 
-- [ ] Implement recoverable backups and restore workflow
+- [x] Implement recoverable world backups and explicit restore workflow (2.2; subsequent context/conversation/voice state covered through 4.5)
 - [ ] Audit all file-editing and host-task capabilities
 - [ ] Apply least-privilege execution
 - [ ] Test full-disk and invalid-snapshot scenarios
@@ -1192,7 +1222,7 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 |---|---|
 | **GRID Genesis** (`v0.1.0-genesis`) | Five districts, twenty citizens, fixed-step clock, real terminal commands, passing tests |
 | **GRID Foundation** | Persistent civilization, autonomous activity, persistent communications |
-| **GRID Operator** | ARCHON delegates authorized PC tasks to specialist agents and reports verified results |
+| **GRID Operator** | MCP delegates authorized PC tasks to specialist agents and reports verified results |
 | **GRID Assistant** *(proposed additional release gate)* | Grounded advice, supplied context, approved editing and task assistance |
 | **GRID City** | Interactive Godot 3D viewer displaying actual authoritative simulation state |
 
@@ -1207,13 +1237,19 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 7. [x] Add command-loop terminal features and terminal tests; all 69 tests are passing.
 8. [x] Build and run tests, then commit and tag Genesis when all acceptance criteria pass.
 
-# Immediate Next Steps — Post-Genesis Recommendations
+# Post-Genesis Recommendations — Completed through 4.5
 
 1. [x] Complete editable-field and session-context planning in sections 1.9.1–1.9.2.
 2. [x] Implement and verify the validated editing API in section 1.9.3.
 3. [x] Implement the terminal live view in section 1.10; session visibility follows login integration.
-4. [x] Complete Phase 2.1 persistence architecture with identity, edit-result and audit extension requirements documented. Section 2.2 save/recovery is also complete; 2.3 history/observability is now complete; next implement 2.4 resources/host state with the 2.7 retrofit dependencies.
-5. [ ] Integrate login and Master Control terminal editing in the later GRID-REQ-003 work; preserve the completed Genesis release.
-6. [ ] Record completion notes and verification evidence as each item is finished.
+4. [x] Complete Phase 2.1 persistence architecture with identity, edit-result and audit extension requirements documented. Section 2.2 save/recovery is also complete; 2.3 history/observability is now complete; 2.4 resources/host state and the 2.7 retrofit dependencies are complete for their documented scope.
+5. [x] Integrate login and Master Control terminal editing (4.2A), portable credentials (4.2B), and shared terminals (4.2C); preserve the historical Genesis release.
+6. [x] Record completion notes and verification evidence for all completed modules through 4.5. Continue this documentation practice for future modules.
+
+# Current Next Steps
+
+1. [ ] Begin 5.1: named system-agent/task contracts, durable task queue and capability-scoped broker.
+2. [ ] Perform physical voice capture/playback/headset-disconnection acceptance; automated recognition fixtures passed in 4.4/4.5.
+3. [ ] Continue tracking the open extension items under 2.4, 2.7.2 and 4.2D, and the installation/offline acceptance gates under 8.6-8.7.
 
 **Note:** This checklist reproduces the full eight-phase planning scope as of this conversation. Completion indicators should be updated after each repository review; generated code and documentation are not evidence that a test has passed.

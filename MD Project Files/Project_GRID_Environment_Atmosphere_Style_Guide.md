@@ -142,7 +142,7 @@ Permanent mid-autumn should be evident without overwhelming the orderly European
 
 Human-scale historic streets with 3–7-story masonry buildings, window light, shopfronts, autumn trees, narrow side roads, wet sidewalks, and everyday pedestrian programs. Quietly lived-in, not sterile or abandoned.
 
-### Administrative district — ARCHON
+### Administrative district — MCP
 
 Larger pale stone civic facades, formal plazas, axial approaches, restrained banners and insignia, orderly lighting, and selective monumental landmarks. Preserve walkable streets and neighborhood continuity.
 
@@ -150,11 +150,11 @@ Larger pale stone civic facades, formal plazas, axial approaches, restrained ban
 
 Austere institutional stone, disciplined geometry, guarded entries, subtle security wayfinding, slightly cooler lighting, and uncluttered public circulation.
 
-### Engineering / processing — FORGE
+### Engineering / processing — MAXIS
 
 Darker rain-treated masonry, iron and metal structural details, occasional steam, integrated glowing conduits, and useful industrial access without aggressive cyberpunk clutter.
 
-### Archives — ARCHIVIST
+### Archives — JN
 
 Dignified archive halls, orderly colonnades, quiet enclosed courtyards, subdued teal/cyan detailing, and a contemplative atmosphere.
 
