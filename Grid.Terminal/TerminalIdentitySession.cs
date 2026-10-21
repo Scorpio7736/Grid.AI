@@ -171,6 +171,17 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
         }
         catch { Monitor.Exit(gate); throw; }
     }
+    public IProgramEditLease? AcquireTask(EditSessionReference session, Guid worldInstanceId)
+    {
+        Monitor.Enter(gate);
+        try
+        {
+            if (!Allows("session") || session.SessionId != sessionId || session.Generation != generation || worldInstanceId != Engine.WorldInstanceId)
+            { Monitor.Exit(gate); return null; }
+            return new Lease(gate, new(Engine.LocalOperator.Id, sessionId, generation, worldInstanceId, agent is null, agent, 1));
+        }
+        catch { Monitor.Exit(gate); throw; }
+    }
     private sealed class Lease(object gate, ProgramEditIdentity identity) : IProgramEditLease
     {
         public ProgramEditIdentity Identity => identity;

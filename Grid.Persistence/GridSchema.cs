@@ -12,7 +12,7 @@ internal sealed record SchemaMigration(int Version, string Name, string Sql)
 
 public static class GridSchema
 {
-    public const int CurrentVersion = 13;
+    public const int CurrentVersion = 15;
     public const int ApplicationId = 0x47524944; // ASCII GRID
 
     internal static readonly IReadOnlyList<SchemaMigration> Migrations = Array.AsReadOnly(new[]
@@ -146,7 +146,14 @@ public static class GridSchema
                 WorldId TEXT NOT NULL PRIMARY KEY REFERENCES Worlds(WorldId) ON DELETE CASCADE,
                 StateJson TEXT NOT NULL CHECK(json_valid(StateJson) AND length(StateJson) <= 16777216)
             ) STRICT;
-            """)
+            """),
+        new SchemaMigration(14, "Durable scoped task broker", """
+            CREATE TABLE WorldTasks (
+                WorldId TEXT NOT NULL PRIMARY KEY REFERENCES Worlds(WorldId) ON DELETE CASCADE,
+                StateJson TEXT NOT NULL CHECK(json_valid(StateJson) AND length(StateJson) <= 16777216)
+            ) STRICT;
+            """),
+        new SchemaMigration(15, "MCP coordination plan contract", "SELECT 1;")
     });
 
     internal static void Migrate(SqliteConnection connection, bool allowCreate = true) => Migrate(connection, Migrations, allowCreate);

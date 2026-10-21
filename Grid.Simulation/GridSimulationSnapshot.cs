@@ -16,6 +16,7 @@ public sealed record GridSimulationSnapshot(long TickCount, TimeSpan ElapsedSimu
     TimeSpan TickDuration, bool IsRunning, IReadOnlyList<GridProgramSnapshot> Programs,
     IReadOnlyList<GridDistrictSnapshot> Districts)
 {
+    public Tasks.TaskState Tasks { get; init; } = global::Grid.Simulation.Tasks.TaskState.Empty;
     public Grid.Communication.ContextState Context { get; init; } = Grid.Communication.ContextState.Empty;
     public Grid.Communication.LocalIdentityState Identities { get; init; } = Grid.Communication.LocalIdentityState.Empty;
     public Grid.Communication.CommunicationState Communications { get; init; } = Grid.Communication.CommunicationState.Empty;

@@ -46,7 +46,7 @@ public sealed class CommunicationPersistenceTests
             var info = new WorldInfo(engine.GetSnapshot().WorldId, "Old", DateTimeOffset.UtcNow);
             using var store = new WorldStore(path); store.Create(info, engine.GetSnapshot());
             void Sql(string text) { using var c = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Pooling = false }.ToString()); c.Open(); using var q = c.CreateCommand(); q.CommandText = text; q.ExecuteNonQuery(); }
-            Sql("DROP TABLE WorldContext; DROP TABLE WorldIdentities; DROP TABLE WorldCommunications; DELETE FROM SchemaMigrations WHERE Version>=10; PRAGMA user_version=9;");
+            Sql("DROP TABLE WorldTasks; DROP TABLE WorldContext; DROP TABLE WorldIdentities; DROP TABLE WorldCommunications; DELETE FROM SchemaMigrations WHERE Version>=10; PRAGMA user_version=9;");
             Assert.Empty(store.Load().State.Communications.Conversations);
             var human = new Recipient(ParticipantKind.Human, Guid.NewGuid(), "Operator");
             var id = engine.StartConversation(human, engine.ResolveProgram(engine.GetSnapshot().Programs[0].Id.ToString()));

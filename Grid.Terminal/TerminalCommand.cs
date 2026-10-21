@@ -6,4 +6,4 @@ public sealed record TerminalCommand(string Name, string Usage, string Descripti
 {
     public string Capability { get; init; } = "world.admin";
 }
-public sealed record CommandResult(string Text, bool ExitRequested = false, bool LiveViewRequested = false, bool ClearRequested = false, bool NullificationRequested = false, bool LoginRequested = false, bool SetupRequested = false, bool LogoutRequested = false, TransferRequest? Transfer = null, Func<IReadOnlyList<string>, CommandResult>? ContextPicker = null, VoiceOperation? Voice = null);
+public sealed record CommandResult(string Text, bool ExitRequested = false, bool LiveViewRequested = false, bool ClearRequested = false, bool NullificationRequested = false, bool LoginRequested = false, bool SetupRequested = false, bool LogoutRequested = false, TransferRequest? Transfer = null, Func<IReadOnlyList<string>, CommandResult>? ContextPicker = null, VoiceOperation? Voice = null, Func<CancellationToken, Task<CommandResult>>? BrokerOperation = null);

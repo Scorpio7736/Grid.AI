@@ -41,6 +41,15 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 if (line is null) break;
                 if (sessionUi is not null) await sessionUi.RefreshAsync();
                 var result = commands.Execute(line);
+                if (result.BrokerOperation is { } dispatch)
+                {
+                    using var brokerStop = CancellationTokenSource.CreateLinkedTokenSource(shutdown.Token);
+                    var operation = dispatch(brokerStop.Token);
+                    if (await Task.WhenAny(operation, scheduler, autosave, monitoring) != operation) brokerStop.Cancel();
+                    try { result = await operation; }
+                    catch (OperationCanceledException) { result = new("Task dispatch cancelled."); }
+                    if (scheduler.IsCompleted || autosave.IsCompleted || monitoring.IsCompleted) break;
+                }
                 if (result.Voice is { } voice)
                 {
                     if (!interactiveConfirmation) result = new("Voice requires an interactive host terminal; typed talk remains available.");

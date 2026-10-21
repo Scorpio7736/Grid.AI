@@ -442,3 +442,59 @@ voice
 Voice hardware requires the original interactive Windows host terminal and installed offline recognition/voice assets. Use `connect MCP` first; registration is required for profiles, not ordinary conversation. Attached terminals continue using `talk` and `resume`. Missing audio/language/voice support leaves typed chat available. No raw recordings are saved. See [offline voice implementation](Project_GRID_Offline_Voice_Implementation.md) for verification and limits.
 
 Voice troubleshooting (2026-10-21): capture reports its duration; recordings shorter than 0.25 seconds are refused with a retry hint. Transcription waits for the recognizer completion event. If recognition still fails, report the displayed stage/exception/HRESULT. No raw audio or helper input is included in that diagnostic. `voice speak` requires a reply from `voice send` or `talk` first.
+
+## Agent/task infrastructure (5.1)
+
+```text
+agents
+    - agents initialize
+      # USAGE: Master Control explicitly creates/registers six system-agent roles in a saved world. Names alone confer no capability.
+    - agents
+      # USAGE: List role IDs and allowed demonstration capabilities.
+    # EXAMPLE: agents initialize
+
+tasks
+    - tasks list
+      # USAGE: List tasks visible to your identity.
+    - tasks propose <agent-id|name> <capability> "argument" [request-key]
+      # USAGE: Create an immutable proposal awaiting human approval; a stable key deduplicates identical requests.
+    - tasks inspect <id>
+      # USAGE: Review the exact request, operator/agent attribution, result and audit before approval.
+    - tasks approve <id>
+      # USAGE: Master Control approves one attempt of the exact proposal.
+    - tasks run
+      # USAGE: Original host Master Control dispatches one approved demonstration task. No real host action is available.
+    - tasks cancel <id>
+      # USAGE: Cancel an authorized pending/running task; an attached terminal can cancel while the host waits.
+    - tasks retry <id>
+      # USAGE: Failed/timed-out/interrupted demonstrations can retry up to three attempts, with fresh approval each time.
+    # EXAMPLE: tasks propose MAXIS maxis.demo "hello GRID" example-request-1
+    # EXAMPLE: tasks inspect <returned-id>
+    # EXAMPLE: tasks approve <returned-id>
+    # EXAMPLE: tasks run
+```
+
+Capabilities are `mcp.demo`, `maxis.demo`, `sentinel.demo`, `jn.demo`, `volt.demo`, `relay.demo` (1..256 printable argument characters), plus `maxis.delay` (0..5000 ms; attempt timeout is one second). Agents may propose only for their own role, never approve or dispatch. Restart clears queued approvals and interrupts running tasks without automatic replay. No automatic chat-to-task interpretation. See [task broker implementation](Project_GRID_Task_Broker_Implementation.md).
+
+## MCP coordination — 5.2 implemented
+
+```text
+mcp
+    - mcp request "SPECIALIST: action argument; SPECIALIST: action argument" [request-key]
+      # USAGE: Save 1..8 explicit demonstration proposals requiring individual human approval.
+    - mcp plans
+      # USAGE: View all plans and their child statuses/results.
+    - mcp inspect <plan-id>
+      # USAGE: Inspect one plan and its approval requirements.
+    - mcp brief [plan-id]
+      # USAGE: Report broker states/results for one or all plans.
+    # EXAMPLE: mcp request "MAXIS: demo hello; JN: demo inventory" example-plan-1
+```
+
+Initialize roles with `agents initialize`. Only Master Control or registered MCP can coordinate. Actions are demo for specialists and delay for MAXIS; real specialist work remains planned. Inspect and approve each child with `tasks inspect <id>` and `tasks approve <id>`, then dispatch with `tasks run` on the original host. See [MCP coordination](Project_GRID_MCP_Coordination_Implementation.md).
+
+## Task and MCP readability follow-up — 2026-10-21
+
+Implemented compact agent/task tables with role names, unique short references, a compact `mcp plans` overview, and separated plan/task details, results, next commands and full audit identities. `mcp brief` still includes all plan details; `mcp inspect <reference>` reads one plan. Full IDs remain in detail views. Displayed short references (at least eight characters) are accepted by task inspect/approve/cancel/retry and MCP inspect/brief; ambiguous prefixes are rejected, and resolution is restricted to the current authorized scope. A copied trailing period or comma is tolerated. Plan/task mixups produce specific guidance. Approval boundaries and persisted data are unchanged. Persistence warnings now appear only on I/O/database errors.
+
+Use `tasks list`, then `tasks inspect <displayed-task-reference>`. Review its argument before using the displayed approval command. Command examples are printed on separate lines without sentence punctuation. Verification: 219 terminal tests passed, including short-reference, punctuation, plan/task mismatch and cross-agent scope checks.

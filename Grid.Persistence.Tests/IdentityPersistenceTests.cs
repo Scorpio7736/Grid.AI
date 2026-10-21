@@ -48,7 +48,7 @@ public sealed class IdentityPersistenceTests
             using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Pooling = false }.ToString()))
             {
                 connection.Open(); using var command = connection.CreateCommand();
-                command.CommandText = "DROP TABLE WorldContext; DROP TABLE WorldIdentities; DELETE FROM SchemaMigrations WHERE Version>=11; PRAGMA user_version=10;"; command.ExecuteNonQuery();
+                command.CommandText = "DROP TABLE WorldTasks; DROP TABLE WorldContext; DROP TABLE WorldIdentities; DELETE FROM SchemaMigrations WHERE Version>=11; PRAGMA user_version=10;"; command.ExecuteNonQuery();
             }
             var loaded = store.Load(); Assert.Equal(engine.GetSnapshot().WorldId, loaded.State.WorldId);
             Assert.Null(loaded.State.Identities.OwnerSubject); Assert.Empty(loaded.State.Identities.RegisteredAgents);

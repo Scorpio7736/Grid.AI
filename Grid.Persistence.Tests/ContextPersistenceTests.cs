@@ -87,7 +87,7 @@ public sealed class ContextPersistenceTests : IDisposable
     public void VersionTwelveMigratesToEmptyContextWithoutChangingWorld()
     {
         using var store = new WorldStore(PathName); store.Create(info, engine.GetSnapshot());
-        Sql("DROP TABLE WorldContext; DELETE FROM SchemaMigrations WHERE Version=13; PRAGMA user_version=12;");
+        Sql("DROP TABLE WorldTasks; DROP TABLE WorldContext; DELETE FROM SchemaMigrations WHERE Version>=13; PRAGMA user_version=12;");
         var loaded = store.Load(); Assert.Equal(info.Id, loaded.Info.Id); Assert.Empty(loaded.State.Context.Documents);
         Assert.Equal("test-owner", loaded.State.Identities.OwnerSubject);
         engine.AddContext(authority.Session, Document("after upgrade"), true); store.Save(info, engine.GetSnapshot());

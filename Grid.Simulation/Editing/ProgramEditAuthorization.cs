@@ -12,6 +12,8 @@ public sealed record ProgramEditIdentity(Guid OperatorId, Guid SessionId, long G
 public interface IProgramEditAuthorizer
 {
     IProgramEditLease? Acquire(EditSessionReference session, Guid worldInstanceId);
+    // Separate task authorization permits scoped agents without granting program-edit privileges.
+    IProgramEditLease? AcquireTask(EditSessionReference session, Guid worldInstanceId) => Acquire(session, worldInstanceId);
 }
 public interface IProgramEditLease : IDisposable
 {

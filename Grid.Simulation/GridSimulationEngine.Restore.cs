@@ -41,6 +41,7 @@ public sealed partial class GridSimulationEngine
         engine.social = Social.SocialState.Copy(snapshot.Social);
         engine.clock.Restore(snapshot.TickCount);
         engine.RenameLegacySystemAgents();
+        engine.RestoreTasks(snapshot.Tasks);
         return engine;
     }
 
@@ -99,6 +100,9 @@ public sealed partial class GridSimulationEngine
         if (snapshot.Identities.RegisteredAgents.Any(id => !snapshot.Programs.Any(p => p.Id == id && p.Kind == ResidentKind.Agent)))
             throw new InvalidDataException("Registered agent identity is missing or has the wrong resident kind.");
         Grid.Communication.CommunicationState.Validate(snapshot.Communications, snapshot.TickCount);
+        Tasks.TaskState.Validate(snapshot.Tasks);
+        if (snapshot.Tasks.Agents.Any(a => !snapshot.Programs.Any(p => p.Id == a.Id && p.Kind == ResidentKind.Agent) || !snapshot.Identities.RegisteredAgents.Contains(a.Id)))
+            throw new InvalidDataException("Invalid system-agent identity binding.");
     }
 
     private static bool ValidLabel(string value, int limit) => !string.IsNullOrWhiteSpace(value) &&

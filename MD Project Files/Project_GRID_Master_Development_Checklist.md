@@ -19,7 +19,7 @@ Reviewed against the implemented modules, completion notes, source authorization
 | Phase 2 - The Core | 2.1-2.7.2 implemented for their recorded scope; expanded telemetry/application discovery remain open |
 | Phase 3 - First Programs | 3.1-3.4 implemented and verified |
 | Phase 4 - Communications | 4.1-4.5 and 4.2A-D/4.3A implemented for documented scope; 4.2D edition/disaster acceptance and physical voice checks remain outstanding |
-| Phase 5 - System Agents | Next development phase; identity separation exists, task broker/queue/specialist execution and delegation remain planned |
+| Phase 5 - System Agents | 5.1 registry/task broker/queue complete for demonstration adapters; 5.2 coordination and real specialist execution remain planned |
 | Phases 6-7 - Intelligence and City | Planned; deterministic dialogue/context intake are not LLM analysis or a 3D viewer |
 | Phase 8 - Integration | Existing world loading, no offline catch-up, and world backup/recovery are complete foundations; full product integration/portable/offline release acceptance remains planned |
 
@@ -921,35 +921,43 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 5.1 Agent and task infrastructure
 
-- [ ] Create named system program registry
-- [ ] Define task requests, status, results and failures
-- [ ] Build durable task queue
-- [ ] Implement task broker as the only permitted host-action path
-- [ ] Define agent-specific capabilities and allowed parameters
-- [ ] Add permission policies and explicit approval requests
-- [ ] Implement cancellation, timeouts and safe retries
-- [ ] Persist task execution audit records
+- [x] Create named system program registry
+- [x] Define task requests, status, results and failures
+- [x] Build durable task queue
+- [x] Implement task broker as the only permitted host-action path
+- [x] Define agent-specific capabilities and allowed parameters
+- [x] Add permission policies and explicit approval requests
+- [x] Implement cancellation, timeouts and safe retries
+- [x] Persist task execution audit records
+
+
+**Completion verification - 2026-10-21.** Implemented the explicit six-role registry, durable schema-v14 queue, immutable proposals, per-role capability/parameter allowlists, human one-attempt approvals, service-side scope enforcement, cancellation, one-second demonstration timeouts, three-attempt retries with reapproval, and task/denial audit. **472 tests passed** (14 Core, 157 Simulation, 97 Persistence, 204 Terminal), including 15 new broker integration tests. Start with `agents initialize`; use `tasks propose/inspect/approve/run`. Only labeled safe demonstration adapters are enabled; no shell/real PC task, natural-language delegation or autonomous dispatcher is claimed. See [task broker implementation](Project_GRID_Task_Broker_Implementation.md).
 
 ### Planned Master Control and agent action permissions (GRID-REQ-003)
 
-Terminal/session authorization and edit auditing are implemented in 4.2A. Except for the explicitly completed authority-separation item below, these entries concern the future host-task broker and autonomous agent actions, so remain open.
+Terminal/session authorization and edit auditing were implemented in 4.2A. The 5.1 broker now adds scoped task authorization/approval/audit for safe demonstration adapters. Autonomous production and real specialist capabilities remain planned.
 
-- [ ] Define Master Control administration and each agent's allowed capabilities
-- [ ] Enforce effective operator/agent permissions in services as well as terminal commands
+- [x] Define Master Control administration and each agent's allowed capabilities
+- [x] Enforce effective operator/agent permissions in services as well as terminal commands
 - [x] Keep human Master Control authority distinct from MCP coordination (4.2A). Registered agent identity does not confer human administration or host-task execution privileges.
-- [ ] Audit the human operator and active agent identity for manually initiated actions
-- [ ] Preserve scoped host-task approvals when operating through an agent session
+- [x] Audit the human operator and active agent identity for manually initiated actions
+- [x] Preserve scoped host-task approvals when operating through an agent session
 - [ ] Define coordination between manual agent sessions and autonomous task execution
-- [ ] Test denied actions, privilege escalation attempts, and manual/autonomous attribution
+- [x] Test denied task actions, privilege escalation attempts, and manual operator/active-agent attribution (5.1)
+- [ ] Test autonomous task attribution once autonomous producers are implemented
 
 ## 5.2 MCP — Administration
 
-- [ ] Implement task coordination and delegation
-- [ ] Receive user requests and split into approved subtasks
-- [ ] Assign work to authorized specialist agents
-- [ ] Track ongoing tasks and summarize results
-- [ ] Request permissions rather than bypass them
-- [ ] Produce verified operational briefings
+- [x] Implement task coordination and delegation
+- [x] Receive explicit user requests and split into subtasks requiring individual human approval
+- [x] Assign work to authorized specialist agents
+- [x] Track ongoing tasks and summarize results
+- [x] Request permissions rather than bypass them
+- [x] Produce verified operational briefings
+
+**Completion notes (2026-10-21):** Explicit offline grammar, atomic saved delegation plans, authorized specialist assignment, per-child consent and briefings from actual records are implemented. Demonstration adapters only; natural-language planning and real specialist actions remain planned. Schema v15 retains links across restart without replay. **Verification: 485 tests passed**, including 13 new coordination cases. See [MCP coordination implementation](Project_GRID_MCP_Coordination_Implementation.md).
+
+- [x] Improve MCP/task readability: compact role tables, scoped short references, clear plan/task distinctions, separate results and copyable commands. Follow-up verification: 219 terminal tests passed.
 
 ## 5.3 MAXIS — Development
 
@@ -1248,8 +1256,9 @@ Terminal/session authorization and edit auditing are implemented in 4.2A. Except
 
 # Current Next Steps
 
-1. [ ] Begin 5.1: named system-agent/task contracts, durable task queue and capability-scoped broker.
-2. [ ] Perform physical voice capture/playback/headset-disconnection acceptance; automated recognition fixtures passed in 4.4/4.5.
-3. [ ] Continue tracking the open extension items under 2.4, 2.7.2 and 4.2D, and the installation/offline acceptance gates under 8.6-8.7.
+1. [x] Complete 5.1: named system-agent/task contracts, durable task queue and capability-scoped demonstration broker.
+2. [ ] Begin 5.2: MCP task coordination and delegation.
+3. [ ] Perform physical voice capture/playback/headset-disconnection acceptance; automated recognition fixtures passed in 4.4/4.5.
+4. [ ] Continue tracking the open extension items under 2.4, 2.7.2 and 4.2D, and the installation/offline acceptance gates under 8.6-8.7.
 
 **Note:** This checklist reproduces the full eight-phase planning scope as of this conversation. Completion indicators should be updated after each repository review; generated code and documentation are not evidence that a test has passed.

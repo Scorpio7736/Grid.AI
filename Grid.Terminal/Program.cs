@@ -67,6 +67,7 @@ try
         var dispatcher = DefaultCommands.Create(engine);
         CityCommand.Register(dispatcher, engine); BehaviorCommand.Register(dispatcher, engine);
         WorkplaceCommands.Register(dispatcher, engine); SocialCommand.Register(dispatcher, engine);
+        TaskCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         var chat = ChatCommands.Register(dispatcher, engine, session); ResourcesCommand.Register(dispatcher, engine);
         VoiceCommands.Register(dispatcher, engine, session, chat, save: persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult());
         ContextCommands.Register(dispatcher, engine, session, persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult());
