@@ -66,6 +66,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
             { await WindowProtocol.WriteAsync(pipe, Reply("Session revoked before attachment.", closed: true), io.Token); return; }
             await WindowProtocol.WriteAsync(pipe, Reply($"GRID7736 // ATTACHED {mode.ToUpperInvariant()}\n{identity.Describe()}\nOriginal host owns simulation/save. Closing this window only detaches.\n" +
                 (mode == "snapshot" ? snapshot : "")), io.Token);
+            Func<IReadOnlyList<string>, CommandResult>? pendingPicker = null;
             while (!stop.IsCancellationRequested)
             {
                 io.CancelAfter(TimeSpan.FromSeconds(30));
@@ -78,6 +79,11 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 else if (request.Kind == "frame" && (mode == "terminal" || mode == "live"))
                     reply = commands.IsAllowed("live") ? Reply(string.Join("\n", LiveViewRenderer.Render(engine.GetLiveSnapshot(), Math.Clamp(request.Width, 60, 200), Math.Clamp(request.Height, 18, 100), Math.Clamp(request.ProgramPage, 0, 10000), Math.Clamp(request.EventPage, 0, 10000))), live: true) : Reply("Access denied: live requires Master Control.");
                 else if (mode != "terminal") reply = Reply("Data windows are read-only.");
+                else if (request.Kind == "context-files")
+                {
+                    var complete = pendingPicker; pendingPicker = null;
+                    reply = complete is null ? Reply("Error: no file selection pending.") : Reply(complete(request.Files ?? []).Text);
+                }
                 else if (request.Kind == "logout") { identity.Logout(); reply = Reply("Logged out; attached window detached.", closed: true); }
                 else if (request.Kind == "command" && request.Command is { Length: <= 8192 } line)
                 {
@@ -89,8 +95,10 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                         reply = Reply("Use the original host terminal for login, credentials, NGE or transfers. This window does not own the save.");
                     else
                     {
+                        pendingPicker = null;
                         var result = commands.Execute(line);
-                        reply = Reply(result.Text, result.ExitRequested, result.LiveViewRequested, result.ClearRequested, result.LogoutRequested);
+                        pendingPicker = result.ContextPicker;
+                        reply = Reply(result.Text, result.ExitRequested, result.LiveViewRequested, result.ClearRequested, result.LogoutRequested) with { PickFiles = pendingPicker is not null };
                     }
                 }
                 else reply = Reply("Error: unsupported window request.");

@@ -22,6 +22,7 @@ public sealed class WindowTests
             {
                 var commands = DefaultCommands.Create(Engine); ChatCommands.Register(commands, Engine, identity);
                 IdentityCommands.Register(commands, Engine, identity, interactiveUi: true);
+                ContextCommands.Register(commands, Engine, identity);
                 commands.UseIdentity(identity); return commands;
             }
             Hub = new(Engine, Registry, Create, name => { Endpoint = name; return launch?.Invoke(name) ?? Environment.ProcessId; });
@@ -43,13 +44,31 @@ public sealed class WindowTests
             await pipe.ConnectAsync(5000); using var timeout = new CancellationTokenSource(5000);
             Greeting = await WindowProtocol.ReadAsync<WindowReply>(pipe, timeout.Token);
         }
-        public async Task<WindowReply> Send(string kind, string? line = null)
+        public async Task<WindowReply> Send(string kind, string? line = null, string[]? files = null)
         {
             using var timeout = new CancellationTokenSource(5000);
-            await WindowProtocol.WriteAsync(pipe, new WindowRequest(kind, line), timeout.Token);
+            await WindowProtocol.WriteAsync(pipe, new WindowRequest(kind, line, Files: files), timeout.Token);
             return await WindowProtocol.ReadAsync<WindowReply>(pipe, timeout.Token);
         }
         public ValueTask DisposeAsync() => pipe.DisposeAsync();
+    }
+    [Fact]
+    public async Task AttachedPickerUsesScopedPendingRequestAndSupportsHeartbeat()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".md");
+        File.WriteAllText(path, "ATTACHED PICKED CONTENT");
+        try
+        {
+            await using var f = new Fixture(); await using var client = await f.Open();
+            Assert.Contains("no file selection", (await client.Send("context-files", files: [path])).Text);
+            Assert.True((await client.Send("command", "context add -search")).PickFiles);
+            Assert.False((await client.Send("ping")).Closed);
+            Assert.Contains("Imported", (await client.Send("context-files", files: [path])).Text);
+            Assert.Contains("ATTACHED PICKED CONTENT", (await client.Send("command", "context read " + Path.GetFileName(path))).Text);
+            Assert.Contains("no file selection", (await client.Send("context-files", files: [path])).Text);
+            Assert.DoesNotContain("ATTACHED PICKED CONTENT", f.Commands.Execute("context read " + Path.GetFileName(path)).Text);
+        }
+        finally { File.Delete(path); }
     }
     [Fact]
     public async Task TerminalsShareOneEngineAndExitOnlyDetaches()

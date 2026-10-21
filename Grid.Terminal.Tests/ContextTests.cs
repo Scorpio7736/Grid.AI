@@ -31,6 +31,92 @@ public sealed class ContextTests : IDisposable
         Assert.Contains("Imported", commands.Execute($"context add \"{path}\" {retention} \"Project One\" {agent}").Text);
         return engine.ContextFor(null, owner.SessionId).Last();
     }
+    [Fact]
+    public void NamesMultiReadAndSelectionUseCapturedFiles()
+    {
+        var first = Import(FileWith("one file.md", "FIRST CONTENT"));
+        Import(FileWith("two.md", "SECOND CONTENT"));
+        var text = commands.Execute("context read \"ONE FILE.MD\" two.md").Text;
+        Assert.Contains("FIRST CONTENT", text); Assert.Contains("SECOND CONTENT", text);
+        Assert.Contains("Selected context", commands.Execute("context select \"one file.md\" two.md").Text);
+        Assert.Contains("SECOND CONTENT", commands.Execute("context read").Text);
+        Assert.Contains("FIRST CONTENT", commands.Execute("context read -selected").Text);
+        commands.Execute("context select clear"); Assert.Contains("No context selected", commands.Execute("context read").Text);
+        Assert.Contains("removed", commands.Execute("context remove \"one file.md\"").Text);
+        Assert.DoesNotContain(engine.GetSnapshot().Context.Documents, d => d.Id == first.Id);
+    }
+    [Fact]
+    public void DuplicateNamesRequireIdAndFailedSelectionPreservesPreviousSelection()
+    {
+        var path = FileWith("duplicate.md", "FIRST VERSION"); var first = Import(path); Import(path);
+        Assert.Contains("Ambiguous", commands.Execute("context read duplicate.md").Text);
+        Assert.Contains("Ambiguous", commands.Execute("context remove duplicate.md").Text);
+        commands.Execute("context select " + first.Id);
+        Assert.Contains("Ambiguous", commands.Execute("context select duplicate.md").Text);
+        Assert.Contains("FIRST VERSION", commands.Execute("context read").Text);
+        Assert.Equal(2, engine.GetSnapshot().Context.Documents.Count);
+    }
+    [Fact]
+    public void SelectionDoesNotSurviveLogoutAndNeverReturnsPartiallyMissingContent()
+    {
+        var first = Import(FileWith("one.md", "PRIVATE FIRST")); Import(FileWith("two.md", "PRIVATE SECOND"));
+        commands.Execute("context select one.md two.md"); commands.Execute("context remove " + first.Id);
+        Assert.DoesNotContain("PRIVATE SECOND", commands.Execute("context read").Text);
+        owner.Logout(); owner.Login(); Assert.Contains("No context selected", commands.Execute("context read").Text);
+    }
+    [Fact]
+    public void RevocationByNameImmediatelyInvalidatesAgentSelection()
+    {
+        var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
+        Import(FileWith("shared.md", "SHARED CONTENT"), agent: agent.Id.ToString());
+        var child = owner.CreateAttachment(); registry.Add(child); child.Switch(agent.Id.ToString()); var other = Commands(child);
+        other.Execute("context select shared.md"); Assert.Contains("SHARED CONTENT", other.Execute("context read").Text);
+        Assert.Contains("revoked", commands.Execute("context revoke shared.md").Text);
+        Assert.Contains("scope", other.Execute("context read").Text);
+    }
+    [Fact]
+    public void PickerDefaultsAndCancellationAndSingleUse()
+    {
+        var path = FileWith("picked.md", "PICKED CONTENT");
+        var complete = commands.Execute("context add -search").ContextPicker!;
+        Assert.NotNull(complete); Assert.Contains("Imported", complete([path] ).Text);
+        Assert.Contains("expired", complete([path]).Text);
+        var document = Assert.Single(engine.ContextFor(null, owner.SessionId)); Assert.Equal("Inbox", document.Project);
+        Assert.Null(document.GrantedAgentId); Assert.Empty(engine.GetSnapshot().Context.Documents);
+        Assert.Contains("cancelled", commands.Execute("context add -search").ContextPicker!([]).Text);
+    }
+    [Fact]
+    public void PickerBatchFailureIsAtomicAndPersistentBatchSavesOnce()
+    {
+        var first = FileWith("good.md", "GOOD"); var bad = FileWith("bad.pdf", "BAD");
+        var failed = commands.Execute("context add -search persistent \"Project Two\"").ContextPicker!([first, bad]);
+        Assert.Contains("Nothing imported", failed.Text); Assert.Empty(engine.GetSnapshot().Context.Documents); Assert.Equal(0, saves);
+        var second = FileWith("second.md", "SECOND");
+        Assert.Contains("Imported", commands.Execute("context add -search persistent \"Project Two\"").ContextPicker!([first, second]).Text);
+        Assert.Equal(2, engine.GetSnapshot().Context.Documents.Count); Assert.Equal(1, saves);
+    }
+    [Fact]
+    public void PickerRevalidatesIdentityAndRejectsEphemeralPersistence()
+    {
+        var complete = commands.Execute("context add -search").ContextPicker!;
+        owner.Logout(); owner.Login(); Assert.Contains("denied", complete([FileWith("secret.md", "SECRET")]).Text);
+        Assert.Empty(engine.ContextFor(null, owner.SessionId));
+        Assert.Null(Commands(owner, false).Execute("context add -search persistent project").ContextPicker);
+    }
+    [Fact]
+    public void MultiReadRejectsOversizedTransportOutputWithoutTruncation()
+    {
+        for (var i = 0; i < 4; i++) Import(FileWith($"large{i}.md", new string('<', 250000)));
+        Assert.Contains("read fewer files", commands.Execute("context read large0.md large1.md large2.md large3.md").Text);
+    }
+    [Fact]
+    public async Task HostCompletesInjectedPickerAndContinuesCommands()
+    {
+        var path = FileWith("host.md", "HOST PICKED CONTENT"); var output = new StringWriter();
+        var host = new TerminalHost(engine, commands, new StringReader("context add -search\ncontext read host.md\nexit\n"), output,
+            interactiveConfirmation: true, contextPicker: _ => Task.FromResult(new[] { path }));
+        Assert.Equal(0, await host.RunAsync()); Assert.Contains("HOST PICKED CONTENT", output.ToString());
+    }
     public void Dispose() => Directory.Delete(directory, true);
     [Fact]
     public void ImportCapturesVersionAndProvenanceWithoutReopeningSource()

@@ -373,7 +373,7 @@ Use `launch.cmd` at the destination; a compatible .NET 10 runtime is required. F
 
 Creation/change validation, masked setup prompts, error messages and help now use **6–24 characters**. Existing saved credentials remain verifiable up to the former 256-character limit until the owner explicitly changes the password; the input reader retains that capacity for legacy login. Masked input, salted hashing and authorization are unchanged. Control characters remain rejected. **Completion verification: 390 tests passed** (14 Core, 155 Simulation, 91 Persistence, 130 Terminal), including 13 new cases for boundaries, permitted categories, exact case/spacing, confirmation mismatch, legacy 25/256-character login after restore, and authenticated rotation to the new policy. No saved credential migration or password reset is required.
 
-## User-supplied context (4.3)
+## User-supplied context (4.3 / 4.3A)
 
 ```text
 context
@@ -381,13 +381,20 @@ context
       # USAGE: Master Control imports one explicit local file. Omit agent for owner-only access. Persistent imports save with the world; temporary imports end when the importing session changes identity/logs out or the host exits.
     - context list [project]
       # USAGE: List only context visible to the active identity, optionally filtered by project name.
-    - context read <id>
-      # USAGE: Read captured text and source/version provenance without reopening the source.
-    - context revoke <id>
+    - context add -search [temporary|persistent "project" [registered-agent-id|name]]
+      # USAGE: Open the Windows file dialog; Ctrl/Shift selects multiple files. Without options: temporary, Inbox, owner only. Cancel imports nothing.
+    - context select <id|name> [id|name ...]
+      # USAGE: Replace this terminal's file selection. With no arguments, show selection; use context select clear to clear it.
+    - context read [id|name ...|-selected]
+      # USAGE: Read one or several captured files without reopening sources. With no arguments or -selected, read the current selection. Quote filenames containing spaces; ambiguous names require an ID.
+    - context revoke <id|name>
       # USAGE: Master Control removes agent access, retaining the owner's captured content.
-    - context remove <id>
+    - context remove <id|name>
       # USAGE: Master Control removes the active import; historical backups/already-read output are not erased.
-    # EXAMPLE: context add "C:\Work\notes.md" persistent "My Project" ARCHON
+    # EXAMPLE: context add -search persistent "My Project" ARCHON
+    # EXAMPLE: context select "notes.md" "design.docx"
+    # EXAMPLE: context read
+    # EXAMPLE: context read "notes.md" "design.docx"
 ```
 
 Register the agent before granting access. Supported inputs: UTF-8 text/Markdown/common source code and DOCX body text. Limits: 1 MiB source, 256 Ki text characters per import, 64 imports and 1 Mi total text characters. No folder grants, automatic rereads, network paths, macro execution or silent truncation. PDF/DOC/RTF and unsupported encodings require exporting to a supported format. Re-import for a new captured version. `talk context` reports the recipient's granted-file count; it does not analyze or copy file bodies into transcripts. See [implementation and limits](Project_GRID_User_Supplied_Context_Implementation.md).

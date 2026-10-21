@@ -1,5 +1,12 @@
 # GRID7736
 
+## Context convenience - 4.3A completed (2026-10-21)
+
+`context add -search` now opens a local Windows multi-file picker (default: temporary, `Inbox`, owner only); optional retention/project/registered-Agent arguments are supported. Read/revoke/remove accept exact filenames or IDs. Multi-file `context read` and session-local `context select` support reading several captures together. Names must be unambiguous; reads recheck access and selections clear on identity change. Picker completion revalidates the session; batches validate before import and persistent batches save once. Main and attached terminals use the same host-owned context service, with no new schema or network requirement. Drag/drop and remote uploads remain unimplemented.
+
+Completion verification: 430 tests passed, including 10 new 4.3A tests. Automated tests inject dialog results; visible Windows dialog interaction still needs manual verification. See the context implementation/help for command syntax and limits. Prior 4.3 notes below describe the original milestone.
+
+
 ## Local task context - 4.3 (2026-10-20)
 
 Implemented `context add/list/read/revoke/remove` for explicit file captures, scoped Agent grants, project labels and temporary/persistent retention. Schema v13 and 420 passing tests. Read [context implementation](<MD Project Files/Project_GRID_User_Supplied_Context_Implementation.md>) for syntax, limits and privacy/backup behavior; AI ingestion/task execution remain future work.

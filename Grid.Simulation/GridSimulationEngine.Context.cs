@@ -16,14 +16,14 @@ public sealed partial class GridSimulationEngine
         lock (gate)
         {
             foreach (var document in documents)
-            if (document.GrantedAgentId is { } agent && (!identities.RegisteredAgents.Contains(agent) || world.GetProgram(agent).Kind != ResidentKind.Agent))
-                throw new ArgumentException("Context can only be granted to a registered Agent.");
+                if (document.GrantedAgentId is { } agent && (!identities.RegisteredAgents.Contains(agent) || world.GetProgram(agent).Kind != ResidentKind.Agent))
+                    throw new ArgumentException("Context can only be granted to a registered Agent.");
             ContextState.Validate(new(context.Documents.Concat(temporaryContext.Values.Select(t => t.Document)).Concat(documents).ToArray()));
             foreach (var document in documents)
             {
-            if (persistent) context = new(Array.AsReadOnly(context.Documents.Append(document).ToArray()));
-            else temporaryContext.Add(document.Id, (document, session.SessionId));
-            RecordEvent("ContextImported", document.Id, null, $"Captured {(persistent ? "persistent" : "temporary")} context; source/body excluded from audit.");
+                if (persistent) context = new(Array.AsReadOnly(context.Documents.Append(document).ToArray()));
+                else temporaryContext.Add(document.Id, (document, session.SessionId));
+                RecordEvent("ContextImported", document.Id, null, $"Captured {(persistent ? "persistent" : "temporary")} context; source/body excluded from audit.");
             }
         }
     }

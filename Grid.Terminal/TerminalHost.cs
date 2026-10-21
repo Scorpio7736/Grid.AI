@@ -7,7 +7,7 @@ namespace Grid.Terminal;
 /// <summary>Owns input/output and scheduler lifetime; commands are independently registered and tested.</summary>
 public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher commands,
     TextReader input, TextWriter output, bool showPrompt = true, ILiveTerminal? liveTerminal = null, IWorldPersistenceSession? persistence = null,
-    IHostTelemetryMonitor? telemetry = null, Func<bool>? clearScreen = null, bool interactiveConfirmation = false, TerminalSessionUi? sessionUi = null, GridTransfer? transfer = null, Func<Task>? stopAttachments = null)
+    IHostTelemetryMonitor? telemetry = null, Func<bool>? clearScreen = null, bool interactiveConfirmation = false, TerminalSessionUi? sessionUi = null, GridTransfer? transfer = null, Func<Task>? stopAttachments = null, Func<CancellationToken, Task<string[]>>? contextPicker = null)
 {
     public async Task<int> RunAsync(CancellationToken cancellationToken = default)
     {
@@ -41,6 +41,26 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 if (line is null) break;
                 if (sessionUi is not null) await sessionUi.RefreshAsync();
                 var result = commands.Execute(line);
+                if (result.ContextPicker is { } completeSelection)
+                {
+                    if (!interactiveConfirmation) result = new("File picker requires an interactive terminal; use context add with an absolute file path.");
+                    else
+                    {
+                        using var pickerStop = CancellationTokenSource.CreateLinkedTokenSource(shutdown.Token);
+                        try
+                        {
+                            var pick = (contextPicker ?? ContextFilePicker.PickAsync)(pickerStop.Token);
+                            if (await Task.WhenAny(pick, scheduler, autosave, monitoring) != pick)
+                            {
+                                pickerStop.Cancel();
+                                try { await pick; } catch (OperationCanceledException) { }
+                                break;
+                            }
+                            result = completeSelection(await pick);
+                        }
+                        catch (IOException e) { result = new("Context error: " + e.Message); }
+                    }
+                }
                 if (sessionUi is not null && !await sessionUi.HandleAsync(result, shutdown.Token)) break;
                 if (result.Text.Length != 0) await output.WriteLineAsync(result.Text);
                 if (result.Transfer is { } request)

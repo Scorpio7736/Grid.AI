@@ -2,9 +2,9 @@ using System.Buffers.Binary;
 using System.Text.Json;
 namespace Grid.Terminal;
 
-public sealed record WindowRequest(string Kind, string? Command = null, int ProgramPage = 0, int EventPage = 0, int Width = 120, int Height = 40);
+public sealed record WindowRequest(string Kind, string? Command = null, int ProgramPage = 0, int EventPage = 0, int Width = 120, int Height = 40, string[]? Files = null);
 public sealed record WindowCommandInfo(string Name, string Usage, string Description);
-public sealed record WindowReply(string Text, string Prompt = "", WindowCommandInfo[]? Commands = null, bool Closed = false, bool Live = false, bool Clear = false, bool ConfirmLogout = false, string Mode = "terminal");
+public sealed record WindowReply(string Text, string Prompt = "", WindowCommandInfo[]? Commands = null, bool Closed = false, bool Live = false, bool Clear = false, bool ConfirmLogout = false, string Mode = "terminal", bool PickFiles = false);
 public static class WindowProtocol
 {
     public const int MaximumFrame = 2 * 1024 * 1024;

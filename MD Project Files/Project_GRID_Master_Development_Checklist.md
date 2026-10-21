@@ -839,6 +839,19 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 **Completion verification - 2026-10-20.** 420 tests passed (14 Core, 155 Simulation, 95 Persistence, 156 Terminal), including 16 new context cases. Schema v13 persists captured project context; temporary content stays out of saves/backups. No file execution or LLM analysis is implied. See [context implementation](Project_GRID_User_Supplied_Context_Implementation.md) for supported formats, bounds, scope, commands and recovery/revocation limitations.
 
+## 4.3A Context file selection and convenient reading
+
+**Implemented - 2026-10-21.** Follow-up to 4.3; existing permissions and captured versions are preserved.
+
+- [x] Add `context add -search` with a Windows multi-file picker in main and attached terminals
+- [x] Support read/revoke/remove by exact filename or ID; ambiguous names require IDs
+- [x] Read multiple files in one command with bounded output
+- [x] Add per-terminal `context select`, selected reads, and selection clearing
+- [x] Revalidate selection scope and picker authorization; cancel without importing and validate batches atomically
+- [x] Update bundled help, implementation documentation and completion verification
+
+**Completion verification - 2026-10-21.** 430 tests passed (14 Core, 155 Simulation, 95 Persistence, 166 Terminal), including 10 new 4.3A cases. Native dialog results are injected for automated tests; visible Windows dialog interaction remains a manual verification step. See [context implementation](Project_GRID_User_Supplied_Context_Implementation.md) for defaults, commands, limits and planned exclusions.
+
 ## 4.4 Voice communication
 
 - [ ] Implement microphone selection and push-to-talk

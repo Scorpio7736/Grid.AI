@@ -1,8 +1,23 @@
 # Project GRID - User-Supplied Context Implementation
 
+## 4.3A Context picker and multi-file reading - implemented 2026-10-21
+
+- `context add -search` opens the Windows multi-file dialog (Ctrl/Shift selects several files). Defaults: temporary retention, project `Inbox`, owner-only access.
+- `context add -search persistent "My Project" [registered-agent-id|name]` chooses retention/project and an optional registered Agent grant. `temporary` is also supported. Cancel imports nothing. All selected files are validated before the batch is added; validation/quota failure imports none. Persistent batches save once. Save failure is reported and leaves the in-memory changes pending.
+- `context read "notes.md" "design.docx"` reads several captured imports by exact filename (case-insensitive) or ID. Quote names containing spaces. Duplicate filenames require an ID; GRID lists matching scoped IDs, projects and fingerprints without guessing a version.
+- `context select "notes.md" "design.docx"` replaces this terminal's selection. `context select` displays it, `context read` or `context read -selected` reads it, and `context select clear` clears it. Selections store IDs, are not saved, clear on identity changes, and are reauthorized on every read. Removed/revoked selections fail without returning partial content.
+- `context revoke "notes.md"` and `context remove "notes.md"` accept filenames or IDs and still require Master Control. Selection/read do not broaden Agent grants.
+
+The main terminal and `ntm` clients support the picker. Dialogs run outside the shared identity lock; completion rechecks the requesting session and is single-use. Attached clients keep heartbeats active and cancel the dialog on disconnection. The original host alone imports/saves. Noninteractive hosts refuse the picker; explicit-path imports remain available. Windows PowerShell and Windows Forms provide the local dialog with no download/network dependency. Drag/drop, folder imports and remote uploads remain planned/unimplemented.
+
+Existing format, path, file-size and total-context limits still apply. Combined read output exceeding 1,500,000 JSON-encoded bytes is refused with a request to read fewer files; no silent truncation. No schema change: persistent captures remain schema v13, temporary captures and selections are not persisted.
+
+**Completion verification (2026-10-21):** 430 tests passed (14 Core, 155 Simulation, 95 Persistence, 166 Terminal), including 10 new cases for names/ambiguity, multi-read/selection, revocation/logout, cancellation/single-use/stale picker requests, atomic imports/save count, output bounds, host picker integration and attached-pipe selection. Tests inject picker results; the visible Windows dialog has not been manually exercised. Prior 4.3 verification below is historical.
+
+
 ## 4.3 completion - 2026-10-20
 
-GRID now imports an explicitly selected local file as captured task data, grouped under a named project. Master Control chooses retention and optionally grants the captured file to one registered Agent. This is a terminal file-selection/import workflow; a graphical file picker, drag/drop and remote uploads are not implemented.
+GRID now imports an explicitly selected local file as captured task data, grouped under a named project. Master Control chooses retention and optionally grants the captured file to one registered Agent. The original 4.3 workflow selected files by explicit path. The 4.3A follow-up above adds a graphical multi-file picker; drag/drop and remote uploads remain unimplemented.
 
 ```text
 context add "C:\Work\notes.md" persistent "My Project"
@@ -18,7 +33,7 @@ The optional agent must already be registered (`connect ARCHON`, then `register-
 
 ### Approved scope and captured versions
 
-Each `context add` explicitly selects one absolute local file, never its parent directory. Project names are organizational labels, not filesystem grants. Reads return captured text and provenance without reopening the source. There is no folder crawling, wildcard import, automatic refresh, external-document fetch, macro/script execution or permission to write the source file. A source may change or disappear without changing the captured version. Re-import explicitly to create a new immutable context ID/version; earlier imports remain until removed.
+Each explicit-path `context add` selects one absolute local file; `-search` selects a batch of explicit files, never its parent directory. Project names are organizational labels, not filesystem grants. Reads return captured text and provenance without reopening the source. There is no folder crawling, wildcard import, automatic refresh, external-document fetch, macro/script execution or permission to write the source file. A source may change or disappear without changing the captured version. Re-import explicitly to create a new immutable context ID/version; earlier imports remain until removed.
 
 Provenance records source path, raw-source SHA-256 fingerprint, source byte length, last-modified UTC, capture UTC, extraction format, project name and optional agent grant. The fingerprint identifies the captured source version; it is not a sequential revision number. DOCX text is extracted from the fingerprinted original archive. Source paths travel as historical provenance when moving GRID; they are never automatically opened on another PC. These imports are not automatically inserted into transcripts or passed to an AI provider.
 

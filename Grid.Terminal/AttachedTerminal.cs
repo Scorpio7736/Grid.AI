@@ -89,6 +89,28 @@ public static class AttachedTerminal
                 var line = await Read(input, reply.Prompt);
                 if (line is null) break;
                 reply = await Send(new("command", line));
+                if (reply.PickFiles)
+                {
+                    using var pickerStop = CancellationTokenSource.CreateLinkedTokenSource(stop.Token);
+                    var pick = ContextFilePicker.PickAsync(pickerStop.Token);
+                    try
+                    {
+                        while (!pick.IsCompleted)
+                        {
+                            if (await Task.WhenAny(pick, Task.Delay(500, stop.Token)) == pick) break;
+                            stop.Token.ThrowIfCancellationRequested();
+                            var heartbeat = await Send(new("ping"));
+                            if (heartbeat.Closed) throw new IOException(heartbeat.Text);
+                        }
+                        reply = await Send(new("context-files", Files: await pick));
+                    }
+                    catch (IOException e) when (pick.IsCompleted)
+                    {
+                        await output.WriteLineAsync("Context error: " + e.Message);
+                        reply = await Send(new("context-files", Files: []));
+                    }
+                    finally { pickerStop.Cancel(); try { await pick; } catch (Exception e) when (e is OperationCanceledException or IOException) { } }
+                }
                 if (reply.ConfirmLogout)
                 {
                     while (true)
