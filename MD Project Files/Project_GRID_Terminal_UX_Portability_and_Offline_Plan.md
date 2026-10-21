@@ -1,0 +1,171 @@
+# Project GRID - Terminal UX, Portability and Offline Operation
+
+## Password requirements - next fix (2026-10-20)
+
+**Requested; not implemented yet.** New passwords and password changes must accept **6–24 characters inclusive**. Uppercase letters, lowercase letters, numbers and symbols are allowed; no character category or mixture is mandatory. Preserve password case and exact characters; do not silently trim or truncate passwords.
+
+Current runtime validation still uses **12–256 characters**. Update creation/change validation, masked setup prompts, error messages and help together. Preserve login compatibility for existing saved credentials, including passwords longer than 24 characters, until their owner explicitly changes the password. Keep masked input, salted hashing and authorization unchanged. Verify lengths 5/6/24/25, each allowed character category, mixed input, confirmation matching and existing-credential login before marking complete.
+
+
+**4.2B implemented - 2026-10-20; packaging/rendering/offline release gates remain planned.**
+
+See [4.2B implementation and verification](Project_GRID_Terminal_UX_Implementation.md) for current behavior and limits. The requirements below retain the design specification; completion applies to terminal UX and local credentials only.
+
+This records the user's additions after 4.2A. Existing implementation/completion history remains valid for its original scope. Terminal UX and local credentials are implemented; PC/Flash packaging and full product offline validation are not. See [Terminal Help](Project_GRID_Terminal_Help.md) for the new reference artifact and the [master checklist](Project_GRID_Master_Development_Checklist.md) for unchecked implementation work.
+
+## GRID-REQ-006 - Terminal presentation and interaction
+
+### Help format and Markdown help
+
+For each command, show its options/flags/switches as an indented dashed list below the command. Each option includes a `# USAGE:` description; each command block ends with an example. Preserve actual parser syntax: do not turn bare options such as `ids` or `details` into invented dash flags.
+
+```text
+programs
+    - programs -active
+      # USAGE: List freshly observed Running applications.
+    - programs -possible
+      # USAGE: List current and previously known application candidates.
+    - programs -sleeping
+      # USAGE: List freshly observed On call or Sleeping applications.
+    - programs ids
+      # USAGE: Show full identifiers; can accompany one availability filter.
+    # EXAMPLE: programs -active ids
+```
+
+Create and ship a local Markdown help reference, opened through **help -md**. The reference is supplied in this documentation update; the flag displays the bundled document in the terminal. Resolve the reference from the application/package root, not a hard-coded repository path or online URL. Use an offline-capable local viewer; if unavailable, render/read the Markdown in the terminal and show its path. Never require a download or browser network request just to read help. The full packaged manual may describe admin commands, but live help and Tab suggestions must remain scoped to active capabilities. Help never grants permission to execute a documented command. Keep registered usage metadata, console help and Markdown synchronized; validate examples in tests.
+
+### Opening graphic and login flow
+
+Add a GRID7736 opening graphic with the project's established digital/Tron-inspired visual direction. Supply a text/ASCII version that works offline without fonts/assets/network dependencies; adapt to narrow terminals. Opening/welcome artwork is separate from the existing shutdown artwork. The implemented text fallback:
+
+```text
++======================================================+
+|                                                      |
+|                    G R I D 7 7 3 6                   |
+|                    ENTER THE GRID                    |
+|                                                      |
++======================================================+
+```
+
+Startup displays the graphic and welcome/login screen. When no local username/password credential configuration exists for a new or explicitly migrated portable world, guide the user through username creation, password creation and password confirmation. If such a local-credential option/provider has not yet been implemented, implement it as part of this work. Never treat absent credential files in an already protected world as permission to reset its owner automatically.
+
+On successful login: clear the terminal, display **Welcome, <username>**, show active identity and authority level (Master Control or the selected agent role), then display **Press Enter to continue to terminal**. Enter opens the normal prompt. The screen must not imply OS elevation. Failed login remains on the login screen without revealing protected state.
+
+On logout: ask **Log out? [y/N]**; y confirms, n/blank cancels, and invalid input reprompts. EOF/Ctrl+C cancels the confirmation and follows the existing orderly shutdown rules. A confirmed logout revokes the session, clears pending previews/chat/completion context, clears the terminal, and displays the opening welcome/login screen again. Cancellation preserves identity and context. Expiry/security revocation must still revoke immediately without waiting for a yes/no answer; return to the welcome/login screen.
+
+For redirected input/noninteractive sessions, do not hang on Enter/confirmation or echo passwords. Specify an explicit secure noninteractive authentication policy during implementation; default to a safe refusal for credential setup, while existing graceful EOF handling and plain-text diagnostics remain. Any migration must preserve owner/agent IDs, transcripts, roles and edit authorization semantics.
+
+### Colors and Tab completion
+
+| Element | Required color |
+| --- | --- |
+| Base/output text | Light blue |
+| User-typed input | White |
+| Tables and divider lines | Yellow |
+| Errors and access denials | Red |
+
+Retain --no-color and redirected-output/plain-text fallbacks. Restore the prior console colors on exit and after colored spans. Do not convey errors or authority solely through color. This is a complete palette requirement; existing cyan/default output is not proof that input, tables and errors already satisfy it.
+
+Tab completion: type a prefix and press Tab to complete a permitted command, option, flag or switch; offer/cycle matching choices where ambiguous. Support quoting, cursor editing and names containing spaces. Suggestions must use the current command registry/capabilities, refresh after login/switch, and clear on logout. Do not suggest restricted commands, unrelated transcript IDs, passwords, or inaccessible paths. Secret/password input disables completion/history. Completion must not execute commands. Keep a line-input fallback when interactive key handling is unavailable. Verify that live view still returns with Q/Esc and the line editor regains input ownership.
+
+## Portable credentials - extension of GRID-REQ-003
+
+Original 4.2A login binds to a Windows SID and is unsuitable as the sole authentication mechanism for a world carried between PCs. Plan a local username/password provider with explicit first-run setup, maintained salted password hashing/KDF, masked input, bounded retry handling and no plaintext password logging/storage. Passwords must not appear in command-line arguments, environment variables, shell history or completion buffers. Exact library/KDF parameters require implementation-time selection and verification.
+
+The portable identity store travels with the package. Preserve the stable owner ID, registered agent identities and role policy; credentials authenticate the human, who may then select authorized agents. Agent selection does not inherit Master Control permissions. Provide an authenticated migration from a SID-bound world; copying to a different PC alone must not permit ownership takeover. Define offline recovery and credential rotation without an online account. Do not rely exclusively on the old machine's SID, user profile or OS-bound encryption key. Storage encryption, if added, needs portable key/recovery handling. 4.2B implements setup, authenticated rotation/migration and portable hash verification. Lost-password recovery remains a future design; there is no unauthenticated reset.
+
+## GRID-REQ-007 - Self-contained portable GRID
+
+Goal: keep GRID in one movable folder/package on a flash drive, plug into another supported PC, launch locally and continue the same saved world. Initial compatibility target remains supported Windows/CPU architectures; a flash drive does not make binaries universal across operating systems. Missing host permissions/hardware must degrade clearly rather than require administration or silently replace the world.
+
+### Installation choice: PC GRID or Flash GRID
+
+**User addition - 2026-10-20; planned, not implemented.** Installation must explicitly offer two editions before provisioning files:
+
+| Choice | Intended use | Storage and host integration | 3D rendering |
+| --- | --- | --- | --- |
+| **PC GRID - permanent machine installation** | Remain installed on one supported PC | User-selected permanent location with clearly disclosed data paths; optional shortcuts/startup integration | Advanced rendering options, scaled to the host GPU/resources |
+| **Flash GRID - mobile flash-drive installation** | Carry the prepared package between supported PCs | User-selected removable-drive folder; package-relative data/config/models/docs/cache; no required host install or persistent PATH/registry changes | Very simple, lightweight 3D rendering by default |
+
+The installer must explain these differences, ask for the destination, check compatibility/free space/write access, and save the edition choice in configuration. Do not infer the edition merely from a drive letter or silently change it on relocation. Installation here includes an explicit portable provisioning flow; Flash GRID must launch directly from its folder after preparation.
+
+Flash GRID's viewer should use simple geometry, small textures/material sets, limited view distance and conservative effects/shadows, prioritizing readability and low resource/storage requirements. PC GRID may offer richer geometry/materials, lighting, shadows, atmosphere and longer view distances where supported. Exact asset budgets and performance targets require implementation-time profiling; no current 3D implementation or measured performance is claimed. Both retain the existing city/art direction, with different detail levels. Flash GRID rendering runs on the host PC; the flash drive stores the portable package.
+
+Both editions share the authoritative simulation, identity/permission model, offline task requirements and compatible world/save format. Rendering quality must not change simulation rules, agent authority, tasks, historical state or the saved city. Prefer shared source/services with edition-specific packaging/assets and viewer presets. Advanced PC rendering is optional and must have a simpler fallback when hardware is insufficient; a terminal-only fallback remains usable if 3D is unavailable.
+
+Both editions must perform every supported runtime task offline after provisioning. Provide a future explicit export/import or edition-migration path that carries the existing world and credentials without duplicating live writers or silently regenerating state. PC-to-Flash migration must include the simple viewer assets and required local dependencies; Flash-to-PC may add advanced assets through the explicit installation exception. Credential/ownership migration remains authenticated and must not be bypassed by changing an edition flag.
+
+Proposed package layout (planned, names subject to implementation):
+
+```text
+GRID7736/
+    launch/
+    app/
+    data/          # world, identities, transcripts, history, backups, recovery markers
+    config/
+    models/
+    assets/
+    docs/
+    logs/
+    cache/
+    temp/
+```
+
+All GRID-managed persistent data and working/cache files must use the package root or an explicitly chosen managed subdirectory. Ship required runtime/dependencies, local models, tokenizers, voice assets and documentation, with version/license manifests. Resolve paths relative to the package; handle changed drive letters, paths with spaces and relocation without broken references. Avoid default reliance on %LOCALAPPDATA%, machine-specific PATH/env variables, registry installation or absolute model paths. Portable launch must work directly without mutating the host's PATH/registry. Existing installed-mode behavior can remain a separate explicit mode; it must not silently redirect a portable session to an old host-local world.
+
+User-approved work on files outside the package is distinct from GRID-managed storage and must use explicit scoped paths/permissions. External host applications are not bundled automatically. Rediscover the current host's applications and telemetry; unavailable dependencies/resources remain unavailable/unknown. Preserve the saved city, world identity, conversations and creation-hardware provenance when moving PCs. Do not regenerate the city just because the host motherboard/CPU/GPU changed. Host adaptation is an explicit separate design decision.
+
+Handle flash-drive space limits, read-only media, wear-conscious write batching, exclusive world leases, interrupted writes, drive removal and backup recovery. Provide a safe shutdown/eject-ready state after workers stop and writes flush. Recovery must not regenerate or claim a save succeeded after an interrupted write. Keep default backups with the package and optionally support explicit external backups. Validate relocation across drive letters and two supported machines, missing peripherals, Unicode/spaced paths and no host-local data leakage. Do not claim portability based only on a relocated executable.
+
+## GRID-REQ-008 - Offline operation is mandatory
+
+All GRID runtime tasks must work without internet access, online accounts, subscriptions, cloud inference, remote authentication or network-required license checks. The sole network exception is explicit user-requested installation/provisioning of dependencies, models or updates; no runtime task may silently download missing files. After installation, the full intended task path must be offline-capable, including login/recovery, simulation, persistence, communications, local AI, voice, local-context work, task execution and help/viewers.
+
+Bundle/pre-provision all required runtime assets and keep models/services local. Missing assets produce a clear local unavailable result and an explicit installation path, never a silent cloud fallback or background download. Any optional online integration described in older plans is not part of the accepted runtime requirement; redesign it as a local/offline equivalent or explicitly defer/remove it. Internet browsing, remote messaging and remote-data retrieval cannot be counted as offline-compliant GRID tasks. Do not misrepresent stale/local data as current external facts.
+
+Separate installer network permissions from normal runtime capabilities. Define how local on-machine IPC/model endpoints work with no external networking; that does not authorize LAN/cloud dependency. Verify with external networking disabled/blocked and DNS unavailable, including cold startup, login, model/voice availability, conversations, tasks, restart and recovery. Test the prepared portable package on another supported PC with internet disabled. Record missing features honestly: the current deterministic core works locally, but future AI/voice/host tasks are not yet implemented or verified as a complete offline product.
+
+## Implementation order and acceptance
+
+1. Implement terminal help layout/help -md, opening/welcome screens, palette and Tab editor while preserving command authorization.
+2. Implement credential setup/provider and authenticated migration, then integrate login/logout UI and test isolation/confirmation.
+3. Implement the PC GRID / Flash GRID installation choice, edition-specific viewer profiles, package-relative portable storage/dependency provisioning and launch without host integration side effects.
+4. Validate relocation, recovery and all supported runtime tasks offline; update release gates with measured evidence.
+
+Track completed terminal work in 4.2B and remaining package/offline acceptance in 8.6 and 8.7.
+
+## Additional windows - planned 4.2C (2026-10-20)
+
+User-requested additions to GRID-REQ-006; documentation only, not implemented. Preserve the requested spelling `-opninwin`.
+
+- `<command> -opninwin` opens supported data output in a separate window so the user can inspect and scroll it without displacing the main terminal. Examples: `programs -opninwin`, `status -opninwin`, `resources details -opninwin`. Default data windows show a labeled snapshot; if `live -opninwin` is supported, label it as updating and show connection/freshness status. Define the supported read-only command list during implementation and reject unsupported combinations clearly. Opening a data view must not execute a mutating command or grant extra permissions.
+- `ntm` opens a new terminal window attached to the same running GRID instance and world. It is another command interface to the existing simulation, not a second simulation process independently loading/writing the save. Commands and state changes are shared through the authoritative host; each window has its own input, view, active conversation and pending edit context.
+
+Use local, offline communication between windows and a single authoritative simulation/save owner. Do not bypass the existing exclusive world lease by launching a second ordinary writer against the same database. New windows must authenticate or receive a securely scoped attachment; never pass passwords in launch arguments, environment variables or files. Revalidate capabilities, expiry and revocation for each request; opening a window must not promote an agent to Master Control.
+
+Closing a data window or attached terminal detaches that view without stopping the shared GRID. Before implementation, define and document host ownership, main-window closure, last-window closure and explicit whole-GRID shutdown behavior; preserve orderly save/flush and NGE authorization/confirmation. All windows must show disconnection if the host stops or NGE removes the world, and must not silently create/reload another world. The existing single-terminal `exit` behavior is unchanged until this lifecycle work is implemented.
+
+Provide a clear error and retain the current terminal if window creation or attachment fails. Keep paths portable and compatible with the planned PC GRID/Flash GRID editions; no internet service is required. Verify shared state, one simulation clock/writer, per-window authorization/context, logout/expiry, window closure, host loss and save recovery before marking 4.2C complete.
+
+## Move or copy GRID - planned 4.2D (2026-10-20)
+
+**Implementation update:** current-host transfers are implemented with 377 passing tests. Read [actual scope and limits](Project_GRID_Transfer_Implementation.md). The following original requirements retain the broader target, including future attached-window/PC/Flash integration; they are not all complete.
+
+User-requested Master Admin commands (the existing Master Control authority):
+
+| Command | Planned result |
+| --- | --- |
+| `tranexist "location"` | Move the complete GRID installation and its managed files to the specified destination; remove the original only after the destination is verified and the move can finish safely. |
+| `copexist "location"` | Copy the complete GRID installation and its managed files to the specified destination; retain the original. |
+
+Both commands now implement the current-host scope. Require authenticated Master Control at dispatch and immediately before executing the operation; agent sessions must be denied. Parse the quoted destination as a filesystem path, including spaces, without shell interpolation. Show resolved source/destination, file scope, estimated size and move/copy behavior, then request explicit y/n confirmation. Cancellation changes no files.
+
+“All files” means the complete GRID-managed installation and state: application/launcher/runtime dependencies, world save, identity and credential hashes, transcripts/history, backups/recovery metadata, configuration, local models, assets, documentation, logs and caches. Inventory currently scattered managed files explicitly rather than assuming everything already lives under one directory. Do not move/copy unrelated host programs, user documents, or external task-context files merely because GRID references them; report external dependencies and references separately. Do not transfer active authentication sessions, plaintext passwords, live lock handles or machine-specific attachment endpoints as reusable state. A copied/moved world keeps its saved identity and city; opening it requires authentication and must not regenerate it for new hardware.
+
+Preflight source/destination boundaries, write access, free space, compatibility, symlinks/junctions and existing destination contents. Reject identical, nested or overlapping source/destination paths and unsafe filesystem roots; do not overwrite unrelated destination files. Use a fresh destination directory or a clearly defined safe empty destination. Operations must work offline and support both planned PC GRID and Flash GRID layouts.
+
+Coordinate all attached windows through the one authoritative host. Pause mutations and flush/checkpoint saves before taking a consistent transfer snapshot. Use staging and a file manifest with integrity verification; retain the source if copying, validation or handoff fails. Never claim completion for a partial copy. A cross-volume move is a verified copy followed by source cleanup, not an assumed atomic rename. Account for locked running binaries through an orderly shutdown/helper or next-launch handoff; do not delete the running installation prematurely. Design interrupted-transfer recovery and report any remaining cleanup explicitly.
+
+For `tranexist`, release old leases/endpoints, update GRID-managed launch/configuration references as appropriate for the selected edition, and require reconnect/restart at the verified destination. For `copexist`, the original remains usable; the copy must use independent runtime endpoints/leases and cannot attach to the original just because the saved world ID matches. Do not allow two writers on the same physical save. Define and test the copy's independent startup and local host rediscovery while preserving historical world data. Flash GRID must not introduce persistent host PATH/registry integration.
+
+Implement alongside package/storage relocation work in 8.6. Verify permission denial, confirmation cancellation, quoted paths, consistent saves, full manifests, low space, interrupted transfer, locked files, source retention on failure, restart/login, recovery and attached-window behavior before marking complete.

@@ -18,6 +18,15 @@ public sealed partial class GridSimulationEngine
             return true;
         }
     }
+    public void SetLocalCredential(PasswordCredential credential)
+    {
+        lock (gate)
+        {
+            PasswordCredential.Validate(credential);
+            identities = identities with { OwnerSubject = identities.OwnerSubject ?? "local-credential-v1", Credential = credential };
+            RecordEvent("CredentialConfigured", LocalOperator.Id, null, "Local password credential configured; no credential material recorded in audit.");
+        }
+    }
     public void RegisterAgentIdentity(Guid id)
     {
         lock (gate)

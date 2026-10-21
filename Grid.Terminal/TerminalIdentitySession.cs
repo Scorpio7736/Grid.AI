@@ -13,6 +13,48 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
     private long generation;
     private bool authenticated;
     private DateTimeOffset expiresAt;
+    private PasswordCredential? authenticatedCredential;
+    private int failedPasswords;
+    private DateTimeOffset retryAfter;
+    public bool NeedsSetup => Engine.GetSnapshot().Identities is { OwnerSubject: null, Credential: null };
+    public bool UsesPassword => Engine.GetSnapshot().Identities.Credential is not null;
+    public bool IsAuthenticated { get { lock (gate) return OwnerMatches(); } }
+    public string DisplayName => UsesPassword ? Engine.GetSnapshot().Identities.Credential!.Username : "Windows owner";
+    public void RevokeExpired()
+    {
+        lock (gate) if (authenticated && !OwnerMatches()) { authenticated = false; agent = null; authenticatedCredential = null; Reset(); Engine.AuditIdentity("Expired", null, generation, false); }
+    }
+    public string ConfigureCredentials(string username, string password, string confirmation)
+    {
+        lock (gate)
+        {
+            if (!NeedsSetup && !IsMaster) return "Access denied. Authenticate the existing owner as Master Control before configuring credentials.";
+            if (password != confirmation) return "Error: passwords do not match.";
+            var credential = PasswordCredential.Create(username, password);
+            authenticated = false; agent = null; authenticatedCredential = null; Reset();
+            Engine.SetLocalCredential(credential); PersistIdentity?.Invoke();
+            return "Local credentials saved. Log in with your username and password; Windows-owner bypass is disabled.";
+        }
+    }
+    public string LoginPassword(string username, string password)
+    {
+        lock (gate)
+        {
+            if (OwnerMatches()) return "Already logged in.";
+            var now = (clock ?? TimeProvider.System).GetUtcNow();
+            if (now < retryAfter) return "Login denied. Wait 30 seconds after repeated failures before retrying.";
+            var credential = Engine.GetSnapshot().Identities.Credential;
+            if (credential is null || !credential.Verify(username, password))
+            {
+                if (++failedPasswords >= 5) { retryAfter = now.AddSeconds(30); failedPasswords = 0; }
+                Engine.AuditIdentity("PasswordLogin", null, generation, false); return "Login denied: invalid credentials.";
+            }
+            PersistIdentity?.Invoke(); failedPasswords = 0; retryAfter = default;
+            authenticatedCredential = credential; expiresAt = now.AddHours(8); authenticated = true; agent = null; Reset();
+            Engine.AuditIdentity("PasswordLogin", null, generation, true); LoginSucceeded?.Invoke();
+            return "Logged in as Master Control using local credentials.";
+        }
+    }
     public Action? PersistIdentity { get; set; }
     private Guid? agent;
     public event Action? Changed;
@@ -20,7 +62,13 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
     public void Attach(GridSimulationEngine value) { lock (gate) engine = value; }
     private GridSimulationEngine Engine => engine ?? throw new InvalidOperationException("Identity session is not attached.");
     public static string? WindowsSubject() => OperatingSystem.IsWindows() ? WindowsIdentity.GetCurrent().User?.Value : null;
-    private bool OwnerMatches() => authenticated && (clock ?? TimeProvider.System).GetUtcNow() < expiresAt && verifiedOsSubject() is { } subject && Engine.GetSnapshot().Identities.OwnerSubject == subject;
+    private bool OwnerMatches()
+    {
+        if (!authenticated || (clock ?? TimeProvider.System).GetUtcNow() >= expiresAt) return false;
+        var saved = Engine.GetSnapshot().Identities;
+        return saved.Credential is { } credential ? credential == authenticatedCredential :
+            verifiedOsSubject() is { } subject && saved.OwnerSubject == subject;
+    }
     public bool IsMaster { get { lock (gate) return OwnerMatches() && agent is null; } }
     public long Generation { get { lock (gate) return generation; } }
     public EditSessionReference Reference { get { lock (gate) return new(sessionId, generation); } }
@@ -56,6 +104,7 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
     {
         lock (gate)
         {
+            if (UsesPassword) return "Login denied: local credentials are configured; use interactive login.";
             if (OwnerMatches()) return "Already logged in. Use switch master or switch <agent-id|name>, or logout.";
             if (authenticated) { authenticated = false; agent = null; Reset(); }
             var subject = verifiedOsSubject();

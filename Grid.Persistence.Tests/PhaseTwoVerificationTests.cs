@@ -92,6 +92,10 @@ public sealed class PhaseTwoVerificationTests : IDisposable
     [Fact]
     public async Task HeadlessTerminalSaveCloseReopenAndBackupRecoveryRetainWorld()
     {
+        if (!OperatingSystem.IsWindows()) return;
+        var fixture = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
+        fixture.BindLocalOwner(System.Security.Principal.WindowsIdentity.GetCurrent().User!.Value);
+        using (var initial = new WorldStore(DatabasePath)) initial.Create(new(fixture.GetSnapshot().WorldId, "Headless fixture", DateTimeOffset.UtcNow), fixture.GetSnapshot());
         var first = await Terminal("step\nstep\nstart\npause\nexit\n");
         Assert.Equal(0, first.Code); Assert.Contains("World saved.", first.Output);
         SavedWorld saved;

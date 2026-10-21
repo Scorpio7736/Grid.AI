@@ -5,6 +5,11 @@ using Grid.Terminal;
 using Grid.Simulation.Resources;
 using Grid.Simulation.Applications;
 
+if (args.SequenceEqual(new[] { "--finish-move" })) return await GridTransfer.FinishMoveAsync(AppContext.BaseDirectory);
+var packageRoot = GridTransfer.PackageRoot(AppContext.BaseDirectory);
+if (packageRoot is not null && File.Exists(Path.Combine(packageRoot, "transfer-status.txt")) &&
+    File.ReadAllText(Path.Combine(packageRoot, "transfer-status.txt")).Contains("pending", StringComparison.OrdinalIgnoreCase))
+{ Console.Error.WriteLine("Move cleanup is pending. Check transfer-status.txt before launching."); return 1; }
 using var shutdown = new CancellationTokenSource();
 ConsoleCancelEventHandler cancel = (_, eventArgs) => { eventArgs.Cancel = true; shutdown.Cancel(); };
 Console.CancelKeyPress += cancel;
@@ -18,7 +23,7 @@ try
         originalForeground = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Cyan;
     }
-    if (TerminalEnvironment.Ensure() is { } environmentMessage)
+    if (packageRoot is null && TerminalEnvironment.Ensure() is { } environmentMessage)
         Console.WriteLine(environmentMessage);
     var startupMessages = new List<string>();
     var identity = new TerminalIdentitySession(TerminalIdentitySession.WindowsSubject);
@@ -27,7 +32,7 @@ try
     if (options.Ephemeral) engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis(), editAuthorizer: identity);
     else
     {
-        var path = options.WorldPath;
+        var path = options.WorldPath ?? (packageRoot is null ? null : Path.Combine(packageRoot, "data", "world.db"));
         if (path is null)
         {
             var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GRID");
@@ -67,15 +72,22 @@ try
     var applications = options.Ephemeral ? null : new ApplicationMonitor(new WindowsApplicationDiscovery(), engine);
     if (applications is not null) await applications.SampleOnceAsync(shutdown.Token);
     ResourcesCommand.Register(commands, engine);
-    IdentityCommands.Register(commands, engine, identity);
+    IdentityCommands.Register(commands, engine, identity, interactiveUi: true);
+    GridTransfer.Register(commands);
     commands.UseIdentity(identity);
-    return await new TerminalHost(engine, commands, Console.In, new TerminalOutput(Console.Out, TerminalTheme.Enabled(options.NoColor)),
-        showPrompt: !Console.IsInputRedirected, interactiveConfirmation: !Console.IsInputRedirected && !Console.IsOutputRedirected, liveTerminal: new ConsoleLiveTerminal(options.NoColor), persistence: persistence,
-        telemetry: applications is null ? telemetry : new CombinedHostMonitor(telemetry, applications), clearScreen: () =>
-        {
-            if (Console.IsOutputRedirected || Console.IsInputRedirected || Environment.GetEnvironmentVariable("TERM") == "dumb") return false;
-            Console.Clear(); return true;
-        }).RunAsync(shutdown.Token);
+    bool ClearScreen()
+    {
+        if (Console.IsOutputRedirected || Console.IsInputRedirected || Environment.GetEnvironmentVariable("TERM") == "dumb") return false;
+        Console.Clear(); return true;
+    }
+    var output = new TerminalOutput(Console.Out, TerminalTheme.Enabled(options.NoColor));
+    var terminalInput = new ConsoleTerminalInput(commands, TerminalTheme.Enabled(options.NoColor));
+    var sessionUi = new TerminalSessionUi(identity, terminalInput, output, ClearScreen);
+    return await new TerminalHost(engine, commands, Console.In, output,
+        showPrompt: terminalInput.Interactive, interactiveConfirmation: terminalInput.Interactive,
+        liveTerminal: new ConsoleLiveTerminal(options.NoColor), persistence: persistence,
+        telemetry: applications is null ? telemetry : new CombinedHostMonitor(telemetry, applications),
+        clearScreen: ClearScreen, sessionUi: sessionUi, transfer: store is null ? null : new GridTransfer(AppContext.BaseDirectory, store.DatabasePath)).RunAsync(shutdown.Token);
 }
 catch (OperationCanceledException) when (shutdown.IsCancellationRequested) { return 0; }
 catch (Exception exception)

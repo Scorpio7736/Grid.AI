@@ -26,7 +26,7 @@ public static class TerminalTable
         {
             foreach (var row in rows)
             {
-                for (var i = 0; i < headers.Length; i++) lines.AddRange(Wrap(headers[i] + ": " + row[i], width));
+                for (var i = 0; i < headers.Length; i++) lines.AddRange(Wrap(headers[i] + ": " + row[i], width - 2).Select(line => "| " + line));
                 lines.Add("");
             }
             return string.Join(Environment.NewLine, lines).TrimEnd();

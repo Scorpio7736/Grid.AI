@@ -1,5 +1,40 @@
 # Project GRID - Current Implementation and Verification
 
+## Password requirements - next fix (2026-10-20)
+
+**Requested; not implemented yet.** New passwords and password changes must accept **6–24 characters inclusive**. Uppercase letters, lowercase letters, numbers and symbols are allowed; no character category or mixture is mandatory. Preserve password case and exact characters; do not silently trim or truncate passwords.
+
+Current runtime validation still uses **12–256 characters**. Update creation/change validation, masked setup prompts, error messages and help together. Preserve login compatibility for existing saved credentials, including passwords longer than 24 characters, until their owner explicitly changes the password. Keep masked input, salted hashing and authorization unchanged. Verify lengths 5/6/24/25, each allowed character category, mixed input, confirmation matching and existing-credential login before marking complete.
+
+
+## GRID move/copy commands - current-host implementation (2026-10-20)
+
+Master Control `tranexist "location"` and `copexist "location"` are implemented for the running installation and selected save inventory. Both preview/confirm, stop workers, save and close. Copies retain the original; moves defer verified source cleanup until process exit. Destination packages use a local launcher/default save, require login and currently need an installed .NET 10 runtime. Verification: 377 passing tests. See [transfer implementation](Project_GRID_Transfer_Implementation.md) for exact exclusions, pending/incomplete status, security and recovery limits. Future attached-terminal and full PC/Flash edition integration remains unchecked in 4.2D/8.6.
+
+## Additional windows - planned 4.2C (2026-10-20)
+
+`<command> -opninwin` will open supported data in a separate window; `ntm` will open another terminal attached to the same running GRID. Both are planned only. The implementation must share one simulation/save owner, enforce per-window authorization and define detach/shutdown behavior. Current single-terminal behavior remains unchanged. See the [window plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md#additional-windows---planned-42c-2026-10-20) and unchecked master checklist 4.2C.
+
+
+## Current 4.2B completion - 2026-10-20
+
+Terminal UX and local password credentials are implemented and verified by 368 passing tests. Schema v12 preserves existing owners and adds authenticated credential migration/rotation. New worlds use interactive setup; existing owners use `login master`, then `credentials`. Read [4.2B implementation notes](Project_GRID_Terminal_UX_Implementation.md) for exact behavior and limits. Earlier 4.2A/schema v11 notes below describe their historical milestone. Full Flash GRID packaging remains planned.
+
+
+## Installation editions and rendering - planned 2026-10-20
+
+Installation will offer **PC GRID** (permanent machine installation, with advanced 3D options) or **Flash GRID** (mobile flash-drive package, with very simple lightweight 3D). The installer must explain the choice, validate the destination and retain the selected edition. Both share simulation/save/identity behavior and must run supported tasks offline after provisioning. Flash GRID keeps managed files with the portable package and requires no persistent host integration; graphics still run on the host PC. Quality differences must not regenerate or change the world.
+
+See [edition details](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) and checklist 7.6/8.6. Rendering budgets, packaging and migration remain planned; this addition changes documentation only.
+
+## New UI, portable-package and offline requirements - 2026-10-20
+
+**4.2B implemented - 2026-10-20.** GRID-REQ-006 provides dashed per-command option lists with usage/examples, bundled `help -md`, opening artwork, username/password setup when not configured, clear/welcome/authority/Enter after login, confirmed logout returning to welcome, a light-blue/white/yellow/red palette, and capability-aware Tab completion. The [Markdown help reference](Project_GRID_Terminal_Help.md) is bundled and displayed offline by `help -md`.
+
+GRID-REQ-007 requires a self-contained flash-drive package with portable identity and package-relative managed storage/dependencies. GRID-REQ-008 requires all GRID runtime tasks to work offline; only explicit installs/provisioning may use the internet. Portable password authentication is implemented; host-local storage and PATH registration still do not fulfill full package portability. Earlier optional-cloud/online runtime plans are superseded by this offline requirement. Preserve saved city and world history across host changes.
+
+See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) and checklist 4.2B (implemented), 8.6 and 8.7 (planned). See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
+
 ## Local login and identity completion - 4.2A (2026-10-20)
 
 **Implemented and verified.** Start with `login master`: the first successful Windows-token login binds the world owner; later logins must match. Sessions expire after eight hours. Master Control can register existing Agent identities, switch roles, and preview/confirm one-time program edits. Prompts/help/commands are role-aware; agent chats are participant-scoped and global/admin controls are denied. Switching/logout clears active chats and previews. Schema v11 preserves owner/agent registration without restoring authentication.

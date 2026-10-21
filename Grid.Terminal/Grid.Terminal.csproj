@@ -12,4 +12,7 @@
     <ProjectReference Include="..\Grid.Persistence\Grid.Persistence.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\MD Project Files\**\*.md" Link="docs\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

@@ -33,9 +33,9 @@ public sealed class UsabilityTests
         Assert.False(TerminalTheme.SupportsColor(false, false, "xterm", ""));
         Assert.True(TerminalOptions.Parse(["--no-color"]).NoColor);
         Assert.Equal(ConsoleColor.Cyan, TerminalTheme.Color("grid> "));
-        Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("unknown (Unavailable)"));
+        Assert.Equal(ConsoleColor.Cyan, TerminalTheme.Color("unknown (Unavailable)"));
         Assert.Equal(ConsoleColor.Red, TerminalTheme.Color("Save failed"));
-        Assert.Equal(ConsoleColor.Green, TerminalTheme.Color("Observed running"));
+        Assert.Equal(ConsoleColor.Cyan, TerminalTheme.Color("Observed running"));
     }
     [Fact]
     public async Task PlainWriterPreservesTextWithoutEmittingColorCodes()

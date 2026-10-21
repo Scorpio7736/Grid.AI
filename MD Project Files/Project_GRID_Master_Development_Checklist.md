@@ -1,5 +1,13 @@
 # Project GRID — Master Development Checklist
 
+## New UI, portable-package and offline requirements - 2026-10-20
+
+**4.2B implemented - 2026-10-20.** GRID-REQ-006 provides dashed per-command option lists with usage/examples, bundled `help -md`, opening artwork, username/password setup when not configured, clear/welcome/authority/Enter after login, confirmed logout returning to welcome, a light-blue/white/yellow/red palette, and capability-aware Tab completion. The [Markdown help reference](Project_GRID_Terminal_Help.md) is bundled and displayed offline by `help -md`.
+
+GRID-REQ-007 requires a self-contained flash-drive package with portable identity and package-relative managed storage/dependencies. GRID-REQ-008 requires all GRID runtime tasks to work offline; only explicit installs/provisioning may use the internet. Portable password authentication is implemented; host-local storage and PATH registration still do not fulfill full package portability. Earlier optional-cloud/online runtime plans are superseded by this offline requirement. Preserve saved city and world history across host changes.
+
+See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) and checklist 4.2B (implemented), 8.6 and 8.7 (planned). See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
+
 ## Program behavior completion - 2026-10-19
 
 **3.1 implemented and verified.** Non-demo residents now have deterministic needs/goals/actions. Applications reflect fresh or unknown observations; explicitly configured Agent/Special residents perform resource-gated simulated occupation work/rest on simulation-time shifts. Schema v5 persists their routines, sourced budgets and progress without restoring live observations or adding offline work. Use behaviors and inspect for last-tick behavior. No OS task execution, movement or named agent services are claimed.
@@ -753,6 +761,65 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 **Completion notes - 2026-10-20.** Windows-token SID owner authentication, eight-hour local sessions, registered agent selection, capability metadata/dispatch, scoped prompts/help/conversations, logout/switch invalidation and Master Control edit preview/apply/cancel are implemented. Schema v11 persists the owner/agent registry; owner binding saves before production login grants access. **362 tests passed** (14 Core, 155 Simulation, 90 Persistence, 103 Terminal), plus an isolated real-Windows login/switch/deny/edit/restart smoke. No OS elevation, agent password or real task service is claimed. Observation-owned energy/status remain protected. See [Local Login and Identity Implementation](Project_GRID_Local_Login_and_Identity_Implementation.md) for trust boundaries, commands, audit and remaining work.
 
+## 4.2B Terminal UX and portable credential setup (GRID-REQ-006 / GRID-REQ-003)
+
+**Implemented - 2026-10-20.** Terminal UX and local credential setup are complete within the scope described below. See [UI, portability and offline plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) and [Terminal Help](Project_GRID_Terminal_Help.md).
+
+- [x] Format each command with indented dashed options/flags/switches, a # USAGE line per option, and a final example
+- [x] Create the offline Markdown help reference (documentation artifact only, 2026-10-20)
+- [x] Implement help -md to open the bundled local reference with an offline terminal fallback
+- [x] Add responsive GRID7736 opening artwork and welcome/login screen
+- [x] Add local username/password setup when credentials are not configured for a new/authorized migrated world; no plaintext storage or password completion/history
+- [x] Migrate existing Windows-SID-bound ownership explicitly and preserve identities, roles and transcripts across PCs
+- [x] After login clear screen, show Welcome username and authority level, and wait for Enter before the prompt
+- [x] Confirm logout with y/n; cancellation retains context; confirmed logout clears context/screen and redisplays welcome
+- [x] Keep expiry/revocation immediate and define safe redirected-input/EOF/Ctrl+C behavior
+- [x] Apply light-blue base output, white user input, yellow tables/dividers and red errors, with no-color fallback
+- [x] Implement capability-aware Tab completion for commands/options with quoting, ambiguous matches and password suppression
+- [x] Test help synchronization, colors/fallbacks, login/setup/logout transitions, completion privacy and live-view return
+
+**Completion verification - 2026-10-20.** 368 tests passed (14 Core, 155 Simulation, 91 Persistence, 108 Terminal). Schema v12 adds salted password credentials, preserves existing Windows ownership for authenticated migration, and retains agent/role/world state. Offline help renders directly in the terminal. Quoted input remains editable; Tab suggestions are static and suppressed inside quotes/passwords. Automated UI coverage uses injected input; physical terminal appearance and two-PC packaging are not claimed as verified. See [implementation notes](Project_GRID_Terminal_UX_Implementation.md) for commands, security boundaries and remaining Phase 8 work.
+
+### 4.2B follow-up - password requirements (next fix, 2026-10-20)
+
+**Planned; current runtime remains 12–256 characters.**
+
+- [ ] Change new-password/password-change limits to **6–24 characters inclusive**
+- [ ] Allow uppercase, lowercase, numbers and symbols without requiring any category or combination; preserve case and exact input
+- [ ] Synchronize validation, masked setup prompts, error messages and Markdown help; never silently truncate passwords
+- [ ] Preserve verification of existing saved credentials, including longer passwords, until explicitly changed by the owner
+- [ ] Verify 5/6/24/25-character boundaries, allowed categories, confirmation matching and backward-compatible login; record completion evidence
+
+## 4.2C Additional data windows and shared terminals (GRID-REQ-006)
+
+**Planned - 2026-10-20.** User-requested `-opninwin` and `ntm`; neither is implemented. See [additional-window design](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md#additional-windows---planned-42c-2026-10-20). Completed 4.2B scope is unchanged.
+
+- [ ] Add `<command> -opninwin` to open supported data output in a separate readable/scrollable window
+- [ ] Define supported read-only commands, snapshot/live labeling, and unsupported-option errors
+- [ ] Add `ntm` to open another terminal attached to the same running GRID and saved world
+- [ ] Maintain one authoritative simulation clock and save writer using local offline attachment; preserve exclusive world ownership
+- [ ] Preserve scoped authentication/capabilities and independent per-window input/chat/edit context; never transfer plaintext credentials
+- [ ] Define detach versus whole-GRID shutdown, including main/last-window closure, logout/expiry, NGE and host disconnection
+- [ ] Add help examples and capability-aware completion when implemented; preserve portable launch paths and useful window-launch errors
+- [ ] Verify shared state, authorization isolation, lifecycle, single-writer persistence and recovery; record completion evidence
+
+## 4.2D Master Control move/copy commands (GRID-REQ-003 / GRID-REQ-007)
+
+**Current-host implementation delivered - 2026-10-20.** `tranexist "location"` moves the verified GRID application/selected-world inventory; `copexist "location"` copies it and retains the source. See [transfer implementation](Project_GRID_Transfer_Implementation.md) for exact scope, shutdown/restart, pending cleanup and limitations. Full portable edition/attached-window integration remains future work.
+
+- [x] Add both commands with quoted-path parsing and Master Control enforcement
+- [x] Inventory running application files, bundled Markdown and selected save/backups/archives; include existing package-managed folders and exclude unrelated host files
+- [x] Preview source/destination/count/size; require interactive y/n; reject overlap, existing destinations, links and inadequate space
+- [x] Stop current host workers, save, stage a consistent copy, hash-verify and validate the copied world before publication
+- [x] Move through a post-exit helper; reacquire source lease and verify/lock inventory before cleanup; report pending/incomplete status truthfully
+- [x] Keep copies independent, retaining originals and requiring login; preserve saved world/city/identities/history
+- [x] Provide package-relative launch/default world and conditionally retarget an existing matching managed launcher after a move
+- [x] Add help/completion metadata and nine transfer regression tests
+- [ ] Integrate future 4.2C attached terminals and complete 8.6 PC/Flash edition migration/provisioning
+- [ ] Add automatic interrupted-move recovery and exhaustive low-space, power-loss, drive-removal and physical cross-machine acceptance
+
+**Completion verification - 2026-10-20.** 377 tests passed (14 Core, 155 Simulation, 91 Persistence, 117 Terminal), including the actual cleanup helper on disposable files. Zero build warnings/errors. Current transfers require an available .NET 10 runtime. No user files were relocated during verification; remaining gates above are not claimed complete.
+
 ## 4.3 User-supplied context (GRID-REQ-002)
 
 - [ ] Support selecting or uploading local files as task context
@@ -980,6 +1047,12 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 7.6 Visual quality and performance
 
+**Edition requirement - planned, 2026-10-20:** [PC GRID versus Flash GRID](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) is selected during installation; visual fidelity must not alter world behavior.
+
+- [ ] Build a very simple Flash GRID 3D profile with modest geometry/textures, limited effects/shadows and conservative view distance
+- [ ] Build advanced PC GRID rendering options with hardware-scaled quality and simple-renderer fallback
+- [ ] Profile both editions and verify equivalent world state/interaction across visual profiles
+
 - [ ] Build reusable assets and materials
 - [ ] Use LOD and instancing for repeated geometry
 - [ ] Set adjustable graphics quality levels
@@ -1038,11 +1111,43 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 - [ ] Run security and unauthorized-access tests
 - [ ] Profile memory, CPU, storage and rendering use
 - [ ] Validate backup/restart consistency
-- [ ] Verify offline operation without required subscriptions
+- [ ] Verify every supported runtime task offline; only explicit installs/provisioning may use the internet (GRID-REQ-008)
 - [ ] Package a reproducible Windows release
 - [ ] Write final setup and user guide
 
 ---
+
+## 8.6 Installation editions and self-contained portable package (GRID-REQ-007)
+
+**Planned - 2026-10-20.** One flash-drive folder should carry the complete prepared GRID installation and its state. [Shared contract](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md).
+
+- [ ] Offer an explicit installation choice: permanent PC GRID or mobile Flash GRID; explain rendering/storage differences
+- [ ] Validate the selected permanent/removable destination and persist the edition without drive-letter guessing
+- [ ] Package very simple lightweight 3D for Flash GRID and optional advanced rendering/assets for PC GRID
+- [ ] Keep both editions on compatible authoritative simulation/save/identity contracts and require offline tasks in each
+- [ ] Provide explicit authenticated world/credential export/import between editions without silent regeneration
+- [ ] Define supported Windows/CPU targets and ship required runtime, dependencies, models, voice/assets and version/license manifests
+- [ ] Keep GRID-managed app/data/config/docs/logs/backups/cache/temp within the portable root
+- [ ] Resolve paths after drive-letter/path changes; avoid required host PATH, environment-variable or registry writes in portable mode
+- [ ] Provide portable local credentials and authenticated migration from existing SID-bound worlds
+- [ ] Preserve saved city/world/conversations on another PC while rediscovering host apps/resources; never regenerate silently
+- [ ] Handle missing hardware/dependencies, read-only media, limited space, interrupted writes and removal/recovery
+- [ ] Provide flushed shutdown/eject-ready flow and explicit backup/export behavior
+- [ ] Verify two-PC relocation, spaced/Unicode paths, and no unintended host-local managed files
+
+- [ ] Integrate and verify 4.2D `tranexist` / `copexist` for complete managed-file relocation/duplication across PC GRID and Flash GRID layouts
+
+## 8.7 Offline runtime acceptance (GRID-REQ-008)
+
+**Planned - 2026-10-20.** Every GRID task must be offline-capable; only explicit installations/provisioning may access the internet.
+
+- [ ] Separate installation network access from runtime; forbid silent downloads and cloud fallbacks
+- [ ] Provision local models, voice assets, tools, runtime libraries, documentation and offline authentication/recovery
+- [ ] Replace/defer network-dependent task plans; require local equivalents for supported runtime tasks
+- [ ] Test cold startup, login, simulation, conversations, local AI/voice/tasks and help with external network/DNS unavailable
+- [ ] Test save/restart/recovery and the prepared flash-drive package on another supported PC while offline
+- [ ] Record unavailable features honestly; do not substitute simulated success or stale facts for real offline execution
+- [ ] Make portable/offline acceptance a release gate before claiming plug-and-play completion
 
 # Release Gates
 

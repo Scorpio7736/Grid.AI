@@ -16,7 +16,9 @@ public static class DefaultCommands
                 return execute();
             }));
 
-        Add("help", "Display the command reference.", () => new(TerminalPresentation.Help(dispatcher.Commands)));
+        dispatcher.Register(new("help", "help [-md]", "Display command options or the bundled Markdown manual.", args =>
+            args.Count == 0 ? new(TerminalPresentation.Help(dispatcher.Commands)) :
+            args.Count == 1 && args[0].Equals("-md", StringComparison.OrdinalIgnoreCase) ? new(CommandHelp.Markdown()) : new("Usage: help [-md]")));
         Add("clear", "Clear the visible terminal without changing GRID.", () => new("", ClearRequested: true));
         Add("status", "Show current world and clock state.", () =>
         {

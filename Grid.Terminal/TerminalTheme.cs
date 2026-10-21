@@ -9,11 +9,8 @@ public static class TerminalTheme
         Environment.GetEnvironmentVariable("TERM"), Environment.GetEnvironmentVariable("NO_COLOR"));
     public static ConsoleColor? Color(string line)
     {
-        if (line.StartsWith("|  ") || line.StartsWith("+==") || line.Contains("GRID7736")) return ConsoleColor.Cyan;
-        if (line.Contains("failed", StringComparison.OrdinalIgnoreCase) || line.Contains("error", StringComparison.OrdinalIgnoreCase)) return ConsoleColor.Red;
-        if (new[] { "unknown", "stale", "unavailable", "waiting", "warning", "unsupported" }.Any(w => line.Contains(w, StringComparison.OrdinalIgnoreCase))) return ConsoleColor.Yellow;
-        if (new[] { "Running", "On call", "Available", "saved", "Working", "Observing" }.Any(w => line.Contains(w, StringComparison.OrdinalIgnoreCase))) return ConsoleColor.Green;
-        if (line.Contains("Back", StringComparison.OrdinalIgnoreCase) || line.StartsWith("GRID") || line.StartsWith("PROJECT") || line.Contains(" | ")) return ConsoleColor.Cyan;
+        if (new[] { "error", "failed", "denied", "invalid", "refused" }.Any(w => line.Contains(w, StringComparison.OrdinalIgnoreCase))) return ConsoleColor.Red;
+        if (line.Contains('|') || line.Contains("  ") && line.Contains("---") || line.Trim().All(c => c is '=' or '-' or '+' or ' ')) return ConsoleColor.Yellow;
         return ConsoleColor.Cyan;
     }
     public static void Write(TextWriter writer, string text, bool enabled)

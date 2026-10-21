@@ -48,10 +48,38 @@ public sealed class IdentityPersistenceTests
             using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Pooling = false }.ToString()))
             {
                 connection.Open(); using var command = connection.CreateCommand();
-                command.CommandText = "DROP TABLE WorldIdentities; DELETE FROM SchemaMigrations WHERE Version=11; PRAGMA user_version=10;"; command.ExecuteNonQuery();
+                command.CommandText = "DROP TABLE WorldIdentities; DELETE FROM SchemaMigrations WHERE Version>=11; PRAGMA user_version=10;"; command.ExecuteNonQuery();
             }
             var loaded = store.Load(); Assert.Equal(engine.GetSnapshot().WorldId, loaded.State.WorldId);
             Assert.Null(loaded.State.Identities.OwnerSubject); Assert.Empty(loaded.State.Identities.RegisteredAgents);
+        }
+        finally { Directory.Delete(directory, true); }
+    }
+    [Fact]
+    public void PortableCredentialsSurviveRestartAndBackupRecovery()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "GridCredential-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path = Path.Combine(directory, "world.db");
+            var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
+            engine.BindLocalOwner("original-owner");
+            var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
+            var credential = Grid.Communication.PasswordCredential.Create("Owner", "test-password-only-123");
+            engine.SetLocalCredential(credential);
+            using (var store = new WorldStore(path))
+                store.Create(new(engine.GetSnapshot().WorldId, "Credential", DateTimeOffset.UtcNow), engine.GetSnapshot());
+            using (var store = new WorldStore(path))
+            {
+                var state = store.Load().State;
+                Assert.Equal(credential, state.Identities.Credential);
+                Assert.True(state.Identities.Credential!.Verify("Owner", "test-password-only-123"));
+                Assert.Equal("original-owner", state.Identities.OwnerSubject);
+                Assert.Contains(agent.Id, state.Identities.RegisteredAgents);
+                File.WriteAllText(path, "damaged"); store.Recover();
+                Assert.Equal(credential, store.Load().State.Identities.Credential);
+            }
         }
         finally { Directory.Delete(directory, true); }
     }

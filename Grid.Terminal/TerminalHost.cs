@@ -7,7 +7,7 @@ namespace Grid.Terminal;
 /// <summary>Owns input/output and scheduler lifetime; commands are independently registered and tested.</summary>
 public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher commands,
     TextReader input, TextWriter output, bool showPrompt = true, ILiveTerminal? liveTerminal = null, IWorldPersistenceSession? persistence = null,
-    IHostTelemetryMonitor? telemetry = null, Func<bool>? clearScreen = null, bool interactiveConfirmation = false)
+    IHostTelemetryMonitor? telemetry = null, Func<bool>? clearScreen = null, bool interactiveConfirmation = false, TerminalSessionUi? sessionUi = null, GridTransfer? transfer = null)
 {
     public async Task<int> RunAsync(CancellationToken cancellationToken = default)
     {
@@ -17,18 +17,21 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
         var monitoring = telemetry?.RunAsync(shutdown.Token) ?? Task.Delay(Timeout.Infinite, shutdown.Token);
         var exitCode = 0;
         NullificationPlan? nullification = null;
+        TransferPlan? transferPlan = null;
         try
         {
+            if (sessionUi is not null && !await sessionUi.StartAsync(shutdown.Token)) shutdown.Cancel();
             await output.WriteLineAsync("PROJECT GRID");
             await output.WriteLineAsync(persistence is null ? "Type help for commands. This session is in memory; exit does not save the world." : "Type help for commands. Autosave every 30 seconds; exit saves after the clock stops.");
-            if (commands.LoginRequired) await output.WriteLineAsync("Login required: login master authenticates the current Windows account. First login binds this world owner.");
+            if (commands.LoginRequired && sessionUi is null) await output.WriteLineAsync("Login required: login master authenticates the current Windows account.");
             await output.WriteLineAsync("Navigation: live opens dashboard | Esc/Q returns to commands | exit or Ctrl+C shuts down GRID.");
             while (!shutdown.IsCancellationRequested)
             {
+                if (sessionUi is not null) await sessionUi.RefreshAsync();
                 if (showPrompt) { await output.WriteAsync(commands.Prompt); await output.FlushAsync(); }
                 // Console.In may block synchronously even through ReadLineAsync. Keep that read
                 // off the control thread so Ctrl+C and scheduler faults can still end the session.
-                var read = Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token);
+                var read = sessionUi is null ? Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token) : sessionUi.Input.ReadAsync(false, shutdown.Token);
                 var completed = await Task.WhenAny(read, scheduler, autosave, monitoring);
                 if (completed != read)
                 {
@@ -36,8 +39,40 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 }
                 var line = await read;
                 if (line is null) break;
+                if (sessionUi is not null) await sessionUi.RefreshAsync();
                 var result = commands.Execute(line);
+                if (sessionUi is not null && !await sessionUi.HandleAsync(result, shutdown.Token)) break;
                 if (result.Text.Length != 0) await output.WriteLineAsync(result.Text);
+                if (result.Transfer is { } request)
+                {
+                    if (transfer is null || persistence is null) await output.WriteLineAsync("Transfer unavailable: a persistent world is required.");
+                    else if (!interactiveConfirmation) await output.WriteLineAsync("Transfer refused: interactive confirmation is required.");
+                    else
+                    {
+                        try
+                        {
+                            var plan = transfer.Prepare(request);
+                            await output.WriteLineAsync(GridTransfer.Preview(plan)); await output.FlushAsync();
+                            while (true)
+                            {
+                                var confirmation = sessionUi is null ? Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token) : sessionUi.Input.ReadAsync(false, shutdown.Token);
+                                if (await Task.WhenAny(confirmation, scheduler, autosave, monitoring) != confirmation) { shutdown.Cancel(); break; }
+                                var answer = await confirmation;
+                                if (string.Equals(answer?.Trim(), "y", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    if (!commands.IsAllowed(request.Move ? "tranexist" : "copexist")) throw new UnauthorizedAccessException("Transfer authorization revoked.");
+                                    transferPlan = plan; break;
+                                }
+                                if (string.IsNullOrWhiteSpace(answer) || answer.Trim().Equals("n", StringComparison.OrdinalIgnoreCase)) { await output.WriteLineAsync("Transfer cancelled. Files unchanged."); break; }
+                                await output.WriteLineAsync("Enter y to transfer or n to cancel. [y/N]");
+                            }
+                        }
+                        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException)
+                        { await output.WriteLineAsync("Transfer refused: " + e.Message); }
+                    }
+                    if (transferPlan is not null) break;
+                    continue;
+                }
                 if (result.NullificationRequested)
                 {
                     if (persistence is not IWorldNullificationSession destroyer)
@@ -55,7 +90,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                             await output.FlushAsync();
                             while (true)
                             {
-                                var confirmationRead = Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token);
+                                var confirmationRead = sessionUi is null ? Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token) : sessionUi.Input.ReadAsync(false, shutdown.Token);
                                 if (await Task.WhenAny(confirmationRead, scheduler, autosave, monitoring) != confirmationRead)
                                 { shutdown.Cancel(); shutdown.Token.ThrowIfCancellationRequested(); }
                                 var answer = await confirmationRead;
@@ -157,6 +192,15 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                     exitCode = 1;
                 }
             }
+        }
+        if (transferPlan is not null)
+        {
+            if (exitCode == 0)
+            {
+                try { await output.WriteLineAsync(transfer!.Execute(transferPlan, () => commands.IsAllowed(transferPlan.Move ? "tranexist" : "copexist"))); }
+                catch (Exception e) { await output.WriteLineAsync("Transfer incomplete/refused: " + e.Message); exitCode = 1; }
+            }
+            else await output.WriteLineAsync("Transfer aborted because shutdown/save failed. Source retained.");
         }
         var farewell = TerminalPresentation.Farewell(exitCode == 0, persistence is not null);
         if (nullification is not null)

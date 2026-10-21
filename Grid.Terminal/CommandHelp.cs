@@ -1,0 +1,47 @@
+namespace Grid.Terminal;
+
+public static class CommandHelp
+{
+    public static IReadOnlyList<string> Options(TerminalCommand c) => c.Name switch {
+        "help" => ["help", "help -md"],
+        "login" => ["login", "login master"],
+        "programs" => ["programs", "programs -active", "programs -possible", "programs -sleeping", "programs ids"],
+        "districts" => ["districts", "districts ids"],
+        "resources" => ["resources", "resources details"],
+        "history" => ["history", "history details", "history kind=<kind>", "history entity=<guid>", "history severity=<level>", "history since=<UTC>", "history limit=<1..500>", "history offset=<0..>"],
+        "switch" => ["switch master", "switch <agent-id|name>"],
+        "inspect" => ["inspect program <id|name>", "inspect district <id|name>"],
+        _ => [c.Usage]
+    };
+    public static string Render(TerminalCommand command) => command.Name + "\n" + string.Join("\n", Options(command).Select(option =>
+        $"    - {option}\n      # USAGE: {Description(command, option)}")) + $"\n    # EXAMPLE: {Example(command)}";
+    private static string Description(TerminalCommand command, string option) => option switch {
+        "help -md" => "Read the bundled Markdown help reference offline in this terminal.",
+        "programs -active" => "List freshly observed Running applications.",
+        "programs -possible" => "List current and previously known application candidates.",
+        "programs -sleeping" => "List freshly observed On call or Sleeping applications.",
+        "programs ids" or "districts ids" => "Show full identifiers; programs permits one availability filter too.",
+        _ => command.Description
+    };
+    private static string Example(TerminalCommand c) => c.Name switch {
+        "programs" => "programs -active ids", "inspect" => "inspect program ARCHON", "talk" => "talk status",
+        "edit" => "edit ARCHON occupation \"Local coordinator\"", "switch" => "switch master", "login" => "login",
+        "tranexist" => "tranexist \"E:\\GRID7736\"", "copexist" => "copexist \"E:\\GRID7736 Copy\"",
+        "connect" => "connect ARCHON", "history" => "history kind=Edit limit=20", _ => c.Usage
+    };
+    public static string Markdown()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "docs", "Project_GRID_Terminal_Help.md");
+        try { return $"OFFLINE MARKDOWN HELP: {path}\n" + File.ReadAllText(path); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return $"Error: bundled help is missing or unreadable at {path}. Use help for registered commands."; }
+    }
+    public static IReadOnlyList<string> Complete(string line, IReadOnlyList<TerminalCommand> commands)
+    {
+        // Only public metadata/capability-filtered commands; never secret values or arbitrary paths/IDs.
+        if (line.Contains('"') || line.Contains('\'')) return [];
+        if (!line.Contains(' ')) return commands.Select(c => c.Name).Where(n => n.StartsWith(line, StringComparison.OrdinalIgnoreCase)).Order().ToArray();
+        var name = line.Split(' ')[0]; var command = commands.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        if (command is null) return [];
+        return Options(command).Select(o => o.Split(" <")[0]).Where(o => !o.Contains('[') && !o.Contains('<') && o.StartsWith(line, StringComparison.OrdinalIgnoreCase)).Distinct().Order().ToArray();
+    }
+}

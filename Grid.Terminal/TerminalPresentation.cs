@@ -8,7 +8,7 @@ public static class TerminalPresentation
             ("SIMULATION CONTROL", ["start", "pause", "step", "tick"]),
             ("WORLD & POPULATION", ["status", "city", "districts", "programs", "inspect", "jobs"]),
             ("MONITORING & ANALYTICS", ["live", "behaviors", "activity", "social", "resources", "history"]),
-            ("IDENTITY & ADMINISTRATION", ["login", "logout", "whoami", "switch", "self", "register-agent", "edit", "apply-edit", "cancel-edit"]),
+            ("IDENTITY & ADMINISTRATION", ["login", "credentials", "logout", "whoami", "switch", "self", "register-agent", "edit", "apply-edit", "cancel-edit"]),
             ("CONVERSATIONS", ["connect", "talk", "conversations", "transcript", "resume", "disconnect"]),
             ("SYSTEM & TERMINAL", ["clear", "help", "nge", "exit"])
         };
@@ -20,14 +20,14 @@ public static class TerminalPresentation
                 .OfType<TerminalCommand>().ToArray();
             if (members.Length == 0) continue;
             lines.Add("\n" + group.Title);
-            lines.Add(TerminalTable.Render(["Command", "Description"], members.Select(c => new[] { c.Name, c.Description })));
+            lines.Add(string.Join("\n\n", members.Select(CommandHelp.Render)));
             listed.UnionWith(members.Select(c => c.Name));
         }
         var extensions = commands.Where(c => !listed.Contains(c.Name)).ToArray();
         if (extensions.Length > 0)
         {
             lines.Add("\nEXTENSIONS");
-            lines.Add(TerminalTable.Render(["Command", "Description"], extensions.Select(c => new[] { c.Name, c.Description })));
+            lines.Add(string.Join("\n\n", extensions.Select(CommandHelp.Render)));
         }
         lines.Add("\nCOMMAND OPTIONS");
         // Keep exact registered syntax available, including extension usage and history filters.
