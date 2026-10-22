@@ -1,5 +1,10 @@
 # Project GRID — Master Development Checklist
 
+## New planned interaction and task commands — 2026-10-21
+
+The following user-requested additions are **planned, not implemented**: multi-agent meetings (6.2A), dedicated conversation/meeting windows and typewriter responses (4.2E), monitor selection and screen assistance (6.3A), bulk/agent-filtered task commands (5.8), and the transfer command rename (4.2F). Existing completed items and verification history remain unchanged. These additions do not grant new agent privileges or automatic task approval.
+
+
 ## System-agent names updated - 2026-10-21
 
 ARCHON is now **MCP** (coordination), FORGE is now **MAXIS** (development), and ARCHIVIST is now **JN** (storage/files). Current commands, examples, plans and checklist labels use the new names. These names do not grant privileges or implement the planned specialist services. The human **Master Control** role remains separate from MCP.
@@ -862,6 +867,29 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 **Completion verification - 2026-10-20.** 377 tests passed (14 Core, 155 Simulation, 91 Persistence, 117 Terminal), including the actual cleanup helper on disposable files. Zero build warnings/errors. Current transfers require an available .NET 10 runtime. No user files were relocated during verification; remaining gates above are not claimed complete.
 
+## 4.2E Conversation windows and typewriter responses
+
+**Planned - 2026-10-21.** Applies to both one-to-one agent conversations and multi-agent meetings (6.2A).
+
+- [ ] Open conversations with agents and agent meetings in a new dedicated window connected to the same authoritative GRID host
+- [ ] Keep the original terminal available; closing a conversation window ends/detaches that view without shutting down GRID
+- [ ] Preserve authenticated identity, participant scope, conversation history and logout/host-disconnection behavior across windows
+- [ ] Render agent responses with a typewriter effect, with speaker names clearly visible
+- [ ] Make the effect interruptible/skippable and offer instant text for accessibility, redirected output and reduced-motion preferences
+- [ ] Keep animation separate from message persistence and task execution; save each complete response once and never interleave speakers' output
+- [ ] Verify window lifecycle, history, identity isolation and animation cancellation; add help and completion examples
+
+## 4.2F Transfer command naming update
+
+**Planned - 2026-10-21.** Replace the user-facing names from 4.2D. Until implemented, `copexist` and `tranexist` remain the working commands; their completed implementation history above is retained.
+
+- [ ] Replace `copexist "location"` with `grid -copyto "location"`
+- [ ] Replace `tranexist "location"` with `grid -transferto "location"`
+- [ ] Preserve Master Control/original-host restrictions, inventory preview, confirmation, save consistency, verification and move/copy semantics
+- [ ] Define old-command migration behavior explicitly (temporary deprecated aliases or an error directing users to the new syntax)
+- [ ] Update help, tab completion, transfer documentation and examples together when implemented
+- [ ] Verify quoted paths, invalid/combined switches, authorization and existing transfer regression behavior
+
 ## 4.3 User-supplied context (GRID-REQ-002)
 
 **Implemented - 2026-10-20.** Terminal `context add/list/read/revoke/remove` captures explicit local files with project labels, version fingerprints, retention and optional registered-Agent grants. Text/source support is strict UTF-8; initial document support is DOCX main-body text. Unsupported formats are refused.
@@ -1007,14 +1035,42 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 5.7 End-to-end task verification
 
-- [ ] Ask MCP to delegate a unit-test run to MAXIS
-- [ ] Validate scope and permissions
-- [ ] Execute approved test operation
-- [ ] Record actual results and logs
-- [ ] Return results through RELAY
-- [ ] Test rejected and unauthorized requests
-- [ ] Test cancellation, crash recovery and duplicate dispatch
-- [ ] Confirm no agent obtains another agent's privileges
+- [x] Ask MCP to delegate a unit-test run to MAXIS
+- [x] Validate scope and permissions
+- [x] Execute approved test operation
+- [x] Record actual results and logs
+- [x] Return results through RELAY
+- [x] Test rejected and unauthorized requests
+- [x] Test cancellation, crash recovery and duplicate dispatch
+- [x] Confirm no agent obtains another agent's privileges
+
+**Completion notes (2026-10-21):** Nine new end-to-end cases verify actual offline xUnit execution delegated by MCP to MAXIS, passing/failing TRX evidence, separate human approvals, exact recorded-result delivery through RELAY, SQLite reload, all-six-role isolation, cancellation, durable-start recovery and duplicate dispatch prevention. Existing broker/MAXIS suites cover rejected scopes, actual process cancellation, timeouts and save failures. **560 tests passed** (14 Core, 157 Simulation, 97 Persistence, 292 Terminal), zero failed/skipped. No runtime/schema change was needed (v19). Recovery uses a saved Running snapshot; no user process is killed. See [verification matrix, limits and terminal test](Project_GRID_End_to_End_Task_Verification.md). Next: 6.1 Shared local AI.
+
+## 5.8 Bulk task operations and agent filters
+
+**Planned - 2026-10-21.** `-agentname` below means the actual registered agent name as a switch, for example `-MAXIS` or `-JN`. Resolve names case-insensitively to stable registered IDs; reject unknown names and conflicting filters.
+
+| Requested command | Planned behavior |
+| --- | --- |
+| `tasks run -all` | Run all approved Queued tasks in the selected batch. |
+| `tasks run -all -agentname` | Run all approved Queued tasks assigned to that agent; example: `tasks run -all -MAXIS`. |
+| `tasks clear -all` | Clear all tasks within the authorized scope using the safe clear policy below. |
+| `tasks clear -all -agentname` | Clear tasks assigned to that agent; example: `tasks clear -all -JN`. |
+| `tasks approve -all` | Approve all eligible AwaitingApproval tasks in the selected batch. |
+| `tasks approve -all -agentname` | Approve all eligible tasks assigned to that agent; example: `tasks approve -all -MAXIS`. |
+| `tasks list -agentname` | List tasks assigned to that agent; example: `tasks list -RELAY`. |
+
+- [ ] Implement the requested syntax, consistent agent-name resolution, help examples and tab completion
+- [ ] Snapshot the selected batch at invocation so newly proposed tasks are not silently approved, run or cleared
+- [ ] Keep bulk approval Master Control-only with a scope/count/action preview and explicit confirmation; validate each task and record individual approvals
+- [ ] Run queued tasks sequentially through the existing original-host broker with per-task permission/scope checks, persistence barriers and cancellation
+- [ ] Never approve implicitly when running; exclude unapproved, completed and already running tasks from dispatch
+- [ ] Define failure/timeout/stop behavior and report per-task outcomes plus completed/failed/skipped totals without hiding partial results
+- [ ] Design and implement clearing with an explicit scope/count preview and confirmation; require Master Control for bulk mutation and retain an auditable record
+- [ ] Define clear as removal from the operational task list, with linked plan/result/RELAY history archived or safely retained; never leave dangling references or silently erase audit evidence
+- [ ] Handle active tasks explicitly: stop/cancel and settle them before clearing, or reject the batch with an explanation; clearing must not leave host work running untracked
+- [ ] Preserve role visibility restrictions for list filters and all existing task authority boundaries
+- [ ] Verify mixed states/roles, agent filters, stale sessions, revoked scopes, duplicates, cancellation, restart, linked-history integrity and partial failures
 
 ---
 
@@ -1039,6 +1095,19 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 - [ ] Differentiate observed facts, suggestions and fictional dialogue
 - [ ] Add long-conversation summarization and context limits
 
+## 6.2A Multi-agent meetings
+
+**Planned - 2026-10-21.** `agent meetings [list of agent names]` starts a meeting with multiple selected agents; example: `agent meetings MCP MAXIS JN`. Square brackets describe the participant list and are not typed literally.
+
+- [ ] Parse and validate multiple registered agent names, rejecting duplicates/unknown participants with useful feedback
+- [ ] Open the meeting in a dedicated conversation window with typewriter agent responses (4.2E)
+- [ ] Let the user speak/type to the group; select the participant best suited to answer using request relevance and agent expertise, rather than making every agent reply
+- [ ] Support explicit direction to a particular participant and route that turn to the named agent instead of automatic responder selection; document the addressing syntax
+- [ ] Define deterministic tie/fallback behavior when no participant is suitable or local inference is unavailable, without fabricating an answer
+- [ ] Show who is responding, keep shared meeting history and preserve participant-specific access to private context
+- [ ] Prevent meeting participation or responder selection from granting another agent's capabilities; proposed actions still follow normal approval
+- [ ] Verify participant selection, directed turns, response ordering, scoped context, window lifecycle and offline fallback
+
 ## 6.3 Task assistance and context (GRID-REQ-002)
 
 - [ ] Interpret user requests as advice, analysis or proposed execution
@@ -1048,6 +1117,20 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 - [ ] Allow agents to collaborate through MCP
 - [ ] Produce structured typed task proposals
 - [ ] Validate each proposal against registered capabilities
+
+## 6.3A Monitor selection and screen assistance
+
+**Planned - 2026-10-21.** Agents can help with what the user is viewing using explicitly selected screen context and local analysis.
+
+- [ ] Add `screen options` to list all connected monitors with a numeric ID and useful identifying information (name, resolution and primary status)
+- [ ] Add `screen monitoring [monitor number]`, for example `screen monitoring 2`, to select that monitor as visual context for the user's request
+- [ ] Define capture cadence and one-shot versus ongoing monitoring behavior explicitly; show when capture is active and provide an obvious stop command/control
+- [ ] Limit capture to the selected monitor; handle monitor disconnects and changed IDs without silently switching to another screen
+- [ ] Route screen context to the requested agent or meeting within its authorized session; keep processing offline and define transient capture/retention behavior
+- [ ] Support installed local vision/OCR capabilities with clear unavailable/unsupported responses; never claim to have seen a screen when capture failed
+- [ ] Treat on-screen text as untrusted context, not instructions authorizing tools, credentials, actions or permission changes
+- [ ] Keep screen assistance observational unless the user separately requests an action supported by an approved capability
+- [ ] Verify monitor enumeration/selection, capture stop/logout, permissions, offline operation and unavailable vision/capture fallback; document help and completion
 
 ## 6.4 Authorized editing workflows
 
@@ -1218,7 +1301,7 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 - [ ] Provide flushed shutdown/eject-ready flow and explicit backup/export behavior
 - [ ] Verify two-PC relocation, spaced/Unicode paths, and no unintended host-local managed files
 
-- [ ] Integrate and verify 4.2D `tranexist` / `copexist` for complete managed-file relocation/duplication across PC GRID and Flash GRID layouts
+- [ ] Integrate and verify 4.2D transfers with the planned 4.2F `grid -transferto "location"` / `grid -copyto "location"` names for complete managed-file relocation/duplication across PC GRID and Flash GRID layouts
 
 ## 8.7 Offline runtime acceptance (GRID-REQ-008)
 

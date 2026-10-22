@@ -1,5 +1,10 @@
 # Project GRID — 5.3 MAXIS Development
 
+## End-to-end task verification — 5.7 completed (2026-10-21)
+
+MCP delegation, human approval, real MAXIS unit-test execution and RELAY recorded-result delivery are verified together, including actual passing/failing TRX evidence and SQLite reload. Nine new cases also cover all six agent roles, cancellation, durable-start recovery and duplicate dispatch prevention. **560 tests passed** (14 Core, 157 Simulation, 97 Persistence, 292 Terminal), zero failed/skipped. No runtime/schema change was needed; schema remains v19. See [verification matrix, boundaries and terminal test](Project_GRID_End_to_End_Task_Verification.md). Next: **6.1 Shared local AI**. Earlier milestone counts and next-step statements below are historical.
+
+
 ## Implemented — 2026-10-21
 
 MAXIS now performs real, explicitly approved development actions: read a registered source file, run a fixed .NET build/test command, or stage a user-specified literal replacement in a separate working copy. MCP can delegate these actions. Every task uses the existing per-attempt human approval, durable-start barrier, live identity checking, cancellation and saved result/audit workflow. Other specialists remain demonstrations.

@@ -1,5 +1,10 @@
 # Project GRID — 5.6 VOLT and RELAY
 
+## End-to-end task verification — 5.7 completed (2026-10-21)
+
+MCP delegation, human approval, real MAXIS unit-test execution and RELAY recorded-result delivery are verified together, including actual passing/failing TRX evidence and SQLite reload. Nine new cases also cover all six agent roles, cancellation, durable-start recovery and duplicate dispatch prevention. **560 tests passed** (14 Core, 157 Simulation, 97 Persistence, 292 Terminal), zero failed/skipped. No runtime/schema change was needed; schema remains v19. See [verification matrix, boundaries and terminal test](Project_GRID_End_to_End_Task_Verification.md). Next: **6.1 Shared local AI**. Earlier milestone counts and next-step statements below are historical.
+
+
 ## Implemented — 2026-10-21
 
 VOLT reads the existing host telemetry feed and controls GRID's automatic simulation pacing through approved tasks. RELAY delivers approved messages and recorded task-result briefings to a saved local inbox, records delivery outcomes, supports human acknowledgement, and speaks a reviewed notification only after a separate approved speech task. No external messaging, automatic speech, Windows allocation changes or process-priority changes are introduced.
