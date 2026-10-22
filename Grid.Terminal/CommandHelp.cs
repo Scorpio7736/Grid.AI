@@ -4,6 +4,9 @@ public static class CommandHelp
 {
     public static IReadOnlyList<string> Options(TerminalCommand c) => BaseOptions(c).Concat(WindowCommands.Supports(c.Name) ? new[] { c.Name + " -opninwin" } : Array.Empty<string>()).ToArray();
     private static IReadOnlyList<string> BaseOptions(TerminalCommand c) => c.Name switch {
+        "connect" => ["connect", "connect <program-id|name>", "connect -inline [program-id|name]"],
+        "resume" => ["resume <conversation-id>", "resume -inline <conversation-id>"],
+        "typewriter" => ["typewriter on", "typewriter off"],
         "volt" => ["volt status"],
         "relay" => ["relay inbox", "relay inspect <notification-reference>", "relay deliveries", "relay ack <notification-reference>"],
         "jn" => ["jn scopes", "jn register <alias> \"absolute-file-or-directory\"", "jn revoke <alias>", "jn quota", "jn quota inspect <proposal-reference>", "jn quota approve <proposal-reference>"],

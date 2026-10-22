@@ -122,7 +122,14 @@ public static class AttachedTerminal
                     }
                 }
                 if (reply.Clear && !Console.IsOutputRedirected) Console.Clear();
-                if (reply.Text.Length > 0) await output.WriteLineAsync(reply.Text);
+                if (reply.Text.Length > 0)
+                {
+                    var animate = reply.Mode == "conversation" && reply.Typewriter && TypewriterRenderer.Enabled(Console.IsInputRedirected, Console.IsOutputRedirected,
+                        Environment.GetEnvironmentVariable("TERM"), Environment.GetEnvironmentVariable("GRID_TYPEWRITER"));
+                    await TypewriterRenderer.WriteAsync(output, reply.Text, reply.AnimateFrom, animate,
+                        () => { if (!Console.KeyAvailable) return false; Console.ReadKey(true); return true; },
+                        async () => { if (reply.Closed) return; var heartbeat = await Send(new("ping")); if (heartbeat.Closed) throw new IOException(heartbeat.Text); }, stop.Token);
+                }
                 if (reply.Live) await Live();
             }
             return 0;

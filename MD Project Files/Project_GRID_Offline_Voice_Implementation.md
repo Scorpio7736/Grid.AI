@@ -1,5 +1,7 @@
 # Project GRID - Offline Voice Communication (4.4)
 
+**4.2E compatibility update (2026-10-21):** Use `connect MCP -inline` or `resume ID -inline` in the original host before voice commands. Default connect/resume opens a typed conversation window; attached audio remains unavailable. Inline output is instant. See [conversation windows](Project_GRID_Conversation_Windows_Implementation.md).
+
 ## Communications verification - 4.5 completed (2026-10-21)
 
 All seven 4.5 checklist items have automated coverage. **455 tests passed** (14 Core, 155 Simulation, 97 Persistence, 189 Terminal), including three new end-to-end tests for authenticated conversation/context recovery through SQLite, malformed input without transcript mutation, and unrelated-agent privacy with logout revocation. Existing suites cover recipient routing, durable history/recovery, reviewed speech/typed-message equivalence, audio failure fallback and deterministic communication without AI. No production-code/schema change was needed. Physical microphone/playback/device-unplug checks remain manual; advanced voice and task-delegation features remain planned. See [verification matrix and limits](Project_GRID_Communications_Verification.md). Earlier milestone counts below are historical.
@@ -23,7 +25,7 @@ The initial provider uses installed Windows `System.Speech` recognition and synt
 ## Commands and first use
 
 ```text
-connect MCP
+connect MCP -inline
 voice devices
 voice microphone -1
 voice language en-US

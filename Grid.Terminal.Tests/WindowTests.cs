@@ -86,7 +86,8 @@ public sealed class WindowTests
     public async Task ChatAndEditPreviewsAreIndependentButAuthorizedEditsReachSharedEngine()
     {
         await using var f = new Fixture(); await using var first = await f.Open(); await using var second = await f.Open();
-        await first.Send("command", "connect");
+        Assert.Contains("Opened conversation", (await first.Send("command", "connect")).Text);
+        await using var conversation = new Client(f.Endpoint); await conversation.Connect();
         Assert.Contains("No conversation", (await second.Send("command", "talk hello")).Text);
         Assert.Contains("No conversation", f.Commands.Execute("talk hello").Text);
         var preview = await first.Send("command", "edit MCP occupation WindowTest");
@@ -162,6 +163,137 @@ public sealed class WindowTests
         Assert.True((await client.Send("logout")).Closed);
         Assert.True(f.Owner.IsMaster);
     }
+    [Fact]
+    public async Task InlineEscapePreservesOriginalVoiceConversationAndDoesNotLaunch()
+    {
+        await using var f = new Fixture(_ => throw new InvalidOperationException("Should not launch"));
+        Assert.Contains("Connected", f.Commands.Execute("connect MCP -inline").Text);
+        Assert.Contains("VERIFIED", f.Commands.Execute("talk status").Text);
+        Assert.Equal(2, Assert.Single(f.Engine.GetSnapshot().Communications.Conversations).Messages.Count);
+        Assert.Contains("only once", f.Commands.Execute("connect -inline -inline").Text);
+        Assert.Contains("connect -inline", CommandHelp.Complete("connect -i", f.Commands.Commands));
+    }
+
+    [Fact]
+    public async Task DedicatedConversationStoresCompleteTurnsAndClosePreservesResume()
+    {
+        await using var f = new Fixture();
+        await using var child = await f.Open("connect MCP");
+        Assert.Equal("conversation", child.Greeting.Mode);
+        Assert.Contains("Connected to MCP", child.Greeting.Text);
+        Assert.DoesNotContain(child.Greeting.Commands!, c => c.Name is "step" or "voice" or "switch");
+        Assert.Contains("No conversation", f.Commands.Execute("talk hello").Text);
+        var response = await child.Send("command", "talk status");
+        Assert.NotNull(response.AnimateFrom);
+        Assert.Contains("MCP", response.Text[response.AnimateFrom!.Value..]);
+        var saved = Assert.Single(f.Engine.GetSnapshot().Communications.Conversations);
+        Assert.Equal(2, saved.Messages.Count);
+        Assert.Contains(saved.Messages[1].Content, response.Text);
+        Assert.Null((await child.Send("command", "transcript")).AnimateFrom);
+        Assert.False((await child.Send("command", "typewriter off")).Typewriter);
+        Assert.True((await child.Send("command", "typewriter on")).Typewriter);
+        Assert.Contains("Usage", (await child.Send("command", "typewriter invalid")).Text);
+        Assert.Contains("Unknown", (await child.Send("command", "step")).Text);
+        Assert.True((await child.Send("command", "exit")).Closed);
+        Assert.Equal(Grid.Communication.ConversationStatus.Open, f.Engine.GetConversation(saved.Id).Status);
+        await using var resumed = await f.Open("resume " + saved.Id);
+        Assert.Contains("Resumed", resumed.Greeting.Text);
+        Assert.Contains(saved.Messages[1].Content, (await resumed.Send("command", "transcript")).Text);
+        Assert.Contains("Ended", (await resumed.Send("command", "disconnect")).Text);
+        Assert.Equal(Grid.Communication.ConversationStatus.Ended, f.Engine.GetConversation(saved.Id).Status);
+        Assert.Equal(0, f.Engine.TickCount); Assert.True(f.Owner.IsMaster);
+    }
+
+    [Fact]
+    public async Task SeparateConversationWindowsKeepTurnsAndLogoutIndependent()
+    {
+        await using var f = new Fixture(); await using var first = await f.Open("connect MCP"); await using var second = await f.Open("connect MCP");
+        await first.Send("command", "talk first-window-message");
+        await second.Send("command", "talk second-window-message");
+        Assert.DoesNotContain("second-window-message", (await first.Send("command", "transcript")).Text);
+        Assert.DoesNotContain("first-window-message", (await second.Send("command", "transcript")).Text);
+        Assert.True((await first.Send("command", "logout")).ConfirmLogout);
+        Assert.False((await first.Send("ping")).Closed);
+        Assert.True((await first.Send("logout")).Closed);
+        Assert.False((await second.Send("ping")).Closed); Assert.True(f.Owner.IsMaster);
+        Assert.All(f.Engine.GetSnapshot().Communications.Conversations, c => Assert.Equal(2, c.Messages.Count));
+    }
+
+    [Fact]
+    public async Task ConversationLaunchFailureAndInvalidTargetDoNotCreateTranscripts()
+    {
+        await using (var failed = new Fixture(_ => throw new IOException("launch failed")))
+        {
+            Assert.Contains("could not open", failed.Commands.Execute("connect MCP").Text);
+            Assert.Empty(failed.Engine.GetSnapshot().Communications.Conversations);
+        }
+        await using var f = new Fixture();
+        await using var invalid = await f.Open("connect nonexistent-program");
+        Assert.True(invalid.Greeting.Closed);
+        Assert.Empty(f.Engine.GetSnapshot().Communications.Conversations);
+        await using var invalidResume = await f.Open("resume invalid");
+        Assert.True(invalidResume.Greeting.Closed);
+        Assert.Contains("Usage", invalidResume.Greeting.Text);
+    }
+
+    [Fact]
+    public async Task ConversationRevocationPreventsFurtherTextAndPendingConnection()
+    {
+        await using var f = new Fixture(); await using var child = await f.Open("connect MCP");
+        await child.Send("command", "talk hello");
+        f.Owner.Logout();
+        var denied = await child.Send("command", "transcript");
+        Assert.True(denied.Closed); Assert.DoesNotContain("hello", denied.Text);
+        f.Owner.Login();
+        Assert.Contains("Opened", f.Commands.Execute("connect MCP").Text);
+        f.Owner.Logout();
+        await using var pending = new Client(f.Endpoint); await pending.Connect();
+        Assert.True(pending.Greeting.Closed);
+        Assert.Single(f.Engine.GetSnapshot().Communications.Conversations);
+    }
+
+    [Fact]
+    public async Task AgentConversationCannotResumeOwnersPrivateHistory()
+    {
+        await using var f = new Fixture(); await using var ownerChat = await f.Open("connect MCP");
+        await ownerChat.Send("command", "talk private-owner-message");
+        var id = Assert.Single(f.Engine.GetSnapshot().Communications.Conversations).Id;
+        f.Engine.InitializeSystemAgents(f.Owner.Reference);
+        var agent = f.Engine.ResolveProgram("JN");
+        f.Owner.Switch(agent.Id.ToString());
+        await using var refused = await f.Open("resume " + id);
+        Assert.True(refused.Greeting.Closed); Assert.DoesNotContain("private-owner-message", refused.Greeting.Text);
+        Assert.True((await ownerChat.Send("ping")).Closed);
+    }
+
+    [Fact]
+    public async Task RealConversationProcessDisplaysInstantRedirectedRepliesWithoutOwningWorld()
+    {
+        System.Diagnostics.Process? child = null;
+        Task<string>? output = null; Task<string>? error = null;
+        await using var f = new Fixture(endpoint =>
+        {
+            var start = new System.Diagnostics.ProcessStartInfo("dotnet") { UseShellExecute = false, CreateNoWindow = true, WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden, RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true };
+            start.ArgumentList.Add(typeof(WindowHub).Assembly.Location); start.ArgumentList.Add("--attach"); start.ArgumentList.Add(endpoint); start.ArgumentList.Add("--no-color");
+            child = System.Diagnostics.Process.Start(start)!;
+            output = child.StandardOutput.ReadToEndAsync(); error = child.StandardError.ReadToEndAsync();
+            child.StandardInput.WriteLine("talk status"); child.StandardInput.WriteLine("typewriter off"); child.StandardInput.WriteLine("transcript"); child.StandardInput.WriteLine("exit"); child.StandardInput.Close();
+            return child.Id;
+        });
+        try
+        {
+            Assert.Contains("Opened conversation", f.Commands.Execute("connect MCP").Text);
+            await child!.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(20));
+            Assert.True(child.ExitCode == 0, await error!);
+            var text = await output!;
+            Assert.Contains("ATTACHED CONVERSATION", text); Assert.Contains("VERIFIED GRID STATE", text);
+            Assert.Contains("Typewriter off", text); Assert.DoesNotContain("World saved", text);
+            Assert.Equal(2, Assert.Single(f.Engine.GetSnapshot().Communications.Conversations).Messages.Count);
+            Assert.True(f.Owner.IsMaster); Assert.Equal(0, f.Engine.TickCount);
+        }
+        finally { if (child is not null) { if (!child.HasExited) child.Kill(); child.Dispose(); } }
+    }
+
     [Fact]
     public async Task ProtocolRejectsOversizedFrames()
     {

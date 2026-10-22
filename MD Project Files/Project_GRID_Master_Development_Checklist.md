@@ -2,7 +2,7 @@
 
 ## New planned interaction and task commands — 2026-10-21
 
-The following user-requested additions are **planned, not implemented**: multi-agent meetings (6.2A), dedicated conversation/meeting windows and typewriter responses (4.2E), monitor selection and screen assistance (6.3A), bulk/agent-filtered task commands (5.8), and the transfer command rename (4.2F). Existing completed items and verification history remain unchanged. These additions do not grant new agent privileges or automatic task approval.
+The following user-requested additions are **planned, not implemented**: multi-agent meetings (6.2A), meeting-window integration (6.2A; one-to-one windows/typewriter implemented in 4.2E), monitor selection and screen assistance (6.3A), bulk/agent-filtered task commands (5.8), and the transfer command rename (4.2F). Existing completed items and verification history remain unchanged. These additions do not grant new agent privileges or automatic task approval.
 
 
 ## System-agent names updated - 2026-10-21
@@ -869,15 +869,19 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 4.2E Conversation windows and typewriter responses
 
-**Planned - 2026-10-21.** Applies to both one-to-one agent conversations and multi-agent meetings (6.2A).
+**One-to-one implementation delivered - 2026-10-21.** Default connect/resume opens dedicated windows; meeting integration depends on 6.2A and remains planned.
 
-- [ ] Open conversations with agents and agent meetings in a new dedicated window connected to the same authoritative GRID host
-- [ ] Keep the original terminal available; closing a conversation window ends/detaches that view without shutting down GRID
-- [ ] Preserve authenticated identity, participant scope, conversation history and logout/host-disconnection behavior across windows
-- [ ] Render agent responses with a typewriter effect, with speaker names clearly visible
-- [ ] Make the effect interruptible/skippable and offer instant text for accessibility, redirected output and reduced-motion preferences
-- [ ] Keep animation separate from message persistence and task execution; save each complete response once and never interleave speakers' output
-- [ ] Verify window lifecycle, history, identity isolation and animation cancellation; add help and completion examples
+- [x] Open one-to-one agent conversations in a new dedicated window connected to the same authoritative GRID host
+- [x] Keep the original terminal available; closing a conversation window ends/detaches that view without shutting down GRID
+- [x] Preserve authenticated identity, participant scope, conversation history and logout/host-disconnection behavior across windows
+- [x] Render agent responses with a typewriter effect, with speaker names clearly visible
+- [x] Make the effect interruptible/skippable and offer instant text for accessibility, redirected output and reduced-motion preferences
+- [x] Keep animation separate from message persistence and task execution; save each complete response once and never interleave speakers' output
+- [x] Verify window lifecycle, history, identity isolation and animation cancellation; add help and completion examples
+
+- [ ] Integrate multi-agent meeting windows when the 6.2A meeting/participant service is implemented
+
+**Completion verification (2026-10-21):** 572 tests passed (14 Core, 157 Simulation, 97 Persistence, 304 Terminal), including 12 new window/renderer cases and a real attached conversation process. Default connect/resume opens a dedicated view; exit detaches and disconnect ends the conversation. Typewriter responses support skip, per-window on/off and instant output for redirected/reduced-motion use. Complete turns are recorded before animation and use existing host persistence. Explicit `-inline` preserves original-host voice compatibility. No schema change; visible window placement/animation feel remains a manual smoke check. See [implementation, limits and acceptance test](Project_GRID_Conversation_Windows_Implementation.md).
 
 ## 4.2F Transfer command naming update
 

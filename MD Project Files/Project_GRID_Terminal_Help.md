@@ -1,5 +1,35 @@
 # GRID7736 - Terminal Help
 
+## Conversation-window update — 4.2E (2026-10-21)
+
+`connect` and `resume` now open a dedicated conversation window by default. The original terminal remains usable. Within the new window, `talk` returns a labeled typewriter response; any key skips animation. `transcript` is instant. `exit` closes the view while retaining an open conversation for later resume; `disconnect` ends it. Parent logout/identity changes revoke attached views. Meetings remain planned in 6.2A.
+
+```text
+connect
+    - connect <program-id|name>
+      # USAGE: Open a dedicated conversation window; omitted contact defaults to MCP.
+    - connect -inline [program-id|name]
+      # USAGE: Keep instant-text chat in this terminal, including original-host voice support.
+    # EXAMPLE: connect MCP
+
+resume
+    - resume <conversation-id>
+      # USAGE: Open a window for an existing open conversation owned by this participant.
+    - resume -inline <conversation-id>
+      # USAGE: Resume here for original-host voice or instant inline interaction.
+    # EXAMPLE: resume -inline <full-conversation-id>
+
+typewriter
+    - typewriter on
+      # USAGE: Animate new agent responses in this dedicated conversation window.
+    - typewriter off
+      # USAGE: Display agent responses instantly in this window.
+    # EXAMPLE: typewriter off
+```
+
+`typewriter` is available in dedicated conversation windows. Set `GRID_TYPEWRITER=off` before launching GRID for reduced motion across inherited windows. Redirected input/output and dumb terminals always use instant text. For voice, use `connect MCP -inline` in the original host before `voice listen`. [Details and acceptance test](Project_GRID_Conversation_Windows_Implementation.md).
+
+
 ## VOLT and RELAY — 5.6 completed (2026-10-21)
 
 VOLT now reports existing host telemetry and supports approved normal/eco/auto pacing of GRID's automatic simulation. Unknown/unsupported GPU data is preserved; Windows resources and manual tick behavior are unchanged. RELAY provides a saved local inbox, recorded-task briefings, human acknowledgements and explicitly approved offline speech with delivery/failure receipts. Schema v19 preserves mode and inbox history without automatic playback/replay. **551 tests passed** (14 Core, 157 Simulation, 97 Persistence, 283 Terminal). See [VOLT/RELAY implementation and acceptance test](Project_GRID_VOLT_RELAY_Implementation.md) for commands and boundaries. Next: **5.7 end-to-end verification**. Earlier milestone/schema/test statements below remain historical.
@@ -223,9 +253,9 @@ history
 ```text
 connect
     - connect
-      # USAGE: Start a new conversation with MCP; Master Control can create it lazily.
+      # USAGE: Open a conversation window with MCP; Master Control can create the contact lazily.
     - connect <id|name>
-      # USAGE: Start a directed conversation; identities must be distinct.
+      # USAGE: Open a directed conversation window; identities must be distinct.
     # EXAMPLE: connect MCP
 ```
 
@@ -255,7 +285,7 @@ transcript
 ```text
 resume
     - resume <conversation-id>
-      # USAGE: Select an open permitted conversation; copy its ID from conversations.
+      # USAGE: Open a window for a permitted conversation; copy its ID from conversations.
     # EXAMPLE: resume <conversation-id>
 ```
 

@@ -7,6 +7,8 @@ public sealed class CommandDispatcher
     private readonly Dictionary<string, TerminalCommand> commands = new(StringComparer.OrdinalIgnoreCase);
     private TerminalIdentitySession? identity;
     public Func<IReadOnlyList<string>, CommandResult>? OpenWindow { get; set; }
+    public Func<IReadOnlyList<string>, CommandResult>? OpenConversation { get; set; }
+    public Func<bool>? ConversationConnected { get; set; }
     public string Prompt => identity?.Prompt ?? "grid> ";
     public bool LoginRequired => identity is not null;
     public bool IsAllowed(string name) => commands.TryGetValue(name, out var command) && (identity?.Allows(command.Capability) ?? true);
@@ -59,6 +61,13 @@ public sealed class CommandDispatcher
                     if (!WindowCommands.Supports(command.Name) || tokens.Count(t => t.Equals("-opninwin", StringComparison.OrdinalIgnoreCase)) != 1)
                         return new("Error: -opninwin is supported only once on read-only data commands or live.");
                     return OpenWindow?.Invoke(tokens.Where(t => !t.Equals("-opninwin", StringComparison.OrdinalIgnoreCase)).ToArray()) ?? new("Window opening is unavailable in this host.");
+                }
+                if (command.Name is "connect" or "resume")
+                {
+                    var inline = tokens.Skip(1).Count(t => t.Equals("-inline", StringComparison.OrdinalIgnoreCase));
+                    if (inline > 1) return new("Error: use -inline only once.");
+                    if (inline == 1) return command.Execute(tokens.Skip(1).Where(t => !t.Equals("-inline", StringComparison.OrdinalIgnoreCase)).ToArray());
+                    if (OpenConversation is not null) return OpenConversation(tokens);
                 }
                 return command.Execute(tokens.Skip(1).ToArray());
             }

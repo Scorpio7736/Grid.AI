@@ -38,7 +38,7 @@ public sealed class VoiceCommands
             return await operation(output, token);
         }, Valid));
     }
-    private string Review() => draft is null ? (chat.ActiveConversation is null ? "No voice draft. Use connect MCP, then voice listen." : "No voice draft. Already connected; use voice listen.") :
+    private string Review() => draft is null ? (chat.ActiveConversation is null ? "No voice draft. Use connect MCP -inline, then voice listen." : "No voice draft. Already connected; use voice listen.") :
         $"UNSENT VOICE TRANSCRIPT // conversation {draftConversation}\n{draft}\nReview carefully. voice edit <text> corrects it; voice send stores it as a message; voice cancel discards it.";
     private CommandResult Execute(IReadOnlyList<string> args)
     {
@@ -46,7 +46,7 @@ public sealed class VoiceCommands
         if (args.Count == 0 || args.Count == 1 && args[0] == "status")
             return new($"Offline Windows voice | microphone {microphone} | language {language} | playback {(muted ? "muted" : "enabled on explicit voice speak")}\nNo background listening. Use voice devices, voice listen, voice review, voice send, voice mute off, voice speak. Esc interrupts audio.\n" + Review());
         if (args.Count == 1 && int.TryParse(args[0], out var microphoneId) && microphoneId >= -1)
-        { microphone = microphoneId; return new($"Microphone {microphoneId} selected. Use voice listen after connect MCP."); }
+        { microphone = microphoneId; return new($"Microphone {microphoneId} selected. Use voice listen after connect MCP -inline."); }
         switch (args[0].ToLowerInvariant())
         {
             case "devices" when args.Count == 1:
@@ -57,7 +57,7 @@ public sealed class VoiceCommands
                 language = System.Globalization.CultureInfo.GetCultureInfo(args[1]).Name;
                 return new("Recognition language: " + language + ". An installed offline recognizer is required.");
             case "listen" when args.Count == 1:
-                if (chat.ActiveConversation is not { } conversation) return new("Use connect or resume before recording.");
+                if (chat.ActiveConversation is not { } conversation) return new("Use connect -inline or resume -inline before recording.");
                 draft = null; draftConversation = null;
                 var generation = identity.Generation;
                 return Deferred(async (output, token) =>
@@ -90,7 +90,7 @@ public sealed class VoiceCommands
                 muted = args[1] == "on"; return new(muted ? "Speech playback muted." : "Speech playback enabled only on explicit voice speak. No automatic/background speech.");
             case "speak" when args.Count == 1:
                 if (muted) return new("Speech is muted. Use voice mute off before voice speak.");
-                if (chat.ActiveConversation is not { } current) return new("Connect/resume a conversation first.");
+                if (chat.ActiveConversation is not { } current) return new("Use connect -inline or resume -inline first.");
                 var c = engine.GetConversation(current);
                 var reply = c.Messages.LastOrDefault(m => m.Origin == MessageOrigin.SystemEvent && m.Sender.Kind == ParticipantKind.Program);
                 if (reply is null) return new("No agent reply to speak yet.");

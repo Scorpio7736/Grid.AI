@@ -13,12 +13,13 @@ public sealed class ChatCommands
     public static ChatCommands Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession? identity = null)
     {
         var chat = new ChatCommands(engine) { identity = identity };
+        commands.ConversationConnected = () => chat.active is not null;
         if (identity is not null) identity.Changed += () => chat.active = null;
-        commands.Register(new("connect", "connect [program-id|name]", "Start a conversation; default contact is MCP.", chat.Connect));
+        commands.Register(new("connect", "connect [program-id|name] [-inline]", "Open a dedicated conversation window; default contact is MCP. -inline keeps voice-compatible chat here.", chat.Connect));
         commands.Register(new("talk", "talk <message>", "Send to the connected program and receive a labeled deterministic reply.", chat.Talk));
         commands.Register(new("conversations", "conversations", "List the active identity's stored conversations.", chat.List));
         commands.Register(new("transcript", "transcript [conversation-id]", "Read a stored conversation; defaults to the connected one.", chat.Transcript));
-        commands.Register(new("resume", "resume <conversation-id>", "Reconnect to an open conversation by its full ID.", chat.Resume));
+        commands.Register(new("resume", "resume <conversation-id> [-inline]", "Open a conversation window for a saved conversation; -inline resumes here.", chat.Resume));
         commands.Register(new("disconnect", "disconnect", "End the connected conversation and return to ordinary commands.", chat.Disconnect));
         return chat;
     }
@@ -26,7 +27,7 @@ public sealed class ChatCommands
     public CommandResult SendVoice(Guid conversation, string text)
     {
         if (active != conversation) return new("Voice draft belongs to a different conversation; record again.");
-        return new(Render(engine.Talk(conversation, Actor, text, origin: MessageOrigin.Microphone)));
+        return Response(engine.Talk(conversation, Actor, text, origin: MessageOrigin.Microphone));
     }
     private bool Owned(Conversation c) => c.Participants.Any(p => CommunicationState.SameIdentity(p, Actor));
     private Conversation Find(Guid id)
@@ -49,7 +50,7 @@ public sealed class ChatCommands
         if (args.Count == 0) return new("Usage: talk <message>");
         if (active is not { } id) return new("No conversation connected. Use connect [program-id|name], or resume <conversation-id>.");
         var pair = engine.Talk(id, Actor, string.Join(" ", args));
-        return new(Render(pair));
+        return Response(pair);
     }
     private CommandResult List(IReadOnlyList<string> args) => args.Count != 0 ? new("Usage: conversations") :
         new(TerminalTable.Render(["Conversation ID", "Contact", "Status", "Messages"], engine.GetSnapshot().Communications.Conversations.Where(Owned)
@@ -77,6 +78,13 @@ public sealed class ChatCommands
         if (active is not { } id) return new("No conversation connected.");
         engine.EndConversation(id, Actor); active = null;
         return new($"Ended conversation {id}. Transcript retained.");
+    }
+    private static CommandResult Response(IEnumerable<GridMessage> messages)
+    {
+        var rows = messages.ToArray();
+        var text = Render(rows);
+        // A turn is already stored in full by the engine; animation is display metadata only.
+        return new(text, AnimateFrom: rows.Length > 1 ? Render(rows.Take(1)).Length + 1 : null);
     }
     private static string Render(IEnumerable<GridMessage> messages) => string.Join("\n", messages.Select(m =>
         $"#{m.Sequence} {TerminalTable.Safe(m.Sender.Name)} (tick {m.Tick}, {m.Origin}): {new string(m.Content.Select(c => char.IsControl(c) ? ' ' : c).ToArray())}"));
