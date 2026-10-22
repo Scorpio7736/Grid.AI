@@ -30,6 +30,7 @@ public sealed partial class GridSimulationEngine
             var planId = Guid.NewGuid(); var utc = timeProvider.GetUtcNow().ToUniversalTime(); var children = new List<TaskRecord>();
             foreach (var step in steps)
             {
+                if (StoragePolicy.IsReal(step.Capability)) _ = StorageTarget(step.Capability,step.Argument);
                 if (DevelopmentPolicy.IsReal(step.Capability)) _ = DevelopmentTarget(step.Capability,step.Argument);
                 var agent = tasks.Agents.SingleOrDefault(a => a.Role == step.Role) ?? throw new ArgumentException("Specialist role is not initialized: " + step.Role);
                 if (!identities.RegisteredAgents.Contains(agent.Id) || world.GetProgram(agent.Id).Kind != Grid.Core.ResidentKind.Agent)
@@ -55,7 +56,7 @@ public sealed partial class GridSimulationEngine
             _ = Coordinator(lease.Identity);
             var plans = planId is null ? tasks.Plans : tasks.Plans.Where(p => p.Id == planId).ToArray();
             if (planId is not null && plans.Count == 0) throw new ArgumentException("Unknown MCP plan ID.");
-            var lines = new List<string> { $"[VERIFIED BROKER STATE] MCP briefing at tick {clock.TickCount}. {plans.Count} plan(s). MAXIS workspace actions and SENTINEL security observations are real; demos remain labeled." };
+            var lines = new List<string> { $"[VERIFIED BROKER STATE] MCP briefing at tick {clock.TickCount}. {plans.Count} plan(s). Approved specialist capabilities perform real work; demos remain labeled." };
             foreach (var plan in plans)
             {
                 var children = plan.TaskIds.Select(FindTask).ToArray();

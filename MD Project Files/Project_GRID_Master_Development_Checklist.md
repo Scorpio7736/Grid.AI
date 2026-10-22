@@ -984,22 +984,26 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 5.5 JN — Storage and files
 
-- [ ] Inventory explicitly approved files and directories
-- [ ] Monitor GRID database, model and asset storage
-- [ ] Detect possible duplicate files
-- [ ] Prepare non-destructive cleanup proposals
-- [ ] Track the initial 20 GB logical GRID quota
-- [ ] Escalate quota expansion proposals through MCP
-- [ ] Require user approval for sensitive deletion and quota changes
+- [x] Inventory explicitly approved files and directories
+- [x] Measure defined GRID database, model and asset storage on demand
+- [x] Detect possible duplicate files
+- [x] Prepare non-destructive cleanup proposals
+- [x] Track the initial 20 GB logical GRID quota
+- [x] Escalate quota expansion proposals through MCP
+- [x] Require separate user approval for quota changes; reject sensitive deletion until a dedicated approval workflow exists
+
+**Completion notes (2026-10-21):** Immutable registered scopes, bounded read-only inventory and SHA-256 duplicate candidates, non-destructive cleanup reports, explicit managed-storage accounting, a persisted 20 GB decimal logical budget and MCP quota escalations are implemented. Quota changes require separate human approval. Deletion, hard write-cap enforcement, growth forecasting, disk-reserve validation and continuous monitoring remain planned. Schema v18 saves governance state; copy/move preserves JN reports. **Verification: 535 tests passed**, including 16 new JN cases and report-transfer coverage. See [JN implementation and terminal acceptance test](Project_GRID_JN_Storage_Implementation.md).
 
 ## 5.6 VOLT and RELAY
 
-- [ ] Implement CPU/RAM/GPU monitoring where supported
-- [ ] Introduce safe GRID workload throttling
-- [ ] Prioritize normal Windows performance
-- [ ] Handle message transmission and notification delivery
-- [ ] Support voice output and agent briefings
-- [ ] Track notification delivery and failures
+- [x] Expose timestamped CPU/RAM/GPU monitoring from the configured provider; preserve unsupported GPU status
+- [x] Introduce approved automatic-simulation pacing (normal/eco/auto)
+- [x] Reduce GRID simulation frequency under host pressure without changing Windows resources
+- [x] Handle approved message delivery to the saved local RELAY inbox
+- [x] Support voice output and agent briefings
+- [x] Track notification delivery and failures
+
+**Completion notes (2026-10-21):** VOLT reuses fresh host observations and adds bounded automatic pacing with a pressure hold; simulated tick length and manual steps remain unchanged. RELAY persists local notifications, actual-result briefings, explicit human acknowledgement and separately approved offline speech with intent saves and delivery outcomes. No automatic playback/replay, external messaging or OS allocation changes. GPU collection and broader task/model throttling remain planned. Schema v19 preserves mode/inbox/receipts. **Verification: 551 tests passed**, including 16 new pacing/delivery/persistence/authorization cases; automated speech tests do not play audio. See [implementation and acceptance test](Project_GRID_VOLT_RELAY_Implementation.md).
 
 ## 5.7 End-to-end task verification
 

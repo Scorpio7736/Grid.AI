@@ -59,6 +59,8 @@ try
         persistence = new WorldPersistenceSession(store, info, engine);
     }
     if (store is not null) engine.ConfigureMaxisRuntime(store.DatabasePath + ".maxis-artifacts");
+    if (store is not null) engine.ConfigureJnRuntime(store.DatabasePath, packageRoot ?? AppContext.BaseDirectory);
+    if (store is not null) engine.ConfigureRelayVoice(new LocalRelayVoice());
     identity.Attach(engine);
     if (persistence is not null) identity.PersistIdentity = () => persistence.SaveAsync().GetAwaiter().GetResult();
     var pendingStart = options.Start;
@@ -68,6 +70,8 @@ try
         var dispatcher = DefaultCommands.Create(engine);
         CityCommand.Register(dispatcher, engine); BehaviorCommand.Register(dispatcher, engine);
         WorkplaceCommands.Register(dispatcher, engine); SocialCommand.Register(dispatcher, engine);
+        VoltRelayCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
+        JnCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         MaxisCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         TaskCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         var chat = ChatCommands.Register(dispatcher, engine, session); ResourcesCommand.Register(dispatcher, engine);

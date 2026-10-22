@@ -26,7 +26,7 @@ public static class TaskCommands
                     save(CancellationToken.None).GetAwaiter().GetResult();
                     return new(Plans(plan.Id.ToString()));
                 }
-                return new("Usage: mcp request \"MAXIS: demo hello; JN: demo inventory\" [request-key] | mcp plans | mcp inspect <plan-id> | mcp brief [plan-id]. All subtasks require human approval. MAXIS workspace actions and SENTINEL security observations are real.");
+                return new("Usage: mcp request \"MAXIS: demo hello; JN: demo inventory\" [request-key] | mcp plans | mcp inspect <plan-id> | mcp brief [plan-id]. All subtasks require human approval. Specialist capabilities perform real work; speech requires explicit approval.");
             }
             catch (Exception e) when (Expected(e)) { return Error(e); }
         }) { Capability = "session" });
@@ -41,7 +41,7 @@ public static class TaskCommands
                 }
                 else if (args.Count != 0) return new("Usage: agents [initialize]");
                 return new(TerminalTable.Render(["Role", "Capabilities"], engine.TasksFor(identity.Reference).Agents.Select(a => new[] {
-                    a.Role.ToString(), TaskCapabilities.For(a.Role) + (a.Role == AgentRole.MAXIS ? ", maxis.delay, inspect, build, test, suggest" : a.Role == AgentRole.SENTINEL ? ", defender, firewall, events" : "") })) + "\n\ndemo/delay are demonstrations. MAXIS workspace actions and SENTINEL read-only security queries are real and require approval.");
+                    a.Role.ToString(), TaskCapabilities.For(a.Role) + (a.Role == AgentRole.MAXIS ? ", maxis.delay, inspect, build, test, suggest" : a.Role == AgentRole.SENTINEL ? ", defender, firewall, events" : a.Role == AgentRole.JN ? ", inventory, duplicates, cleanup, storage, quota" : a.Role == AgentRole.VOLT ? ", status, throttle" : a.Role == AgentRole.RELAY ? ", notify, brief, speak" : "") })) + "\n\ndemo/delay are demonstrations. Specialist capabilities are real and require approval; relay.speak produces audio.");
             }
             catch (Exception e) when (Expected(e)) { return Error(e); }
         }) { Capability = "session" });

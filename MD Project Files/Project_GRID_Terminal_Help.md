@@ -1,5 +1,15 @@
 # GRID7736 - Terminal Help
 
+## VOLT and RELAY — 5.6 completed (2026-10-21)
+
+VOLT now reports existing host telemetry and supports approved normal/eco/auto pacing of GRID's automatic simulation. Unknown/unsupported GPU data is preserved; Windows resources and manual tick behavior are unchanged. RELAY provides a saved local inbox, recorded-task briefings, human acknowledgements and explicitly approved offline speech with delivery/failure receipts. Schema v19 preserves mode and inbox history without automatic playback/replay. **551 tests passed** (14 Core, 157 Simulation, 97 Persistence, 283 Terminal). See [VOLT/RELAY implementation and acceptance test](Project_GRID_VOLT_RELAY_Implementation.md) for commands and boundaries. Next: **5.7 end-to-end verification**. Earlier milestone/schema/test statements below remain historical.
+
+
+## JN storage — 5.5 completed (2026-10-21)
+
+JN now inventories approved paths, reports possible duplicates, and prepares cleanup proposals without deleting source files. Defined GRID-managed storage is measured against an initial 20 GB decimal logical budget; MCP quota escalations require separate Master Control approval to change it. This is tracking/governance, not a hard write cap or disk reservation. Schema v18 preserves scope and quota history. **535 tests passed** (14 Core, 157 Simulation, 97 Persistence, 267 Terminal). See [JN implementation and acceptance test](Project_GRID_JN_Storage_Implementation.md) for limits, accounting roots, report retention and remaining planned automation. Next: **5.6 VOLT and RELAY**. Earlier milestone/schema/test statements below remain historical.
+
+
 ## SENTINEL security — 5.4 completed (2026-10-21)
 
 SENTINEL now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
@@ -551,3 +561,74 @@ tasks
 ```
 
 MCP example: `mcp request "SENTINEL: defender status; SENTINEL: firewall status; SENTINEL: events recent"`. Inspect and approve each child, then use `tasks run` once per queued task. Results identify REAL HOST SECURITY and observation UTC. Completed means the query was recorded, including possible UNAVAILABLE access; it does not certify host safety. Remediation and elevation are disabled. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md).
+
+## JN — Storage and files (5.5)
+
+```text
+jn
+    - jn scopes
+      # USAGE: List approved read-only storage scopes.
+    - jn register <alias> "absolute-file-or-directory"
+      # USAGE: Master Control registers an immutable alias for an existing path.
+    - jn revoke <alias>
+      # USAGE: Revoke a scope and request cancellation of its running work.
+    - jn quota
+      # USAGE: Display the logical budget and MCP expansion proposals.
+    - jn quota inspect <proposal-reference>
+      # USAGE: Review the request, measurement, source task and approval history.
+    - jn quota approve <proposal-reference>
+      # USAGE: Master Control applies a reviewed logical budget increase; no allocation or deletion.
+    # EXAMPLE: jn quota
+```
+
+```text
+tasks
+    - tasks propose JN jn.inventory <scope-alias> [key]
+      # USAGE: Save bounded metadata inventory.
+    - tasks propose JN jn.duplicates <scope-alias> [key]
+      # USAGE: Save possible same-size/SHA-256 duplicate groups.
+    - tasks propose JN jn.cleanup <scope-alias> [key]
+      # USAGE: Propose manual review of duplicate groups without deleting files.
+    - tasks propose JN jn.storage status [key]
+      # USAGE: Measure defined GRID-managed storage against its logical budget.
+    - tasks propose JN jn.quota <whole-GB> [key]
+      # USAGE: Measure storage and escalate an expansion proposal to MCP, without applying it.
+    # EXAMPLE: tasks propose JN jn.storage status
+```
+
+MCP example: `mcp request "JN: inventory jntest; JN: storage status"`. Inspect and approve each task individually, then dispatch with `tasks run`. Reports contain full paths and coverage limits; duplicates are not automatically safe to delete. See [JN implementation and repeatable test](Project_GRID_JN_Storage_Implementation.md). Quota approval is a separate command; NGE does not delete external JN reports.
+
+## VOLT and RELAY — 5.6
+
+```text
+volt
+    - volt status
+      # USAGE: Display fresh/unknown host readings and GRID automatic pacing.
+    # EXAMPLE: volt status
+
+relay
+    - relay inbox
+      # USAGE: List saved local notifications and human acknowledgement state.
+    - relay inspect <notification-reference>
+      # USAGE: Read a full notification and its optional explicit speech proposal.
+    - relay deliveries
+      # USAGE: Inspect delivery attempt outcomes; Delivered does not mean read/heard.
+    - relay ack <notification-reference>
+      # USAGE: Master Control explicitly acknowledges a notification.
+    # EXAMPLE: relay inbox
+
+tasks
+    - tasks propose VOLT volt.status current [key]
+      # USAGE: Propose a saved host-resource briefing.
+    - tasks propose VOLT volt.throttle <normal|eco|auto> [key]
+      # USAGE: Propose a change to GRID automatic pacing only.
+    - tasks propose RELAY relay.notify "message" [key]
+      # USAGE: Propose local inbox delivery; no external messaging or sound.
+    - tasks propose RELAY relay.brief <full-task-guid> [key]
+      # USAGE: Propose delivery of a terminal task's actual recorded result.
+    - tasks propose RELAY relay.speak <full-notification-guid> [key]
+      # USAGE: Explicitly propose audio playback; inspect exact text before approval.
+    # EXAMPLE: tasks propose RELAY relay.notify "GRID test notification"
+```
+
+MCP example: `mcp request "VOLT: status current; RELAY: notify Phase 5.6 test"`. Approve/dispatch each child individually. Inspect results using `volt status`, `relay inbox`, `relay deliveries`, and `mcp brief`. Local speech is separate from conversation voice mute preferences and occurs only on an approved relay.speak task. See [full acceptance test](Project_GRID_VOLT_RELAY_Implementation.md).

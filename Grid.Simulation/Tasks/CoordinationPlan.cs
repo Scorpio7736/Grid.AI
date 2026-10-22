@@ -43,7 +43,7 @@ public static class CoordinationRequest
             var action = body[..separator].ToLowerInvariant(); var argument = body[(separator + 1)..].Trim();
             var capability = role.ToString().ToLowerInvariant() + "." + action;
             if (!TaskCapabilities.Valid(role, capability, argument))
-                throw new ArgumentException($"Unsupported action/argument for {role}. Use demo, MAXIS delay, registered MAXIS inspect/build/test/suggest, or SENTINEL defender/firewall status and events recent.");
+                throw new ArgumentException($"Unsupported action/argument for {role}. Use demo, MAXIS delay, registered MAXIS inspect/build/test/suggest, SENTINEL defender/firewall status and events recent, JN inventory/duplicates/cleanup <scope>, storage status, quota <GB>; VOLT status current or throttle normal/eco/auto; RELAY notify <text>, brief <task-guid>, speak <notification-guid>.");
             steps.Add(new(role, capability, argument));
         }
         return Array.AsReadOnly(steps.ToArray());

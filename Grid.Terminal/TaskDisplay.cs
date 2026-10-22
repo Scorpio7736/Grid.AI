@@ -16,7 +16,7 @@ internal static class TaskDisplay
         var matches = scope.Where(id => id.ToString().StartsWith(input, StringComparison.OrdinalIgnoreCase)).ToArray();
         if (input.Length >= 8 && matches.Length == 1) return matches[0];
         throw new ArgumentException(matches.Length > 1 ? "Ambiguous " + kind + " reference; use more characters or the full ID." :
-            "Unknown " + kind + " reference. Use " + (kind == "plan" ? "mcp plans for PLAN references; tasks inspect reads TASK references." : "tasks list for TASK references.") + " Replace placeholders with a displayed reference.");
+            "Unknown " + kind + " reference. Use " + (kind == "plan" ? "mcp plans for PLAN references; tasks inspect reads TASK references." : kind == "notification" ? "relay inbox for notification references." : kind == "quota proposal" ? "jn quota for quota proposal references." : "tasks list for TASK references.") + " Replace placeholders with a displayed reference.");
     }
     internal static string Role(TaskState state, TaskRecord task) => state.Agents.Single(a => a.Id == task.AgentId).Role.ToString();
     internal static string Tasks(TaskState state, IEnumerable<TaskRecord>? records = null) =>
@@ -28,6 +28,18 @@ internal static class TaskDisplay
         var workspace = state.Workspaces.SingleOrDefault(w => w.Name.Equals(t.Argument.Split('|')[0],StringComparison.OrdinalIgnoreCase));
         var scope = DevelopmentPolicy.IsReal(t.Capability) && workspace is not null ? $"\nWORKSPACE\nRoot: {workspace.Root}\nProject: {workspace.Project}\nEnabled: {workspace.Enabled}\n" +
             (t.Capability is "maxis.build" or "maxis.test" ? "REAL CODE EXECUTION: project-defined code runs as your Windows user; outputs may be written. No OS sandbox/network isolation.\n" : "Source remains unchanged; reports/suggestions are written to GRID artifacts.\n") : "";
+        if(StoragePolicy.IsReal(t.Capability))
+        {
+            var registered=state.Storage.Scopes.SingleOrDefault(s=>s.Name.Equals(t.Argument,StringComparison.OrdinalIgnoreCase));
+            scope+="\nJN STORAGE SCOPE\n"+(registered is not null ? registered.Path+" | enabled: "+registered.Enabled : "GRID-managed storage roots / logical quota governance")+"\nNo files will be deleted. Quota proposals require separate Master Control approval.\n";
+        }
+        if(t.Capability=="relay.speak" && Guid.TryParse(t.Argument,out var spokenId))
+        {
+            var note=state.Relay.Notifications.SingleOrDefault(n=>n.Id==spokenId);
+            scope+="\nNOTIFICATION TEXT TO SPEAK\n"+(note?.Text ?? "Notification unavailable; execution will fail.")+"\n";
+            scope+="\nAUDIO OUTPUT: this approved task will speak the saved notification on the original host. No automatic/background speech.\n";
+        }
+        if(t.Capability=="volt.throttle") scope+="\nGRID PACING: changes only the automatic simulation wait. Does not change Windows allocations, manual steps or simulated tick length.\n";
         return $"TASK {reference} - {Role(state,t)}\n" + new string('-', 54) +
             $"\nState:       {t.Status}\nCapability:  {t.Capability}\nArgument:    {t.Argument}\nAttempts:    {t.Attempts} / 3\nRequest key: {t.RequestKey}\nFull ID:     {t.Id}\n\nRESULT\n{(SentinelPolicy.IsReal(t.Capability) ? t.Result?.Replace(" | ", "\n") : t.Result) ?? "No result recorded; no completion claimed."}\n\n" +
             scope + Next(t, reference) + $"\n\nIDENTITY & AUDIT\nOperator: {t.OperatorId}\nSubmitted as: {t.SubmittedAsAgent?.ToString() ?? "Master Control"}\nApproved by: {t.ApprovedBy?.ToString() ?? "Not approved"}\n" +
@@ -44,7 +56,7 @@ internal static class TaskDisplay
     {
         var plans = selected is null ? state.Plans : state.Plans.Where(p => p.Id == selected).ToArray();
         string Counts(CoordinationPlan p) => string.Join(", ", state.Records.Where(t => p.TaskIds.Contains(t.Id)).GroupBy(t => t.Status).Select(g => $"{g.Key}: {g.Count()}"));
-        var heading = "MCP PLANS | VERIFIED BROKER STATE\nMAXIS actions and SENTINEL observations are real; demos remain labeled.\n\n";
+        var heading = "MCP PLANS | VERIFIED BROKER STATE\nApproved specialist capabilities perform real work; demos remain labeled.\n\n";
         if (summary) return heading + TerminalTable.Render(["Plan", "Request key", "Progress"], plans.Select(p => new[] { Ref(p.Id,state.Plans.Select(x=>x.Id)), p.RequestKey, Counts(p) })) + "\n\nDetails: mcp inspect <plan-reference>\nUse a PLAN reference here; tasks inspect takes a TASK reference.";
         return heading + string.Join("\n\n", plans.Select(p =>
         {

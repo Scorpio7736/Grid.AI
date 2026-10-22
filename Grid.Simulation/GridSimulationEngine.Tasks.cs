@@ -43,6 +43,8 @@ public sealed partial class GridSimulationEngine
         using var lease = TaskLease(session);
         lock (gate) return TaskState.Copy(tasks with { Records = Array.AsReadOnly(tasks.Records.Where(t => Visible(t, lease.Identity)).ToArray()),
             Workspaces = Array.AsReadOnly(tasks.Workspaces.Where(w => lease.Identity.IsMasterControl || tasks.Agents.Any(a => a.Id == lease.Identity.AgentId && a.Role is AgentRole.MCP or AgentRole.MAXIS)).ToArray()),
+            Relay = RoleView(lease.Identity,AgentRole.RELAY) ? tasks.Relay.Copy() : new RelayState(),
+            Storage = StorageVisible(lease.Identity) ? tasks.Storage.Copy() : new StorageState(),
             Plans = Array.AsReadOnly(tasks.Plans.Where(p => lease.Identity.IsMasterControl || p.CoordinatorId == lease.Identity.AgentId).ToArray()) });
     }
     public void InitializeSystemAgents(EditSessionReference session)
@@ -84,6 +86,7 @@ public sealed partial class GridSimulationEngine
             var agent = tasks.Agents.SingleOrDefault(a => a.Id == agentId) ?? throw new ArgumentException("Initialize system agents first.");
             if (!TaskCapabilities.Valid(agent.Role, capability, argument) || !TaskState.Label(requestKey, 80)) throw new ArgumentException("Unknown capability or invalid parameters/request key.");
             if (DevelopmentPolicy.IsReal(capability)) _ = DevelopmentTarget(capability,argument);
+            if (StoragePolicy.IsReal(capability)) _ = StorageTarget(capability,argument);
             var existing = tasks.Records.SingleOrDefault(t => t.RequestKey == requestKey);
             if (existing is not null)
             {
@@ -103,6 +106,7 @@ public sealed partial class GridSimulationEngine
         {
             var task = FindTask(id); if (task.Status != Status.AwaitingApproval) throw new InvalidOperationException("Only awaiting-approval tasks can be approved.");
             if (DevelopmentPolicy.IsReal(task.Capability)) _ = DevelopmentTarget(task.Capability,task.Argument);
+            if (StoragePolicy.IsReal(task.Capability)) _ = StorageTarget(task.Capability,task.Argument);
             ChangeTask(task with { Status = Status.Queued, ApprovedBy = lease.Identity.OperatorId }, "Approved", lease.Identity, "Human approved this immutable request for one attempt.");
         }
     }
@@ -141,7 +145,7 @@ public sealed partial class GridSimulationEngine
             ChangeTask(task with { Status = Status.Running, Attempts = task.Attempts + 1 }, "Started", actor, "Broker claimed an attempt; durable start is required before invocation.");
             taskExecuting = true;
         }
-        using var stop = CancellationTokenSource.CreateLinkedTokenSource(token); stop.CancelAfter(TimeSpan.FromSeconds(DevelopmentPolicy.IsReal(task.Capability) ? 120 : SentinelPolicy.IsReal(task.Capability) ? 30 : 1));
+        using var stop = CancellationTokenSource.CreateLinkedTokenSource(token); stop.CancelAfter(TimeSpan.FromSeconds(DevelopmentPolicy.IsReal(task.Capability) ? 120 : SentinelPolicy.IsReal(task.Capability) ? 30 : StoragePolicy.IsReal(task.Capability) ? 120 : VoltRelayPolicy.IsReal(task.Capability) ? 30 : 1));
         Status outcome = Status.Failed; string result;
         try
         {
@@ -156,6 +160,9 @@ public sealed partial class GridSimulationEngine
                     DevelopmentWorkspace workspace; lock(gate) workspace = DevelopmentTarget(task.Capability,task.Argument);
                     execution = maxisRuntime!.ExecuteAsync(workspace,task,stop.Token);
                 }
+                else if (task.Capability is "volt.status" or "volt.throttle") execution = Task.FromResult(ExecuteVolt(session,task));
+                else if (task.Capability is "relay.notify" or "relay.brief" or "relay.speak") execution = ExecuteRelayAsync(session,task,save,stop.Token);
+                else if (StoragePolicy.IsReal(task.Capability)) execution = ExecuteStorageAsync(session,task,stop.Token);
                 else if (SentinelPolicy.IsReal(task.Capability)) execution = ReadSecurityAsync(task.Capability,stop.Token);
                 else execution = TaskCapabilities.ExecuteAsync(role, task.Capability, task.Argument, stop.Token);
                 try
@@ -165,14 +172,14 @@ public sealed partial class GridSimulationEngine
                         await Task.WhenAny(execution, Task.Delay(25, stop.Token));
                         if (stop.IsCancellationRequested) break;
                         using var lease = TaskLease(session, true);
-                        lock (gate) if (FindTask(task.Id).Status != Status.Running || DevelopmentPolicy.IsReal(task.Capability) && !tasks.Workspaces.Any(w => w.Enabled && w.Name.Equals(task.Argument.Split('|')[0], StringComparison.OrdinalIgnoreCase))) { stop.Cancel(); break; }
+                        lock (gate) if (FindTask(task.Id).Status != Status.Running || DevelopmentPolicy.IsReal(task.Capability) && !tasks.Workspaces.Any(w => w.Enabled && w.Name.Equals(task.Argument.Split('|')[0], StringComparison.OrdinalIgnoreCase)) || task.Capability is "jn.inventory" or "jn.duplicates" or "jn.cleanup" && !tasks.Storage.Scopes.Any(s => s.Enabled && s.Name.Equals(task.Argument,StringComparison.OrdinalIgnoreCase))) { stop.Cancel(); break; }
                     }
                     result = await execution; outcome = Status.Completed;
                     using var finalLease = TaskLease(session, true);
                 }
                 finally { stop.Cancel(); try { await execution; } catch (OperationCanceledException) { } }
             }
-            catch (OperationCanceledException) { outcome = token.IsCancellationRequested ? Status.Cancelled : Status.TimedOut; result = "Attempt cancelled or exceeded its deadline (demo: 1 second; MAXIS: 120 seconds; SENTINEL: 30 seconds)."; }
+            catch (OperationCanceledException) { outcome = token.IsCancellationRequested ? Status.Cancelled : Status.TimedOut; result = "Attempt cancelled or exceeded its deadline (demo: 1 second; MAXIS/JN: 120 seconds; SENTINEL/VOLT/RELAY: 30 seconds)."; }
             catch (UnauthorizedAccessException) { outcome = Status.Interrupted; result = "Session authorization changed; fresh approval is required for retry."; }
             catch (Exception e) when (e is IOException or InvalidDataException or System.Data.Common.DbException or InvalidOperationException or ArgumentException or System.ComponentModel.Win32Exception) { result = "Attempt failed: " + e.GetType().Name + ". " + new string(e.Message.Where(c => !char.IsControl(c)).Take(350).ToArray()); }
             if (DevelopmentPolicy.IsReal(task.Capability) && outcome != Status.Completed && maxisRuntime is not null)
@@ -191,6 +198,8 @@ public sealed partial class GridSimulationEngine
     private void RestoreTasks(TaskState state)
     {
         tasks = TaskState.Copy(state);
+        foreach(var d in tasks.Relay.Deliveries.Where(d=>d.Status==RelayDeliveryStatus.Started).ToArray())
+            DeliveryFinished(d.Id,RelayDeliveryStatus.Interrupted,"Restart interrupted delivery; outcome unknown, no automatic replay.");
         foreach (var task in tasks.Records.ToArray())
             if (task.Status is Status.Running or Status.Queued)
                 ChangeTask(task with { Status = task.Status == Status.Running ? Status.Interrupted : Status.AwaitingApproval, ApprovedBy = null,

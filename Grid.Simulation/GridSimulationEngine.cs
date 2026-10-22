@@ -133,7 +133,7 @@ public sealed partial class GridSimulationEngine
             {
                 long version;
                 lock (gate) version = runVersion;
-                await Task.Delay(TickDuration, timeProvider, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(AutomaticTickDelay, timeProvider, cancellationToken).ConfigureAwait(false);
                 lock (gate)
                 {
                     cancellationToken.ThrowIfCancellationRequested();

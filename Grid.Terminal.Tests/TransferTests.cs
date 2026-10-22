@@ -20,6 +20,13 @@ public sealed class TransferTests : IDisposable
     }
     public void Dispose() { Directory.Delete(root, true); }
     [Fact]
+    public void CopyIncludesSelectedWorldJnReports()
+    {
+        var artifacts=world+".jn-artifacts"; Directory.CreateDirectory(artifacts); File.WriteAllText(Path.Combine(artifacts,"report.json"),"{}");
+        var transfer=new GridTransfer(app,world); var destination=Path.Combine(root,"with-jn"); transfer.Execute(transfer.Prepare(new(destination,false)),()=>true);
+        Assert.Equal("{}",File.ReadAllText(Path.Combine(destination,"data","world.db.jn-artifacts","report.json")));
+    }
+    [Fact]
     public void CopyIncludesSelectedWorldMaxisArtifacts()
     {
         var artifacts = world + ".maxis-artifacts"; Directory.CreateDirectory(artifacts);

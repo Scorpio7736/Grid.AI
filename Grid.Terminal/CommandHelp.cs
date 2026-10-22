@@ -4,6 +4,9 @@ public static class CommandHelp
 {
     public static IReadOnlyList<string> Options(TerminalCommand c) => BaseOptions(c).Concat(WindowCommands.Supports(c.Name) ? new[] { c.Name + " -opninwin" } : Array.Empty<string>()).ToArray();
     private static IReadOnlyList<string> BaseOptions(TerminalCommand c) => c.Name switch {
+        "volt" => ["volt status"],
+        "relay" => ["relay inbox", "relay inspect <notification-reference>", "relay deliveries", "relay ack <notification-reference>"],
+        "jn" => ["jn scopes", "jn register <alias> \"absolute-file-or-directory\"", "jn revoke <alias>", "jn quota", "jn quota inspect <proposal-reference>", "jn quota approve <proposal-reference>"],
         "maxis" => ["maxis workspaces", "maxis register <alias> \"absolute-root\" \"relative/project.csproj\"", "maxis revoke <alias>"],
         "mcp" => ["mcp request \"SPECIALIST: demo text; SPECIALIST: demo text\" [request-key]", "mcp plans", "mcp inspect <plan-id>", "mcp brief [plan-id]"],
         "agents" => ["agents", "agents initialize"],
@@ -31,7 +34,7 @@ public static class CommandHelp
         _ => command.Description
     };
     private static string Example(TerminalCommand c) => c.Name switch {
-        "maxis" => "maxis workspaces", "mcp" => "mcp plans", "tasks" => "tasks list",
+        "volt" => "volt status", "relay" => "relay inbox", "jn" => "jn quota", "maxis" => "maxis workspaces", "mcp" => "mcp plans", "tasks" => "tasks list",
         "programs" => "programs -active ids", "inspect" => "inspect program MCP", "talk" => "talk status",
         "edit" => "edit MCP occupation \"Local coordinator\"", "switch" => "switch master", "login" => "login",
         "tranexist" => "tranexist \"E:\\GRID7736\"", "copexist" => "copexist \"E:\\GRID7736 Copy\"",
