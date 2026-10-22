@@ -115,7 +115,7 @@ public sealed class CoordinationTests
             using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Pooling = false }.ToString()))
             {
                 connection.Open(); using var command = connection.CreateCommand();
-                command.CommandText = "UPDATE WorldTasks SET StateJson=json_remove(StateJson,'$.Plans'); DELETE FROM SchemaMigrations WHERE Version=15; PRAGMA user_version=14;";
+                command.CommandText = "UPDATE WorldTasks SET StateJson=json_remove(StateJson,'$.Plans'); DELETE FROM SchemaMigrations WHERE Version>=15; PRAGMA user_version=14;";
                 command.ExecuteNonQuery();
             }
             var loaded = store.Load().State; Assert.Empty(loaded.Tasks.Plans); Assert.Equal(6, loaded.Tasks.Agents.Count);

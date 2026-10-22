@@ -65,6 +65,7 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
         else
         {
             var dir = Path.GetDirectoryName(world)!; var name = Path.GetFileName(world);
+            if (Directory.Exists(world + ".maxis-artifacts")) Tree(world + ".maxis-artifacts", Path.Combine("data", "world.db.maxis-artifacts"));
             foreach (var file in Directory.GetFiles(dir).Where(f => Path.GetFileName(f) == name || Path.GetFileName(f).StartsWith(name + ".", StringComparison.OrdinalIgnoreCase) || Path.GetFileName(f).StartsWith(name + "-", StringComparison.OrdinalIgnoreCase)))
                 Add(file, Path.Combine("data", "world.db" + Path.GetFileName(file)[name.Length..]));
         }

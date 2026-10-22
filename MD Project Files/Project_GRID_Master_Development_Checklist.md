@@ -961,22 +961,26 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 5.3 MAXIS — Development
 
-- [ ] Register approved repositories and workspaces
-- [ ] Implement read-only source inspection
-- [ ] Implement fixed build/test capabilities
-- [ ] Capture diagnostics, logs and test results
-- [ ] Prepare suggested code changes
-- [ ] Add sandbox/working-copy editing before source changes
-- [ ] Request approval according to edit policy
+- [x] Register approved repositories and workspaces
+- [x] Implement read-only source inspection
+- [x] Implement fixed build/test capabilities
+- [x] Capture diagnostics, logs and test results
+- [x] Prepare explicit literal-replacement suggestions for review
+- [x] Add separate working-copy staging before any manual source change (not an OS sandbox)
+- [x] Request approval according to edit policy
+
+**Completion notes (2026-10-21):** Real MAXIS workspace registration/revocation, source inspection, fixed offline-ready .NET build/test, bounded diagnostic logs and per-attempt reports, explicit replacement suggestions, and separate-file working copies are implemented through the approved broker. Source apply and autonomous code generation remain planned; build/test executes trusted project-defined code without OS/network isolation. Schema v16 preserves registrations. **Verification: 505 tests passed**, including 17 new MAXIS cases and artifact-transfer coverage. See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md).
 
 ## 5.4 SENTINEL — Security
 
-- [ ] Read permitted Windows Defender status
-- [ ] Read permitted firewall and security event information
-- [ ] Separate real host alerts from fictional incidents
-- [ ] Report verifiable warnings and scan times
-- [ ] Keep initial security functions read-only
-- [ ] Require approval for sensitive remediation
+- [x] Read permitted Windows Defender status
+- [x] Read permitted firewall and security event information
+- [x] Separate real host alerts from fictional incidents
+- [x] Report verifiable warnings and scan times
+- [x] Keep initial security functions read-only
+- [x] Block sensitive remediation in this read-only release; require a separate scoped human-approval policy before enabling it
+
+**Completion notes (2026-10-21):** Approved read-only Defender, firewall and bounded Security-log observations implemented with source/UTC labels, factual warnings, explicit unknown/unavailable states and historical scan timestamps. No scans or sensitive remediation run. Fixed system PowerShell commands accept no user script/query input; 30-second deadline and bounded output. Schema v17 retains broker result/audit persistence. **Verification: 518 tests passed**, including 13 new SENTINEL cases and real local provider queries. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md).
 
 ## 5.5 JN — Storage and files
 

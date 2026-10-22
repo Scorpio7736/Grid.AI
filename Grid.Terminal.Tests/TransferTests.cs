@@ -20,6 +20,15 @@ public sealed class TransferTests : IDisposable
     }
     public void Dispose() { Directory.Delete(root, true); }
     [Fact]
+    public void CopyIncludesSelectedWorldMaxisArtifacts()
+    {
+        var artifacts = world + ".maxis-artifacts"; Directory.CreateDirectory(artifacts);
+        File.WriteAllText(Path.Combine(artifacts,"report.txt"),"saved MAXIS report");
+        var transfer = new GridTransfer(app,world); var destination = Path.Combine(root,"with-maxis");
+        transfer.Execute(transfer.Prepare(new(destination,false)),()=>true);
+        Assert.Equal("saved MAXIS report",File.ReadAllText(Path.Combine(destination,"data","world.db.maxis-artifacts","report.txt")));
+    }
+    [Fact]
     public void CopyPreservesSourceAndCreatesVerifiedLoadablePackage()
     {
         var transfer = new GridTransfer(app, world); var destination = Path.Combine(root, "copy with spaces");

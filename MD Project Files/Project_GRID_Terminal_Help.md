@@ -1,5 +1,15 @@
 # GRID7736 - Terminal Help
 
+## SENTINEL security — 5.4 completed (2026-10-21)
+
+SENTINEL now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
+
+
+## MAXIS development — 5.3 completed (2026-10-21)
+
+MAXIS now supports registered-workspace inspection, fixed .NET build/test execution, saved diagnostics and explicit replacement suggestions staged outside original source. Every task requires human approval; build/test executes trusted project code as the current Windows user (no OS/network sandbox). Schema v16 persists immutable, revocable workspace registrations. Other specialists remain demonstrations. **505 tests passed** (14 Core, 157 Simulation, 97 Persistence, 237 Terminal). See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for commands, offline prerequisites, artifact retention and limits. Next: **5.4 SENTINEL**. Earlier milestone/schema/test statements below remain historical.
+
+
 **Implemented - 4.2B, 2026-10-20.** This bundled reference is available offline through `help -md`, which displays its path and Markdown in the terminal. Live `help` and Tab suggestions are capability-scoped; this full manual does not grant command access.
 
 New worlds prompt for a username and masked password (6..24 characters), then use `login`. Existing Windows-owned worlds use `login master`, then `credentials` to migrate or rotate credentials as Master Control. Passwords are entered only at masked prompts, never as command arguments. Password login/setup refuse redirected input. Examples containing placeholders require actual values; `nge` deletes the selected world after confirmation.
@@ -498,3 +508,46 @@ Initialize roles with `agents initialize`. Only Master Control or registered MCP
 Implemented compact agent/task tables with role names, unique short references, a compact `mcp plans` overview, and separated plan/task details, results, next commands and full audit identities. `mcp brief` still includes all plan details; `mcp inspect <reference>` reads one plan. Full IDs remain in detail views. Displayed short references (at least eight characters) are accepted by task inspect/approve/cancel/retry and MCP inspect/brief; ambiguous prefixes are rejected, and resolution is restricted to the current authorized scope. A copied trailing period or comma is tolerated. Plan/task mixups produce specific guidance. Approval boundaries and persisted data are unchanged. Persistence warnings now appear only on I/O/database errors.
 
 Use `tasks list`, then `tasks inspect <displayed-task-reference>`. Review its argument before using the displayed approval command. Command examples are printed on separate lines without sentence punctuation. Verification: 219 terminal tests passed, including short-reference, punctuation, plan/task mismatch and cross-agent scope checks.
+
+## MAXIS workspaces and development — 5.3
+
+```text
+maxis
+    - maxis workspaces
+      # USAGE: List permitted workspace registrations.
+    - maxis register <alias> "absolute-root" "relative/project.csproj"
+      # USAGE: Master Control registers a workspace; individual tasks still need approval.
+    - maxis revoke <alias>
+      # USAGE: Disable workspace execution and request cancellation of running work.
+    # EXAMPLE: maxis register grid "C:\Users\jack\source\repos\Grid7736" "Grid.Core/Grid.Core.csproj"
+```
+
+```text
+tasks
+    - tasks propose MAXIS maxis.inspect "alias|relative/file.cs" [key]
+      # USAGE: Propose source inspection with a saved report.
+    - tasks propose MAXIS maxis.build <alias> [key]
+      # USAGE: Propose fixed dotnet build --no-restore; executes trusted project code.
+    - tasks propose MAXIS maxis.test <alias> [key]
+      # USAGE: Propose fixed dotnet test --no-restore with diagnostic output/TRX.
+    - tasks propose MAXIS maxis.suggest "alias|relative/file.cs|old|new" [key]
+      # USAGE: Stage exactly one literal replacement in a separate working copy.
+    # EXAMPLE: tasks propose MAXIS maxis.build grid build-1
+```
+
+MCP equivalent: `mcp request "MAXIS: build grid"`. Inspect the resulting task, approve it individually, then use `tasks run` from the original host. Builds/tests can change outputs and run project-defined code as your Windows user; they are not OS-sandboxed. Read [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for supported formats and artifact locations. NGE does not delete these external reports/working copies.
+
+## SENTINEL — read-only security (5.4)
+
+```text
+tasks
+    - tasks propose SENTINEL sentinel.defender status [request-key]
+      # USAGE: Read protection flags, signature update time and prior scan end times; no new scan.
+    - tasks propose SENTINEL sentinel.firewall status [request-key]
+      # USAGE: Read effective firewall profile settings; no configuration changes.
+    - tasks propose SENTINEL sentinel.events recent [request-key]
+      # USAGE: Read up to ten newest Security-log IDs/record IDs/timestamps in the last 24 hours.
+    # EXAMPLE: tasks propose SENTINEL sentinel.defender status defender-check-1
+```
+
+MCP example: `mcp request "SENTINEL: defender status; SENTINEL: firewall status; SENTINEL: events recent"`. Inspect and approve each child, then use `tasks run` once per queued task. Results identify REAL HOST SECURITY and observation UTC. Completed means the query was recorded, including possible UNAVAILABLE access; it does not certify host safety. Remediation and elevation are disabled. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md).

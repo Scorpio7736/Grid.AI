@@ -42,6 +42,7 @@ public sealed partial class GridSimulationEngine
     {
         using var lease = TaskLease(session);
         lock (gate) return TaskState.Copy(tasks with { Records = Array.AsReadOnly(tasks.Records.Where(t => Visible(t, lease.Identity)).ToArray()),
+            Workspaces = Array.AsReadOnly(tasks.Workspaces.Where(w => lease.Identity.IsMasterControl || tasks.Agents.Any(a => a.Id == lease.Identity.AgentId && a.Role is AgentRole.MCP or AgentRole.MAXIS)).ToArray()),
             Plans = Array.AsReadOnly(tasks.Plans.Where(p => lease.Identity.IsMasterControl || p.CoordinatorId == lease.Identity.AgentId).ToArray()) });
     }
     public void InitializeSystemAgents(EditSessionReference session)
@@ -64,13 +65,13 @@ public sealed partial class GridSimulationEngine
                 var p = world.Programs.Values.SingleOrDefault(p => p.Name.Equals(role.ToString(), StringComparison.OrdinalIgnoreCase));
                 if (p is null)
                 {
-                    p = new GridProgram { Id = DialogueId("system-agent-" + role), Name = role.ToString(), Kind = ResidentKind.Agent, Occupation = "System agent (demonstration capabilities only)" };
+                    p = new GridProgram { Id = DialogueId("system-agent-" + role), Name = role.ToString(), Kind = ResidentKind.Agent, Occupation = "System agent (approval-gated capabilities)" };
                     world.AddProgram(p, world.GetProgram(coordinator.Id).CurrentDistrictId);
                 }
                 RegisterAgentIdentity(p.Id); entries.Add(new(p.Id, role));
             }
             tasks = tasks with { Agents = Array.AsReadOnly(entries.ToArray()) };
-            RecordEvent("SystemAgentsInitialized", LocalOperator.Id, null, "Six system-agent roles registered; no host-action capabilities enabled.");
+            RecordEvent("SystemAgentsInitialized", LocalOperator.Id, null, "Six system-agent roles registered; MAXIS real actions require workspace registration and task approval.");
         }
     }
     public TaskRecord ProposeTask(EditSessionReference session, Guid agentId, string capability, string argument, string requestKey)
@@ -82,6 +83,7 @@ public sealed partial class GridSimulationEngine
             if (!actor.IsMasterControl && actor.AgentId != agentId) throw DeniedTask(actor, "Agent sessions may propose only their own capabilities.");
             var agent = tasks.Agents.SingleOrDefault(a => a.Id == agentId) ?? throw new ArgumentException("Initialize system agents first.");
             if (!TaskCapabilities.Valid(agent.Role, capability, argument) || !TaskState.Label(requestKey, 80)) throw new ArgumentException("Unknown capability or invalid parameters/request key.");
+            if (DevelopmentPolicy.IsReal(capability)) _ = DevelopmentTarget(capability,argument);
             var existing = tasks.Records.SingleOrDefault(t => t.RequestKey == requestKey);
             if (existing is not null)
             {
@@ -100,6 +102,7 @@ public sealed partial class GridSimulationEngine
         lock (gate)
         {
             var task = FindTask(id); if (task.Status != Status.AwaitingApproval) throw new InvalidOperationException("Only awaiting-approval tasks can be approved.");
+            if (DevelopmentPolicy.IsReal(task.Capability)) _ = DevelopmentTarget(task.Capability,task.Argument);
             ChangeTask(task with { Status = Status.Queued, ApprovedBy = lease.Identity.OperatorId }, "Approved", lease.Identity, "Human approved this immutable request for one attempt.");
         }
     }
@@ -120,7 +123,7 @@ public sealed partial class GridSimulationEngine
         {
             var task = FindTask(id); if (!Visible(task, lease.Identity)) throw DeniedTask(lease.Identity, "Task outside this agent's scope.");
             if (task.Status is not (Status.Failed or Status.TimedOut or Status.Interrupted) || task.Attempts >= 3) throw new InvalidOperationException("Retry requires a failed/interrupted task below the three-attempt limit.");
-            ChangeTask(task with { Status = Status.AwaitingApproval, ApprovedBy = null, Result = null }, "RetryRequested", lease.Identity, "Demonstration capability is replay-safe; fresh human approval required.");
+            ChangeTask(task with { Status = Status.AwaitingApproval, ApprovedBy = null, Result = null }, "RetryRequested", lease.Identity, "Fresh human approval required; prior external side effects may remain.");
         }
     }
     public async Task<string> RunNextTaskAsync(EditSessionReference session, Func<CancellationToken, Task> save, CancellationToken token)
@@ -135,10 +138,10 @@ public sealed partial class GridSimulationEngine
             var agent = tasks.Agents.Single(a => a.Id == task.AgentId); role = agent.Role; actor = lease.Identity;
             if (!identities.RegisteredAgents.Contains(agent.Id) || world.GetProgram(agent.Id).Kind != ResidentKind.Agent || !TaskCapabilities.Valid(role, task.Capability, task.Argument)) throw DeniedTask(actor, "Task target/capability no longer authorized.");
             token.ThrowIfCancellationRequested();
-            ChangeTask(task with { Status = Status.Running, Attempts = task.Attempts + 1 }, "Started", actor, "Broker claimed a demonstration attempt; durable start is required before invocation.");
+            ChangeTask(task with { Status = Status.Running, Attempts = task.Attempts + 1 }, "Started", actor, "Broker claimed an attempt; durable start is required before invocation.");
             taskExecuting = true;
         }
-        using var stop = CancellationTokenSource.CreateLinkedTokenSource(token); stop.CancelAfter(TimeSpan.FromSeconds(1));
+        using var stop = CancellationTokenSource.CreateLinkedTokenSource(token); stop.CancelAfter(TimeSpan.FromSeconds(DevelopmentPolicy.IsReal(task.Capability) ? 120 : SentinelPolicy.IsReal(task.Capability) ? 30 : 1));
         Status outcome = Status.Failed; string result;
         try
         {
@@ -147,7 +150,14 @@ public sealed partial class GridSimulationEngine
                 await save(token); // Persistence fence: never invoke an adapter if claiming the task was not saved.
                 using (var lease = TaskLease(session, true))
                 lock (gate) if (FindTask(task.Id).Status != Status.Running) throw new OperationCanceledException();
-                var execution = TaskCapabilities.ExecuteAsync(role, task.Capability, task.Argument, stop.Token);
+                Task<string> execution;
+                if (DevelopmentPolicy.IsReal(task.Capability))
+                {
+                    DevelopmentWorkspace workspace; lock(gate) workspace = DevelopmentTarget(task.Capability,task.Argument);
+                    execution = maxisRuntime!.ExecuteAsync(workspace,task,stop.Token);
+                }
+                else if (SentinelPolicy.IsReal(task.Capability)) execution = ReadSecurityAsync(task.Capability,stop.Token);
+                else execution = TaskCapabilities.ExecuteAsync(role, task.Capability, task.Argument, stop.Token);
                 try
                 {
                     while (!execution.IsCompleted)
@@ -155,20 +165,22 @@ public sealed partial class GridSimulationEngine
                         await Task.WhenAny(execution, Task.Delay(25, stop.Token));
                         if (stop.IsCancellationRequested) break;
                         using var lease = TaskLease(session, true);
-                        lock (gate) if (FindTask(task.Id).Status != Status.Running) { stop.Cancel(); break; }
+                        lock (gate) if (FindTask(task.Id).Status != Status.Running || DevelopmentPolicy.IsReal(task.Capability) && !tasks.Workspaces.Any(w => w.Enabled && w.Name.Equals(task.Argument.Split('|')[0], StringComparison.OrdinalIgnoreCase))) { stop.Cancel(); break; }
                     }
                     result = await execution; outcome = Status.Completed;
                     using var finalLease = TaskLease(session, true);
                 }
                 finally { stop.Cancel(); try { await execution; } catch (OperationCanceledException) { } }
             }
-            catch (OperationCanceledException) { outcome = token.IsCancellationRequested ? Status.Cancelled : Status.TimedOut; result = "Attempt cancelled or exceeded the one-second demonstration timeout."; }
+            catch (OperationCanceledException) { outcome = token.IsCancellationRequested ? Status.Cancelled : Status.TimedOut; result = "Attempt cancelled or exceeded its deadline (demo: 1 second; MAXIS: 120 seconds; SENTINEL: 30 seconds)."; }
             catch (UnauthorizedAccessException) { outcome = Status.Interrupted; result = "Session authorization changed; fresh approval is required for retry."; }
-            catch (Exception e) when (e is IOException or System.Data.Common.DbException or InvalidOperationException) { result = "Attempt failed: " + e.GetType().Name + ". Check persistence; no successful host action is claimed."; }
+            catch (Exception e) when (e is IOException or InvalidDataException or System.Data.Common.DbException or InvalidOperationException or ArgumentException or System.ComponentModel.Win32Exception) { result = "Attempt failed: " + e.GetType().Name + ". " + new string(e.Message.Where(c => !char.IsControl(c)).Take(350).ToArray()); }
+            if (DevelopmentPolicy.IsReal(task.Capability) && outcome != Status.Completed && maxisRuntime is not null)
+                result += " Attempt artifacts (if created): " + maxisRuntime.AttemptDirectory(task);
             lock (gate)
             {
                 var current = FindTask(task.Id);
-                if (current.Status == Status.Running) ChangeTask(current with { Status = outcome, Result = result }, "Finished", actor, result);
+                if (current.Status == Status.Running) ChangeTask(current with { Status = outcome, Result = result }, "Finished", actor, result.Length > 500 ? result[..500] : result);
                 result = FindTask(task.Id).Status + ": " + FindTask(task.Id).Result;
             }
             await save(CancellationToken.None);

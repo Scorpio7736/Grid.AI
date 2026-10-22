@@ -30,6 +30,7 @@ public sealed partial class GridSimulationEngine
             var planId = Guid.NewGuid(); var utc = timeProvider.GetUtcNow().ToUniversalTime(); var children = new List<TaskRecord>();
             foreach (var step in steps)
             {
+                if (DevelopmentPolicy.IsReal(step.Capability)) _ = DevelopmentTarget(step.Capability,step.Argument);
                 var agent = tasks.Agents.SingleOrDefault(a => a.Role == step.Role) ?? throw new ArgumentException("Specialist role is not initialized: " + step.Role);
                 if (!identities.RegisteredAgents.Contains(agent.Id) || world.GetProgram(agent.Id).Kind != Grid.Core.ResidentKind.Agent)
                     throw DeniedTask(lease.Identity, "Specialist identity is no longer authorized.");
@@ -41,7 +42,7 @@ public sealed partial class GridSimulationEngine
                 Array.AsReadOnly(children.Select(t => t.Id).ToArray()));
             var next = tasks with { Records = Array.AsReadOnly(tasks.Records.Concat(children).ToArray()), Plans = Array.AsReadOnly(tasks.Plans.Append(plan).ToArray()) };
             TaskState.Validate(next); tasks = next; // Commit the whole plan, never a partially parsed request.
-            RecordEvent("CoordinationPlanned", plan.Id, "MCP", $"{children.Count} demonstration subtasks delegated; none approved or executed.",
+            RecordEvent("CoordinationPlanned", plan.Id, "MCP", $"{children.Count} subtasks delegated; none approved or executed.",
                 System.Text.Json.JsonSerializer.Serialize(new { operatorId = lease.Identity.OperatorId, activeAgentId = lease.Identity.AgentId, coordinatorId = mcp.Id, planId }));
             return plan;
         }
@@ -54,7 +55,7 @@ public sealed partial class GridSimulationEngine
             _ = Coordinator(lease.Identity);
             var plans = planId is null ? tasks.Plans : tasks.Plans.Where(p => p.Id == planId).ToArray();
             if (planId is not null && plans.Count == 0) throw new ArgumentException("Unknown MCP plan ID.");
-            var lines = new List<string> { $"[VERIFIED BROKER STATE] MCP briefing at tick {clock.TickCount}. {plans.Count} plan(s). Demonstration adapters only; no real PC work is implied." };
+            var lines = new List<string> { $"[VERIFIED BROKER STATE] MCP briefing at tick {clock.TickCount}. {plans.Count} plan(s). MAXIS workspace actions and SENTINEL security observations are real; demos remain labeled." };
             foreach (var plan in plans)
             {
                 var children = plan.TaskIds.Select(FindTask).ToArray();

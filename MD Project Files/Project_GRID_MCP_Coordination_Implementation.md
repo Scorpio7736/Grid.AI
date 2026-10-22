@@ -1,5 +1,15 @@
 # Project GRID — 5.2 MCP Administration
 
+## SENTINEL security — 5.4 completed (2026-10-21)
+
+SENTINEL now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
+
+
+## MAXIS development — 5.3 completed (2026-10-21)
+
+MAXIS now supports registered-workspace inspection, fixed .NET build/test execution, saved diagnostics and explicit replacement suggestions staged outside original source. Every task requires human approval; build/test executes trusted project code as the current Windows user (no OS/network sandbox). Schema v16 persists immutable, revocable workspace registrations. Other specialists remain demonstrations. **505 tests passed** (14 Core, 157 Simulation, 97 Persistence, 237 Terminal). See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for commands, offline prerequisites, artifact retention and limits. Next: **5.4 SENTINEL**. Earlier milestone/schema/test statements below remain historical.
+
+
 ## Implemented — 2026-10-21
 
 MCP coordinates explicit specialist requests through the 5.1 broker: atomic saved plans, linked proposals, individual human approval and briefings derived from actual task records. **Adapters remain demonstrations only.** Natural-language decomposition, autonomous dispatch, dependent task graphs and real specialist actions remain planned.

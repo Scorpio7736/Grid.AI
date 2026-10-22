@@ -10,9 +10,10 @@ public sealed record TaskRecord(Guid Id, string RequestKey, Guid AgentId, string
 public sealed record TaskState(IReadOnlyList<SystemAgent> Agents, IReadOnlyList<TaskRecord> Records)
 {
     public IReadOnlyList<CoordinationPlan> Plans { get; init; } = Array.Empty<CoordinationPlan>();
+    public IReadOnlyList<DevelopmentWorkspace> Workspaces { get; init; } = Array.Empty<DevelopmentWorkspace>();
     public static TaskState Empty => new(Array.Empty<SystemAgent>(), Array.Empty<TaskRecord>());
     public static TaskState Copy(TaskState state) => new(Array.AsReadOnly(state.Agents.ToArray()),
-        Array.AsReadOnly(state.Records.Select(t => t with { Audit = Array.AsReadOnly(t.Audit.ToArray()) }).ToArray())) { Plans = Array.AsReadOnly(state.Plans.Select(p => p with { TaskIds = Array.AsReadOnly(p.TaskIds.ToArray()) }).ToArray()) };
+        Array.AsReadOnly(state.Records.Select(t => t with { Audit = Array.AsReadOnly(t.Audit.ToArray()) }).ToArray())) { Workspaces = Array.AsReadOnly(state.Workspaces.ToArray()), Plans = Array.AsReadOnly(state.Plans.Select(p => p with { TaskIds = Array.AsReadOnly(p.TaskIds.ToArray()) }).ToArray()) };
     public static bool Label(string? value, int max) => !string.IsNullOrWhiteSpace(value) && value.Length <= max && !value.Any(char.IsControl);
     public static void Validate(TaskState state)
     {
@@ -39,15 +40,16 @@ public sealed record TaskState(IReadOnlyList<SystemAgent> Agents, IReadOnlyList<
                 throw new InvalidDataException("Invalid task approval/attempt state.");
         }
         CoordinationPlan.Validate(state);
+        DevelopmentPolicy.Validate(state.Workspaces);
     }
 }
 
-/// <summary>Version-one allowlist: demonstration adapters only. No process, file, network or shell action exists.</summary>
+/// <summary>Role-specific allowlist. Real adapters are dispatched separately through the approved broker.</summary>
 public static class TaskCapabilities
 {
     public static string For(AgentRole role) => role.ToString().ToLowerInvariant() + ".demo";
     public static bool Valid(AgentRole role, string capability, string argument) => TaskState.Label(argument, 256) &&
-        (capability == For(role) || role == AgentRole.MAXIS && capability == "maxis.delay" && int.TryParse(argument, out var delay) && delay is >= 0 and <= 5000);
+        (role == AgentRole.SENTINEL && SentinelPolicy.Valid(capability,argument) || role == AgentRole.MAXIS && DevelopmentPolicy.IsReal(capability) && DevelopmentPolicy.Parameters(capability,argument) || capability == For(role) || role == AgentRole.MAXIS && capability == "maxis.delay" && int.TryParse(argument, out var delay) && delay is >= 0 and <= 5000);
     internal static async Task<string> ExecuteAsync(AgentRole role, string capability, string argument, CancellationToken token)
     {
         if (!Valid(role, capability, argument)) throw new ArgumentException("Capability or argument is not allowed for this agent.");

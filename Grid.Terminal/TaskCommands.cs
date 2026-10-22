@@ -26,11 +26,11 @@ public static class TaskCommands
                     save(CancellationToken.None).GetAwaiter().GetResult();
                     return new(Plans(plan.Id.ToString()));
                 }
-                return new("Usage: mcp request \"MAXIS: demo hello; JN: demo inventory\" [request-key] | mcp plans | mcp inspect <plan-id> | mcp brief [plan-id]. All subtasks require human approval; no real host capabilities yet.");
+                return new("Usage: mcp request \"MAXIS: demo hello; JN: demo inventory\" [request-key] | mcp plans | mcp inspect <plan-id> | mcp brief [plan-id]. All subtasks require human approval. MAXIS workspace actions and SENTINEL security observations are real.");
             }
             catch (Exception e) when (Expected(e)) { return Error(e); }
         }) { Capability = "session" });
-        commands.Register(new("agents", "agents [initialize]", "List system-agent roles or explicitly initialize the six demonstration agents.", args =>
+        commands.Register(new("agents", "agents [initialize]", "List system-agent roles or explicitly initialize the six system agents.", args =>
         {
             try
             {
@@ -41,11 +41,11 @@ public static class TaskCommands
                 }
                 else if (args.Count != 0) return new("Usage: agents [initialize]");
                 return new(TerminalTable.Render(["Role", "Capabilities"], engine.TasksFor(identity.Reference).Agents.Select(a => new[] {
-                    a.Role.ToString(), TaskCapabilities.For(a.Role) + (a.Role == AgentRole.MAXIS ? ", maxis.delay" : "") })) + "\n\nDEMONSTRATION ONLY | demo: 1..256 characters | delay: 0..5000 ms");
+                    a.Role.ToString(), TaskCapabilities.For(a.Role) + (a.Role == AgentRole.MAXIS ? ", maxis.delay, inspect, build, test, suggest" : a.Role == AgentRole.SENTINEL ? ", defender, firewall, events" : "") })) + "\n\ndemo/delay are demonstrations. MAXIS workspace actions and SENTINEL read-only security queries are real and require approval.");
             }
             catch (Exception e) when (Expected(e)) { return Error(e); }
         }) { Capability = "session" });
-        commands.Register(new("tasks", "tasks <list|inspect|propose|approve|cancel|retry|run> ...", "Durable reviewed demonstration tasks. No shell or real host action is available.", args =>
+        commands.Register(new("tasks", "tasks <list|inspect|propose|approve|cancel|retry|run> ...", "Durable reviewed tasks. MAXIS workspace actions require explicit human approval.", args =>
         {
             try
             {
@@ -94,5 +94,5 @@ public static class TaskCommands
     }
     private static bool Expected(Exception e) => e is ArgumentException or InvalidOperationException or IOException or UnauthorizedAccessException or System.Data.Common.DbException;
     private static CommandResult Error(Exception e) => new("Task error: " + e.Message + (e is IOException or System.Data.Common.DbException ? " In-memory changes may remain; resolve persistence before continuing." : ""));
-    public const string Usage = "Usage: tasks list | inspect <id> | propose <agent-id|name> <capability> \"argument\" [request-key] | approve <id> | cancel <id> | retry <id> | run. Run dispatches one approved demonstration; no real host actions.";
+    public const string Usage = "Usage: tasks list | inspect <id> | propose <agent-id|name> <capability> \"argument\" [request-key] | approve <id> | cancel <id> | retry <id> | run. Run dispatches one approved task. MAXIS build/test executes project-defined code.";
 }
