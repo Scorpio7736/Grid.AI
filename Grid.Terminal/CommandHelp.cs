@@ -4,6 +4,7 @@ public static class CommandHelp
 {
     public static IReadOnlyList<string> Options(TerminalCommand c) => BaseOptions(c).Concat(WindowCommands.Supports(c.Name) ? new[] { c.Name + " -opninwin" } : Array.Empty<string>()).ToArray();
     private static IReadOnlyList<string> BaseOptions(TerminalCommand c) => c.Name switch {
+        "grid" => ["grid -copyto \"location\"", "grid -transferto \"location\""],
         "connect" => ["connect", "connect <program-id|name>", "connect -inline [program-id|name]"],
         "resume" => ["resume <conversation-id>", "resume -inline <conversation-id>"],
         "typewriter" => ["typewriter on", "typewriter off"],
@@ -40,7 +41,8 @@ public static class CommandHelp
         "volt" => "volt status", "relay" => "relay inbox", "jn" => "jn quota", "maxis" => "maxis workspaces", "mcp" => "mcp plans", "tasks" => "tasks list",
         "programs" => "programs -active ids", "inspect" => "inspect program MCP", "talk" => "talk status",
         "edit" => "edit MCP occupation \"Local coordinator\"", "switch" => "switch master", "login" => "login",
-        "tranexist" => "tranexist \"E:\\GRID7736\"", "copexist" => "copexist \"E:\\GRID7736 Copy\"",
+        "grid" => "grid -copyto \"E:\\GRID7736 Copy\"",
+        "tranexist" => "grid -transferto \"E:\\GRID7736\"", "copexist" => "grid -copyto \"E:\\GRID7736 Copy\"",
         "context" => "context list", "connect" => "connect MCP", "history" => "history kind=Edit limit=20", _ => c.Usage
     };
     public static string Markdown()

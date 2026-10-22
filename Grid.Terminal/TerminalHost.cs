@@ -115,7 +115,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                                 var answer = await confirmation;
                                 if (string.Equals(answer?.Trim(), "y", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    if (!commands.IsAllowed(request.Move ? "tranexist" : "copexist")) throw new UnauthorizedAccessException("Transfer authorization revoked.");
+                                    if (!commands.IsAllowed("grid")) throw new UnauthorizedAccessException("Transfer authorization revoked.");
                                     transferPlan = plan; break;
                                 }
                                 if (string.IsNullOrWhiteSpace(answer) || answer.Trim().Equals("n", StringComparison.OrdinalIgnoreCase)) { await output.WriteLineAsync("Transfer cancelled. Files unchanged."); break; }
@@ -257,7 +257,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
         {
             if (exitCode == 0)
             {
-                try { await output.WriteLineAsync(transfer!.Execute(transferPlan, () => commands.IsAllowed(transferPlan.Move ? "tranexist" : "copexist"))); }
+                try { await output.WriteLineAsync(transfer!.Execute(transferPlan, () => commands.IsAllowed("grid"))); }
                 catch (Exception e) { await output.WriteLineAsync("Transfer incomplete/refused: " + e.Message); exitCode = 1; }
             }
             else await output.WriteLineAsync("Transfer aborted because shutdown/save failed. Source retained.");

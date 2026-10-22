@@ -114,7 +114,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                     string name;
                     try { name = CommandDispatcher.Parse(line).FirstOrDefault() ?? ""; }
                     catch (ArgumentException e) { await WindowProtocol.WriteAsync(pipe, Reply("Error: " + e.Message), io.Token); continue; }
-                    if (new[] { "login", "credentials", "nge", "tranexist", "copexist" }.Contains(name, StringComparer.OrdinalIgnoreCase))
+                    if (new[] { "login", "credentials", "nge", "grid", "tranexist", "copexist" }.Contains(name, StringComparer.OrdinalIgnoreCase))
                         reply = Reply("Use the original host terminal for login, credentials, NGE or transfers. This window does not own the save.");
                     else
                     {

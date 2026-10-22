@@ -160,8 +160,8 @@ User-requested Master Admin commands (the existing Master Control authority):
 
 | Command | Planned result |
 | --- | --- |
-| `tranexist "location"` | Move the complete GRID installation and its managed files to the specified destination; remove the original only after the destination is verified and the move can finish safely. |
-| `copexist "location"` | Copy the complete GRID installation and its managed files to the specified destination; retain the original. |
+| `grid -transferto "location"` | Move the complete GRID installation and its managed files to the specified destination; remove the original only after the destination is verified and the move can finish safely. |
+| `grid -copyto "location"` | Copy the complete GRID installation and its managed files to the specified destination; retain the original. |
 
 Both commands now implement the current-host scope. Require authenticated Master Control at dispatch and immediately before executing the operation; agent sessions must be denied. Parse the quoted destination as a filesystem path, including spaces, without shell interpolation. Show resolved source/destination, file scope, estimated size and move/copy behavior, then request explicit y/n confirmation. Cancellation changes no files.
 
@@ -171,6 +171,6 @@ Preflight source/destination boundaries, write access, free space, compatibility
 
 Coordinate all attached windows through the one authoritative host. Pause mutations and flush/checkpoint saves before taking a consistent transfer snapshot. Use staging and a file manifest with integrity verification; retain the source if copying, validation or handoff fails. Never claim completion for a partial copy. A cross-volume move is a verified copy followed by source cleanup, not an assumed atomic rename. Account for locked running binaries through an orderly shutdown/helper or next-launch handoff; do not delete the running installation prematurely. Design interrupted-transfer recovery and report any remaining cleanup explicitly.
 
-For `tranexist`, release old leases/endpoints, update GRID-managed launch/configuration references as appropriate for the selected edition, and require reconnect/restart at the verified destination. For `copexist`, the original remains usable; the copy must use independent runtime endpoints/leases and cannot attach to the original just because the saved world ID matches. Do not allow two writers on the same physical save. Define and test the copy's independent startup and local host rediscovery while preserving historical world data. Flash GRID must not introduce persistent host PATH/registry integration.
+For `grid -transferto`, release old leases/endpoints, update GRID-managed launch/configuration references as appropriate for the selected edition, and require reconnect/restart at the verified destination. For `grid -copyto`, the original remains usable; the copy must use independent runtime endpoints/leases and cannot attach to the original just because the saved world ID matches. Do not allow two writers on the same physical save. Define and test the copy's independent startup and local host rediscovery while preserving historical world data. Flash GRID must not introduce persistent host PATH/registry integration.
 
 Implement alongside package/storage relocation work in 8.6. Verify permission denial, confirmation cancellation, quoted paths, consistent saves, full manifests, low space, interrupted transfer, locked files, source retention on failure, restart/login, recovery and attached-window behavior before marking complete.

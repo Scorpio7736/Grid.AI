@@ -27,7 +27,7 @@ Client requests recheck identity and command capabilities. Input waits send hear
 
 - Attached `exit`, EOF, Ctrl+C or window closure detaches only that window. Attached logout asks y/n; cancellation retains the session, confirmation logs out and detaches.
 - Original-host `exit` or Ctrl+C disconnects and drains attached request handlers before final save. Host loss clears the client display and reports disconnection; clients never silently open another save. Forced OS termination/console closure still relies on the existing autosave/recovery behavior and cannot promise a final save.
-- NGE, `tranexist`, `copexist`, login and credential changes must run in the original terminal. Attached requests report this requirement, and production attached help/completion omits these commands. Confirmed NGE/transfer disconnects attachments before deletion or final save/copy. Move cleanup retains its existing locked-file checks; if a client process has not released binaries yet, cleanup reports incomplete rather than forcing deletion.
+- NGE, `grid -transferto`, `grid -copyto`, login and credential changes must run in the original terminal. Attached requests report this requirement, and production attached help/completion omits these commands. Confirmed NGE/transfer disconnects attachments before deletion or final save/copy. Move cleanup retains its existing locked-file checks; if a client process has not released binaries yet, cleanup reports incomplete rather than forcing deletion.
 - Closing a snapshot/live view does not change world state. Full Markdown help may describe host-only commands, but reading it does not grant permission.
 
 ### Launch and UI behavior

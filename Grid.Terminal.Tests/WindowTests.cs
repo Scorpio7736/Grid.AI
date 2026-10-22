@@ -156,7 +156,7 @@ public sealed class WindowTests
     public async Task AttachedLifecycleCommandsStayOnOwnerAndLogoutDoesNotRevokeParent()
     {
         await using var f = new Fixture(); await using var client = await f.Open();
-        foreach (var command in new[] { "nge", "tranexist something", "copexist something", "credentials", "login" })
+        foreach (var command in new[] { "nge", "grid -copyto something", "grid -transferto something", "tranexist something", "copexist something", "credentials", "login" })
             Assert.Contains("original host", (await client.Send("command", command)).Text);
         Assert.True((await client.Send("command", "logout")).ConfirmLogout);
         Assert.False((await client.Send("ping")).Closed);

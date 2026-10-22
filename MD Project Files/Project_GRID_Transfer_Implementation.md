@@ -1,14 +1,25 @@
 # Project GRID - Move and Copy Implementation
 
+## Command rename — 4.2F completed (2026-10-22)
+
+The supported commands are now `grid -copyto "location"` and `grid -transferto "location"`. The old `copexist` and `tranexist` names only display migration guidance; they never initiate a transfer. Operation switches are case-insensitive. Supply exactly one operation and one destination; missing, unknown, repeated/combined switches, empty destinations and extra arguments are rejected. Paths with spaces must be quoted. These are commands inside the `grid>` terminal, not new Windows launch switches.
+
+Master Control and original-host restrictions are retained. Preview, interactive y/n, final authorization checks, worker/attachment shutdown, final save, verified staging and deferred move cleanup use the existing transfer implementation. No schema or transfer-inventory change was made. Existing safety and packaging limits below still apply.
+
+**Verification:** 582 tests passed (14 Core, 157 Simulation, 97 Persistence, 314 Terminal), zero failures/skips. Ten new cases cover invalid syntax, case handling, completion/help and non-executing legacy guidance. Existing host confirmation/cancellation/copy tests now use the new syntax; attached-window tests reject both operations. Real move-helper tests use disposable fixtures only. No user installation or world was relocated. Earlier 4.2D test counts below are historical.
+
+To check the rename without transferring files, run `help`, type `grid -c` then Tab, or invoke `copexist "E:\GRID Test"` to see migration guidance. An actual transfer uses the examples below and requires confirmation; answer `n` to leave files in place. Use a new absolute destination whose parent exists.
+
+
 ## 4.2D delivery - 2026-10-20
 
-Master Control (Master Admin) can run `tranexist "location"` to move GRID or `copexist "location"` to copy GRID. The destination must be a new absolute directory whose parent already exists. Agent and logged-out sessions are denied. Commands preview the source, selected world, destination, file count and size, then require interactive y/n confirmation. Both commands close the terminal after stopping workers and saving the latest state. Redirected confirmation is refused.
+Master Control (Master Admin) can run `grid -transferto "location"` to move GRID or `grid -copyto "location"` to copy GRID. The destination must be a new absolute directory whose parent already exists. Agent and logged-out sessions are denied. Commands preview the source, selected world, destination, file count and size, then require interactive y/n confirmation. Both commands close the terminal after stopping workers and saving the latest state. Redirected confirmation is refused.
 
 Examples:
 
 ```text
-copexist "E:\GRID7736 Copy"
-tranexist "E:\GRID7736"
+grid -copyto "E:\GRID7736 Copy"
+grid -transferto "E:\GRID7736"
 ```
 
 ### Actual file scope
@@ -21,9 +32,9 @@ The source Git repository, unrelated host applications/user documents, other ins
 
 One host retains its world lease while workers stop, final save completes and files are copied. The service rechecks Master Control before copying and publication, refuses changed file inventories, overlapping/existing destinations, missing parents, junctions/symlinks and insufficient free space. It stages the copy, verifies SHA-256 hashes against the source, loads the destination database through WorldStore, and then publishes the destination directory. Failure retains the source; failed staging directories remain visibly incomplete for diagnosis.
 
-`copexist` retains the original. Its destination is an independent copy of the same saved world, with a separate physical database and lease; it is not another terminal attached to the original running simulation. Login is required. Host observations refresh on startup and the saved city is preserved.
+`grid -copyto` retains the original. Its destination is an independent copy of the same saved world, with a separate physical database and lease; it is not another terminal attached to the original running simulation. Login is required. Host observations refresh on startup and the saved city is preserved.
 
-`tranexist` starts a hidden local cleanup helper from the verified destination. It waits for the original process to exit, reacquires the source world lease, and locks/verifies every inventory file and corresponding copy before deleting any source inventory file. Active sources, altered data, or locked files cause refusal. The helper writes success/failure to `transfer-status.txt`; the parent reports cleanup as pending, never as already completed. Starting the destination is blocked while cleanup is pending. A later deletion/launcher-update error can leave some source files behind, with the verified destination retained and an incomplete status. A move is not an atomic cross-volume operation. Do not remove the destination during cleanup.
+`grid -transferto` starts a hidden local cleanup helper from the verified destination. It waits for the original process to exit, reacquires the source world lease, and locks/verifies every inventory file and corresponding copy before deleting any source inventory file. Active sources, altered data, or locked files cause refusal. The helper writes success/failure to `transfer-status.txt`; the parent reports cleanup as pending, never as already completed. Starting the destination is blocked while cleanup is pending. A later deletion/launcher-update error can leave some source files behind, with the verified destination retained and an incomplete status. A move is not an atomic cross-volume operation. Do not remove the destination during cleanup.
 
 A helper timeout or failed launch leaves an incomplete status and source files; a crash before updating status may leave a pending marker. Inspect the manifest/status and verify the destination before manual recovery. Automatic resume/rollback of partial source deletion is not implemented.
 

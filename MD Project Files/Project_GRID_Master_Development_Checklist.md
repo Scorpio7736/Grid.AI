@@ -2,7 +2,7 @@
 
 ## New planned interaction and task commands — 2026-10-21
 
-The following user-requested additions are **planned, not implemented**: multi-agent meetings (6.2A), meeting-window integration (6.2A; one-to-one windows/typewriter implemented in 4.2E), monitor selection and screen assistance (6.3A), bulk/agent-filtered task commands (5.8), and the transfer command rename (4.2F). Existing completed items and verification history remain unchanged. These additions do not grant new agent privileges or automatic task approval.
+The following user-requested additions are **planned, not implemented**: multi-agent meetings (6.2A), meeting-window integration (6.2A; one-to-one windows/typewriter implemented in 4.2E), monitor selection and screen assistance (6.3A), bulk/agent-filtered task commands (5.8), and the transfer command rename (4.2F, subsequently completed 2026-10-22). Existing completed items and verification history remain unchanged. These additions do not grant new agent privileges or automatic task approval.
 
 
 ## System-agent names updated - 2026-10-21
@@ -885,14 +885,16 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 4.2F Transfer command naming update
 
-**Planned - 2026-10-21.** Replace the user-facing names from 4.2D. Until implemented, `copexist` and `tranexist` remain the working commands; their completed implementation history above is retained.
+**Implemented - 2026-10-22.** `grid -copyto "location"` and `grid -transferto "location"` replace the 4.2D names. Old commands show migration guidance without initiating a transfer; original implementation history is retained.
 
-- [ ] Replace `copexist "location"` with `grid -copyto "location"`
-- [ ] Replace `tranexist "location"` with `grid -transferto "location"`
-- [ ] Preserve Master Control/original-host restrictions, inventory preview, confirmation, save consistency, verification and move/copy semantics
-- [ ] Define old-command migration behavior explicitly (temporary deprecated aliases or an error directing users to the new syntax)
-- [ ] Update help, tab completion, transfer documentation and examples together when implemented
-- [ ] Verify quoted paths, invalid/combined switches, authorization and existing transfer regression behavior
+- [x] Replace `copexist "location"` with `grid -copyto "location"`
+- [x] Replace `tranexist "location"` with `grid -transferto "location"`
+- [x] Preserve Master Control/original-host restrictions, inventory preview, confirmation, save consistency, verification and move/copy semantics
+- [x] Define old-command migration behavior explicitly (temporary deprecated aliases or an error directing users to the new syntax)
+- [x] Update help, tab completion, transfer documentation and examples together when implemented
+- [x] Verify quoted paths, invalid/combined switches, authorization and existing transfer regression behavior
+
+**Completion verification (2026-10-22):** 582 tests passed (14 Core, 157 Simulation, 97 Persistence, 314 Terminal). Ten new syntax/migration/help tests plus updated host/window tests verify both switches, quoted paths, rejected mixed/invalid arguments and the existing role/confirmation/save/cleanup boundaries. No schema or inventory change; tests use disposable transfers and do not relocate the user's GRID. [Updated transfer documentation](Project_GRID_Transfer_Implementation.md).
 
 ## 4.3 User-supplied context (GRID-REQ-002)
 
@@ -1305,7 +1307,7 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 - [ ] Provide flushed shutdown/eject-ready flow and explicit backup/export behavior
 - [ ] Verify two-PC relocation, spaced/Unicode paths, and no unintended host-local managed files
 
-- [ ] Integrate and verify 4.2D transfers with the planned 4.2F `grid -transferto "location"` / `grid -copyto "location"` names for complete managed-file relocation/duplication across PC GRID and Flash GRID layouts
+- [ ] Integrate and verify 4.2D transfers with the implemented 4.2F `grid -transferto "location"` / `grid -copyto "location"` names for complete managed-file relocation/duplication across PC GRID and Flash GRID layouts
 
 ## 8.7 Offline runtime acceptance (GRID-REQ-008)
 

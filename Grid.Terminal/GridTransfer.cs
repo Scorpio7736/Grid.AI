@@ -14,9 +14,21 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
     public const string Marker = "grid-package.json";
     public static void Register(CommandDispatcher commands)
     {
+        commands.Register(new("grid", "grid <-copyto|-transferto> \"location\"", "Master Control: copy or move GRID to a new folder; preview, confirm, save and close the original host.", args =>
+        {
+            if (args.Count != 2 || string.IsNullOrWhiteSpace(args[1]) ||
+                !(args[0].Equals("-copyto", StringComparison.OrdinalIgnoreCase) || args[0].Equals("-transferto", StringComparison.OrdinalIgnoreCase)) ||
+                args[1].StartsWith('-'))
+                return new("Usage: grid -copyto \"location\" OR grid -transferto \"location\". Choose exactly one operation and one quoted destination.");
+            return new("", Transfer: new(args[1], args[0].Equals("-transferto", StringComparison.OrdinalIgnoreCase)));
+        }));
+        // Do not execute old names silently: make the migration explicit before any confirmation/transfer.
         foreach (var name in new[] { "tranexist", "copexist" })
-            commands.Register(new(name, name + " \"location\"", "Master Control: " + (name == "tranexist" ? "move" : "copy") + " GRID to a new folder; confirm, save and close this terminal.",
-                a => a.Count != 1 || string.IsNullOrWhiteSpace(a[0]) ? new("Usage: " + name + " \"location\"") : new("", Transfer: new(a[0], name == "tranexist"))));
+        {
+            var replacement = name == "tranexist" ? "-transferto" : "-copyto";
+            commands.Register(new(name, name, "Renamed; use grid " + replacement + " instead. This command performs no transfer.",
+                _ => new("Command renamed. Use grid " + replacement + " \"location\". No files changed.")));
+        }
     }
     public static string? PackageRoot(string app) => File.Exists(Path.Combine(app, "..", Marker)) ? Path.GetFullPath(Path.Combine(app, "..")) : null;
     public static string Hash(string path) { using var stream = File.OpenRead(path); return Convert.ToHexString(SHA256.HashData(stream)); }

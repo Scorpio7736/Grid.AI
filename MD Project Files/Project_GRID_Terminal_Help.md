@@ -399,21 +399,20 @@ Snapshot commands: status, city, districts, programs, inspect, behaviors, resour
 
 Attached `exit` detaches only that window. Original-host `exit` saves and disconnects all attachments. Logout/expiry/role changes revoke dependent windows. Agent attachments cannot promote themselves. Run NGE, transfers and credential changes in the original host. Reopen from an authenticated terminal after disconnection; clients never load another world automatically. See [window implementation](Project_GRID_Shared_Terminal_Windows_Implementation.md).
 
-## Move/copy commands (4.2D)
+## Move/copy commands (4.2D / 4.2F)
 
-Master Admin means the existing Master Control role. Both commands require an interactive persistent session and close it after confirmation and final save. Choose a new absolute destination directory with an existing parent.
+Master Admin means the existing Master Control role. Both operations require an interactive persistent session in the original host and close it after confirmation and final save. Choose a new absolute destination directory with an existing parent. These commands are entered inside GRID.
 
 ```text
-tranexist
-    - tranexist "location"
-      # USAGE: Move the GRID application and selected save inventory after preview and y/n confirmation; source cleanup runs after exit.
-    # EXAMPLE: tranexist "E:\GRID7736"
-
-copexist
-    - copexist "location"
+grid
+    - grid -copyto "location"
       # USAGE: Copy the GRID application and selected save inventory after preview and y/n confirmation; keep the original.
-    # EXAMPLE: copexist "E:\GRID7736 Copy"
+    - grid -transferto "location"
+      # USAGE: Move the GRID application and selected save inventory after preview and y/n confirmation; source cleanup runs after exit.
+    # EXAMPLE: grid -copyto "E:\GRID7736 Copy"
 ```
+
+Supply one operation and one destination; quote paths with spaces. Switches are case-insensitive. `copexist` and `tranexist` only show the new syntax and perform no transfer. Attached terminals and conversation windows must use the original host for transfers.
 
 Use `launch.cmd` at the destination; a compatible .NET 10 runtime is required. For moves, wait for `transfer-status.txt` to report completion. Source cleanup failures retain the verified destination and report incomplete status. The transfer excludes unrelated host files, source repositories and other installed worlds. Configure local password credentials before using a different PC. See [transfer implementation](Project_GRID_Transfer_Implementation.md) for scope and recovery limits. These commands do not create attached terminals; use `ntm` for that. Transfers disconnect attachments before saving/copying.
 

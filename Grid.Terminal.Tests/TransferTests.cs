@@ -94,14 +94,51 @@ public sealed class TransferTests : IDisposable
     {
         var identity = new TerminalIdentitySession(() => "test-owner"); identity.Attach(engine);
         var commands = DefaultCommands.Create(engine); GridTransfer.Register(commands); commands.UseIdentity(identity);
-        Assert.Contains("denied", commands.Execute("copexist \"E:\\GRID Copy\"").Text);
+        Assert.Contains("denied", commands.Execute("grid -copyto \"E:\\GRID Copy\"").Text);
         identity.Login();
-        Assert.Equal(new TransferRequest("E:\\GRID Copy", false), commands.Execute("copexist \"E:\\GRID Copy\"").Transfer);
-        Assert.True(commands.Execute("tranexist \"E:\\GRID\"").Transfer!.Move);
-        Assert.Contains("Usage", commands.Execute("copexist E:\\GRID Copy").Text);
+        Assert.Equal(new TransferRequest("E:\\GRID Copy", false), commands.Execute("grid -copyto \"E:\\GRID Copy\"").Transfer);
+        Assert.True(commands.Execute("grid -transferto \"E:\\GRID\"").Transfer!.Move);
+        Assert.Contains("Usage", commands.Execute("grid -copyto E:\\GRID Copy").Text);
         var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id); identity.Switch(agent.Id.ToString());
-        Assert.Contains("denied", commands.Execute("tranexist \"E:\\GRID\"").Text);
+        Assert.Contains("denied", commands.Execute("grid -transferto \"E:\\GRID\"").Text);
     }
+    [Theory]
+    [InlineData("grid")]
+    [InlineData("grid -copyto")]
+    [InlineData("grid -transferto")]
+    [InlineData("grid -unknown destination")]
+    [InlineData("grid -copyto -transferto")]
+    [InlineData("grid -copyto -transferto destination")]
+    [InlineData("grid -copyto destination extra")]
+    [InlineData("grid -copyto \"\"")]
+    public void InvalidTransferSwitchesNeverProduceRequests(string line)
+    {
+        var commands = DefaultCommands.Create(engine); GridTransfer.Register(commands);
+        var result = commands.Execute(line); Assert.Null(result.Transfer); Assert.Contains("Usage", result.Text);
+    }
+    [Fact]
+    public void LegacyNamesGiveMigrationGuidanceWithoutExecuting()
+    {
+        var commands = DefaultCommands.Create(engine); GridTransfer.Register(commands);
+        foreach (var (oldName, replacement) in new[] { ("copexist", "-copyto"), ("tranexist", "-transferto") })
+        {
+            var result = commands.Execute(oldName + " \"E:\\Unused GRID\"");
+            Assert.Null(result.Transfer); Assert.Contains("grid " + replacement, result.Text);
+            Assert.Contains("No files changed", result.Text);
+        }
+    }
+    [Fact]
+    public void TransferHelpCompletionAndCaseInsensitiveSwitchesUseNewNames()
+    {
+        var commands = DefaultCommands.Create(engine); GridTransfer.Register(commands);
+        Assert.False(commands.Execute("GRID -COPYTO \"E:\\GRID Copy\"").Transfer!.Move);
+        Assert.True(commands.Execute("grid -TRANSFERTO \"E:\\GRID\"").Transfer!.Move);
+        Assert.Contains("grid -copyto", CommandHelp.Complete("grid -c", commands.Commands));
+        Assert.Contains("grid -transferto", CommandHelp.Complete("grid -t", commands.Commands));
+        Assert.Contains("grid -copyto", commands.Execute("help").Text);
+        Assert.Contains("grid -transferto", commands.Execute("help").Text);
+    }
+
     [Fact]
     public async Task HostCancellationAndRedirectedInputDoNotTransfer()
     {
@@ -110,11 +147,11 @@ public sealed class TransferTests : IDisposable
         var output = new StringWriter();
         using var store = new WorldStore(world); var saved = store.Load();
         var persistence = new WorldPersistenceSession(store, saved.Info, engine);
-        await new TerminalHost(engine, commands, new StringReader($"copexist \"{destination}\"\nn\nexit\n"), output,
+        await new TerminalHost(engine, commands, new StringReader($"grid -copyto \"{destination}\"\nn\nexit\n"), output,
             showPrompt: false, persistence: persistence, interactiveConfirmation: true, transfer: transfer).RunAsync();
         Assert.Contains("Transfer cancelled", output.ToString()); Assert.False(Directory.Exists(destination));
         output.GetStringBuilder().Clear();
-        await new TerminalHost(engine, commands, new StringReader($"copexist \"{destination}\"\ny\nexit\n"), output,
+        await new TerminalHost(engine, commands, new StringReader($"grid -copyto \"{destination}\"\ny\nexit\n"), output,
             showPrompt: false, persistence: persistence, transfer: transfer).RunAsync();
         Assert.Contains("interactive confirmation", output.ToString()); Assert.False(Directory.Exists(destination));
     }
@@ -126,7 +163,7 @@ public sealed class TransferTests : IDisposable
         var destination = Path.Combine(root, "confirmed"); var output = new StringWriter();
         using var store = new WorldStore(world); var saved = store.Load();
         var persistence = new WorldPersistenceSession(store, saved.Info, engine);
-        var exit = await new TerminalHost(engine, commands, new StringReader($"step\ncopexist \"{destination}\"\ny\n"), output,
+        var exit = await new TerminalHost(engine, commands, new StringReader($"step\ngrid -copyto \"{destination}\"\ny\n"), output,
             showPrompt: false, persistence: persistence, interactiveConfirmation: true, transfer: new GridTransfer(app, world)).RunAsync();
         Assert.Equal(0, exit); Assert.Contains("Copy complete", output.ToString());
         using var copy = new WorldStore(Path.Combine(destination, "data", "world.db"));

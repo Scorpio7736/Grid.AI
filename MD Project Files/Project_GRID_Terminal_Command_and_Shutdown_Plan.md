@@ -1,5 +1,10 @@
 # Project GRID - Terminal commands and shutdown
 
+## Transfer command rename — 4.2F completed (2026-10-22)
+
+Use `grid -copyto "location"` or `grid -transferto "location"` inside the GRID terminal. `copexist` and `tranexist` now only show migration guidance and never execute a transfer. Existing Master Control/original-host restrictions, preview, confirmation, final save and verified move/copy safeguards remain. **582 tests passed** (14 Core, 157 Simulation, 97 Persistence, 314 Terminal). No schema change or user-world relocation. See [transfer behavior and limits](Project_GRID_Transfer_Implementation.md). Earlier command names and counts below describe historical milestones.
+
+
 ## GRID move/copy commands - current-host implementation (2026-10-20)
 
 Master Control `tranexist "location"` and `copexist "location"` are implemented for the running installation and selected save inventory. Both preview/confirm, stop workers, save and close. Copies retain the original; moves defer verified source cleanup until process exit. Destination packages use a local launcher/default save, require login and currently need an installed .NET 10 runtime. Verification: 377 passing tests. See [transfer implementation](Project_GRID_Transfer_Implementation.md) for exact exclusions, pending/incomplete status, security and recovery limits. Future attached-terminal and full PC/Flash edition integration remains unchecked in 4.2D/8.6.
