@@ -1,5 +1,10 @@
 # Project GRID - Chat workflow and agent handoff
 
+## Bulk tasks — 5.8 completed (2026-10-22)
+
+Agent-filtered lists and `tasks approve/run/clear -all [-AGENT]` are implemented. Bulk mutations/dispatch require original-host Master Control; approval and clear require reviewed interactive confirmation. Batches capture fixed selections, revalidate state/authority and stop dispatch on the first unsuccessful attempt. Clear archives records and cancels pending work, retaining audit/results and MCP/RELAY links; active/unsettled work is refused. `tasks list -archived` reads retained history. **Schema v20; 603 tests passed** (14 Core, 157 Simulation, 97 Persistence, 335 Terminal). Archiving does not free the 256-task history capacity. See [commands, verification and limits](../Project_GRID_Bulk_Task_Implementation.md). Earlier milestone/schema/count statements below remain historical.
+
+
 ## Transfer command rename — 4.2F completed (2026-10-22)
 
 Use `grid -copyto "location"` or `grid -transferto "location"` inside the GRID terminal. `copexist` and `tranexist` now only show migration guidance and never execute a transfer. Existing Master Control/original-host restrictions, preview, confirmation, final save and verified move/copy safeguards remain. **582 tests passed** (14 Core, 157 Simulation, 97 Persistence, 314 Terminal). No schema change or user-world relocation. See [transfer behavior and limits](../Project_GRID_Transfer_Implementation.md). Earlier command names and counts below describe historical milestones.

@@ -1,5 +1,31 @@
 # GRID7736 - Terminal Help
 
+## Bulk task commands — 5.8 (2026-10-22)
+
+```text
+tasks
+    - tasks list -MAXIS
+      # USAGE: List visible operational tasks for one registered agent.
+    - tasks list -archived -MAXIS
+      # USAGE: Read retained archived history for that agent.
+    - tasks approve -all
+      # USAGE: Preview and confirm all AwaitingApproval tasks in this fixed batch.
+    - tasks approve -all -MAXIS
+      # USAGE: Preview and confirm only MAXIS proposals; approval does not execute them.
+    - tasks run -all
+      # USAGE: Dispatch the selected approved queue sequentially; stop on the first unsuccessful attempt.
+    - tasks run -all -MAXIS
+      # USAGE: Dispatch only selected approved MAXIS tasks; report outcomes and skipped tasks.
+    - tasks clear -all
+      # USAGE: Confirm removal from the operational list while retaining history; cancel pending work and refuse running work.
+    - tasks clear -all -MAXIS
+      # USAGE: Archive only the selected MAXIS tasks after confirmation.
+    # EXAMPLE: tasks list -MAXIS
+```
+
+Agent switches accept any initialized role, case-insensitively; omit the agent filter for all visible tasks. Bulk approval/clear/run require Master Control in the original host. Approval/clear require interactive y/n and reject stale previews. Clear retains results, audits, plan/notification links and artifacts, and does not free the existing 256-task cap. Use `tasks list -archived` or `tasks inspect ID` for history. Existing single-task commands remain supported. [Full behavior and acceptance test](Project_GRID_Bulk_Task_Implementation.md).
+
+
 ## Conversation-window update — 4.2E (2026-10-21)
 
 `connect` and `resume` now open a dedicated conversation window by default. The original terminal remains usable. Within the new window, `talk` returns a labeled typewriter response; any key skips animation. `transcript` is instant. `exit` closes the view while retaining an open conversation for later resume; `disconnect` ends it. Parent logout/identity changes revoke attached views. Meetings remain planned in 6.2A.

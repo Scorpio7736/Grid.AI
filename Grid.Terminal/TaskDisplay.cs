@@ -20,7 +20,7 @@ internal static class TaskDisplay
     }
     internal static string Role(TaskState state, TaskRecord task) => state.Agents.Single(a => a.Id == task.AgentId).Role.ToString();
     internal static string Tasks(TaskState state, IEnumerable<TaskRecord>? records = null) =>
-        TerminalTable.Render(["Task", "Agent", "State", "Tries"], (records ?? state.Records).Select(t => new[] {
+        TerminalTable.Render(["Task", "Agent", "State", "Tries"], (records ?? state.Records.Where(t => !t.Archived)).Select(t => new[] {
             Ref(t.Id, state.Records.Select(x => x.Id)), Role(state,t), t.Status.ToString(), t.Attempts.ToString() }));
     internal static string Inspect(TaskState state, TaskRecord t)
     {
@@ -41,11 +41,11 @@ internal static class TaskDisplay
         }
         if(t.Capability=="volt.throttle") scope+="\nGRID PACING: changes only the automatic simulation wait. Does not change Windows allocations, manual steps or simulated tick length.\n";
         return $"TASK {reference} - {Role(state,t)}\n" + new string('-', 54) +
-            $"\nState:       {t.Status}\nCapability:  {t.Capability}\nArgument:    {t.Argument}\nAttempts:    {t.Attempts} / 3\nRequest key: {t.RequestKey}\nFull ID:     {t.Id}\n\nRESULT\n{(SentinelPolicy.IsReal(t.Capability) ? t.Result?.Replace(" | ", "\n") : t.Result) ?? "No result recorded; no completion claimed."}\n\n" +
+            $"\nArchived:    {t.Archived}\nState:       {t.Status}\nCapability:  {t.Capability}\nArgument:    {t.Argument}\nAttempts:    {t.Attempts} / 3\nRequest key: {t.RequestKey}\nFull ID:     {t.Id}\n\nRESULT\n{(SentinelPolicy.IsReal(t.Capability) ? t.Result?.Replace(" | ", "\n") : t.Result) ?? "No result recorded; no completion claimed."}\n\n" +
             scope + Next(t, reference) + $"\n\nIDENTITY & AUDIT\nOperator: {t.OperatorId}\nSubmitted as: {t.SubmittedAsAgent?.ToString() ?? "Master Control"}\nApproved by: {t.ApprovedBy?.ToString() ?? "Not approved"}\n" +
             string.Join("\n\n", t.Audit.Select(a => $"{a.AtUtc:O}  {a.Action}\n  {a.Detail}\n  Operator: {a.OperatorId}\n  Agent: {a.ActiveAgentId}"));
     }
-    private static string Next(TaskRecord t, string reference) => t.Status switch
+    private static string Next(TaskRecord t, string reference) => t.Archived ? "Archived: retained for history; no further execution or retry." : t.Status switch
     {
         Grid.Simulation.Tasks.TaskStatus.AwaitingApproval => $"NEXT - human Master Control approval required\ntasks approve {reference}",
         Grid.Simulation.Tasks.TaskStatus.Queued => "NEXT - run the next queued task from the original host\ntasks run",

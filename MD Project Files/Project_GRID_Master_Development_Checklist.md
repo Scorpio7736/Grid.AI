@@ -2,7 +2,7 @@
 
 ## New planned interaction and task commands — 2026-10-21
 
-The following user-requested additions are **planned, not implemented**: multi-agent meetings (6.2A), meeting-window integration (6.2A; one-to-one windows/typewriter implemented in 4.2E), monitor selection and screen assistance (6.3A), bulk/agent-filtered task commands (5.8), and the transfer command rename (4.2F, subsequently completed 2026-10-22). Existing completed items and verification history remain unchanged. These additions do not grant new agent privileges or automatic task approval.
+The following user-requested additions are **planned, not implemented**: multi-agent meetings (6.2A), meeting-window integration (6.2A; one-to-one windows/typewriter implemented in 4.2E), monitor selection and screen assistance (6.3A), bulk/agent-filtered task commands (5.8, subsequently completed 2026-10-22), and the transfer command rename (4.2F, subsequently completed 2026-10-22). Existing completed items and verification history remain unchanged. These additions do not grant new agent privileges or automatic task approval.
 
 
 ## System-agent names updated - 2026-10-21
@@ -1054,9 +1054,9 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 5.8 Bulk task operations and agent filters
 
-**Planned - 2026-10-21.** `-agentname` below means the actual registered agent name as a switch, for example `-MAXIS` or `-JN`. Resolve names case-insensitively to stable registered IDs; reject unknown names and conflicting filters.
+**Implemented - 2026-10-22.** `-agentname` below means the actual registered agent name as a switch, for example `-MAXIS` or `-JN`. Resolve names case-insensitively to stable registered IDs; reject unknown names and conflicting filters.
 
-| Requested command | Planned behavior |
+| Requested command | Implemented behavior |
 | --- | --- |
 | `tasks run -all` | Run all approved Queued tasks in the selected batch. |
 | `tasks run -all -agentname` | Run all approved Queued tasks assigned to that agent; example: `tasks run -all -MAXIS`. |
@@ -1066,17 +1066,19 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 | `tasks approve -all -agentname` | Approve all eligible tasks assigned to that agent; example: `tasks approve -all -MAXIS`. |
 | `tasks list -agentname` | List tasks assigned to that agent; example: `tasks list -RELAY`. |
 
-- [ ] Implement the requested syntax, consistent agent-name resolution, help examples and tab completion
-- [ ] Snapshot the selected batch at invocation so newly proposed tasks are not silently approved, run or cleared
-- [ ] Keep bulk approval Master Control-only with a scope/count/action preview and explicit confirmation; validate each task and record individual approvals
-- [ ] Run queued tasks sequentially through the existing original-host broker with per-task permission/scope checks, persistence barriers and cancellation
-- [ ] Never approve implicitly when running; exclude unapproved, completed and already running tasks from dispatch
-- [ ] Define failure/timeout/stop behavior and report per-task outcomes plus completed/failed/skipped totals without hiding partial results
-- [ ] Design and implement clearing with an explicit scope/count preview and confirmation; require Master Control for bulk mutation and retain an auditable record
-- [ ] Define clear as removal from the operational task list, with linked plan/result/RELAY history archived or safely retained; never leave dangling references or silently erase audit evidence
-- [ ] Handle active tasks explicitly: stop/cancel and settle them before clearing, or reject the batch with an explanation; clearing must not leave host work running untracked
-- [ ] Preserve role visibility restrictions for list filters and all existing task authority boundaries
-- [ ] Verify mixed states/roles, agent filters, stale sessions, revoked scopes, duplicates, cancellation, restart, linked-history integrity and partial failures
+- [x] Implement the requested syntax, consistent agent-name resolution, help examples and tab completion
+- [x] Snapshot the selected batch at invocation so newly proposed tasks are not silently approved, run or cleared
+- [x] Keep bulk approval Master Control-only with a scope/count/action preview and explicit confirmation; validate each task and record individual approvals
+- [x] Run queued tasks sequentially through the existing original-host broker with per-task permission/scope checks, persistence barriers and cancellation
+- [x] Never approve implicitly when running; exclude unapproved, completed and already running tasks from dispatch
+- [x] Define failure/timeout/stop behavior and report per-task outcomes plus completed/failed/skipped totals without hiding partial results
+- [x] Design and implement clearing with an explicit scope/count preview and confirmation; require Master Control for bulk mutation and retain an auditable record
+- [x] Define clear as removal from the operational task list, with linked plan/result/RELAY history archived or safely retained; never leave dangling references or silently erase audit evidence
+- [x] Handle active tasks explicitly: stop/cancel and settle them before clearing, or reject the batch with an explanation; clearing must not leave host work running untracked
+- [x] Preserve role visibility restrictions for list filters and all existing task authority boundaries
+- [x] Verify mixed states/roles, agent filters, stale sessions, revoked scopes, duplicates, cancellation, restart, linked-history integrity and partial failures
+
+**Completion verification (2026-10-22):** 603 tests passed (14 Core, 157 Simulation, 97 Persistence, 335 Terminal), including 21 new batch/confirmation/archive cases. Original-host Master Control previews and confirms bulk approval/clear; runs dispatch a fixed snapshot sequentially and stop at the first unsuccessful attempt. Agent filters preserve visibility. Clear archives retained records, cancels pending work and refuses active/unsettled work; it does not free the 256-record history cap. Schema v20 preserves archive state, plan/RELAY links and audit across restart; older records default to unarchived. See [implementation, limits and acceptance test](Project_GRID_Bulk_Task_Implementation.md). Next: 6.1 Shared local AI.
 
 ---
 

@@ -45,12 +45,14 @@ public static class TaskCommands
             }
             catch (Exception e) when (Expected(e)) { return Error(e); }
         }) { Capability = "session" });
-        commands.Register(new("tasks", "tasks <list|inspect|propose|approve|cancel|retry|run> ...", "Durable reviewed tasks. MAXIS workspace actions require explicit human approval.", args =>
+        commands.Register(new("tasks", "tasks <list|inspect|propose|approve|cancel|retry|run|clear> ...", "Durable reviewed tasks. MAXIS workspace actions require explicit human approval.", args =>
         {
             try
             {
-                if (args.Count == 0 || args.Count == 1 && args[0] == "list")
-                    return new("TASKS\n" + TaskDisplay.Tasks(engine.TasksFor(identity.Reference)) + "\n\nDetails: tasks inspect <task-reference>\nShort references (8+ characters) or full IDs are accepted.");
+                if (args.Count == 0 || args[0].Equals("list", StringComparison.OrdinalIgnoreCase))
+                    return ListTasks(engine.TasksFor(identity.Reference), args.Skip(1).ToArray());
+                if (args[0].Equals("clear", StringComparison.OrdinalIgnoreCase) || args.Count > 1 && args[1].StartsWith('-') && args[0].ToLowerInvariant() is "approve" or "run")
+                    return Batch(engine, identity, save, args);
                 if (args.Count == 2 && args[0] == "inspect")
                 {
                     var state = engine.TasksFor(identity.Reference);
@@ -92,7 +94,82 @@ public static class TaskCommands
             catch (Exception e) when (Expected(e)) { return Error(e); }
         }) { Capability = "session" });
     }
+    private static Guid? AgentFilter(TaskState state, IReadOnlyList<string> flags)
+    {
+        if (flags.Count == 0) return null;
+        if (flags.Count != 1 || !flags[0].StartsWith('-')) throw new ArgumentException("Use one agent switch, for example -MAXIS.");
+        return state.Agents.SingleOrDefault(a => a.Role.ToString().Equals(flags[0][1..], StringComparison.OrdinalIgnoreCase))?.Id
+            ?? throw new ArgumentException("Unknown or uninitialized agent switch. Use agents.");
+    }
+    private static CommandResult ListTasks(TaskState state, IReadOnlyList<string> flags)
+    {
+        var archiveFlags = flags.Count(f => f.Equals("-archived", StringComparison.OrdinalIgnoreCase));
+        if (archiveFlags > 1) throw new ArgumentException("Use -archived only once.");
+        var agent = AgentFilter(state, flags.Where(f => !f.Equals("-archived", StringComparison.OrdinalIgnoreCase)).ToArray());
+        var rows = state.Records.Where(t => t.Archived == (archiveFlags == 1) && (agent is null || t.AgentId == agent));
+        return new((archiveFlags == 1 ? "ARCHIVED TASKS" : "TASKS") + "\n" + TaskDisplay.Tasks(state, rows) +
+            "\n\nDetails: tasks inspect <task-reference> | Retained history: tasks list -archived [-AGENT]");
+    }
+    private static CommandResult Batch(GridSimulationEngine engine, TerminalIdentitySession identity, Func<CancellationToken, Task>? save, IReadOnlyList<string> args)
+    {
+        if (save is null) return new("Tasks require a saved world; no ephemeral execution.");
+        if (!identity.IsMaster) return new("Access denied. Human Master Control owns bulk task operations.");
+        if (identity.IsAttachment) return new("Use the original host terminal for bulk task approval, clearing and dispatch.");
+        var action = args[0].ToLowerInvariant();
+        if (args.Skip(1).Count(f => f.Equals("-all", StringComparison.OrdinalIgnoreCase)) != 1)
+            throw new ArgumentException("Use tasks " + action + " -all [-AGENT].");
+        var state = engine.TasksFor(identity.Reference);
+        var agent = AgentFilter(state, args.Skip(1).Where(f => !f.Equals("-all", StringComparison.OrdinalIgnoreCase)).ToArray());
+        var selected = state.Records.Where(t => !t.Archived && (agent is null || t.AgentId == agent) &&
+            (action == "approve" ? t.Status == Grid.Simulation.Tasks.TaskStatus.AwaitingApproval : action != "run" || t.Status == Grid.Simulation.Tasks.TaskStatus.Queued)).ToArray();
+        if (selected.Length == 0) return new("No eligible tasks in this batch.");
+        if (action == "clear" && selected.Any(t => t.Status == Grid.Simulation.Tasks.TaskStatus.Running))
+            return new("Cannot clear a batch containing running tasks. Cancel and wait for completion, then preview again.");
+        var reference = identity.Reference;
+        var used = 0;
+        if (action == "run") return new("", BrokerOperation: async token =>
+        {
+            if (Interlocked.Exchange(ref used, 1) != 0) return new("Batch already consumed; no duplicate dispatch.");
+            var rows = new List<string[]>();
+            var completed = 0; var unsuccessful = 0; var skipped = 0;
+            var halted = false;
+            foreach (var task in selected)
+            {
+                var taskRef = TaskDisplay.Ref(task.Id, state.Records.Select(t => t.Id));
+                if (halted || token.IsCancellationRequested) { rows.Add([taskRef, "Skipped", "Batch stopped before dispatch"]); skipped++; continue; }
+                try
+                {
+                    var outcome = await engine.RunNextTaskAsync(reference, save, token, task);
+                    var status = outcome.Split(':')[0];
+                    rows.Add([taskRef, status, outcome]);
+                    if (status == "Completed") completed++;
+                    else { unsuccessful++; halted = true; }
+                }
+                catch (Exception e) when (Expected(e) || e is OperationCanceledException)
+                {
+                    rows.Add([taskRef, "Stopped", "Outcome not confirmed: " + e.Message]);
+                    unsuccessful++; halted = true;
+                }
+            }
+            return new("BATCH RESULTS\n" + TerminalTable.Render(["Task", "Outcome", "Detail"], rows) +
+                $"\nSelected: {selected.Length} | Completed: {completed} | Failed/interrupted/unconfirmed: {unsuccessful} | Skipped: {skipped}\nUse tasks inspect <reference> for full retained results. Skipped tasks remain queued; no automatic resume.");
+        });
+        var preview = $"BULK {action.ToUpperInvariant()} | {selected.Length} tasks | " + (agent is null ? "all agents" : state.Agents.Single(a => a.Id == agent).Role.ToString()) +
+            (action == "clear" ? "\nArchive selected records; cancel pending work; retain audit, plan and RELAY links. Running work is refused. This does not free the 256-record history capacity.\n" : "\nApprove exactly these immutable requests for one attempt each. Approval does not run them.\n") +
+            string.Join("\n\n", selected.Select(t => TaskDisplay.Inspect(state, t)));
+        return new(preview, ConfirmTaskBatch: () =>
+        {
+            if (Interlocked.Exchange(ref used, 1) != 0) return new("Batch confirmation already consumed. Nothing changed.");
+            try
+            {
+                engine.UpdateTaskBatch(reference, selected, action == "clear");
+                save(CancellationToken.None).GetAwaiter().GetResult();
+                return new($"{selected.Length} tasks {(action == "clear" ? "archived" : "approved")} and saved. Newly added tasks were not included.");
+            }
+            catch (Exception e) when (Expected(e)) { return Error(e); }
+        });
+    }
     private static bool Expected(Exception e) => e is ArgumentException or InvalidOperationException or IOException or UnauthorizedAccessException or System.Data.Common.DbException;
     private static CommandResult Error(Exception e) => new("Task error: " + e.Message + (e is IOException or System.Data.Common.DbException ? " In-memory changes may remain; resolve persistence before continuing." : ""));
-    public const string Usage = "Usage: tasks list | inspect <id> | propose <agent-id|name> <capability> \"argument\" [request-key] | approve <id> | cancel <id> | retry <id> | run. Run dispatches one approved task. MAXIS build/test executes project-defined code.";
+    public const string Usage = "Usage: tasks list [-AGENT] [-archived] | approve -all [-AGENT] | run -all [-AGENT] | clear -all [-AGENT] | inspect <id> | propose <agent-id|name> <capability> \"argument\" [request-key] | approve <id> | cancel <id> | retry <id> | run. Run without -all dispatches one approved task; bulk run stops at the first unsuccessful attempt. MAXIS build/test executes project-defined code.";
 }

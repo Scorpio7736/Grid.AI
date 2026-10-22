@@ -104,7 +104,7 @@ public sealed partial class GridSimulationEngine
         using var lease = TaskLease(session, true);
         lock (gate)
         {
-            var task = FindTask(id); if (task.Status != Status.AwaitingApproval) throw new InvalidOperationException("Only awaiting-approval tasks can be approved.");
+            var task = FindTask(id); if (task.Archived || task.Status != Status.AwaitingApproval) throw new InvalidOperationException("Only awaiting-approval tasks can be approved.");
             if (DevelopmentPolicy.IsReal(task.Capability)) _ = DevelopmentTarget(task.Capability,task.Argument);
             if (StoragePolicy.IsReal(task.Capability)) _ = StorageTarget(task.Capability,task.Argument);
             ChangeTask(task with { Status = Status.Queued, ApprovedBy = lease.Identity.OperatorId }, "Approved", lease.Identity, "Human approved this immutable request for one attempt.");
@@ -115,7 +115,7 @@ public sealed partial class GridSimulationEngine
         using var lease = TaskLease(session);
         lock (gate)
         {
-            var task = FindTask(id); if (!Visible(task, lease.Identity)) throw DeniedTask(lease.Identity, "Task outside this agent's scope.");
+            var task = FindTask(id); if (task.Archived) throw new InvalidOperationException("Archived tasks cannot be changed."); if (!Visible(task, lease.Identity)) throw DeniedTask(lease.Identity, "Task outside this agent's scope.");
             if (task.Status is not (Status.AwaitingApproval or Status.Queued or Status.Running)) throw new InvalidOperationException("Task is already terminal.");
             ChangeTask(task with { Status = Status.Cancelled, Result = "Cancelled by authorized operator." }, "Cancelled", lease.Identity, "Cancellation requested; no further attempt is authorized.");
         }
@@ -125,12 +125,12 @@ public sealed partial class GridSimulationEngine
         using var lease = TaskLease(session);
         lock (gate)
         {
-            var task = FindTask(id); if (!Visible(task, lease.Identity)) throw DeniedTask(lease.Identity, "Task outside this agent's scope.");
+            var task = FindTask(id); if (task.Archived) throw new InvalidOperationException("Archived tasks cannot be changed."); if (!Visible(task, lease.Identity)) throw DeniedTask(lease.Identity, "Task outside this agent's scope.");
             if (task.Status is not (Status.Failed or Status.TimedOut or Status.Interrupted) || task.Attempts >= 3) throw new InvalidOperationException("Retry requires a failed/interrupted task below the three-attempt limit.");
             ChangeTask(task with { Status = Status.AwaitingApproval, ApprovedBy = null, Result = null }, "RetryRequested", lease.Identity, "Fresh human approval required; prior external side effects may remain.");
         }
     }
-    public async Task<string> RunNextTaskAsync(EditSessionReference session, Func<CancellationToken, Task> save, CancellationToken token)
+    public async Task<string> RunNextTaskAsync(EditSessionReference session, Func<CancellationToken, Task> save, CancellationToken token, TaskRecord? expected = null)
     {
         ArgumentNullException.ThrowIfNull(save);
         TaskRecord task; AgentRole role; ProgramEditIdentity actor;
@@ -138,7 +138,8 @@ public sealed partial class GridSimulationEngine
         lock (gate)
         {
             if (taskExecuting) throw new InvalidOperationException("The broker is already running a task.");
-            task = tasks.Records.FirstOrDefault(t => t.Status == Status.Queued) ?? throw new InvalidOperationException("No approved queued tasks.");
+            task = tasks.Records.FirstOrDefault(t => !t.Archived && t.Status == Status.Queued && (expected == null || t.Id == expected.Id)) ?? throw new InvalidOperationException("No approved queued tasks.");
+            if (expected is not null && !SameTask(task, expected)) throw new InvalidOperationException("Selected task changed; review a new batch.");
             var agent = tasks.Agents.Single(a => a.Id == task.AgentId); role = agent.Role; actor = lease.Identity;
             if (!identities.RegisteredAgents.Contains(agent.Id) || world.GetProgram(agent.Id).Kind != ResidentKind.Agent || !TaskCapabilities.Valid(role, task.Capability, task.Argument)) throw DeniedTask(actor, "Task target/capability no longer authorized.");
             token.ThrowIfCancellationRequested();

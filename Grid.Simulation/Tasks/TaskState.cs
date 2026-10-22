@@ -6,7 +6,10 @@ public sealed record SystemAgent(Guid Id, AgentRole Role);
 public sealed record TaskAudit(DateTimeOffset AtUtc, string Action, Guid? OperatorId, Guid? ActiveAgentId, string Detail);
 public sealed record TaskRecord(Guid Id, string RequestKey, Guid AgentId, string Capability, string Argument,
     Guid OperatorId, Guid? SubmittedAsAgent, TaskStatus Status, int Attempts, Guid? ApprovedBy,
-    string? Result, IReadOnlyList<TaskAudit> Audit);
+    string? Result, IReadOnlyList<TaskAudit> Audit)
+{
+    public bool Archived { get; init; }
+}
 public sealed record TaskState(IReadOnlyList<SystemAgent> Agents, IReadOnlyList<TaskRecord> Records)
 {
     public IReadOnlyList<CoordinationPlan> Plans { get; init; } = Array.Empty<CoordinationPlan>();
@@ -36,6 +39,8 @@ public sealed record TaskState(IReadOnlyList<SystemAgent> Agents, IReadOnlyList<
                 (t.Status is TaskStatus.Completed or TaskStatus.Failed or TaskStatus.Cancelled or TaskStatus.TimedOut or TaskStatus.Interrupted) && t.Result is null ||
                 t.Status == TaskStatus.Completed && t.ApprovedBy is null)
                 throw new InvalidDataException("Invalid task result or reserved lifecycle audit space.");
+            if (t.Archived && (t.Status is TaskStatus.AwaitingApproval or TaskStatus.Queued or TaskStatus.Running || !t.Audit.Any(a => a.Action == "Archived")))
+                throw new InvalidDataException("Archived tasks must be terminal and retain their archive audit.");
             var agent = state.Agents.SingleOrDefault(a => a.Id == t.AgentId) ?? throw new InvalidDataException("Task target is not a system agent.");
             if (!TaskCapabilities.Valid(agent.Role, t.Capability, t.Argument)) throw new InvalidDataException("Invalid task capability or parameters.");
             if ((t.Status is TaskStatus.Queued or TaskStatus.Running) && t.ApprovedBy is null || t.Status == TaskStatus.AwaitingApproval && t.ApprovedBy is not null ||

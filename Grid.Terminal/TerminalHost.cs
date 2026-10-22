@@ -41,6 +41,26 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 if (line is null) break;
                 if (sessionUi is not null) await sessionUi.RefreshAsync();
                 var result = commands.Execute(line);
+                if (result.ConfirmTaskBatch is { } confirmBatch)
+                {
+                    if (!interactiveConfirmation) result = new("Bulk approval/clear requires interactive confirmation in the original host. Nothing changed.");
+                    else
+                    {
+                        await output.WriteLineAsync(result.Text);
+                        while (true)
+                        {
+                            await output.WriteAsync("Confirm this task batch? [y/N] "); await output.FlushAsync();
+                            var answerTask = sessionUi is null ? Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token) : sessionUi.Input.ReadAsync(false, shutdown.Token);
+                            if (await Task.WhenAny(answerTask, scheduler, autosave, monitoring) != answerTask) { shutdown.Cancel(); break; }
+                            var answer = await answerTask;
+                            if (string.IsNullOrWhiteSpace(answer) || answer.Trim().Equals("n", StringComparison.OrdinalIgnoreCase))
+                            { result = new("Task batch cancelled. Nothing changed."); break; }
+                            if (answer.Trim().Equals("y", StringComparison.OrdinalIgnoreCase)) { result = confirmBatch(); break; }
+                            await output.WriteLineAsync("Enter y or n.");
+                        }
+                        if (shutdown.IsCancellationRequested) break;
+                    }
+                }
                 if (result.BrokerOperation is { } dispatch)
                 {
                     using var brokerStop = CancellationTokenSource.CreateLinkedTokenSource(shutdown.Token);
