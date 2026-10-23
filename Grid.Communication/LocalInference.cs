@@ -80,10 +80,13 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
     public const string Model = "qwen3:4b";
     public const string Endpoint = "http://127.0.0.1:11435/";
     private readonly HttpClient client;
-    public OllamaLocalBackend(HttpMessageHandler? handler = null)
+    public OllamaLocalBackend(HttpMessageHandler? handler = null, Uri? endpoint = null)
     {
+        endpoint ??= new Uri(Endpoint);
+        if (endpoint.Scheme != "http" || endpoint.Host != "127.0.0.1" || endpoint.AbsolutePath != "/" || !string.IsNullOrEmpty(endpoint.UserInfo) || !string.IsNullOrEmpty(endpoint.Query))
+            throw new ArgumentException("Local AI requires an IPv4 loopback HTTP endpoint.");
         client = new(handler ?? new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false })
-        { BaseAddress = new Uri(Endpoint), Timeout = TimeSpan.FromSeconds(120) };
+        { BaseAddress = endpoint, Timeout = TimeSpan.FromSeconds(120) };
     }
     private async Task<JsonDocument> JsonAsync(HttpRequestMessage request, CancellationToken token)
     {
@@ -135,10 +138,10 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
             var model = running.RootElement.GetProperty("models").EnumerateArray().FirstOrDefault(m => m.GetProperty("name").GetString() == Model);
             var allocation = model.ValueKind == JsonValueKind.Undefined ? "Model not loaded (idle)." :
                 $"Runtime-reported model allocation: {model.GetProperty("size").GetInt64():N0} bytes; GPU allocation: {model.GetProperty("size_vram").GetInt64():N0} bytes (allocation, not GPU utilization).";
-            return $"Endpoint: {Endpoint} | Ollama {version.RootElement.GetProperty("version").GetString()}\nModel: {Model} | Installed: {installed}\n{allocation}";
+            return $"Endpoint: {client.BaseAddress} | Ollama {version.RootElement.GetProperty("version").GetString()}\nModel: {Model} | Installed: {installed}\n{allocation}";
         }
         catch (Exception e) when (e is HttpRequestException or IOException or InvalidDataException or JsonException or OperationCanceledException or InvalidOperationException or KeyNotFoundException or FormatException or OverflowException)
-        { return "Local AI unavailable: " + e.GetType().Name + ". Run Start-GridLocalAI.ps1; deterministic GRID remains available."; }
+        { return "Local AI unavailable: " + e.GetType().Name + ". Check bundled runtime setup; deterministic GRID remains available."; }
     }
     public void Dispose() => client.Dispose();
 }

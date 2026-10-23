@@ -3,7 +3,7 @@ using System.Text;
 namespace Grid.Simulation.Tasks;
 
 /// <summary>Trusted host adapter. Working copies are source protection, not an OS security boundary.</summary>
-public sealed class MaxisRuntime(string artifactsRoot)
+public sealed class MaxisRuntime(string artifactsRoot, string? bundledDotnetRoot = null)
 {
     private readonly string artifacts = Path.GetFullPath(artifactsRoot);
     public string AttemptDirectory(TaskRecord task) => Path.Combine(artifacts, task.Id.ToString("N") + "-" + (task.Attempts + 1));
@@ -50,9 +50,17 @@ public sealed class MaxisRuntime(string artifactsRoot)
             await File.WriteAllTextAsync(report, $"EXPLICIT REPLACEMENT SUGGESTION - original source unchanged.\nSource: {path}\nWorking copy: {staged}\nReplace: {parts[2]}\nWith: {parts[3]}\nNo automatic apply or generated correctness claim.", token);
             return "Suggested replacement staged; original source unchanged. Review: " + report;
         }
-        var dotnet = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "dotnet.exe");
-        if (!File.Exists(dotnet)) throw new IOException("Install the .NET SDK in Program Files/dotnet before running MAXIS builds/tests.");
+        var dotnet = bundledDotnetRoot is null ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "dotnet.exe") : Path.Combine(bundledDotnetRoot,"dotnet.exe");
+        if (!File.Exists(dotnet)) throw new IOException("The configured .NET SDK is missing; provision GRID runtime assets before running MAXIS builds/tests.");
         var start = new ProcessStartInfo(dotnet) { WorkingDirectory = workspace.Root, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
+        if (bundledDotnetRoot is not null)
+        {
+            var root=Path.GetDirectoryName(bundledDotnetRoot)!;
+            start.Environment["DOTNET_ROOT"]=bundledDotnetRoot;
+            start.Environment["DOTNET_CLI_HOME"]=Path.Combine(root,"home");
+            start.Environment["NUGET_PACKAGES"]=Path.Combine(root,"nuget");
+            start.Environment["PATH"]=bundledDotnetRoot + Path.PathSeparator + start.Environment["PATH"];
+        }
         foreach (var arg in new[] { task.Capability == "maxis.build" ? "build" : "test", DevelopmentPolicy.CheckedPath(workspace.Root,workspace.Project), "--no-restore", "--configuration", "Debug", "--verbosity", "minimal", "--disable-build-servers" }) start.ArgumentList.Add(arg);
         if (task.Capability == "maxis.test") { start.ArgumentList.Add("--logger"); start.ArgumentList.Add("trx;LogFileName=tests.trx"); start.ArgumentList.Add("--results-directory"); start.ArgumentList.Add(output); }
         start.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1"; start.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";

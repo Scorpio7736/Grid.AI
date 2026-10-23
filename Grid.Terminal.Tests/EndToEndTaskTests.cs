@@ -26,7 +26,7 @@ public sealed class EndToEndTaskTests : IDisposable
         Directory.CreateDirectory(Source);
         registry.Add(owner);
         engine = new(GridWorldFactory.CreateGenesis(), editAuthorizer: registry);
-        owner.Attach(engine); owner.Login(); engine.InitializeSystemAgents(owner.Reference);
+        owner.Attach(engine); owner.Login(); engine.StartAgents(owner.Reference);
         engine.ConfigureMaxisRuntime(Artifacts);
         info = new(engine.GetSnapshot().WorldId, "End-to-end verification", DateTimeOffset.UtcNow);
         store = new(Path.Combine(folder, "world.db"));

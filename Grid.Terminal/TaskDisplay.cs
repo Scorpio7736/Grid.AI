@@ -20,8 +20,8 @@ internal static class TaskDisplay
     }
     internal static string Role(TaskState state, TaskRecord task) => state.Agents.Single(a => a.Id == task.AgentId).Role.ToString();
     internal static string Tasks(TaskState state, IEnumerable<TaskRecord>? records = null) =>
-        TerminalTable.Render(["Task", "Agent", "State", "Tries"], (records ?? state.Records.Where(t => !t.Archived)).Select(t => new[] {
-            Ref(t.Id, state.Records.Select(x => x.Id)), Role(state,t), t.Status.ToString(), t.Attempts.ToString() }));
+        TerminalTable.Render(["Task", "Agent", "State", "Tries", "Archived"], (records ?? state.Records.Where(t => !t.Archived)).Select(t => new[] {
+            Ref(t.Id, state.Records.Select(x => x.Id)), Role(state,t), t.Status.ToString(), t.Attempts.ToString(), t.Archived ? "Yes" : "No" }));
     internal static string Inspect(TaskState state, TaskRecord t)
     {
         var reference = Ref(t.Id, state.Records.Select(x => x.Id));

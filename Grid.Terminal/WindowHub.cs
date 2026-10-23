@@ -68,8 +68,8 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 throw new UnauthorizedAccessException("Attachment process mismatch.");
             using var io = CancellationTokenSource.CreateLinkedTokenSource(stop.Token);
             io.CancelAfter(TimeSpan.FromSeconds(10));
-            var typewriter = true;
-            if (mode == "conversation") commands.Register(new("typewriter", "typewriter <on|off>", "Animate agent replies; any key skips the current animation. Off displays instantly.", args =>
+            var typewriter = !string.Equals(Environment.GetEnvironmentVariable("GRID_TYPEWRITER"), "off", StringComparison.OrdinalIgnoreCase);
+            if (mode is "conversation" or "terminal") commands.Register(new("typewriter", "typewriter <on|off>", "Animate agent replies; any key skips the current animation. Off displays instantly.", args =>
             {
                 if (args.Count != 1 || args[0].ToLowerInvariant() is not ("on" or "off")) return new("Usage: typewriter <on|off>");
                 typewriter = args[0].Equals("on", StringComparison.OrdinalIgnoreCase);
@@ -115,7 +115,10 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                     string name;
                     try { name = CommandDispatcher.Parse(line).FirstOrDefault() ?? ""; }
                     catch (ArgumentException e) { await WindowProtocol.WriteAsync(pipe, Reply("Error: " + e.Message), io.Token); continue; }
-                    if (new[] { "login", "credentials", "nge", "grid", "tranexist", "copexist" }.Contains(name, StringComparer.OrdinalIgnoreCase))
+                    var tokens = CommandDispatcher.Parse(line);
+                    var gridControl = name.Equals("grid", StringComparison.OrdinalIgnoreCase) && tokens.Count == 2 &&
+                        (tokens[1].Equals("-start", StringComparison.OrdinalIgnoreCase) || tokens[1].Equals("-pause", StringComparison.OrdinalIgnoreCase));
+                    if (new[] { "login", "credentials", "nge", "tranexist", "copexist" }.Contains(name, StringComparer.OrdinalIgnoreCase) || name.Equals("grid", StringComparison.OrdinalIgnoreCase) && !gridControl)
                         reply = Reply("Use the original host terminal for login, credentials, NGE or transfers. This window does not own the save.");
                     else
                     {

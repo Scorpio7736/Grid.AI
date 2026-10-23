@@ -13,18 +13,18 @@ public sealed class ChatCommandTests
     }
     private static CommandDispatcher Commands(GridSimulationEngine engine)
     {
-        var commands = DefaultCommands.Create(engine); ChatCommands.Register(commands, engine); return commands;
+        var commands = DefaultCommands.Create(engine); ChatCommands.Register(commands, engine.PrepareChatFixture()); return commands;
     }
     [Fact]
     public void DefaultCoordinatorSupportsConversationAndOrdinaryCommands()
     {
         var (engine, commands) = Fixture();
-        Assert.DoesNotContain(engine.GetSnapshot().Programs, p => p.Name == "MCP");
+        Assert.Contains(engine.GetSnapshot().Programs, p => p.Name == "MCP");
         Assert.Contains("Connected to MCP", commands.Execute("connect").Text);
         Assert.Contains("VERIFIED GRID STATE", commands.Execute("talk status").Text);
         Assert.Contains("MCP", commands.Execute("talk who are you").Text);
         Assert.Contains("SIMULATED DIALOGUE", commands.Execute("talk delete my files").Text);
-        commands.Execute("step"); Assert.Equal(1, engine.TickCount);
+        engine.Pause(); commands.Execute("step"); engine.Start(); Assert.Equal(1, engine.TickCount);
         Assert.Contains("delete my files", commands.Execute("transcript").Text);
         Assert.Contains("CONVERSATIONS", commands.Execute("help").Text);
         Assert.Contains("MCP", commands.Execute("conversations").Text);
@@ -69,6 +69,6 @@ public sealed class ChatCommandTests
         Assert.Contains("Connected", commands.Execute("connect " + target.Id).Text);
         Assert.Contains("SIMULATED DIALOGUE", commands.Execute("talk \"Hello café 世界\"").Text);
         Assert.Contains("Hello café 世界", commands.Execute("transcript").Text);
-        Assert.DoesNotContain(engine.GetSnapshot().Programs, p => p.Name == "MCP");
+        Assert.Contains(engine.GetSnapshot().Programs, p => p.Name == "MCP");
     }
 }

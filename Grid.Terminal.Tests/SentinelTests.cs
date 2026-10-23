@@ -18,7 +18,7 @@ public sealed class SentinelTests
     private readonly GridSimulationEngine engine;
     public SentinelTests()
     {
-        registry.Add(owner); engine=new(GridWorldFactory.CreateGenesis(),editAuthorizer:registry); owner.Attach(engine); owner.Login(); engine.InitializeSystemAgents(owner.Reference);
+        registry.Add(owner); engine=new(GridWorldFactory.CreateGenesis(),editAuthorizer:registry); owner.Attach(engine); owner.Login(); engine.StartAgents(owner.Reference);
     }
     private Task Save(CancellationToken token) { token.ThrowIfCancellationRequested(); GridSimulationEngine.ValidateSnapshot(engine.GetSnapshot()); return Task.CompletedTask; }
     private TaskRecord Propose(string capability="sentinel.defender",string argument="status") => engine.ProposeTask(owner.Reference,engine.ResolveProgram("SENTINEL").Id,capability,argument,Guid.NewGuid().ToString("N"));

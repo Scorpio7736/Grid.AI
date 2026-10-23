@@ -20,7 +20,7 @@ public sealed class CommunicationVerificationTests
             Registry.Add(Identity);
             Engine = snapshot is null ? new(GridWorldFactory.CreateGenesis(), editAuthorizer: Registry) : GridSimulationEngine.Restore(snapshot, editAuthorizer: Registry);
             Identity.Attach(Engine);
-            Commands = DefaultCommands.Create(Engine); Chat = ChatCommands.Register(Commands, Engine, Identity);
+            Commands = DefaultCommands.Create(Engine); Chat = ChatCommands.Register(Commands, Engine.PrepareChatFixture(), Identity);
             ContextCommands.Register(Commands, Engine, Identity, () => { }); Commands.UseIdentity(Identity);
         }
     }
@@ -32,7 +32,7 @@ public sealed class CommunicationVerificationTests
         {
             var source = Path.Combine(folder, "notes.md"); File.WriteAllText(source, "PERSISTENT CAPTURE");
             var first = new Session(); first.Identity.Login(); first.Commands.Execute("connect MCP");
-            var agent = first.Engine.EnsureCoordinator(); first.Engine.RegisterAgentIdentity(agent.Id);
+            var agent = first.Engine.CreateRunningCoordinator(); first.Engine.RegisterAgentIdentity(agent.Id);
             first.Commands.Execute("talk remember this conversation"); var conversation = first.Chat.ActiveConversation!.Value;
             Assert.Contains("Imported", first.Commands.Execute($"context add \"{source}\" persistent project MCP").Text);
             File.WriteAllText(source, "TEMPORARY CAPTURE");
@@ -88,9 +88,9 @@ public sealed class CommunicationVerificationTests
         var civilian = session.Engine.GetSnapshot().Programs.First();
         session.Commands.Execute("connect " + civilian.Id); session.Commands.Execute("talk OWNER PRIVATE MESSAGE");
         var privateId = session.Chat.ActiveConversation!.Value;
-        var archon = session.Engine.EnsureCoordinator(); session.Engine.RegisterAgentIdentity(archon.Id);
+        var archon = session.Engine.CreateRunningCoordinator(); session.Engine.RegisterAgentIdentity(archon.Id);
         var identity = session.Identity.CreateAttachment(); session.Registry.Add(identity); identity.Switch(archon.Id.ToString());
-        var commands = DefaultCommands.Create(session.Engine); ChatCommands.Register(commands, session.Engine, identity); commands.UseIdentity(identity);
+        var commands = DefaultCommands.Create(session.Engine); ChatCommands.Register(commands, session.Engine.PrepareChatFixture(), identity); commands.UseIdentity(identity);
         Assert.DoesNotContain(privateId.ToString(), commands.Execute("conversations").Text);
         Assert.DoesNotContain("OWNER PRIVATE MESSAGE", commands.Execute("transcript " + privateId).Text);
         Assert.Contains("No conversation", commands.Execute("resume " + privateId).Text);

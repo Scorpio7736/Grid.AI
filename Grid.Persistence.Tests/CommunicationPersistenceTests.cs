@@ -15,12 +15,12 @@ public sealed class CommunicationPersistenceTests
         try
         {
             var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
-            var id = engine.StartConversation(engine.LocalOperator, engine.EnsureCoordinator());
+            var id = engine.StartConversation(engine.LocalOperator, engine.CreateRunningCoordinator());
             engine.CompleteGroundedTurn(engine.PrepareGroundedTurn(id,engine.LocalOperator,"Remember the launch plan"),new(true,"Suggestion: review the plan.","test"));
             var snapshot = engine.GetSnapshot(); var info = new WorldInfo(snapshot.WorldId,"Grounded",DateTimeOffset.UtcNow);
             var path = Path.Combine(folder,"world.db");
             using(var store = new WorldStore(path)) store.Create(info,snapshot);
-            using var reopened = new WorldStore(path); var restored = GridSimulationEngine.Restore(reopened.Load().State);
+            using var reopened = new WorldStore(path); var restored = GridSimulationEngine.Restore(reopened.Load().State); restored.Start();
             Assert.Contains("SOURCES",restored.GetConversation(id).Messages[1].Content);
             Assert.Contains("Remember the launch plan",restored.PrepareGroundedTurn(id,restored.LocalOperator,"launch plan").Prompt);
             Assert.Empty(restored.GetSnapshot().Tasks.Records);
@@ -42,7 +42,7 @@ public sealed class CommunicationPersistenceTests
             var snapshot = engine.GetSnapshot(); var info = new WorldInfo(snapshot.WorldId, "Communication", now);
             using (var initial = new WorldStore(path)) initial.Create(info, snapshot);
             using var store = new WorldStore(path);
-            var restored = GridSimulationEngine.Restore(store.Load().State);
+            var restored = GridSimulationEngine.Restore(store.Load().State); restored.Start();
             Assert.Equal(JsonSerializer.Serialize(snapshot.Communications), JsonSerializer.Serialize(restored.GetSnapshot().Communications));
             Assert.DoesNotContain(restored.GetSnapshot().Programs, p => p.Kind == ResidentKind.Application);
             Assert.Throws<ArgumentException>(() => restored.SendMessage(id, human, "Cannot route to absent program"));

@@ -51,7 +51,7 @@ public sealed class UsabilityTests
         var worldId = engine.GetSnapshot().WorldId; var persistence = new Persistence();
         var terminal = new Surface(); var output = new StringWriter();
         terminal.Check = () => { Assert.True(engine.IsRunning); Assert.False(persistence.Stopped); Assert.Equal(0, persistence.Saves); };
-        var host = new TerminalHost(engine, DefaultCommands.Create(engine), new StringReader("start\nlive\nstatus\nlive\nstatus\nexit\n"), output, false, terminal, persistence);
+        var host = new TerminalHost(engine, DefaultCommands.Create(engine), new StringReader("grid -start\nlive\nstatus\nlive\nstatus\nexit\n"), output, false, terminal, persistence);
         Assert.Equal(0, await host.RunAsync().WaitAsync(TimeSpan.FromSeconds(5)));
         Assert.Equal(2, terminal.Ends); Assert.Equal(worldId, engine.GetSnapshot().WorldId);
         Assert.Equal(2, output.ToString().Split("Back at command prompt").Length - 1);

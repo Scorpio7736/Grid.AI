@@ -18,7 +18,7 @@ public sealed class WindowTests
         public Fixture(Func<string, int>? launch = null, ILocalInference? inference = null)
         {
             Owner = new(() => "test-owner"); Registry.Add(Owner);
-            Engine = new(GridWorldFactory.CreateGenesis(), editAuthorizer: Registry); Owner.Attach(Engine); Owner.Login();
+            Engine = new(GridWorldFactory.CreateGenesis(), editAuthorizer: Registry); Owner.Attach(Engine); Owner.Login(); Engine.PrepareChatFixture();
             CommandDispatcher Create(TerminalIdentitySession identity)
             {
                 var commands = DefaultCommands.Create(Engine); ChatCommands.Register(commands, Engine, identity, inference);
@@ -93,12 +93,22 @@ public sealed class WindowTests
     {
         await using var f = new Fixture(); await using var first = await f.Open(); await using var second = await f.Open();
         Assert.Equal("terminal", first.Greeting.Mode);
-        await first.Send("command", "step");
+        f.Engine.Pause(); await first.Send("command", "step");
         Assert.Equal(1, f.Engine.TickCount);
         Assert.Contains("Tick: 1", (await second.Send("command", "status")).Text);
         Assert.True((await first.Send("command", "exit")).Closed);
         await second.Send("command", "step"); Assert.Equal(2, f.Engine.TickCount);
         Assert.Contains("Tick: 2", f.Commands.Execute("status").Text);
+    }
+    [Fact]
+    public async Task AttachedMasterCanPauseAndResumeButCannotTransfer()
+    {
+        await using var f = new Fixture(); await using var child = await f.Open();
+        Assert.Contains("paused",(await child.Send("command","grid -pause")).Text);
+        Assert.False(f.Engine.IsRunning);
+        Assert.Contains("running",(await child.Send("command","grid -start")).Text);
+        Assert.True(f.Engine.IsRunning);
+        Assert.Contains("original host",(await child.Send("command","grid -copyto -select")).Text);
     }
     [Fact]
     public async Task ChatAndEditPreviewsAreIndependentButAuthorizedEditsReachSharedEngine()
@@ -118,7 +128,7 @@ public sealed class WindowTests
     [Fact]
     public async Task AgentAttachmentCannotPromoteOrMutateAndParentLogoutRevokesIt()
     {
-        await using var f = new Fixture(); var agent = f.Engine.EnsureCoordinator(); f.Engine.RegisterAgentIdentity(agent.Id); f.Owner.Switch(agent.Id.ToString());
+        await using var f = new Fixture(); var agent = f.Engine.CreateRunningCoordinator(); f.Engine.RegisterAgentIdentity(agent.Id); f.Owner.Switch(agent.Id.ToString());
         await using var child = await f.Open();
         Assert.Contains("scoped", (await child.Send("command", "switch master")).Text);
         Assert.Contains("denied", (await child.Send("command", "step")).Text);
@@ -133,7 +143,7 @@ public sealed class WindowTests
         Assert.Contains("read-only", f.Commands.Execute("step -opninwin").Text); Assert.Equal(0, f.Engine.TickCount);
         await using var viewer = await f.Open("status -opninwin");
         Assert.Equal("snapshot", viewer.Greeting.Mode); Assert.Contains("Tick: 0", viewer.Greeting.Text);
-        f.Commands.Execute("step");
+        f.Engine.Pause(); f.Commands.Execute("step");
         Assert.Contains("read-only", (await viewer.Send("command", "step")).Text);
         Assert.Equal(1, f.Engine.TickCount); Assert.Equal("", (await viewer.Send("ping")).Text);
     }
@@ -142,7 +152,7 @@ public sealed class WindowTests
     {
         await using var f = new Fixture(); await using var viewer = await f.Open("live -opninwin");
         var frame = await viewer.Send("frame"); Assert.True(frame.Live); Assert.NotEmpty(frame.Text);
-        var agent = f.Engine.EnsureCoordinator(); f.Engine.RegisterAgentIdentity(agent.Id); f.Owner.Switch(agent.Id.ToString());
+        var agent = f.Engine.CreateRunningCoordinator(); f.Engine.RegisterAgentIdentity(agent.Id); f.Owner.Switch(agent.Id.ToString());
         Assert.True((await viewer.Send("frame")).Closed);
     }
     [Fact]
@@ -276,7 +286,7 @@ public sealed class WindowTests
         await using var f = new Fixture(); await using var ownerChat = await f.Open("connect MCP");
         await ownerChat.Send("command", "talk private-owner-message");
         var id = Assert.Single(f.Engine.GetSnapshot().Communications.Conversations).Id;
-        f.Engine.InitializeSystemAgents(f.Owner.Reference);
+        f.Engine.StartAgents(f.Owner.Reference);
         var agent = f.Engine.ResolveProgram("JN");
         f.Owner.Switch(agent.Id.ToString());
         await using var refused = await f.Open("resume " + id);
@@ -343,6 +353,7 @@ public sealed class WindowTests
             child.StandardInput.WriteLine("step"); child.StandardInput.WriteLine("status"); child.StandardInput.WriteLine("exit"); child.StandardInput.Close();
             return child.Id;
         });
+        f.Engine.Pause();
         try
         {
             Assert.Contains("Opened", f.Commands.Execute("ntm").Text);
@@ -382,7 +393,7 @@ public sealed class WindowTests
             using var store = new Grid.Persistence.WorldStore(path);
             var info = new Grid.Persistence.WorldInfo(f.Engine.GetSnapshot().WorldId, "Window test", DateTimeOffset.UtcNow);
             store.Create(info, f.Engine.GetSnapshot());
-            await using var child = await f.Open(); await child.Send("command", "step");
+            await using var child = await f.Open(); f.Engine.Pause(); await child.Send("command", "step");
             Assert.Throws<IOException>(() => new Grid.Persistence.WorldStore(path));
             var stopped = false;
             async Task Stop() { await f.Hub.StopAsync(); stopped = true; }

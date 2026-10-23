@@ -47,11 +47,23 @@ public sealed partial class GridSimulationEngine
             Storage = StorageVisible(lease.Identity) ? tasks.Storage.Copy() : new StorageState(),
             Plans = Array.AsReadOnly(tasks.Plans.Where(p => lease.Identity.IsMasterControl || p.CoordinatorId == lease.Identity.AgentId).ToArray()) });
     }
+    public void StartAgents(EditSessionReference session)
+    {
+        using var lease = TaskLease(session, true);
+        lock (gate)
+        {
+            var wasRunning = clock.IsRunning;
+            Start();
+            try { InitializeSystemAgents(session); }
+            catch { if (!wasRunning) Pause(); throw; }
+        }
+    }
     public void InitializeSystemAgents(EditSessionReference session)
     {
         using var lease = TaskLease(session, true);
         lock (gate)
         {
+            RequireAgentActivity();
             if (tasks.Agents.Count != 0) return;
             // Validate all names before making any residents; never promote a same-named civilian.
             foreach (var role in Enum.GetValues<AgentRole>())
@@ -82,6 +94,7 @@ public sealed partial class GridSimulationEngine
         lock (gate)
         {
             var actor = lease.Identity;
+            if (!actor.IsMasterControl) RequireAgentActivity();
             if (!actor.IsMasterControl && actor.AgentId != agentId) throw DeniedTask(actor, "Agent sessions may propose only their own capabilities.");
             var agent = tasks.Agents.SingleOrDefault(a => a.Id == agentId) ?? throw new ArgumentException("Initialize system agents first.");
             if (!TaskCapabilities.Valid(agent.Role, capability, argument) || !TaskState.Label(requestKey, 80)) throw new ArgumentException("Unknown capability or invalid parameters/request key.");
@@ -110,6 +123,17 @@ public sealed partial class GridSimulationEngine
             ChangeTask(task with { Status = Status.Queued, ApprovedBy = lease.Identity.OperatorId }, "Approved", lease.Identity, "Human approved this immutable request for one attempt.");
         }
     }
+    public void DenyTask(EditSessionReference session, Guid id, string reason)
+    {
+        using var lease = TaskLease(session, true);
+        lock (gate)
+        {
+            if (!TaskState.Label(reason, 512)) throw new ArgumentException("A denial reason of 1–512 printable characters is required.");
+            var task = FindTask(id);
+            if (task.Archived || task.Status != Status.AwaitingApproval) throw new InvalidOperationException("Only awaiting-approval tasks can be denied.");
+            ChangeTask(task with { Status = Status.Denied, ApprovedBy = null, Result = reason }, "Denied", lease.Identity, reason);
+        }
+    }
     public void CancelTask(EditSessionReference session, Guid id)
     {
         using var lease = TaskLease(session);
@@ -133,10 +157,11 @@ public sealed partial class GridSimulationEngine
     public async Task<string> RunNextTaskAsync(EditSessionReference session, Func<CancellationToken, Task> save, CancellationToken token, TaskRecord? expected = null)
     {
         ArgumentNullException.ThrowIfNull(save);
-        TaskRecord task; AgentRole role; ProgramEditIdentity actor;
+        TaskRecord task; AgentRole role; ProgramEditIdentity actor; long activity;
         using (var lease = TaskLease(session, true))
         lock (gate)
         {
+            RequireAgentActivity(); activity = runVersion;
             if (taskExecuting) throw new InvalidOperationException("The broker is already running a task.");
             task = tasks.Records.FirstOrDefault(t => !t.Archived && t.Status == Status.Queued && (expected == null || t.Id == expected.Id)) ?? throw new InvalidOperationException("No approved queued tasks.");
             if (expected is not null && !SameTask(task, expected)) throw new InvalidOperationException("Selected task changed; review a new batch.");
@@ -154,7 +179,7 @@ public sealed partial class GridSimulationEngine
             {
                 await save(token); // Persistence fence: never invoke an adapter if claiming the task was not saved.
                 using (var lease = TaskLease(session, true))
-                lock (gate) if (FindTask(task.Id).Status != Status.Running) throw new OperationCanceledException();
+                lock (gate) if (!clock.IsRunning || runVersion != activity || FindTask(task.Id).Status != Status.Running) throw new OperationCanceledException();
                 Task<string> execution;
                 if (DevelopmentPolicy.IsReal(task.Capability))
                 {
@@ -173,7 +198,7 @@ public sealed partial class GridSimulationEngine
                         await Task.WhenAny(execution, Task.Delay(25, stop.Token));
                         if (stop.IsCancellationRequested) break;
                         using var lease = TaskLease(session, true);
-                        lock (gate) if (FindTask(task.Id).Status != Status.Running || DevelopmentPolicy.IsReal(task.Capability) && !tasks.Workspaces.Any(w => w.Enabled && w.Name.Equals(task.Argument.Split('|')[0], StringComparison.OrdinalIgnoreCase)) || task.Capability is "jn.inventory" or "jn.duplicates" or "jn.cleanup" && !tasks.Storage.Scopes.Any(s => s.Enabled && s.Name.Equals(task.Argument,StringComparison.OrdinalIgnoreCase))) { stop.Cancel(); break; }
+                        lock (gate) if (!clock.IsRunning || runVersion != activity || FindTask(task.Id).Status != Status.Running || DevelopmentPolicy.IsReal(task.Capability) && !tasks.Workspaces.Any(w => w.Enabled && w.Name.Equals(task.Argument.Split('|')[0], StringComparison.OrdinalIgnoreCase)) || task.Capability is "jn.inventory" or "jn.duplicates" or "jn.cleanup" && !tasks.Storage.Scopes.Any(s => s.Enabled && s.Name.Equals(task.Argument,StringComparison.OrdinalIgnoreCase))) { stop.Cancel(); break; }
                     }
                     result = await execution; outcome = Status.Completed;
                     using var finalLease = TaskLease(session, true);
@@ -188,6 +213,11 @@ public sealed partial class GridSimulationEngine
             lock (gate)
             {
                 var current = FindTask(task.Id);
+                if (!clock.IsRunning || runVersion != activity)
+                {
+                    outcome = Status.Interrupted;
+                    result = "GRID paused or stopped during this attempt. External effects may remain; inspect results before retrying with fresh approval.";
+                }
                 if (current.Status == Status.Running) ChangeTask(current with { Status = outcome, Result = result }, "Finished", actor, result.Length > 500 ? result[..500] : result);
                 result = FindTask(task.Id).Status + ": " + FindTask(task.Id).Result;
             }

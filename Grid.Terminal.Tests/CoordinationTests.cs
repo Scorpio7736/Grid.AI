@@ -15,7 +15,7 @@ public sealed class CoordinationTests
     public CoordinationTests()
     {
         registry.Add(owner); engine = new(GridWorldFactory.CreateGenesis(), editAuthorizer: registry);
-        owner.Attach(engine); owner.Login(); engine.InitializeSystemAgents(owner.Reference);
+        owner.Attach(engine); owner.Login(); engine.StartAgents(owner.Reference);
     }
     private Task Save(CancellationToken token) { GridSimulationEngine.ValidateSnapshot(engine.GetSnapshot()); return Task.CompletedTask; }
     private TerminalIdentitySession Agent(string role)

@@ -67,8 +67,9 @@ public static class DefaultCommands
                 $"Description: {district.Description}{Environment.NewLine}Population: {district.ProgramIds.Count}{Environment.NewLine}" +
                 $"Resources: {resources}{Environment.NewLine}Residents: {string.Join(", ", residents)}");
         }));
-        Add("start", "Start or resume automatic simulation.", () => { engine.Start(); return new("Simulation running."); });
-        Add("pause", "Pause automatic simulation.", () => { engine.Pause(); return new("Simulation paused."); });
+        Add("start", "Renamed to grid -start.", () => new("Command renamed. Use grid -start. Nothing changed."));
+        Add("pause", "Renamed to grid -pause.", () => new("Command renamed. Use grid -pause. Nothing changed."));
+        GridTransfer.Register(dispatcher, engine);
         Add("live", "Live status and recent events; Q/Esc returns to commands.", () => new("", LiveViewRequested: true));
         CommandResult Step()
         {

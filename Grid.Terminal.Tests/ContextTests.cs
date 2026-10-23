@@ -22,7 +22,7 @@ public sealed class ContextTests : IDisposable
     }
     private CommandDispatcher Commands(TerminalIdentitySession identity, bool persistent = true)
     {
-        var result = DefaultCommands.Create(engine); ChatCommands.Register(result, engine, identity);
+        var result = DefaultCommands.Create(engine); ChatCommands.Register(result, engine.PrepareChatFixture(), identity);
         ContextCommands.Register(result, engine, identity, persistent ? () => saves++ : null); result.UseIdentity(identity); return result;
     }
     private string FileWith(string name, string content) { var path = Path.Combine(directory, name); File.WriteAllText(path, content, new UTF8Encoding(false)); return path; }
@@ -67,7 +67,7 @@ public sealed class ContextTests : IDisposable
     [Fact]
     public void RevocationByNameImmediatelyInvalidatesAgentSelection()
     {
-        var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
+        var agent = engine.CreateRunningCoordinator(); engine.RegisterAgentIdentity(agent.Id);
         Import(FileWith("shared.md", "SHARED CONTENT"), agent: agent.Id.ToString());
         var child = owner.CreateAttachment(); registry.Add(child); child.Switch(agent.Id.ToString()); var other = Commands(child);
         other.Execute("context select shared.md"); Assert.Contains("SHARED CONTENT", other.Execute("context read").Text);
@@ -134,7 +134,7 @@ public sealed class ContextTests : IDisposable
     [Fact]
     public void AgentsOnlySeeExplicitGrantsAndRevocationIsImmediate()
     {
-        var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
+        var agent = engine.CreateRunningCoordinator(); engine.RegisterAgentIdentity(agent.Id);
         var child = owner.CreateAttachment(); registry.Add(child); child.Switch(agent.Id.ToString()); var agentCommands = Commands(child);
         var privateDoc = Import(FileWith("private.txt", "Private content"));
         var shared = Import(FileWith("shared.txt", "Shared content"), agent: agent.Id.ToString());
@@ -201,14 +201,14 @@ public sealed class ContextTests : IDisposable
     {
         var path = FileWith("notes.txt", "Notes"); var ephemeral = Commands(owner, false);
         Assert.Contains("saved world", ephemeral.Execute($"context add \"{path}\" persistent x").Text);
-        var agent = engine.EnsureCoordinator();
+        var agent = engine.CreateRunningCoordinator();
         Assert.Contains("registered Agent", commands.Execute($"context add \"{path}\" persistent x {agent.Id}").Text);
         Assert.Empty(engine.GetSnapshot().Context.Documents);
     }
     [Fact]
     public void DialogueReportsAvailabilityWithoutPersistingContextBody()
     {
-        var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
+        var agent = engine.CreateRunningCoordinator(); engine.RegisterAgentIdentity(agent.Id);
         Import(FileWith("private-context.md", "Never copy this body into dialogue"), "temporary", agent.Id.ToString());
         commands.Execute("connect MCP");
         var reply = commands.Execute("talk context").Text;
@@ -230,7 +230,7 @@ public sealed class ContextTests : IDisposable
     [Fact]
     public void TotalTextQuotaRejectsAtomicallyAndSessionChangeRevokesTemporaryGrants()
     {
-        var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
+        var agent = engine.CreateRunningCoordinator(); engine.RegisterAgentIdentity(agent.Id);
         var doc = LocalContextReader.Read(FileWith("quota.txt", new string('x', ContextState.MaxTextCharacters)), "x", agent.Id);
         for (var i = 0; i < 4; i++) engine.AddContext(owner.Reference, doc with { Id = Guid.NewGuid() }, false);
         Assert.Equal(4, engine.ContextFor(agent.Id, Guid.Empty).Count);

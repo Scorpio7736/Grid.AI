@@ -19,7 +19,7 @@ public sealed class TaskBatchTests : IDisposable
     public TaskBatchTests()
     {
         Directory.CreateDirectory(folder); registry.Add(owner);
-        engine = new(GridWorldFactory.CreateGenesis(), editAuthorizer: registry); owner.Attach(engine); owner.Login(); engine.InitializeSystemAgents(owner.Reference);
+        engine = new(GridWorldFactory.CreateGenesis(), editAuthorizer: registry); owner.Attach(engine); owner.Login(); engine.StartAgents(owner.Reference);
         store = new(Path.Combine(folder,"world.db")); info = new(engine.GetSnapshot().WorldId,"Batch",DateTimeOffset.UtcNow); store.Create(info,engine.GetSnapshot());
         commands = Commands(owner);
     }
@@ -73,7 +73,7 @@ public sealed class TaskBatchTests : IDisposable
         Assert.Contains("2 tasks archived",preview.ConfirmTaskBatch!().Text);
         Assert.True(Record(plan.TaskIds[0]).Archived); Assert.True(Record(pending.Id).Archived); Assert.Equal(Status.Cancelled,Record(pending.Id).Status);
         Assert.False(Record(later.Id).Archived);
-        Assert.DoesNotContain(pending.Id.ToString()[..8],commands.Execute("tasks list").Text);
+        Assert.Contains(pending.Id.ToString()[..8],commands.Execute("tasks list").Text);
         Assert.Contains(pending.Id.ToString()[..8],commands.Execute("tasks list -archived -MAXIS").Text);
         Assert.Contains("Archived:    True",commands.Execute("tasks inspect "+pending.Id).Text);
         var restored=GridSimulationEngine.Restore(store.Load().State);
@@ -195,5 +195,57 @@ public sealed class TaskBatchTests : IDisposable
         var a=Propose();Confirm("tasks approve -all");var batch=commands.Execute("tasks run -all").BrokerOperation!;
         engine.CancelTask(owner.Reference,a.Id);
         Assert.Contains("Stopped",(await batch(default)).Text);Assert.Equal(0,Record(a.Id).Attempts);
+    }
+
+    [Fact]
+    public async Task NewTaskViewsRetainArchivesAndDistinguishDeniedFromCancelled()
+    {
+        var denied = Propose(); var completed = Propose(); var cancelled = Propose("JN"); var pending = Propose();
+        Assert.Contains("denied and saved", commands.Execute($"tasks deny {denied.Id} \"Not needed\"").Text);
+        engine.ApproveTask(owner.Reference, completed.Id); await engine.RunNextTaskAsync(owner.Reference, Save, default);
+        engine.CancelTask(owner.Reference, cancelled.Id);
+        engine.UpdateTaskBatch(owner.Reference, [Record(completed.Id)], true);
+        string Ref(TaskRecord t) => t.Id.ToString()[..8];
+        foreach (var t in new[] { denied, completed, cancelled, pending }) Assert.Contains(Ref(t), commands.Execute("tasks").Text);
+        var done = commands.Execute("tasks -completed -MAXIS").Text;
+        Assert.Contains(Ref(completed), done); Assert.Contains("Yes", done); Assert.DoesNotContain(Ref(denied), done);
+        var open = commands.Execute("tasks -list").Text;
+        Assert.Contains(Ref(cancelled), open); Assert.Contains(Ref(pending), open);
+        Assert.DoesNotContain(Ref(denied), open); Assert.DoesNotContain(Ref(completed), open);
+        Assert.Contains("error", commands.Execute("tasks -completed -list").Text);
+    }
+    [Fact]
+    public void DenialRequiresHumanReasonAndCannotBeRetriedOrApproved()
+    {
+        var task = Propose();
+        var child = owner.CreateAttachment(); registry.Add(child); child.Switch(engine.ResolveProgram("MAXIS").Id.ToString());
+        Assert.Throws<UnauthorizedAccessException>(() => engine.DenyTask(child.Reference, task.Id, "no"));
+        Assert.Throws<ArgumentException>(() => engine.DenyTask(owner.Reference, task.Id, ""));
+        engine.DenyTask(owner.Reference, task.Id, "Not requested");
+        Assert.Equal(Status.Denied, Record(task.Id).Status); Assert.Equal("Not requested", Record(task.Id).Result);
+        Assert.Null(Record(task.Id).ApprovedBy);
+        Assert.Throws<InvalidOperationException>(() => engine.ApproveTask(owner.Reference, task.Id));
+        Assert.Throws<InvalidOperationException>(() => engine.RetryTask(owner.Reference, task.Id));
+        Assert.Throws<InvalidOperationException>(() => engine.CancelTask(owner.Reference, task.Id));
+        var queued = Propose(); engine.ApproveTask(owner.Reference, queued.Id);
+        Assert.Throws<InvalidOperationException>(() => engine.DenyTask(owner.Reference, queued.Id, "too late"));
+    }
+    [Fact]
+    public async Task DenialSurvivesSQLiteAndVersionTwentyUpgradePreservesHistory()
+    {
+        var task = Propose(); await Save(default); store.Dispose();
+        using (var db = new SqliteConnection("Pooling=False;Data Source=" + Path.Combine(folder,"world.db")))
+        {
+            db.Open(); using var command = db.CreateCommand();
+            command.CommandText = "DELETE FROM SchemaMigrations WHERE Version = 21; PRAGMA user_version=20;"; command.ExecuteNonQuery();
+        }
+        using var upgraded = new WorldStore(Path.Combine(folder,"world.db"));
+        var saved = upgraded.Load(); Assert.Equal(Status.AwaitingApproval, Assert.Single(saved.State.Tasks.Records).Status);
+        engine.DenyTask(owner.Reference, task.Id, "Human declined"); upgraded.Save(info, engine.GetSnapshot());
+        var restored = GridSimulationEngine.Restore(upgraded.Load().State);
+        var denied = Assert.Single(restored.GetSnapshot().Tasks.Records);
+        Assert.Equal(Status.Denied, denied.Status); Assert.Equal("Human declined", denied.Result);
+        Assert.Equal("Denied", denied.Audit.Last().Action);
+        Assert.Equal(task.Id, denied.Id);
     }
 }

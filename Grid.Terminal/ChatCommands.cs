@@ -15,6 +15,13 @@ public sealed class ChatCommands
     public static ChatCommands Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession? identity = null, ILocalInference? inference = null, Func<CancellationToken, Task>? save = null)
     {
         var chat = new ChatCommands(engine) { identity = identity, inference = inference, save = save };
+        if (identity?.IsAttachment != true)
+            commands.Register(new("typewriter", "typewriter <on|off>", "Animate inline agent replies; any key skips. Redirected output remains instant.", args =>
+            {
+                if (args.Count != 1 || args[0].ToLowerInvariant() is not ("on" or "off")) return new("Usage: typewriter <on|off>");
+                commands.Typewriter = args[0].Equals("on", StringComparison.OrdinalIgnoreCase);
+                return new("Typewriter " + (commands.Typewriter ? "on." : "off."));
+            }) { Capability = "chat" });
         commands.ConversationConnected = () => chat.active is not null;
         if (identity is not null) identity.Changed += () => chat.active = null;
         commands.Register(new("connect", "connect [program-id|name] [-inline]", "Open a dedicated conversation window; default contact is MCP. -inline keeps voice-compatible chat here.", chat.Connect));
@@ -39,11 +46,12 @@ public sealed class ChatCommands
     }
     private CommandResult Connect(IReadOnlyList<string> args)
     {
+        engine.RequireAgentActivity();
         if (active is not null) return new("Already connected. Use disconnect to end it before connecting elsewhere.");
         if (engine.GetSnapshot().Communications.Conversations.Count >= CommunicationState.MaxConversations)
             return new("Conversation capacity reached. Use resume with an existing open conversation.");
         var name = args.Count == 0 ? "MCP" : string.Join(" ", args);
-        var recipient = name.Equals("MCP", StringComparison.OrdinalIgnoreCase) && (identity is null || identity.IsMaster) ? engine.EnsureCoordinator() : engine.ResolveProgram(name);
+        var recipient = engine.ResolveProgram(name);
         active = engine.StartConversation(Actor, recipient);
         return new($"Connected to {TerminalTable.Safe(recipient.Name)}\nAI conversation; replies can be mistaken. Chat does not execute tasks.\nUse talk <message>. Read history with transcript; use transcript --details for sources and technical details.");
     }
@@ -59,11 +67,11 @@ public sealed class ChatCommands
         var turn = engine.PrepareGroundedTurn(id, Actor, text, origin);
         var reference = identity.Reference;
         var consumed = 0;
-        bool Current() => identity.IsAuthenticated && identity.Reference == reference && active == id;
+        bool Current() => engine.IsRunning && engine.ActivityGeneration == turn.ActivityGeneration && identity.IsAuthenticated && identity.Reference == reference && active == id;
         return new("", BrokerOperation: async token =>
         {
             if (Interlocked.Exchange(ref consumed, 1) != 0) return new("Conversation request already consumed.");
-            if (!Current()) return new("Conversation session revoked; nothing stored.");
+            if (!Current()) return new("Conversation stopped or session revoked; nothing stored.");
             using var stop = CancellationTokenSource.CreateLinkedTokenSource(token);
             try
             {
@@ -79,10 +87,10 @@ public sealed class ChatCommands
                 if (token.IsCancellationRequested || !Current()) return new("Conversation cancelled or session revoked; nothing stored.");
                 var result = identity.Execute("chat", () =>
                 {
-                    if (!Current()) return new("Conversation session revoked; nothing stored.");
+                    if (!Current()) return new("Conversation stopped or session revoked; nothing stored.");
                     var result = Response(engine.CompleteGroundedTurn(turn, reply, token));
                     return reply.Available && CommunicationState.ValidContent(reply.Text) ? result : result with
-                    { Text = "Local AI is unavailable; using a basic reply.\n" + result.Text, AnimateFrom = null };
+                    { Text = "Local AI is unavailable; using a basic reply.\n" + result.Text, AnimateFrom = result.AnimateFrom is { } offset ? offset + "Local AI is unavailable; using a basic reply.\n".Length : null };
                 }, "grounded-reply");
                 if (save is not null) await save(token);
                 return result;
@@ -109,6 +117,7 @@ public sealed class ChatCommands
     private CommandResult Resume(IReadOnlyList<string> args)
     {
         if (args.Count != 1 || !Guid.TryParse(args[0], out var id)) return new("Usage: resume <conversation-id>");
+        engine.RequireAgentActivity();
         if (active is not null) return new("Already connected. Use disconnect before resuming another conversation.");
         var c = Find(id);
         if (c.Status != ConversationStatus.Open) return new("Conversation has ended. Use connect to start a new one.");

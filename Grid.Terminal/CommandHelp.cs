@@ -2,11 +2,11 @@ namespace Grid.Terminal;
 
 public static class CommandHelp
 {
-    public static IReadOnlyList<string> Options(TerminalCommand c) => BaseOptions(c).Concat(c.Name == "tasks" ? Enum.GetNames<Grid.Simulation.Tasks.AgentRole>().SelectMany(a => new[] { "tasks list -" + a, "tasks list -archived -" + a, "tasks approve -all -" + a, "tasks run -all -" + a, "tasks clear -all -" + a }) : Array.Empty<string>()).Concat(WindowCommands.Supports(c.Name) ? new[] { c.Name + " -opninwin" } : Array.Empty<string>()).ToArray();
+    public static IReadOnlyList<string> Options(TerminalCommand c) => BaseOptions(c).Concat(c.Name == "tasks" ? Enum.GetNames<Grid.Simulation.Tasks.AgentRole>().SelectMany(a => new[] { "tasks -" + a, "tasks -completed -" + a, "tasks -list -" + a, "tasks list -" + a, "tasks list -archived -" + a, "tasks approve -all -" + a, "tasks run -all -" + a, "tasks clear -all -" + a }) : Array.Empty<string>()).Concat(WindowCommands.Supports(c.Name) ? new[] { c.Name + " -opninwin" } : Array.Empty<string>()).ToArray();
     private static IReadOnlyList<string> BaseOptions(TerminalCommand c) => c.Name switch {
         "transcript" => ["transcript", "transcript --details", "transcript <conversation-id> --details"],
         "ai" => ["ai status", "ai test"],
-        "grid" => ["grid -copyto \"location\"", "grid -transferto \"location\""],
+        "grid" => ["grid -start", "grid -pause", "grid -copyto -select", "grid -transferto -select","grid -copyto \"location\"", "grid -transferto \"location\""],
         "connect" => ["connect", "connect <program-id|name>", "connect -inline [program-id|name]"],
         "resume" => ["resume <conversation-id>", "resume -inline <conversation-id>"],
         "typewriter" => ["typewriter on", "typewriter off"],
@@ -15,8 +15,8 @@ public static class CommandHelp
         "jn" => ["jn scopes", "jn register <alias> \"absolute-file-or-directory\"", "jn revoke <alias>", "jn quota", "jn quota inspect <proposal-reference>", "jn quota approve <proposal-reference>"],
         "maxis" => ["maxis workspaces", "maxis register <alias> \"absolute-root\" \"relative/project.csproj\"", "maxis revoke <alias>"],
         "mcp" => ["mcp request \"SPECIALIST: demo text; SPECIALIST: demo text\" [request-key]", "mcp plans", "mcp inspect <plan-id>", "mcp brief [plan-id]"],
-        "agents" => ["agents", "agents initialize"],
-        "tasks" => ["tasks list", "tasks list -archived", "tasks approve -all", "tasks run -all", "tasks clear -all", "tasks propose SENTINEL sentinel.defender status", "tasks propose SENTINEL sentinel.firewall status", "tasks propose SENTINEL sentinel.events recent", "tasks inspect <id>", "tasks propose <agent-id|name> <capability> \"argument\" [request-key]", "tasks approve <id>", "tasks cancel <id>", "tasks retry <id>", "tasks run"],
+        "agents" => ["agents"],
+        "tasks" => ["tasks", "tasks -completed", "tasks -list", "tasks deny <id> \"reason\"","tasks list", "tasks list -archived", "tasks approve -all", "tasks run -all", "tasks clear -all", "tasks propose SENTINEL sentinel.defender status", "tasks propose SENTINEL sentinel.firewall status", "tasks propose SENTINEL sentinel.events recent", "tasks inspect <id>", "tasks propose <agent-id|name> <capability> \"argument\" [request-key]", "tasks approve <id>", "tasks cancel <id>", "tasks retry <id>", "tasks run"],
         "voice" => ["voice status", "voice devices", "voice microphone <-1|id>", "voice <microphone-id>", "voice language <culture>", "voice listen", "voice review", "voice edit <text>", "voice send", "voice cancel", "voice mute <on|off>", "voice speak", "voice profile [agent-id|name \"voice name\" rate volume]"],
         "help" => ["help", "help -md"],
         "context" => ["context add \"file\" <temporary|persistent> \"project\" [registered-agent-id|name]", "context list [project]", "context add -search [temporary|persistent \"project\" [agent]]", "context select <id|name> [id|name ...]", "context select clear", "context read [id|name ...|-selected]", "context revoke <id|name>", "context remove <id|name>"],

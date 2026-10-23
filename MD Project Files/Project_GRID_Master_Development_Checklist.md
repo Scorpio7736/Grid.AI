@@ -896,6 +896,22 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 **Completion verification (2026-10-22):** 582 tests passed (14 Core, 157 Simulation, 97 Persistence, 314 Terminal). Ten new syntax/migration/help tests plus updated host/window tests verify both switches, quoted paths, rejected mixed/invalid arguments and the existing role/confirmation/save/cleanup boundaries. No schema or inventory change; tests use disposable transfers and do not relocate the user's GRID. [Updated transfer documentation](Project_GRID_Transfer_Implementation.md).
 
+## 4.2G Terminal controls, task views and transfer destinations
+
+**Implemented and verified — 2026-10-23.** Restored after the fresh clone, then completed with schema v21, updated help and regression coverage.
+
+- [x] Replace start/pause with `grid -start` / `grid -pause`, with help/completion and migration guidance
+- [x] Make `tasks` show all authorized history, completed or not; add `tasks -completed` and `tasks -list` (exclude Completed and Denied); retain archive labels and agent filters
+- [x] Define persisted Denied status/reason/audit without conflating cancellation/failure; verify migration and visibility
+- [x] Accept drive roots for `grid -copyto` / `grid -transferto` and add `-select` folder pickers
+- [x] Retain Master Control preview/confirmation, verified transfer/recovery and unrelated-file protection at roots; verify collisions, media failures and cancellation
+
+**Completion verification:** 658 tests passed (14 Core, 157 Simulation, 98 Persistence, 389 Terminal), including ten new 4.2G cases. Root/picker destinations create a new GRID7736 child and refuse collisions; existing files remain protected. Denial is a saved human decision distinct from cancellation. Native dialog appearance and physical media/cross-PC disaster acceptance remain Phase 8 checks. Agent start/pause coupling remains 5.9. See [implementation and acceptance commands](Project_GRID_Terminal_Controls_Implementation.md).
+
+### 4.2G folder-picker repair — 2026-10-23
+
+Fixed a user-reported Windows dialog failure: FolderBrowserDialog supports Description, not Title. Removed the unsupported property, explicitly emit JSON null on cancellation (Windows PowerShell otherwise emits no JSON for null), suppress first-use progress and keep raw helper stderr/CLIXML out of terminal errors. **392 terminal tests passed**, including three new tests executing the actual Windows PowerShell helper with a real Windows Forms dialog object. Tests substitute only the modal ShowDialog result for selection/cancellation and verify concise failure output. Physical dialog interaction remains a manual check. Earlier injected-picker tests did not cover this platform failure. Restart GRID to load the corrected binary. Schema remains v21.
+
 ## 4.3 User-supplied context (GRID-REQ-002)
 
 **Implemented - 2026-10-20.** Terminal `context add/list/read/revoke/remove` captures explicit local files with project labels, version fingerprints, retention and optional registered-Agent grants. Text/source support is strict UTF-8; initial document support is DOCX main-body text. Unsupported formats are refused.
@@ -1082,6 +1098,14 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ---
 
+## 5.9 Agent lifecycle tied to GRID — completed 2026-10-23
+
+- [x] Initialize/resume agents only with `grid -start`; pause them with `grid -pause`; retain saved identities/memory when inactive
+- [x] Reconcile agents initialize, lazy MCP creation and startup entry points; prevent independent activity outside GRID
+- [x] Define safe pause/shutdown handling of active inference/host tasks; never replay or approve tasks merely because GRID resumes
+
+**Completion verification:** 672 tests passed (14 Core, 157 Simulation, 99 Persistence, 402 Terminal), including eleven new lifecycle, shared-window and real terminal startup cases. Engine activity checks and generation validation block paused/stale replies and dispatch. Active tasks settle cooperatively with an interruption record; external effects cannot be rolled back. Resuming preserves identities and never dispatches work automatically. Explicit `--start` follows authenticated initialization, while normal reload is paused. The refreshed portable Release package also passed its isolated bundled-runtime/MCP reply check without opening a user world. Schema remains v21. See [contract, limits and terminal test](Project_GRID_Agent_Lifecycle_Implementation.md). Historical manual simulation stepping and explicit infrastructure diagnostics remain available; they do not enable agent host-task activity.
+
 # Phase 6 — Intelligence
 
 ## 6.1 Shared local AI
@@ -1101,7 +1125,7 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 - [x] Build prompt and context construction layer
 - [x] Retrieve current authoritative world state
-- [x] Retrieve relevant conversation and agent memories
+- [x] Retrieve selected-conversation excerpts and permitted saved social memories; cross-conversation user/project recall remains planned in 6.2B
 - [x] Attribute retrieved information to its sources
 - [x] Use distinct personality profiles for named agents
 - [x] Differentiate observed facts, suggestions and fictional dialogue
@@ -1131,6 +1155,17 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 - [ ] Show who is responding, keep shared meeting history and preserve participant-specific access to private context
 - [ ] Prevent meeting participation or responder selection from granting another agent's capabilities; proposed actions still follow normal approval
 - [ ] Verify participant selection, directed turns, response ordering, scoped context, window lifecycle and offline fallback
+
+## 6.2B Persistent agent memory and professional tone
+
+**Planned; restored 2026-10-23. Not implemented.** Prioritize before further intelligence expansion. Current recall is selected-conversation excerpts and social-simulation memories only.
+
+- [ ] Persist relevant user preferences, decisions, project facts and unfinished work across conversations/restarts
+- [ ] Preserve source messages, timestamps and agent/project scope; distinguish observations/confirmed facts from model suggestions
+- [ ] Retrieve only relevant permitted memories; handle stale/conflicting facts and prevent cross-agent leakage
+- [ ] Provide memory review/correct/forget controls, including prevention of re-ingesting forgotten items from retained history
+- [ ] Require professional, direct, serious, helpful responses without flattery, unnecessary politeness/reassurance or repeated disclaimers; retain specialties and respectful disagreement
+- [ ] Verify new-conversation and restart recall, corrections, forgetting, privacy, offline storage and representative tone cases
 
 ## 6.3 Task assistance and context (GRID-REQ-002)
 
@@ -1327,6 +1362,17 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 - [ ] Integrate and verify 4.2D transfers with the implemented 4.2F `grid -transferto "location"` / `grid -copyto "location"` names for complete managed-file relocation/duplication across PC GRID and Flash GRID layouts
 
+### 8.6A Fresh-clone and bundled-runtime foundation — completed 2026-10-23
+
+- [x] Track reproducible runtime/model/SDK/cache preparation scripts and clearly distinguish a source clone from a prepared release
+- [x] Build a self-contained Windows x64 apphost and relative portable runtime/data layout without requiring installed .NET/Ollama or a user model cache for AI/chat
+- [x] Automatically start/stop the host-owned AI child, report missing assets, and avoid personal Ollama services
+- [x] Resolve MAXIS SDK/cache paths inside the prepared runtime; retain explicit workspace/dependency requirements
+- [x] Repair fallback/inline/attached typewriter rendering and explicit on/off behavior
+- [x] Add non-destructive runtime verification and test with restricted global paths and a fresh process profile
+
+**Verification:** 648 automated tests passed; private runtime and self-contained package both generated real MCP replies. Package verification used restricted PATH, fresh profile and invalid global runtime/cache paths. Schema v20 unchanged. Two-PC/clean-VM, voice/driver/media and full installer acceptance remain open under 8.6/8.7. [Implementation and limits](Project_GRID_Fresh_Clone_and_Portable_Runtime.md).
+
 ## 8.7 Offline runtime acceptance (GRID-REQ-008)
 
 **Planned - 2026-10-20.** Every GRID task must be offline-capable; only explicit installations/provisioning may access the internet.
@@ -1338,6 +1384,19 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 - [ ] Test save/restart/recovery and the prepared flash-drive package on another supported PC while offline
 - [ ] Record unavailable features honestly; do not substitute simulated success or stale facts for real offline execution
 - [ ] Make portable/offline acceptance a release gate before claiming plug-and-play completion
+
+## 8.8 Startup full-test gate — pending requirement restored 2026-10-23
+
+- [ ] Run and visibly display all required tests before normal owner startup; finish remaining suites after failures
+- [ ] Clear the screen and show normal startup only after all required tests pass
+- [ ] Otherwise display errors and `GRID was not started.`, then `Press Enter to close.`; missing/crashed/skipped required tests cannot count as passing
+- [ ] Bundle offline fixtures/runner, isolate user saves, prevent recursive probe launches and let attached terminals reuse the tested host
+
+## 8.9 Portable device-change recognition — pending requirement restored 2026-10-23
+
+- [ ] Alert when the host device changes, discover its hardware, and ask `Save as another device` or `Use one time`
+- [ ] Persist an additional profile for save; keep one-time profile session-only; preserve existing profiles and saved city/world
+- [ ] Revalidate machine-bound paths/credentials/scopes without carrying task approvals or granting OS privileges; verify restart, repeat visit, partial discovery and offline behavior
 
 # Release Gates
 

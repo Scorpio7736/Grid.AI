@@ -1,7 +1,7 @@
 namespace Grid.Simulation.Tasks;
 
 public enum AgentRole { MCP, MAXIS, SENTINEL, JN, VOLT, RELAY }
-public enum TaskStatus { AwaitingApproval, Queued, Running, Completed, Failed, Cancelled, TimedOut, Interrupted }
+public enum TaskStatus { AwaitingApproval, Queued, Running, Completed, Failed, Cancelled, TimedOut, Interrupted, Denied }
 public sealed record SystemAgent(Guid Id, AgentRole Role);
 public sealed record TaskAudit(DateTimeOffset AtUtc, string Action, Guid? OperatorId, Guid? ActiveAgentId, string Detail);
 public sealed record TaskRecord(Guid Id, string RequestKey, Guid AgentId, string Capability, string Argument,
@@ -36,9 +36,11 @@ public sealed record TaskState(IReadOnlyList<SystemAgent> Agents, IReadOnlyList<
                 t.Audit.Any(a => a is null || a.AtUtc.Offset != TimeSpan.Zero || !Label(a.Action, 40) || !Label(a.Detail, 512) || a.OperatorId == Guid.Empty || a.ActiveAgentId == Guid.Empty))
                 throw new InvalidDataException("Invalid durable task record.");
             if ((t.Status is TaskStatus.Queued or TaskStatus.Running) && t.Audit.Count > 62 ||
-                (t.Status is TaskStatus.Completed or TaskStatus.Failed or TaskStatus.Cancelled or TaskStatus.TimedOut or TaskStatus.Interrupted) && t.Result is null ||
+                (t.Status is TaskStatus.Completed or TaskStatus.Failed or TaskStatus.Cancelled or TaskStatus.TimedOut or TaskStatus.Interrupted or TaskStatus.Denied) && t.Result is null ||
                 t.Status == TaskStatus.Completed && t.ApprovedBy is null)
                 throw new InvalidDataException("Invalid task result or reserved lifecycle audit space.");
+            if (t.Status == TaskStatus.Denied && (t.ApprovedBy is not null || !t.Audit.Any(a => a.Action == "Denied" && a.OperatorId == t.OperatorId && a.ActiveAgentId is null)))
+                throw new InvalidDataException("Denied tasks require a human denial audit and no approval.");
             if (t.Archived && (t.Status is TaskStatus.AwaitingApproval or TaskStatus.Queued or TaskStatus.Running || !t.Audit.Any(a => a.Action == "Archived")))
                 throw new InvalidDataException("Archived tasks must be terminal and retain their archive audit.");
             var agent = state.Agents.SingleOrDefault(a => a.Id == t.AgentId) ?? throw new InvalidDataException("Task target is not a system agent.");

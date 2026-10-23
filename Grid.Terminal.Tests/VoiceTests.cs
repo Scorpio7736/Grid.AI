@@ -38,7 +38,7 @@ public sealed class VoiceTests
     public VoiceTests()
     {
         registry.Add(identity); engine = new(GridWorldFactory.CreateGenesis(), editAuthorizer: registry); identity.Attach(engine); identity.Login();
-        commands = DefaultCommands.Create(engine); chat = ChatCommands.Register(commands, engine, identity);
+        commands = DefaultCommands.Create(engine); chat = ChatCommands.Register(commands, engine.PrepareChatFixture(), identity);
         VoiceCommands.Register(commands, engine, identity, chat, provider, () => saves++); commands.UseIdentity(identity);
     }
     private Task<CommandResult> Run(string command) => commands.Execute(command).Voice!.Run(TextWriter.Null, CancellationToken.None);
@@ -97,7 +97,7 @@ public sealed class VoiceTests
     [Fact]
     public async Task PlaybackStartsMutedAndUsesSavedProfileOnlyOnExplicitSpeak()
     {
-        commands.Execute("connect"); var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
+        commands.Execute("connect"); var agent = engine.CreateRunningCoordinator(); engine.RegisterAgentIdentity(agent.Id);
         Assert.Contains("saved", commands.Execute("voice profile MCP \"Test Voice\" -2 70").Text); Assert.Equal(1, saves);
         commands.Execute("talk hello"); Assert.Null(provider.Spoken);
         Assert.Contains("muted", commands.Execute("voice speak").Text);
@@ -108,7 +108,7 @@ public sealed class VoiceTests
     [Fact]
     public void ProfileRejectsInvalidValuesUnregisteredAgentsAndUnauthorizedServiceCalls()
     {
-        commands.Execute("connect"); var agent = engine.EnsureCoordinator();
+        commands.Execute("connect"); var agent = engine.CreateRunningCoordinator();
         Assert.Contains("Register", commands.Execute("voice profile MCP test 0 80").Text);
         engine.RegisterAgentIdentity(agent.Id);
         Assert.Contains("Invalid", commands.Execute("voice profile MCP test 11 80").Text);
@@ -155,7 +155,7 @@ public sealed class VoiceTests
     public void AttachedVoiceIsExplicitlyHostOnly()
     {
         var child = identity.CreateAttachment(); registry.Add(child); var dispatcher = DefaultCommands.Create(engine);
-        var attachedChat = ChatCommands.Register(dispatcher, engine, child); VoiceCommands.Register(dispatcher, engine, child, attachedChat, provider); dispatcher.UseIdentity(child);
+        var attachedChat = ChatCommands.Register(dispatcher, engine.PrepareChatFixture(), child); VoiceCommands.Register(dispatcher, engine, child, attachedChat, provider); dispatcher.UseIdentity(child);
         Assert.Contains("original host", dispatcher.Execute("voice listen").Text);
     }
     [Fact]

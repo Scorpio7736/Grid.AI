@@ -94,11 +94,11 @@ public sealed class TerminalTests
         Assert.Contains("Energy changes: 1", commands.Execute("step").Text);
         commands.Execute("tick");
         Assert.Equal(2, engine.TickCount);
-        commands.Execute("start");
+        commands.Execute("grid -start");
         Assert.True(engine.IsRunning);
         Assert.Contains("Error:", commands.Execute("step").Text);
         Assert.Equal(2, engine.TickCount);
-        commands.Execute("pause");
+        commands.Execute("grid -pause");
         Assert.False(engine.IsRunning);
         Assert.Contains("Tick: 2", commands.Execute("status").Text);
         Assert.True(commands.Execute("exit").ExitRequested);
@@ -119,7 +119,7 @@ public sealed class TerminalTests
     [Theory]
     [InlineData("step\nstatus\nexit\nstep\n", 1)]
     [InlineData("step\n", 1)]
-    [InlineData("start\npause\nstep\nexit\n", 1)]
+    [InlineData("grid -start\ngrid -pause\nstep\nexit\n", 1)]
     [InlineData("invalid\nstep\nexit\n", 1)]
     public async Task HostHandlesCommandsExitAndEof(string script, long expected)
     {

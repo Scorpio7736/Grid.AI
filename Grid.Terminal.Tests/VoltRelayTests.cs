@@ -28,7 +28,7 @@ public sealed class VoltRelayTests
     private readonly GridSimulationEngine engine;
     public VoltRelayTests()
     {
-        registry.Add(owner); engine=new(GridWorldFactory.CreateGenesis(),timeProvider:clock,editAuthorizer:registry); owner.Attach(engine); owner.Login(); engine.InitializeSystemAgents(owner.Reference);
+        registry.Add(owner); engine=new(GridWorldFactory.CreateGenesis(),timeProvider:clock,editAuthorizer:registry); owner.Attach(engine); owner.Login(); engine.StartAgents(owner.Reference);
     }
     private Task Save(CancellationToken token) { token.ThrowIfCancellationRequested(); GridSimulationEngine.ValidateSnapshot(engine.GetSnapshot()); return Task.CompletedTask; }
     private TaskRecord Propose(string role,string capability,string argument)=>engine.ProposeTask(owner.Reference,engine.ResolveProgram(role).Id,capability,argument,Guid.NewGuid().ToString("N"));
@@ -51,7 +51,7 @@ public sealed class VoltRelayTests
         var task=Propose("VOLT","volt.throttle","eco"); Assert.Equal(engine.TickDuration,engine.AutomaticTickDelay);
         await Assert.ThrowsAsync<InvalidOperationException>(()=>engine.RunNextTaskAsync(owner.Reference,Save,default));
         engine.ApproveTask(owner.Reference,task.Id); await engine.RunNextTaskAsync(owner.Reference,Save,default);
-        Assert.Equal(engine.TickDuration*4,engine.AutomaticTickDelay); engine.Step(); Assert.Equal(engine.TickDuration,engine.ElapsedSimulationTime);
+        Assert.Equal(engine.TickDuration*4,engine.AutomaticTickDelay); engine.Pause(); engine.Step(); engine.Start(); Assert.Equal(engine.TickDuration,engine.ElapsedSimulationTime);
         await Run("VOLT","volt.throttle","normal"); Assert.Equal(engine.TickDuration,engine.AutomaticTickDelay);
     }
     [Fact]

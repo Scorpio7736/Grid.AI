@@ -19,7 +19,7 @@ public sealed class GroundedDialogueTests
         {
             var registry = new TerminalSessionRegistry(); registry.Add(Identity);
             Engine = new(GridWorldFactory.CreateGenesis(), editAuthorizer: registry); Identity.Attach(Engine); Identity.Login();
-            Commands = DefaultCommands.Create(Engine); Chat = ChatCommands.Register(Commands, Engine, Identity, ai, save); Commands.UseIdentity(Identity);
+            Commands = DefaultCommands.Create(Engine); Chat = ChatCommands.Register(Commands, Engine.PrepareChatFixture(), Identity, ai, save); Commands.UseIdentity(Identity);
             Commands.Execute("connect MCP");
         }
         public Task<CommandResult> Talk(string input) => Commands.Execute("talk " + input).BrokerOperation!(default);
@@ -86,7 +86,7 @@ public sealed class GroundedDialogueTests
     public async Task PromptIsBoundedAndIncludesOnlySelectedConversation()
     {
         string seen = ""; var f = new Fixture(new Inference((p,_)=>{seen=p;return Task.FromResult(new InferenceReply(true,"Suggestion: wait.",""));}));
-        var secret = f.Engine.StartConversation(f.Engine.LocalOperator,f.Engine.EnsureCoordinator());
+        var secret = f.Engine.StartConversation(f.Engine.LocalOperator,f.Engine.CreateRunningCoordinator());
         f.Engine.Talk(secret,f.Engine.LocalOperator,"OTHER_TRANSCRIPT_SECRET");
         for(var i=0;i<20;i++) f.Engine.Talk(f.Chat.ActiveConversation!.Value,f.Engine.LocalOperator,"remember resource planning " + i);
         await f.Talk("resource planning");
@@ -103,14 +103,14 @@ public sealed class GroundedDialogueTests
     [InlineData("RELAY", "messenger")]
     public void NamedProfilesUseRegisteredRole(string name, string profile)
     {
-        var f = new Fixture(Reply()); f.Engine.InitializeSystemAgents(f.Identity.Reference);
+        var f = new Fixture(Reply()); f.Engine.StartAgents(f.Identity.Reference);
         var id = f.Engine.StartConversation(f.Engine.LocalOperator,f.Engine.ResolveProgram(name));
         Assert.Contains(profile,f.Engine.PrepareGroundedTurn(id,f.Engine.LocalOperator,"hello").Prompt);
     }
     [Fact]
     public void ProgramActorCannotRetrieveGlobalStateOrAnotherTranscript()
     {
-        var f = new Fixture(Reply()); f.Engine.InitializeSystemAgents(f.Identity.Reference);
+        var f = new Fixture(Reply()); f.Engine.StartAgents(f.Identity.Reference);
         var actor = f.Engine.ResolveProgram("MAXIS"); var id = f.Engine.StartConversation(actor,f.Engine.ResolveProgram("MCP"));
         var turn = f.Engine.PrepareGroundedTurn(id,actor,"status");
         Assert.DoesNotContain("districts ",turn.Facts); Assert.DoesNotContain("occupation",turn.Facts);
@@ -136,7 +136,7 @@ public sealed class GroundedDialogueTests
         engine.ConfigureSocial(second.Id, Grid.Simulation.Social.SocialPreference.Cooperative);
         engine.Step();
         Assert.NotEmpty(engine.GetSnapshot().Social.Residents.Single(r => r.ProgramId == first.Id).Memories);
-        var id = engine.StartConversation(engine.LocalOperator, engine.ResolveProgram(first.Id.ToString()));
+        engine.Start(); var id = engine.StartConversation(engine.LocalOperator, engine.ResolveProgram(first.Id.ToString()));
         var turn = engine.PrepareGroundedTurn(id, engine.LocalOperator, "What do you remember?");
         Assert.Contains("SIMULATED experience", turn.Prompt); Assert.Contains("social memory " + first.Id, turn.Sources);
         var privateId = engine.StartConversation(engine.ResolveProgram(second.Id.ToString()),engine.ResolveProgram(first.Id.ToString()));

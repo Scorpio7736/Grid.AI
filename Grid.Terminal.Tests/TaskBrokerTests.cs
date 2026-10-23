@@ -18,10 +18,10 @@ public sealed class TaskBrokerTests
     public TaskBrokerTests()
     {
         registry.Add(owner); engine = new(GridWorldFactory.CreateGenesis(), editAuthorizer: registry); owner.Attach(engine); owner.Login();
-        commands = DefaultCommands.Create(engine); TaskCommands.Register(commands, engine, owner, Save); commands.UseIdentity(owner);
+        commands = DefaultCommands.Create(engine); TaskCommands.Register(commands, engine, owner, Save); GridTransfer.Register(commands, engine, startAgents: () => engine.StartAgents(owner.Reference)); commands.UseIdentity(owner);
     }
     private Task Save(CancellationToken token) { token.ThrowIfCancellationRequested(); saves++; GridSimulationEngine.ValidateSnapshot(engine.GetSnapshot()); return Task.CompletedTask; }
-    private void Initialize() => engine.InitializeSystemAgents(owner.Reference);
+    private void Initialize() => engine.StartAgents(owner.Reference);
     private TaskRecord Proposal(string role = "MAXIS", string? capability = null, string argument = "test", string? key = null) =>
         engine.ProposeTask(owner.Reference, engine.ResolveProgram(role).Id, capability ?? role.ToLowerInvariant() + ".demo", argument, key ?? Guid.NewGuid().ToString("N"));
     private TaskRecord Record(Guid id) => engine.GetSnapshot().Tasks.Records.Single(t => t.Id == id);
@@ -58,9 +58,10 @@ public sealed class TaskBrokerTests
     [Fact]
     public void RegistryIsExplicitIdempotentAndDoesNotImplyWorkingSpecialists()
     {
-        Assert.Empty(engine.GetSnapshot().Tasks.Agents); Assert.Contains("Role", commands.Execute("agents initialize").Text);
+        Assert.Empty(engine.GetSnapshot().Tasks.Agents); Assert.Contains("grid -start", commands.Execute("agents initialize").Text);
+        Assert.Empty(engine.GetSnapshot().Tasks.Agents); commands.Execute("grid -start");
         var ids = engine.GetSnapshot().Tasks.Agents.Select(a => a.Id).ToArray();
-        Assert.Equal(6, ids.Length); engine.InitializeSystemAgents(owner.Reference);
+        Assert.Equal(6, ids.Length); engine.StartAgents(owner.Reference);
         Assert.Equal(ids, engine.GetSnapshot().Tasks.Agents.Select(a => a.Id));
         Assert.All(ids, id => Assert.Contains(id, engine.GetSnapshot().Identities.RegisteredAgents));
         Assert.Contains("maxis.delay", commands.Execute("agents").Text);
@@ -204,7 +205,7 @@ public sealed class TaskBrokerTests
     [Fact]
     public async Task TerminalWorkflowRunsExplicitlyAndChatNeverDispatchesTasks()
     {
-        commands.Execute("agents initialize"); ChatCommands.Register(commands, engine, owner); commands.UseIdentity(owner);
+        commands.Execute("grid -start"); ChatCommands.Register(commands, engine.PrepareChatFixture(), owner); commands.UseIdentity(owner);
         commands.Execute("connect MCP"); commands.Execute("talk MAXIS run my tests"); Assert.Empty(engine.GetSnapshot().Tasks.Records);
         Assert.Contains("AwaitingApproval", commands.Execute("tasks propose MAXIS maxis.demo \"hello\" terminal-key").Text);
         var t = Assert.Single(engine.GetSnapshot().Tasks.Records); commands.Execute("tasks approve " + t.Id);

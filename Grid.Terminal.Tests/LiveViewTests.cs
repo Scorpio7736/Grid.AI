@@ -172,7 +172,7 @@ public sealed class LiveViewTests
         terminal.OnDraw = () => terminal.Keys.Enqueue(ConsoleKey.Q);
         using var output = new StringWriter();
         var host = new TerminalHost(engine, DefaultCommands.Create(engine),
-            new StringReader("start\nlive\nstatus\npause\nstep\nexit\n"), output, false, terminal);
+            new StringReader("grid -start\nlive\nstatus\ngrid -pause\nstep\nexit\n"), output, false, terminal);
         Assert.Equal(0, await host.RunAsync().WaitAsync(TimeSpan.FromSeconds(5)));
         Assert.Contains("State: Running", output.ToString());
         Assert.Contains("Advanced to tick 1", output.ToString());

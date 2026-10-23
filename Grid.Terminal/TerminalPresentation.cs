@@ -5,7 +5,7 @@ public static class TerminalPresentation
     public static string Help(IReadOnlyList<TerminalCommand> commands)
     {
         var groups = new (string Title, string[] Names)[] {
-            ("SIMULATION CONTROL", ["start", "pause", "step", "tick"]),
+            ("SIMULATION CONTROL", ["grid", "step", "tick"]),
             ("WORLD & POPULATION", ["status", "city", "districts", "programs", "inspect", "jobs"]),
             ("MONITORING & ANALYTICS", ["live", "behaviors", "activity", "social", "resources", "history"]),
             ("IDENTITY & ADMINISTRATION", ["login", "credentials", "logout", "whoami", "switch", "self", "register-agent", "edit", "apply-edit", "cancel-edit"]),

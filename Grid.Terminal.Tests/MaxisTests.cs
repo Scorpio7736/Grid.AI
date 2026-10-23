@@ -21,7 +21,7 @@ public sealed class MaxisTests : IDisposable
         File.WriteAllText(Path.Combine(Root,"sample.csproj"), "<Project><Target Name=\"Build\"><Message Text=\"MAXIS BUILD VERIFIED\" Importance=\"high\" /></Target><Target Name=\"VSTest\"><Message Text=\"MAXIS TEST TARGET VERIFIED\" Importance=\"high\" /></Target></Project>");
         File.WriteAllText(Path.Combine(Root,"sample.cs"),"class Before { }");
         registry.Add(owner); engine = new(GridWorldFactory.CreateGenesis(),editAuthorizer:registry); owner.Attach(engine); owner.Login();
-        engine.InitializeSystemAgents(owner.Reference); engine.ConfigureMaxisRuntime(Artifacts);
+        engine.StartAgents(owner.Reference); engine.ConfigureMaxisRuntime(Artifacts);
         engine.RegisterDevelopmentWorkspace(owner.Reference,"sample",Root,"sample.csproj");
     }
     private Task Save(CancellationToken token) { token.ThrowIfCancellationRequested(); GridSimulationEngine.ValidateSnapshot(engine.GetSnapshot()); return Task.CompletedTask; }

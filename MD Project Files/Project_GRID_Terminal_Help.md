@@ -1,5 +1,65 @@
 # GRID7736 - Terminal Help
 
+## Agent lifecycle — 5.9
+
+Start GRID before talking to agents or running tasks. Existing identities/history remain saved while paused; transcripts and task inspection remain available. `agents initialize` only shows migration guidance, and connect no longer creates MCP. Explicit launch `--start` initializes after owner login; normal startup is paused.
+
+```text
+grid
+    - grid -start
+      # USAGE: Initialize/resume six agents and the simulation; no automatic task approvals or dispatch.
+    - grid -pause
+      # USAGE: Pause agent activity; cancel pending replies and interrupt active task attempts safely.
+    # EXAMPLE: grid -start
+agents
+    - agents
+      # USAGE: Show saved roles and active/paused lifecycle state.
+    # EXAMPLE: agents
+```
+
+Active host actions stop cooperatively and may have partial external effects. Interrupted attempts require review, retry and fresh approval. Queued work needs explicit dispatch after resume. Attached Master Control terminals can start/pause the same GRID. [Lifecycle details and test](Project_GRID_Agent_Lifecycle_Implementation.md).
+
+
+## Terminal controls and task views — 4.2G
+
+```text
+grid
+    - grid -start
+      # USAGE: Initialize/resume agents and the simulation as Master Control.
+    - grid -pause
+      # USAGE: Pause simulation and agent activity; in-flight work settles cooperatively.
+    - grid -copyto -select
+      # USAGE: Pick a container for a new GRID7736 copy; review and confirm y/n.
+    - grid -transferto -select
+      # USAGE: Pick a container for a new GRID7736 move; review and confirm y/n.
+    - grid -copyto "E:\"
+      # USAGE: Copy to E:\GRID7736; refuse an existing target and preserve other drive files.
+    - grid -transferto "E:\"
+      # USAGE: Move to E:\GRID7736 using the verified transfer and cleanup flow.
+    # EXAMPLE: grid -copyto -select
+
+tasks
+    - tasks
+      # USAGE: Show all authorized history, including completed, denied and labeled archives.
+    - tasks -completed [-AGENT]
+      # USAGE: Show only Completed tasks.
+    - tasks -list [-AGENT]
+      # USAGE: Exclude Completed and Denied; cancelled/failed/archived records remain visible.
+    - tasks deny <reference> "reason"
+      # USAGE: Master Control rejects an AwaitingApproval task with a saved reason/audit.
+    # EXAMPLE: tasks -list -MAXIS
+```
+
+`tasks list` remains an alias for all history; `-archived` limits it to archives. Old `start`/`pause` only show migration guidance. Transfers remain original-host-only. Selecting a folder creates its GRID7736 child; explicit non-root paths remain exact new destinations. Existing targets are never merged or overwritten. Agent lifecycle coupling is implemented in 5.9. [Implementation and verification](Project_GRID_Terminal_Controls_Implementation.md).
+
+
+## Bundled AI and animation (2026-10-23)
+
+Normal GRID startup owns the bundled local AI server. Fresh source clones need `Prepare-GridRuntime.ps1`; prepared portable packages use `launch.cmd`. Use `ai status` / `ai test` after login, or `launch.cmd --verify-runtime` for an isolated package test. No separate global Ollama server is required.
+
+`typewriter on` and `typewriter off` now work in original-host inline chat and attached chat. Fallback replies animate too; redirected streams and TERM=dumb remain instant. Explicit on overrides an initial GRID_TYPEWRITER=off preference.
+
+
 ## Conversational display
 
 Use `talk <message>` to chat. Normal replies and `transcript` show You / agent text; technical evidence stays saved.
@@ -37,7 +97,7 @@ If unavailable, run `Start-GridLocalAI.ps1` from PowerShell beside the built ter
 ```text
 tasks
     - tasks list -MAXIS
-      # USAGE: List visible operational tasks for one registered agent.
+      # USAGE: List all visible retained tasks for one registered agent, including labeled archives.
     - tasks list -archived -MAXIS
       # USAGE: Read retained archived history for that agent.
     - tasks approve -all
@@ -168,17 +228,17 @@ logout
 ## Simulation and world
 
 ```text
-start
-    - start
+grid
+    - grid -start
       # USAGE: Start or resume simulation; Master Control required.
-    # EXAMPLE: start
+    # EXAMPLE: grid -start
 ```
 
 ```text
-pause
-    - pause
+grid
+    - grid -pause
       # USAGE: Pause simulation.
-    # EXAMPLE: pause
+    # EXAMPLE: grid -pause
 ```
 
 ```text
@@ -555,10 +615,10 @@ Voice troubleshooting (2026-10-21): capture reports its duration; recordings sho
 ```text
 agents
     - agents initialize
-      # USAGE: Master Control explicitly creates/registers six system-agent roles in a saved world. Names alone confer no capability.
+      # USAGE: Migration guidance only. Use grid -start to initialize/resume agents.
     - agents
       # USAGE: List role IDs and allowed demonstration capabilities.
-    # EXAMPLE: agents initialize
+    # EXAMPLE: grid -start
 
 tasks
     - tasks list
@@ -598,7 +658,7 @@ mcp
     # EXAMPLE: mcp request "MAXIS: demo hello; JN: demo inventory" example-plan-1
 ```
 
-Initialize roles with `agents initialize`. Only Master Control or registered MCP can coordinate. Actions are demo for specialists and delay for MAXIS; real specialist work remains planned. Inspect and approve each child with `tasks inspect <id>` and `tasks approve <id>`, then dispatch with `tasks run` on the original host. See [MCP coordination](Project_GRID_MCP_Coordination_Implementation.md).
+Initialize/resume roles with `grid -start`. Only Master Control or registered MCP can coordinate. Actions are demo for specialists and delay for MAXIS; real specialist work remains planned. Inspect and approve each child with `tasks inspect <id>` and `tasks approve <id>`, then dispatch with `tasks run` on the original host. See [MCP coordination](Project_GRID_MCP_Coordination_Implementation.md).
 
 ## Task and MCP readability follow-up — 2026-10-21
 

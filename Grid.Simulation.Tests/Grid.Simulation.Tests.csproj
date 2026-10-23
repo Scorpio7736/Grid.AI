@@ -15,4 +15,5 @@
     <ProjectReference Include="../Grid.Simulation/Grid.Simulation.csproj" />
   </ItemGroup>
   <ItemGroup><Compile Include="../TestSupport/EditingTestSupport.cs" Link="EditingTestSupport.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="../TestSupport/AgentTestSetup.cs" Link="AgentTestSetup.cs" /></ItemGroup>
 </Project>

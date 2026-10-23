@@ -7,7 +7,7 @@ namespace Grid.Terminal;
 /// <summary>Owns input/output and scheduler lifetime; commands are independently registered and tested.</summary>
 public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher commands,
     TextReader input, TextWriter output, bool showPrompt = true, ILiveTerminal? liveTerminal = null, IWorldPersistenceSession? persistence = null,
-    IHostTelemetryMonitor? telemetry = null, Func<bool>? clearScreen = null, bool interactiveConfirmation = false, TerminalSessionUi? sessionUi = null, GridTransfer? transfer = null, Func<Task>? stopAttachments = null, Func<CancellationToken, Task<string[]>>? contextPicker = null)
+    IHostTelemetryMonitor? telemetry = null, Func<bool>? clearScreen = null, bool interactiveConfirmation = false, TerminalSessionUi? sessionUi = null, GridTransfer? transfer = null, Func<Task>? stopAttachments = null, Func<CancellationToken, Task<string[]>>? contextPicker = null, Func<CancellationToken, Task<string?>>? transferPicker = null)
 {
     public async Task<int> RunAsync(CancellationToken cancellationToken = default)
     {
@@ -117,7 +117,15 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                     }
                 }
                 if (sessionUi is not null && !await sessionUi.HandleAsync(result, shutdown.Token)) break;
-                if (result.Text.Length != 0) await output.WriteLineAsync(result.Text);
+                if (result.Text.Length != 0)
+                {
+                    var generation = commands.IdentityGeneration;
+                    await TypewriterRenderer.WriteAsync(output, result.Text, result.AnimateFrom,
+                        interactiveConfirmation && commands.Typewriter && TypewriterRenderer.Enabled(Console.IsInputRedirected, Console.IsOutputRedirected,
+                            Environment.GetEnvironmentVariable("TERM"), null),
+                        () => { if (!Console.KeyAvailable) return false; Console.ReadKey(true); return true; },
+                        () => { if (result.AnimateFrom is not null && (!commands.IsAllowed("talk") || commands.IdentityGeneration != generation)) throw new OperationCanceledException("Conversation session revoked."); return Task.CompletedTask; }, shutdown.Token);
+                }
                 if (result.Transfer is { } request)
                 {
                     if (transfer is null || persistence is null) await output.WriteLineAsync("Transfer unavailable: a persistent world is required.");
@@ -126,6 +134,23 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                     {
                         try
                         {
+                            if (request.Destination.Equals("-select", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var generation = commands.IdentityGeneration;
+                                using var pickerStop = CancellationTokenSource.CreateLinkedTokenSource(shutdown.Token);
+                                pickerStop.CancelAfter(TimeSpan.FromMinutes(2));
+                                var pick = (transferPicker ?? TransferFolderPicker.PickAsync)(pickerStop.Token);
+                                while (!pick.IsCompleted)
+                                {
+                                    await Task.WhenAny(pick, Task.Delay(50, shutdown.Token));
+                                    if (!commands.IsAllowed("grid") || commands.IdentityGeneration != generation || scheduler.IsCompleted || autosave.IsCompleted || monitoring.IsCompleted)
+                                        pickerStop.Cancel();
+                                }
+                                var selected = await pick;
+                                if (!commands.IsAllowed("grid") || commands.IdentityGeneration != generation) throw new UnauthorizedAccessException("Transfer session changed while selecting a folder.");
+                                if (selected is null) { await output.WriteLineAsync("Transfer cancelled. Files unchanged."); continue; }
+                                request = request with { Destination = Path.Combine(selected, "GRID7736") };
+                            }
                             var plan = transfer.Prepare(request);
                             await output.WriteLineAsync(GridTransfer.Preview(plan)); await output.FlushAsync();
                             while (true)
@@ -144,6 +169,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                         }
                         catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException)
                         { await output.WriteLineAsync("Transfer refused: " + e.Message); }
+                        catch (OperationCanceledException) when (!shutdown.IsCancellationRequested) { await output.WriteLineAsync("Transfer selection cancelled. Files unchanged."); }
                     }
                     if (transferPlan is not null) break;
                     continue;

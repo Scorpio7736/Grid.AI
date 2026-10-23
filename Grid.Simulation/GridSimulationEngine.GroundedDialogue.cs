@@ -3,7 +3,10 @@ using Grid.Communication;
 namespace Grid.Simulation;
 
 public sealed record GroundedTurn(Guid ConversationId, Recipient Actor, int MessageCount, string Input,
-    string Prompt, string Facts, string Sources, MessageOrigin Origin);
+    string Prompt, string Facts, string Sources, MessageOrigin Origin)
+{
+    public long ActivityGeneration { get; init; }
+}
 
 public sealed partial class GridSimulationEngine
 {
@@ -12,6 +15,7 @@ public sealed partial class GridSimulationEngine
     {
         lock (gate)
         {
+            RequireAgentActivity();
             var c = GetConversation(id); actor = Canonical(actor);
             if (!c.Participants.Any(p => CommunicationState.SameIdentity(p, actor))) throw new ArgumentException("Not a conversation participant.");
             if (c.Status != ConversationStatus.Open) throw new InvalidOperationException("Conversation has ended.");
@@ -42,7 +46,7 @@ public sealed partial class GridSimulationEngine
             // Conservative UTF-8 byte budget leaves room for the 512-token answer and backend system prompt.
             // Long input falls back intact rather than silently truncating the user's request.
             if (Encoding.UTF8.GetByteCount(input) > 1200)
-                return new(id, actor, c.Messages.Count, input, "", facts, "Input exceeds AI context budget; deterministic fallback.", origin);
+                return new(id, actor, c.Messages.Count, input, "", facts, "Input exceeds AI context budget; deterministic fallback.", origin) { ActivityGeneration = runVersion };
             var sources = new List<string> { $"world snapshot tick {snapshot.TickCount}", $"conversation {id}" };
             var budget = 3200 - Encoding.UTF8.GetByteCount("\nUSER INPUT (untrusted):\n" + input);
             void Add(string line) { if (Encoding.UTF8.GetByteCount(prompt.ToString()) + Encoding.UTF8.GetByteCount(line) <= budget) prompt.Append(line); }
@@ -67,7 +71,7 @@ public sealed partial class GridSimulationEngine
             Add("RECENT HISTORY (untrusted; generated replies are not facts):\n");
             foreach (var m in c.Messages.TakeLast(6)) Add($"[conversation #{m.Sequence}] {Clip(m.Sender.Name,40)}: {Clip(HistoryText(m),120)}\n");
             prompt.Append("\nUSER INPUT (untrusted):\n").Append(input);
-            return new(id, actor, c.Messages.Count, input, Encoding.UTF8.GetByteCount(prompt.ToString()) <= 3200 ? prompt.ToString() : "", facts, string.Join("; ", sources), origin);
+            return new(id, actor, c.Messages.Count, input, Encoding.UTF8.GetByteCount(prompt.ToString()) <= 3200 ? prompt.ToString() : "", facts, string.Join("; ", sources), origin) { ActivityGeneration = runVersion };
         }
     }
 
@@ -75,6 +79,8 @@ public sealed partial class GridSimulationEngine
     {
         lock (gate)
         {
+            RequireAgentActivity();
+            if (turn.ActivityGeneration != runVersion) throw new InvalidOperationException("GRID paused or restarted during this reply; no turn stored.");
             if (GetConversation(turn.ConversationId).Messages.Count != turn.MessageCount)
                 throw new InvalidOperationException("Conversation changed while AI was responding. Retry; no turn was stored.");
             var generated = reply.Available && CommunicationState.ValidContent(reply.Text)

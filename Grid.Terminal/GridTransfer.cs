@@ -12,20 +12,29 @@ public sealed record TransferReceipt(TransferPlan Plan, int ParentId, long Paren
 public sealed class GridTransfer(string applicationRoot, string worldPath)
 {
     public const string Marker = "grid-package.json";
-    public static void Register(CommandDispatcher commands)
+    public static void Register(CommandDispatcher commands, Grid.Simulation.GridSimulationEngine? engine = null, bool allowTransfer = true, Action? startAgents = null)
     {
-        commands.Register(new("grid", "grid <-copyto|-transferto> \"location\"", "Master Control: copy or move GRID to a new folder; preview, confirm, save and close the original host.", args =>
+        commands.Remove("grid");
+        commands.Register(new("grid", "grid <-start|-pause|-copyto|-transferto> [location|-select]", "Master Control: start/pause simulation, or copy/move GRID after preview and confirmation.", args =>
         {
+            if (args.Count == 1 && args[0].ToLowerInvariant() is "-start" or "-pause")
+            {
+                if (engine is null) return new("Simulation controls are unavailable in this host.");
+                if (args[0].Equals("-start", StringComparison.OrdinalIgnoreCase)) { if (startAgents is null) engine.Start(); else startAgents(); } else engine.Pause();
+                return new(engine.GetSnapshot().IsRunning ? "Simulation running. Agent activity enabled; no tasks were automatically approved or dispatched." : "Simulation paused. Agent activity stopped; active attempts are settling. Saved history is retained.");
+            }
+            if (!allowTransfer) return new("Use the original host terminal for transfers.");
             if (args.Count != 2 || string.IsNullOrWhiteSpace(args[1]) ||
                 !(args[0].Equals("-copyto", StringComparison.OrdinalIgnoreCase) || args[0].Equals("-transferto", StringComparison.OrdinalIgnoreCase)) ||
-                args[1].StartsWith('-'))
-                return new("Usage: grid -copyto \"location\" OR grid -transferto \"location\". Choose exactly one operation and one quoted destination.");
+                args[1].StartsWith('-') && !args[1].Equals("-select", StringComparison.OrdinalIgnoreCase))
+                return new("Usage: grid -start | grid -pause | grid -copyto <location|-select> | grid -transferto <location|-select>. Choose exactly one operation.");
             return new("", Transfer: new(args[1], args[0].Equals("-transferto", StringComparison.OrdinalIgnoreCase)));
         }));
         // Do not execute old names silently: make the migration explicit before any confirmation/transfer.
         foreach (var name in new[] { "tranexist", "copexist" })
         {
             var replacement = name == "tranexist" ? "-transferto" : "-copyto";
+            commands.Remove(name);
             commands.Register(new(name, name, "Renamed; use grid " + replacement + " instead. This command performs no transfer.",
                 _ => new("Command renamed. Use grid " + replacement + " \"location\". No files changed.")));
         }
@@ -39,13 +48,19 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
             if ((File.Exists(current) || Directory.Exists(current)) && File.GetAttributes(current).HasFlag(FileAttributes.ReparsePoint))
                 throw new IOException("Symbolic links/junctions are not supported: " + current);
     }
+    public static string ResolveDestination(string requested)
+    {
+        if (!Path.IsPathFullyQualified(requested)) throw new IOException("Choose an absolute destination folder or drive root.");
+        var destination = Path.TrimEndingDirectorySeparator(Path.GetFullPath(requested));
+        // Roots are containers. Never publish files directly into a user's drive root.
+        return destination.Equals(Path.GetPathRoot(destination), StringComparison.OrdinalIgnoreCase)
+            ? Path.Combine(destination, "GRID7736") : destination;
+    }
     public TransferPlan Prepare(TransferRequest request)
     {
         var app = Path.TrimEndingDirectorySeparator(Path.GetFullPath(applicationRoot));
         var world = Path.GetFullPath(worldPath);
-        var destination = Path.TrimEndingDirectorySeparator(Path.GetFullPath(request.Destination));
-        if (!Path.IsPathFullyQualified(request.Destination) || destination == Path.GetPathRoot(destination))
-            throw new IOException("Choose a new absolute destination folder, not a filesystem root.");
+        var destination = ResolveDestination(request.Destination);
         CheckPath(app); CheckPath(world); CheckPath(destination);
         if (Directory.Exists(destination) || File.Exists(destination)) throw new IOException("Destination must not already exist; existing files are never overwritten.");
         var sourceRoot = PackageRoot(app) ?? app;
@@ -116,7 +131,7 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
             using (var store = new Grid.Persistence.WorldStore(Path.Combine(stage, "data", "world.db"))) store.Load();
             File.Delete(Path.Combine(stage, "data", "world.db.lock"));
             File.WriteAllText(Path.Combine(stage, Marker), "{\"version\":1}");
-            File.WriteAllText(Path.Combine(stage, "launch.cmd"), "@echo off\r\nsetlocal DisableDelayedExpansion\r\ndotnet \"%~dp0app\\Grid.Terminal.dll\" %*\r\nexit /b %errorlevel%\r\n");
+            File.WriteAllText(Path.Combine(stage, "launch.cmd"), "@echo off\r\nsetlocal DisableDelayedExpansion\r\n\"%~dp0app\\Grid.Terminal.exe\" %*\r\nexit /b %errorlevel%\r\n");
             var receipt = new TransferReceipt(current with { Files = verified.ToArray() }, Environment.ProcessId, Process.GetCurrentProcess().StartTime.ToUniversalTime().Ticks);
             File.WriteAllText(Path.Combine(stage, "transfer-manifest.json"), JsonSerializer.Serialize(receipt, new JsonSerializerOptions { WriteIndented = true }));
             File.WriteAllText(Path.Combine(stage, "transfer-status.txt"), current.Move ? "Verified destination. Source cleanup pending parent exit. Do not start destination until cleanup completes." : "Copy complete. Original retained.");
@@ -138,8 +153,8 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
     }
     private static void LaunchCleanup(string destination)
     {
-        var start = new ProcessStartInfo("dotnet") { UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden };
-        start.ArgumentList.Add(Path.Combine(destination, "app", "Grid.Terminal.dll")); start.ArgumentList.Add("--finish-move");
+        var start = new ProcessStartInfo(Path.Combine(destination, "app", "Grid.Terminal.exe")) { UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden };
+        start.ArgumentList.Add("--finish-move");
         using var process = Process.Start(start) ?? throw new IOException("Cannot start move cleanup helper.");
     }
     public static async Task<int> FinishMoveAsync(string app)

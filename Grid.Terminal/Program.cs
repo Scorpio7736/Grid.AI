@@ -5,6 +5,8 @@ using Grid.Terminal;
 using Grid.Simulation.Resources;
 using Grid.Simulation.Applications;
 
+if (args.SequenceEqual(new[] { "--verify-runtime" })) return await RuntimeVerification.RunAsync();
+
 if ((args.Length == 2 || args.Length == 3 && args[2] == "--no-color") && args[0] == "--attach") return await AttachedTerminal.RunAsync(args[1], args.Length == 3);
 if (args.SequenceEqual(new[] { "--finish-move" })) return await GridTransfer.FinishMoveAsync(AppContext.BaseDirectory);
 var packageRoot = GridTransfer.PackageRoot(AppContext.BaseDirectory);
@@ -58,15 +60,24 @@ try
         startupMessages.Add($"World database: {store.DatabasePath}");
         persistence = new WorldPersistenceSession(store, info, engine);
     }
-    if (store is not null) engine.ConfigureMaxisRuntime(store.DatabasePath + ".maxis-artifacts");
+    if (store is not null) engine.ConfigureMaxisRuntime(store.DatabasePath + ".maxis-artifacts", Path.Combine(BundledAiRuntime.FindRoot(AppContext.BaseDirectory) ?? AppContext.BaseDirectory, "dotnet"));
     if (store is not null) engine.ConfigureJnRuntime(store.DatabasePath, packageRoot ?? AppContext.BaseDirectory);
     if (store is not null) engine.ConfigureRelayVoice(new LocalRelayVoice());
     identity.Attach(engine);
     if (persistence is not null) identity.PersistIdentity = () => persistence.SaveAsync().GetAwaiter().GetResult();
+    void StartGrid(TerminalIdentitySession session)
+    {
+        engine.StartAgents(session.Reference);
+        try { if (persistence is not null) persistence.SaveAsync().GetAwaiter().GetResult(); }
+        catch { engine.Pause(); throw; }
+    }
     var pendingStart = options.Start;
-    identity.LoginSucceeded += () => { foreach (var message in startupMessages) Console.WriteLine(message); startupMessages.Clear(); if (pendingStart) { pendingStart = false; engine.Start(); } };
-    using var aiBackend = new Grid.Communication.OllamaLocalBackend();
-    await using var localAi = new Grid.Communication.SharedLocalInference(aiBackend, enabled: Environment.GetEnvironmentVariable("GRID_AI_DISABLED") != "1");
+    identity.LoginSucceeded += () => { foreach (var message in startupMessages) Console.WriteLine(message); startupMessages.Clear(); if (pendingStart) { pendingStart = false; StartGrid(identity); } };
+    Console.WriteLine("Checking bundled local AI...");
+    await using var aiRuntime = await BundledAiRuntime.StartAsync(BundledAiRuntime.FindRoot(AppContext.BaseDirectory), shutdown.Token);
+    startupMessages.Add(aiRuntime.Status);
+    using var aiBackend = new Grid.Communication.OllamaLocalBackend(endpoint: aiRuntime.Endpoint);
+    await using var localAi = new Grid.Communication.SharedLocalInference(aiBackend, enabled: aiRuntime.Ready && Environment.GetEnvironmentVariable("GRID_AI_DISABLED") != "1");
     CommandDispatcher CreateCommands(TerminalIdentitySession session)
     {
         var dispatcher = DefaultCommands.Create(engine);
@@ -82,8 +93,8 @@ try
         ContextCommands.Register(dispatcher, engine, session, persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult());
         if (store is not null) HistoryCommand.Register(dispatcher, store);
         IdentityCommands.Register(dispatcher, engine, session, interactiveUi: true);
-        if (!session.IsAttachment) GridTransfer.Register(dispatcher);
-        else foreach (var command in new[] { "login", "credentials", "nge" }) dispatcher.Remove(command);
+        GridTransfer.Register(dispatcher, engine, !session.IsAttachment, () => StartGrid(session));
+        if (session.IsAttachment) foreach (var command in new[] { "login", "credentials", "nge" }) dispatcher.Remove(command);
         dispatcher.UseIdentity(session); return dispatcher;
     }
     var commands = CreateCommands(identity);

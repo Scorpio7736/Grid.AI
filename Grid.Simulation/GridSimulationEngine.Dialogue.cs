@@ -14,6 +14,7 @@ public sealed partial class GridSimulationEngine
     {
         lock (gate)
         {
+            RequireAgentActivity();
             var matches = world.Programs.Values.Where(p => p.Name.Equals("MCP", StringComparison.OrdinalIgnoreCase)).ToArray();
             if (matches.Length > 1 || matches.Any(p => p.Kind != ResidentKind.Agent))
                 throw new InvalidOperationException("MCP name is ambiguous or belongs to a non-agent; use an explicit recipient ID.");
@@ -38,6 +39,7 @@ public sealed partial class GridSimulationEngine
     {
         lock (gate)
         {
+            RequireAgentActivity();
             var c = GetConversation(conversationId); human = Canonical(human);
             if (!c.Participants.Any(p => CommunicationState.SameIdentity(p, human)))
                 throw new ArgumentException("Dialogue requires the active participant identity.");

@@ -53,7 +53,7 @@ public sealed class TerminalUxTests
         var (engine, identity, _) = Fixture(); identity.Login(); identity.Logout();
         Assert.Contains("denied", identity.ConfigureCredentials("Jack", "test-only-passphrase", "test-only-passphrase"));
         identity.Login(); var ownerId = engine.LocalOperator.Id;
-        var archon = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(archon.Id);
+        var archon = engine.CreateRunningCoordinator(); engine.RegisterAgentIdentity(archon.Id);
         identity.ConfigureCredentials("Jack", "test-only-passphrase", "test-only-passphrase");
         Assert.Contains("denied", identity.Login()); Assert.False(identity.IsAuthenticated);
         var migrated = new TerminalIdentitySession(() => "different-machine");

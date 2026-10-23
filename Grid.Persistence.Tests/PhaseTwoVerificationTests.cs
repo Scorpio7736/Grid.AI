@@ -90,16 +90,30 @@ public sealed class PhaseTwoVerificationTests : IDisposable
     }
 
     [Fact]
+    public async Task ExplicitStartupFlagInitializesAgentsOnlyAfterOwnerLogin()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var fixture = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
+        fixture.BindLocalOwner(System.Security.Principal.WindowsIdentity.GetCurrent().User!.Value);
+        using (var initial = new WorldStore(DatabasePath)) initial.Create(new(fixture.GetSnapshot().WorldId,"Start fixture",DateTimeOffset.UtcNow),fixture.GetSnapshot());
+        var result = await Terminal("agents\ngrid -pause\nagents\nexit\n", "--start");
+        Assert.Equal(0,result.Code); Assert.Contains("GRID AGENTS: active",result.Output); Assert.Contains("GRID AGENTS: paused",result.Output);
+        using var saved = new WorldStore(DatabasePath);
+        Assert.Equal(6,saved.Load().State.Tasks.Agents.Count);
+        Assert.Empty(saved.Load().State.Tasks.Records);
+    }
+    [Fact]
     public async Task HeadlessTerminalSaveCloseReopenAndBackupRecoveryRetainWorld()
     {
         if (!OperatingSystem.IsWindows()) return;
         var fixture = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
         fixture.BindLocalOwner(System.Security.Principal.WindowsIdentity.GetCurrent().User!.Value);
         using (var initial = new WorldStore(DatabasePath)) initial.Create(new(fixture.GetSnapshot().WorldId, "Headless fixture", DateTimeOffset.UtcNow), fixture.GetSnapshot());
-        var first = await Terminal("step\nstep\nstart\npause\nexit\n");
+        var first = await Terminal("step\nstep\ngrid -start\ngrid -pause\nexit\n");
         Assert.Equal(0, first.Code); Assert.Contains("World saved.", first.Output);
         SavedWorld saved;
         using (var store = new WorldStore(DatabasePath)) saved = store.Load();
+        Assert.Equal(6, saved.State.Tasks.Agents.Count);
         var second = await Terminal("status\nhistory kind=Clock\nexit\n");
         Assert.Equal(0, second.Code); Assert.Contains(saved.Info.Id.ToString(), second.Output);
         Assert.Contains("State: Paused", second.Output); Assert.Contains($"at tick {saved.State.TickCount}", second.Output);

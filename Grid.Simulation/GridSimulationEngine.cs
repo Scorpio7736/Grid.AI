@@ -37,6 +37,8 @@ public sealed partial class GridSimulationEngine
     public TimeSpan TickDuration => clock.TickDuration;
     public long TickCount { get { lock (gate) return clock.TickCount; } }
     public TimeSpan ElapsedSimulationTime { get { lock (gate) return clock.ElapsedSimulationTime; } }
+    public long ActivityGeneration { get { lock (gate) return runVersion; } }
+    public void RequireAgentActivity() { lock (gate) if (!clock.IsRunning) throw new InvalidOperationException("GRID agents are paused. Use grid -start as Master Control."); }
     public bool IsRunning { get { lock (gate) return clock.IsRunning; } }
     public GridTickResult? LastTick { get { lock (gate) return lastTick; } }
 

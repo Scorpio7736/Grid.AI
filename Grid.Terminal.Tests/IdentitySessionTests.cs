@@ -14,7 +14,7 @@ public sealed class IdentitySessionTests
     }
     private static CommandDispatcher Commands(GridSimulationEngine engine, TerminalIdentitySession session)
     {
-        var commands = DefaultCommands.Create(engine); ChatCommands.Register(commands, engine, session);
+        var commands = DefaultCommands.Create(engine); ChatCommands.Register(commands, engine.PrepareChatFixture(), session);
         IdentityCommands.Register(commands, engine, session); commands.UseIdentity(session); return commands;
     }
     [Fact]

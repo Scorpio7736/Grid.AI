@@ -30,27 +30,26 @@ public static class TaskCommands
             }
             catch (Exception e) when (Expected(e)) { return Error(e); }
         }) { Capability = "session" });
-        commands.Register(new("agents", "agents [initialize]", "List system-agent roles or explicitly initialize the six system agents.", args =>
+        commands.Register(new("agents", "agents [initialize]", "List saved system-agent roles. Use grid -start to initialize/resume agents.", args =>
         {
             try
             {
                 if (args.Count == 1 && args[0] == "initialize")
                 {
-                    if (save is null) return new("System-agent initialization requires a saved world.");
-                    engine.InitializeSystemAgents(identity.Reference); save(CancellationToken.None).GetAwaiter().GetResult();
+                    return new("Agent initialization is now part of grid -start. Use grid -start as Master Control; agents only lists registered roles.");
                 }
                 else if (args.Count != 0) return new("Usage: agents [initialize]");
-                return new(TerminalTable.Render(["Role", "Capabilities"], engine.TasksFor(identity.Reference).Agents.Select(a => new[] {
+                return new((engine.IsRunning ? "GRID AGENTS: active" : "GRID AGENTS: paused; saved identities retained") + "\n" + TerminalTable.Render(["Role", "Capabilities"], engine.TasksFor(identity.Reference).Agents.Select(a => new[] {
                     a.Role.ToString(), TaskCapabilities.For(a.Role) + (a.Role == AgentRole.MAXIS ? ", maxis.delay, inspect, build, test, suggest" : a.Role == AgentRole.SENTINEL ? ", defender, firewall, events" : a.Role == AgentRole.JN ? ", inventory, duplicates, cleanup, storage, quota" : a.Role == AgentRole.VOLT ? ", status, throttle" : a.Role == AgentRole.RELAY ? ", notify, brief, speak" : "") })) + "\n\ndemo/delay are demonstrations. Specialist capabilities are real and require approval; relay.speak produces audio.");
             }
             catch (Exception e) when (Expected(e)) { return Error(e); }
         }) { Capability = "session" });
-        commands.Register(new("tasks", "tasks <list|inspect|propose|approve|cancel|retry|run|clear> ...", "Durable reviewed tasks. MAXIS workspace actions require explicit human approval.", args =>
+        commands.Register(new("tasks", "tasks [-completed|-list] [-AGENT] | tasks <list|inspect|propose|approve|deny|cancel|retry|run|clear> ...", "Durable reviewed tasks. MAXIS workspace actions require explicit human approval.", args =>
         {
             try
             {
-                if (args.Count == 0 || args[0].Equals("list", StringComparison.OrdinalIgnoreCase))
-                    return ListTasks(engine.TasksFor(identity.Reference), args.Skip(1).ToArray());
+                if (args.Count == 0 || args[0].StartsWith('-') || args[0].Equals("list", StringComparison.OrdinalIgnoreCase))
+                    return ListTasks(engine.TasksFor(identity.Reference), args.Count > 0 && args[0].Equals("list", StringComparison.OrdinalIgnoreCase) ? args.Skip(1).ToArray() : args);
                 if (args[0].Equals("clear", StringComparison.OrdinalIgnoreCase) || args.Count > 1 && args[1].StartsWith('-') && args[0].ToLowerInvariant() is "approve" or "run")
                     return Batch(engine, identity, save, args);
                 if (args.Count == 2 && args[0] == "inspect")
@@ -60,6 +59,13 @@ public static class TaskCommands
                     return new(TaskDisplay.Inspect(state, state.Records.Single(t => t.Id == id)));
                 }
                 if (save is null) return new("Tasks require a saved world; no ephemeral execution.");
+                if (args.Count == 3 && args[0].Equals("deny", StringComparison.OrdinalIgnoreCase))
+                {
+                    var id = TaskDisplay.Resolve(args[1], engine.TasksFor(identity.Reference).Records.Select(t => t.Id), "task");
+                    engine.DenyTask(identity.Reference, id, args[2]);
+                    save(CancellationToken.None).GetAwaiter().GetResult();
+                    return new("Task denied and saved.\n\n" + TaskDisplay.Inspect(engine.TasksFor(identity.Reference), engine.TasksFor(identity.Reference).Records.Single(t => t.Id == id)));
+                }
                 if (args.Count is 4 or 5 && args[0] == "propose")
                 {
                     var task = engine.ProposeTask(identity.Reference, engine.ResolveProgram(args[1]).Id, args[2], args[3], args.Count == 5 ? args[4] : Guid.NewGuid().ToString("N"));
@@ -103,13 +109,19 @@ public static class TaskCommands
     }
     private static CommandResult ListTasks(TaskState state, IReadOnlyList<string> flags)
     {
+        var view = flags.Where(f => f.Equals("-completed", StringComparison.OrdinalIgnoreCase) || f.Equals("-list", StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (view.Length > 1) throw new ArgumentException("Choose one task view: -completed or -list.");
         var archiveFlags = flags.Count(f => f.Equals("-archived", StringComparison.OrdinalIgnoreCase));
         if (archiveFlags > 1) throw new ArgumentException("Use -archived only once.");
-        var agent = AgentFilter(state, flags.Where(f => !f.Equals("-archived", StringComparison.OrdinalIgnoreCase)).ToArray());
-        var rows = state.Records.Where(t => t.Archived == (archiveFlags == 1) && (agent is null || t.AgentId == agent));
+        var agent = AgentFilter(state, flags.Where(f => !view.Contains(f) && !f.Equals("-archived", StringComparison.OrdinalIgnoreCase)).ToArray());
+        var rows = state.Records.Where(t => (archiveFlags == 0 || t.Archived) && (agent is null || t.AgentId == agent));
+        if (view.Length == 1) rows = view[0].Equals("-completed", StringComparison.OrdinalIgnoreCase)
+            ? rows.Where(t => t.Status == Grid.Simulation.Tasks.TaskStatus.Completed)
+            : rows.Where(t => t.Status is not (Grid.Simulation.Tasks.TaskStatus.Completed or Grid.Simulation.Tasks.TaskStatus.Denied));
         return new((archiveFlags == 1 ? "ARCHIVED TASKS" : "TASKS") + "\n" + TaskDisplay.Tasks(state, rows) +
-            "\n\nDetails: tasks inspect <task-reference> | Retained history: tasks list -archived [-AGENT]");
+            "\n\nDetails: tasks inspect <task-reference> | Views: tasks -completed | tasks -list | tasks list -archived [-AGENT]");
     }
+
     private static CommandResult Batch(GridSimulationEngine engine, TerminalIdentitySession identity, Func<CancellationToken, Task>? save, IReadOnlyList<string> args)
     {
         if (save is null) return new("Tasks require a saved world; no ephemeral execution.");
@@ -171,5 +183,5 @@ public static class TaskCommands
     }
     private static bool Expected(Exception e) => e is ArgumentException or InvalidOperationException or IOException or UnauthorizedAccessException or System.Data.Common.DbException;
     private static CommandResult Error(Exception e) => new("Task error: " + e.Message + (e is IOException or System.Data.Common.DbException ? " In-memory changes may remain; resolve persistence before continuing." : ""));
-    public const string Usage = "Usage: tasks list [-AGENT] [-archived] | approve -all [-AGENT] | run -all [-AGENT] | clear -all [-AGENT] | inspect <id> | propose <agent-id|name> <capability> \"argument\" [request-key] | approve <id> | cancel <id> | retry <id> | run. Run without -all dispatches one approved task; bulk run stops at the first unsuccessful attempt. MAXIS build/test executes project-defined code.";
+    public const string Usage = "Usage: tasks [-completed|-list] [-AGENT] | tasks list [-AGENT] [-archived] | deny <id> \"reason\" | approve -all [-AGENT] | run -all [-AGENT] | clear -all [-AGENT] | inspect <id> | propose <agent-id|name> <capability> \"argument\" [request-key] | approve <id> | cancel <id> | retry <id> | run. Run without -all dispatches one approved task; bulk run stops at the first unsuccessful attempt. MAXIS build/test executes project-defined code.";
 }

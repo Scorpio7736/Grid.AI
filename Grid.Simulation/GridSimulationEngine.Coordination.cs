@@ -7,7 +7,7 @@ public sealed partial class GridSimulationEngine
 {
     private SystemAgent Coordinator(ProgramEditIdentity actor)
     {
-        var mcp = tasks.Agents.SingleOrDefault(a => a.Role == AgentRole.MCP) ?? throw new InvalidOperationException("Use agents initialize before requesting MCP coordination.");
+        var mcp = tasks.Agents.SingleOrDefault(a => a.Role == AgentRole.MCP) ?? throw new InvalidOperationException("Use grid -start before requesting MCP coordination.");
         if (!actor.IsMasterControl && actor.AgentId != mcp.Id) throw DeniedTask(actor, "Only Master Control or the registered MCP role can coordinate requests.");
         return mcp;
     }
@@ -16,6 +16,7 @@ public sealed partial class GridSimulationEngine
         using var lease = TaskLease(session);
         lock (gate)
         {
+            RequireAgentActivity();
             var mcp = Coordinator(lease.Identity);
             if (!TaskState.Label(requestKey, 80)) throw new ArgumentException("Request key must contain 1..80 printable characters.");
             var previous = tasks.Plans.SingleOrDefault(p => p.RequestKey == requestKey);

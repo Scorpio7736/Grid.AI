@@ -23,7 +23,7 @@ public sealed class IdentityPersistenceTests
         {
             var session = new TestAuthority();
             var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis(), editAuthorizer: session); engine.BindLocalOwner("verified-test-owner");
-            var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
+            var agent = engine.CreateRunningCoordinator(); engine.RegisterAgentIdentity(agent.Id);
             var preview = engine.PrepareEdit(session.Reference, new(agent.Id, [new("occupation", new TextValue("Verified coordinator"))])).Preview!;
             Assert.Equal(ProgramEditOutcome.Applied, engine.ApplyEdit(session.Reference, preview).Outcome);
             using var store = new WorldStore(Path.Combine(directory, "world.db"));
@@ -65,7 +65,7 @@ public sealed class IdentityPersistenceTests
             var path = Path.Combine(directory, "world.db");
             var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
             engine.BindLocalOwner("original-owner");
-            var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
+            var agent = engine.CreateRunningCoordinator(); engine.RegisterAgentIdentity(agent.Id);
             var credential = Grid.Communication.PasswordCredential.Create("Owner", "test-password-only-123");
             engine.SetLocalCredential(credential);
             using (var store = new WorldStore(path))

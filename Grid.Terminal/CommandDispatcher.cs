@@ -10,6 +10,8 @@ public sealed class CommandDispatcher
     public Func<IReadOnlyList<string>, CommandResult>? OpenConversation { get; set; }
     public Func<bool>? ConversationConnected { get; set; }
     public string Prompt => identity?.Prompt ?? "grid> ";
+    public bool Typewriter { get; set; } = !string.Equals(Environment.GetEnvironmentVariable("GRID_TYPEWRITER"), "off", StringComparison.OrdinalIgnoreCase);
+    public long? IdentityGeneration => identity?.Generation;
     public bool LoginRequired => identity is not null;
     public bool IsAllowed(string name) => commands.TryGetValue(name, out var command) && (identity?.Allows(command.Capability) ?? true);
     public IReadOnlyList<TerminalCommand> Commands => commands.Values.Where(c => identity?.Allows(c.Capability) ?? true).OrderBy(c => c.Name).ToArray();

@@ -36,7 +36,7 @@ public sealed class ContextPersistenceTests : IDisposable
     [Fact]
     public void VoiceProfilesAndMicrophoneMessagesSurviveSaveRestoreAndRecovery()
     {
-        var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
+        var agent = engine.CreateRunningCoordinator(); engine.RegisterAgentIdentity(agent.Id);
         var profile = new VoiceProfile(agent.Id, "Offline Test Voice", -1, 75); engine.SetVoiceProfile(authority.Session, profile);
         var conversation = engine.StartConversation(engine.LocalOperator, agent);
         engine.Talk(conversation, engine.LocalOperator, "help", origin: MessageOrigin.Microphone);
@@ -60,7 +60,7 @@ public sealed class ContextPersistenceTests : IDisposable
     [Fact]
     public void PersistentContextAndGrantsSurviveRestartRecoveryWhileTemporaryDoesNot()
     {
-        var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id);
+        var agent = engine.CreateRunningCoordinator(); engine.RegisterAgentIdentity(agent.Id);
         var persistent = Document("persisted-body", agent.Id); var temporary = Document("temporary-body", agent.Id);
         engine.AddContext(authority.Session, persistent, true); engine.AddContext(authority.Session, temporary, false);
         using (var store = new WorldStore(PathName)) store.Create(info, engine.GetSnapshot());
@@ -75,7 +75,7 @@ public sealed class ContextPersistenceTests : IDisposable
     [Fact]
     public void RevocationAndRemovalPersistWithoutReopeningSource()
     {
-        var agent = engine.EnsureCoordinator(); engine.RegisterAgentIdentity(agent.Id); var document = Document("stored", agent.Id);
+        var agent = engine.CreateRunningCoordinator(); engine.RegisterAgentIdentity(agent.Id); var document = Document("stored", agent.Id);
         engine.AddContext(authority.Session, document, true);
         using var store = new WorldStore(PathName); store.Create(info, engine.GetSnapshot());
         engine.ChangeContext(authority.Session, document.Id, false); store.Save(info, engine.GetSnapshot());

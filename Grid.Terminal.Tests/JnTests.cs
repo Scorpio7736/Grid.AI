@@ -19,7 +19,7 @@ public sealed class JnTests : IDisposable
     {
         Directory.CreateDirectory(Source); File.WriteAllText(Path.Combine(Source,"a.txt"),"duplicate"); File.WriteAllText(Path.Combine(Source,"b.txt"),"duplicate"); File.WriteAllText(Path.Combine(Source,"c.txt"),"different");
         File.WriteAllBytes(Database,new byte[100]);
-        registry.Add(owner); engine=new(GridWorldFactory.CreateGenesis(),editAuthorizer:registry); owner.Attach(engine); owner.Login(); engine.InitializeSystemAgents(owner.Reference);
+        registry.Add(owner); engine=new(GridWorldFactory.CreateGenesis(),editAuthorizer:registry); owner.Attach(engine); owner.Login(); engine.StartAgents(owner.Reference);
         engine.ConfigureJnRuntime(Database,Path.Combine(folder,"content")); engine.RegisterStorageScope(owner.Reference,"sample",Source);
     }
     public void Dispose() { Directory.Delete(folder,true); }

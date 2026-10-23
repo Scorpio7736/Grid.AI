@@ -1,5 +1,16 @@
 # GRID7736
 
+**5.9 completed (2026-10-23):** `grid -start` initializes/resumes agents; `grid -pause` stops new agent activity and interrupts in-flight work. Identities/history persist; no tasks are replayed or approved on resume. Normal startup is paused. 672 tests passed. [Lifecycle and test commands](MD%20Project%20Files/Project_GRID_Agent_Lifecycle_Implementation.md).
+
+**4.2G completed (2026-10-23):** Use `grid -start` / `grid -pause`, `tasks -completed` / `tasks -list`, and `tasks deny <reference> "reason"`. Transfer roots and `-select` create a new GRID7736 child without overwriting existing files. Schema v21; 658 tests passed. [Commands and verification](MD%20Project%20Files/Project_GRID_Terminal_Controls_Implementation.md).
+
+## Fresh-clone runtime repair — 2026-10-23
+
+Implemented tracked runtime preparation, self-contained Windows package building and isolated verification. GRID now owns a bundled AI server/model cache and uses bundled MAXIS tooling; no personal Ollama service is required. Typewriter now works with fallback replies and inline/attached chat, with explicit on/off overriding the startup preference. **648 tests passed**, plus a real portable AI/chat probe with global runtime paths removed. Full two-PC/voice/device/installer acceptance remains planned. See [setup, package layout, evidence and limits](MD%20Project%20Files/Project_GRID_Fresh_Clone_and_Portable_Runtime.md). Earlier global-runtime instructions below are historical.
+
+For a source checkout, run `Prepare-GridRuntime.ps1` once, then launch GRID normally. Build a prepared release with `Build-GridPortable.ps1`; users launch that package's `launch.cmd`. Runtime/model binaries are not committed to Git. A fresh clone is source, not the prepared release.
+
+
 ## Grounded agent conversations — 6.2 completed (2026-10-22)
 
 `talk` and confirmed `voice send` now use shared local AI in inline and dedicated conversation windows. Replies separate timestamped engine facts, unverified AI suggestions/dialogue and supplied sources. Context includes scoped conversation excerpts, a bounded extractive history summary and permitted saved simulation memories; six named agents have distinct profiles. Session revocation/stale turns are rejected; unavailable AI falls back deterministically. No automatic task execution or captured-file ingestion. **641 tests passed**; a real local MCP conversation completed in an isolated test world. Schema remains v20. Meetings (6.2A) and AI task assistance (6.3) remain planned. See [implementation, limits and acceptance test](MD%20Project%20Files/Project_GRID_Grounded_Conversations_Implementation.md). Earlier milestone statements below remain historical.
