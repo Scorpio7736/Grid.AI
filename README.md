@@ -1,5 +1,10 @@
 # GRID7736
 
+## Shared local AI — 6.1 completed (2026-10-22)
+
+GRID now has a bounded shared local inference queue and a fixed-loopback Ollama adapter using installed Qwen3 4B. The dedicated server uses port 11435 with cloud disabled; the existing personal Ollama instance is unchanged. `ai status/test` provides original-host Master Control diagnostics and sampled CPU/memory/GPU allocation. **620 tests passed**; the real C# readiness probe returned GRID LOCAL READY in 3.232 seconds. Conversations remain deterministic until 6.2; no automatic task/tool execution, model context ingestion or schema change (v20). Runtime/model packaging inside Flash GRID remains planned; this installation uses the external Ollama cache. See [setup, licensing, limits and verification](MD%20Project%20Files/Project_GRID_Shared_Local_AI_Implementation.md). Earlier milestone/schema/count statements below remain historical.
+
+
 ## Bulk tasks — 5.8 completed (2026-10-22)
 
 Agent-filtered lists and `tasks approve/run/clear -all [-AGENT]` are implemented. Bulk mutations/dispatch require original-host Master Control; approval and clear require reviewed interactive confirmation. Batches capture fixed selections, revalidate state/authority and stop dispatch on the first unsuccessful attempt. Clear archives records and cancels pending work, retaining audit/results and MCP/RELAY links; active/unsettled work is refused. `tasks list -archived` reads retained history. **Schema v20; 603 tests passed** (14 Core, 157 Simulation, 97 Persistence, 335 Terminal). Archiving does not free the 256-task history capacity. See [commands, verification and limits](MD%20Project%20Files/Project_GRID_Bulk_Task_Implementation.md). Earlier milestone/schema/count statements below remain historical.

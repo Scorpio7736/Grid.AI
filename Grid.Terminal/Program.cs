@@ -65,9 +65,12 @@ try
     if (persistence is not null) identity.PersistIdentity = () => persistence.SaveAsync().GetAwaiter().GetResult();
     var pendingStart = options.Start;
     identity.LoginSucceeded += () => { foreach (var message in startupMessages) Console.WriteLine(message); startupMessages.Clear(); if (pendingStart) { pendingStart = false; engine.Start(); } };
+    using var aiBackend = new Grid.Communication.OllamaLocalBackend();
+    await using var localAi = new Grid.Communication.SharedLocalInference(aiBackend, enabled: Environment.GetEnvironmentVariable("GRID_AI_DISABLED") != "1");
     CommandDispatcher CreateCommands(TerminalIdentitySession session)
     {
         var dispatcher = DefaultCommands.Create(engine);
+        if (!session.IsAttachment) LocalAiCommands.Register(dispatcher, session, localAi, aiBackend);
         CityCommand.Register(dispatcher, engine); BehaviorCommand.Register(dispatcher, engine);
         WorkplaceCommands.Register(dispatcher, engine); SocialCommand.Register(dispatcher, engine);
         VoltRelayCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));

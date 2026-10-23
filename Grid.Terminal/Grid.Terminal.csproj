@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\Start-GridLocalAI.ps1" Link="Start-GridLocalAI.ps1" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="..\MD Project Files\**\*.md" Link="docs\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

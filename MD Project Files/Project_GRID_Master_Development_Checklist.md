@@ -1086,12 +1086,16 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 6.1 Shared local AI
 
-- [ ] Install and configure local model runtime
-- [ ] Choose and license-check an appropriate local model
-- [ ] Implement shared local inference interface
-- [ ] Queue concurrent requests to a single model service
-- [ ] Measure memory, GPU and CPU use
-- [ ] Allow deterministic operation when AI is unavailable
+- [x] Install and configure local model runtime
+- [x] Choose and license-check an appropriate local model
+- [x] Implement shared local inference interface
+- [x] Queue concurrent requests to a single model service
+- [x] Measure memory, GPU and CPU use
+- [x] Allow deterministic operation when AI is unavailable
+
+**Completion verification (2026-10-22):** Shared FIFO local inference service implemented with one active/eight waiting requests, cancellation/deadlines, bounded output and deterministic unavailable behavior. Reused installed Ollama 0.40.6; installed Apache-2.0 Qwen3 4B and started a separate loopback-only/cloud-disabled runtime on 11435. `ai status/test` are original-host Master Control diagnostics; they do not change conversations or execute tasks. **620 tests passed**, including 17 new queue/adapter/authority cases. Real C# readiness test returned GRID LOCAL READY in 3.232 s; observed 3.18 GB GPU allocation and measured process CPU/working set. Allocation is not GPU utilization, and process metrics may include other Ollama clients. External runtime/model cache remains outside portable packaging; no schema change (v20). [Implementation, license sources, measurements and acceptance test](Project_GRID_Shared_Local_AI_Implementation.md). Next: 6.2 Grounded agent conversations.
+
+**6.1 follow-up (2026-10-22):** Malformed numeric runtime diagnostics now fall back and recover on the next valid response. 355 terminal tests passed (three added regression cases); Release build passed without warnings/errors. Real readiness probe: 3,252 ms. [Task and AI acceptance test](Project_GRID_Tasks_and_AI_Acceptance_Test.md). Earlier verification counts above remain historical.
 
 ## 6.2 Grounded agent conversations
 

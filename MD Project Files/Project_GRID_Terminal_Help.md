@@ -1,5 +1,19 @@
 # GRID7736 - Terminal Help
 
+## Shared local AI diagnostics — 6.1
+
+```text
+ai
+    - ai status
+      # USAGE: Inspect the local runtime, installed model, queue and GPU allocation; Master Control/original host only.
+    - ai test
+      # USAGE: Send a fixed readiness prompt through the shared local queue and show output, elapsed time and sampled CPU/memory.
+    # EXAMPLE: ai test
+```
+
+If unavailable, run `Start-GridLocalAI.ps1` from PowerShell beside the built terminal or in the repository. It starts a separate local server on port 11435 using installed Ollama/model files. No inference request downloads a model. `GRID_AI_DISABLED=1` disables generation; deterministic GRID remains usable. Agent conversations remain deterministic until 6.2. [Setup, license and diagnostic limits](Project_GRID_Shared_Local_AI_Implementation.md).
+
+
 ## Bulk task commands — 5.8 (2026-10-22)
 
 ```text

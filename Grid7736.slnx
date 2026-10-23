@@ -10,4 +10,5 @@
   <Project Path="Grid.Simulation.Tests/Grid.Simulation.Tests.csproj" />
   <Project Path="Grid.Terminal.Tests/Grid.Terminal.Tests.csproj" />
   <Project Path="TestSupport/Grid.Persistence.Probe/Grid.Persistence.Probe.csproj" />
+  <Project Path="TestSupport/Grid.AI.Probe/Grid.AI.Probe.csproj" />
 </Solution>
