@@ -4,6 +4,7 @@ public static class CommandHelp
 {
     public static IReadOnlyList<string> Options(TerminalCommand c) => BaseOptions(c).Concat(c.Name == "tasks" ? Enum.GetNames<Grid.Simulation.Tasks.AgentRole>().SelectMany(a => new[] { "tasks list -" + a, "tasks list -archived -" + a, "tasks approve -all -" + a, "tasks run -all -" + a, "tasks clear -all -" + a }) : Array.Empty<string>()).Concat(WindowCommands.Supports(c.Name) ? new[] { c.Name + " -opninwin" } : Array.Empty<string>()).ToArray();
     private static IReadOnlyList<string> BaseOptions(TerminalCommand c) => c.Name switch {
+        "transcript" => ["transcript", "transcript --details", "transcript <conversation-id> --details"],
         "ai" => ["ai status", "ai test"],
         "grid" => ["grid -copyto \"location\"", "grid -transferto \"location\""],
         "connect" => ["connect", "connect <program-id|name>", "connect -inline [program-id|name]"],

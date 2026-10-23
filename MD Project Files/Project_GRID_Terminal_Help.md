@@ -1,5 +1,23 @@
 # GRID7736 - Terminal Help
 
+## Conversational display
+
+Use `talk <message>` to chat. Normal replies and `transcript` show You / agent text; technical evidence stays saved.
+
+```text
+transcript
+    - transcript
+      # USAGE: Read the current conversation in a simple chat layout.
+    - transcript --details
+      # USAGE: Include saved facts, sources, message ticks, origins and IDs.
+    - transcript <conversation-id> --details
+      # USAGE: Inspect an accessible saved conversation with full evidence.
+    # EXAMPLE: transcript --details
+```
+
+Conversation windows show a compact welcome and You> prompt. Use `whoami` for authority/session details. Replies are AI-generated when available; chat itself does not execute tasks.
+
+
 ## Shared local AI diagnostics — 6.1
 
 ```text
@@ -11,7 +29,7 @@ ai
     # EXAMPLE: ai test
 ```
 
-If unavailable, run `Start-GridLocalAI.ps1` from PowerShell beside the built terminal or in the repository. It starts a separate local server on port 11435 using installed Ollama/model files. No inference request downloads a model. `GRID_AI_DISABLED=1` disables generation; deterministic GRID remains usable. Agent conversations remain deterministic until 6.2. [Setup, license and diagnostic limits](Project_GRID_Shared_Local_AI_Implementation.md).
+If unavailable, run `Start-GridLocalAI.ps1` from PowerShell beside the built terminal or in the repository. It starts a separate local server on port 11435 using installed Ollama/model files. No inference request downloads a model. `GRID_AI_DISABLED=1` disables generation; deterministic GRID remains usable. Agent conversations now use this queue with grounded context and deterministic fallback; see [6.2](Project_GRID_Grounded_Conversations_Implementation.md). [Setup, license and diagnostic limits](Project_GRID_Shared_Local_AI_Implementation.md).
 
 
 ## Bulk task commands — 5.8 (2026-10-22)
@@ -302,7 +320,7 @@ connect
 ```text
 talk
     - talk <message>
-      # USAGE: Send in the active conversation; replies are deterministic and labeled.
+      # USAGE: Send in the active conversation; normal replies show conversational text. Use transcript --details for saved facts and sources.
     # EXAMPLE: talk status
 ```
 

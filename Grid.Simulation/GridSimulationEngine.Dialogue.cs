@@ -32,6 +32,9 @@ public sealed partial class GridSimulationEngine
 
     /// <summary>Atomic deterministic local dialogue pair. Does not execute requests or call an external model.</summary>
     public IReadOnlyList<GridMessage> Talk(Guid conversationId, Recipient human, string text, CancellationToken token = default, MessageOrigin origin = MessageOrigin.Terminal)
+        => TalkCore(conversationId, human, text, token, origin);
+
+    private IReadOnlyList<GridMessage> TalkCore(Guid conversationId, Recipient human, string text, CancellationToken token, MessageOrigin origin, string? generated = null)
     {
         lock (gate)
         {
@@ -48,20 +51,21 @@ public sealed partial class GridSimulationEngine
                 throw new InvalidOperationException("Two message slots are required; no part of this turn was stored.");
             var snapshot = GetSnapshot(); var program = snapshot.Programs.Single(p => p.Id == other.Id);
             var query = text.Trim().ToLowerInvariant();
-            var reply = query switch {
+            var reply = generated ?? (query switch {
                 "status" when human.Kind == ParticipantKind.Program => $"[VERIFIED OWN STATE at tick {snapshot.TickCount}] Active identity {human.Name} ({human.Id}); no global history or task visibility is granted.",
                 "status" => $"[VERIFIED GRID STATE at tick {snapshot.TickCount}] Clock: {(snapshot.IsRunning ? "running" : "paused")}; elapsed: {snapshot.ElapsedSimulationTime}; districts: {snapshot.Districts.Count}; residents: {snapshot.Programs.Count}.",
                 "who are you" or "who are you?" => $"[VERIFIED GRID STATE at tick {snapshot.TickCount}] {program.Name}; resident ID {program.Id}; kind {program.Kind}; occupation {program.Occupation}. This reply is produced by GRID's deterministic adapter, not the host application.",
-                "context" => $"[VERIFIED CONTEXT AVAILABILITY] {ContextFor(other.Id, Guid.Empty).Count} captured files are explicitly shared with this recipient. No file contents were executed or copied into this transcript. Use context list/read as the permitted identity; task execution and LLM ingestion are not implemented.",
-                "help" => "[SIMULATED DIALOGUE] Ask status or who are you for verified GRID facts. I can provide local coordination guidance; task execution, delegation and LLM replies are not implemented.",
+                "context" => $"[VERIFIED CONTEXT AVAILABILITY] {ContextFor(other.Id, Guid.Empty).Count} captured files are explicitly shared with this recipient. No file contents were executed or copied into this transcript. Use context list/read as the permitted identity; file ingestion into AI dialogue is not enabled.",
+                "help" => "[SIMULATED DIALOGUE] Ask status or who are you for verified GRID facts. I can provide local coordination guidance; use explicit task commands for reviewed execution. This is the deterministic fallback adapter.",
                 _ => "[SIMULATED DIALOGUE] Your message is recorded. No task has been executed or delegated. Ask status, who are you, or help."
-            };
+            });
+            if (!CommunicationState.ValidContent(reply)) throw new ArgumentException("Invalid reply text.");
             var utc = timeProvider.GetUtcNow().ToUniversalTime();
             var pair = new[] { new GridMessage(Guid.NewGuid(), c.Messages.Count + 1, human, text, origin, clock.TickCount, utc),
                 new GridMessage(Guid.NewGuid(), c.Messages.Count + 2, other, reply, MessageOrigin.SystemEvent, clock.TickCount, utc) };
             token.ThrowIfCancellationRequested();
             ReplaceConversation(c with { Messages = Array.AsReadOnly(c.Messages.Concat(pair).ToArray()) });
-            RecordEvent("DialogueTurnStored", conversationId, null, "Human input and deterministic reply stored atomically; no host action.");
+            RecordEvent("DialogueTurnStored", conversationId, null, "Input and reply stored atomically; no host action.");
             return Array.AsReadOnly(pair);
         }
     }

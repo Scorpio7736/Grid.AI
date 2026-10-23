@@ -9,6 +9,25 @@ namespace Grid.Persistence.Tests;
 public sealed class CommunicationPersistenceTests
 {
     [Fact]
+    public void GroundedReplySourcesSurviveSqliteReloadAndBuildNextContext()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "GridGrounded-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(folder);
+        try
+        {
+            var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
+            var id = engine.StartConversation(engine.LocalOperator, engine.EnsureCoordinator());
+            engine.CompleteGroundedTurn(engine.PrepareGroundedTurn(id,engine.LocalOperator,"Remember the launch plan"),new(true,"Suggestion: review the plan.","test"));
+            var snapshot = engine.GetSnapshot(); var info = new WorldInfo(snapshot.WorldId,"Grounded",DateTimeOffset.UtcNow);
+            var path = Path.Combine(folder,"world.db");
+            using(var store = new WorldStore(path)) store.Create(info,snapshot);
+            using var reopened = new WorldStore(path); var restored = GridSimulationEngine.Restore(reopened.Load().State);
+            Assert.Contains("SOURCES",restored.GetConversation(id).Messages[1].Content);
+            Assert.Contains("Remember the launch plan",restored.PrepareGroundedTurn(id,restored.LocalOperator,"launch plan").Prompt);
+            Assert.Empty(restored.GetSnapshot().Tasks.Records);
+        }
+        finally { Directory.Delete(folder,true); }
+    }
+    [Fact]
     public void TranscriptsSurviveWorldSaveReopenRecoveryAndMissingApplication()
     {
         var folder = Path.Combine(Path.GetTempPath(), "GridCommunication-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(folder);

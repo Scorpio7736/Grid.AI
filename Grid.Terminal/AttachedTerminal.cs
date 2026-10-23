@@ -17,15 +17,15 @@ public static class AttachedTerminal
             await using var pipe = new NamedPipeClientStream(".", name, PipeDirection.InOut, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
             await pipe.ConnectAsync(10000, stop.Token);
             var output = new TerminalOutput(Console.Out, TerminalTheme.Enabled(noColor));
-            async Task<WindowReply> Receive()
+            async Task<WindowReply> Receive(bool inference = false)
             {
-                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stop.Token); timeout.CancelAfter(TimeSpan.FromSeconds(10));
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stop.Token); timeout.CancelAfter(TimeSpan.FromSeconds(inference ? 140 : 10));
                 return await WindowProtocol.ReadAsync<WindowReply>(pipe, timeout.Token);
             }
             async Task<WindowReply> Send(WindowRequest request)
             {
                 using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stop.Token); timeout.CancelAfter(TimeSpan.FromSeconds(10));
-                await WindowProtocol.WriteAsync(pipe, request, timeout.Token); return await Receive();
+                await WindowProtocol.WriteAsync(pipe, request, timeout.Token); return await Receive(request.Kind == "command");
             }
             var reply = await Receive();
             if (!Console.IsOutputRedirected) Console.Title = "GRID7736 // " + reply.Mode;

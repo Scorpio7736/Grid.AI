@@ -1099,13 +1099,25 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 6.2 Grounded agent conversations
 
-- [ ] Build prompt and context construction layer
-- [ ] Retrieve current authoritative world state
-- [ ] Retrieve relevant conversation and agent memories
-- [ ] Attribute retrieved information to its sources
-- [ ] Use distinct personality profiles for named agents
-- [ ] Differentiate observed facts, suggestions and fictional dialogue
-- [ ] Add long-conversation summarization and context limits
+- [x] Build prompt and context construction layer
+- [x] Retrieve current authoritative world state
+- [x] Retrieve relevant conversation and agent memories
+- [x] Attribute retrieved information to its sources
+- [x] Use distinct personality profiles for named agents
+- [x] Differentiate observed facts, suggestions and fictional dialogue
+- [x] Add long-conversation summarization and context limits
+
+**Completion verification (2026-10-22):** Typed/reviewed-voice conversations now use shared local inference with scoped snapshot facts, recent history, extractive summaries, saved social memories and six personality profiles. Replies distinguish observed facts from unverified model text and identify supplied sources. Atomic turn checks, revocation, deterministic fallback and async dedicated windows are implemented. **641 tests passed** (14 Core, 157 Simulation, 98 Persistence, 372 Terminal); real MCP conversation completed without tasks or a user-world file. Release build passed with zero warnings/errors. Schema v20 unchanged. [Implementation, limits and test commands](Project_GRID_Grounded_Conversations_Implementation.md). Meetings remain planned in 6.2A; task/context assistance remains planned in 6.3.
+
+### 6.2 readability follow-up — completed 2026-10-22
+
+- [x] Show normal chat/transcripts as spaced You / agent replies, without technical metadata blocks
+- [x] Add `transcript --details` (optionally with conversation ID) for retained facts, sources, ticks and IDs
+- [x] Simplify conversation-window greeting/prompt; retain whoami for authority details
+- [x] Guide local AI toward natural conversational replies and use dialogue-only history excerpts
+- [x] Preserve stored evidence, participant visibility, typewriter behavior and no-execution boundary
+
+**Completion verification:** 373 terminal tests passed; Release build had zero warnings/errors. Real local-model greeting displayed a short conversational response. Existing transcripts remain intact; no schema change. [Details and test commands](Project_GRID_Grounded_Conversations_Implementation.md). Earlier verification counts remain historical.
 
 ## 6.2A Multi-agent meetings
 

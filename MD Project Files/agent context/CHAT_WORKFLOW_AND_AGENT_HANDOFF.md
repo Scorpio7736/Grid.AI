@@ -1,5 +1,12 @@
 # Project GRID - Chat workflow and agent handoff
 
+**6.2 readability follow-up (2026-10-22):** Default chat/transcript is now conversational; `transcript --details` retains technical evidence. Short window greeting and You> prompt; prompt/history updates discourage metadata recitation. 373 terminal tests and clean Release build verified. Preserve this separation in later work.
+
+## Grounded agent conversations — 6.2 completed (2026-10-22)
+
+`talk` and confirmed `voice send` now use shared local AI in inline and dedicated conversation windows. Replies separate timestamped engine facts, unverified AI suggestions/dialogue and supplied sources. Context includes scoped conversation excerpts, a bounded extractive history summary and permitted saved simulation memories; six named agents have distinct profiles. Session revocation/stale turns are rejected; unavailable AI falls back deterministically. No automatic task execution or captured-file ingestion. **641 tests passed**; a real local MCP conversation completed in an isolated test world. Schema remains v20. Meetings (6.2A) and AI task assistance (6.3) remain planned. See [implementation, limits and acceptance test](../Project_GRID_Grounded_Conversations_Implementation.md). Earlier milestone statements below remain historical.
+
+
 ## 6.1 follow-up verification — 2026-10-22
 
 Fixed malformed numeric allocation responses in `ai status`: diagnostics return unavailable instead of throwing, and a subsequent valid response recovers. All **355 terminal tests passed**, including three new regression cases; Release build had zero warnings/errors. A fresh real local-model probe returned GRID LOCAL READY in **3,252 ms**. Earlier full-suite counts remain historical. See [task and AI manual acceptance steps](../Project_GRID_Tasks_and_AI_Acceptance_Test.md). Agent dialogue integration remains planned for 6.2.

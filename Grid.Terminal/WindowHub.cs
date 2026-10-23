@@ -39,7 +39,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 if (!conversation) Register(commands, identity);
                 else
                 {
-                    var allowed = new[] { "help", "exit", "clear", "logout", "connect", "talk", "resume", "disconnect", "transcript", "conversations", "context" };
+                    var allowed = new[] { "help", "exit", "clear", "logout", "connect", "talk", "resume", "disconnect", "transcript", "conversations", "context", "whoami" };
                     foreach (var command in commands.Commands.ToArray())
                         if (!allowed.Contains(command.Name)) commands.Remove(command.Name);
                 }
@@ -76,7 +76,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 return new("Typewriter " + (typewriter ? "on. Any key skips animation." : "off. Responses display instantly."));
             }) { Capability = "chat" });
             WindowReply Reply(string text = "", bool closed = false, bool live = false, bool clear = false, bool logout = false) =>
-                new(text, commands.Prompt, commands.Commands.Select(c => new WindowCommandInfo(c.Name, c.Usage, c.Description)).ToArray(), closed, live, clear, logout, mode, Typewriter: typewriter);
+                new(text, mode == "conversation" ? "You> " : commands.Prompt, commands.Commands.Select(c => new WindowCommandInfo(c.Name, c.Usage, c.Description)).ToArray(), closed, live, clear, logout, mode, Typewriter: typewriter);
             if (!identity.IsAuthenticated || viewCommand is not null && !commands.IsAllowed(viewCommand))
             { await WindowProtocol.WriteAsync(pipe, Reply("Session revoked before attachment.", closed: true), io.Token); return; }
             var conversationText = "";
@@ -85,9 +85,10 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 conversationText = commands.ExecuteTokens(initialConversation).Text.Replace("Ordinary GRID commands still work.", "Use the original terminal for ordinary GRID commands.");
                 if (commands.ConversationConnected?.Invoke() != true)
                 { await WindowProtocol.WriteAsync(pipe, Reply(conversationText, closed: true), io.Token); return; }
-                conversationText += "\nUse talk <message>. Typewriter: any key skips; typewriter off disables animation. Exit keeps the conversation open for resume; disconnect ends it.";
+                conversationText += "\nTypewriter: any key skips; typewriter off disables it. Exit closes this window; disconnect ends the conversation.";
             }
-            await WindowProtocol.WriteAsync(pipe, Reply($"GRID7736 // ATTACHED {mode.ToUpperInvariant()}\n{identity.Describe()}\nOriginal host owns simulation/save. Closing this window only detaches.\n" +
+            await WindowProtocol.WriteAsync(pipe, Reply(mode == "conversation" ? "GRID7736 // CONVERSATION\n\n" + conversationText :
+                $"GRID7736 // ATTACHED {mode.ToUpperInvariant()}\n{identity.Describe()}\nOriginal host owns simulation/save. Closing this window only detaches.\n" +
                 (mode == "snapshot" ? snapshot : conversationText)), io.Token);
             Func<IReadOnlyList<string>, CommandResult>? pendingPicker = null;
             while (!stop.IsCancellationRequested)
@@ -120,6 +121,20 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                     {
                         pendingPicker = null;
                         var result = commands.Execute(line);
+                        if (result.BrokerOperation is { } operation && name.Equals("talk", StringComparison.OrdinalIgnoreCase))
+                        {
+                            io.CancelAfter(TimeSpan.FromSeconds(140));
+                            using var inferenceStop = CancellationTokenSource.CreateLinkedTokenSource(io.Token);
+                            var completion = operation(inferenceStop.Token);
+                            while (!completion.IsCompleted)
+                            {
+                                await Task.WhenAny(completion, Task.Delay(100, io.Token));
+                                try { using var client = Process.GetProcessById(pid); if (client.HasExited) inferenceStop.Cancel(); }
+                                catch (ArgumentException) { inferenceStop.Cancel(); }
+                                if (inferenceStop.IsCancellationRequested) break;
+                            }
+                            result = await completion;
+                        }
                         pendingPicker = result.ContextPicker;
                         reply = Reply(result.Text, result.ExitRequested, result.LiveViewRequested, result.ClearRequested, result.LogoutRequested) with { PickFiles = pendingPicker is not null, AnimateFrom = result.AnimateFrom };
                     }

@@ -6,7 +6,7 @@ public static class LocalAiCommands
 {
     public static void Register(CommandDispatcher commands, TerminalIdentitySession identity, SharedLocalInference service, OllamaLocalBackend backend)
     {
-        commands.Register(new("ai", "ai <status|test>", "Inspect the shared local inference foundation or run a text-only smoke test. Conversations remain deterministic until 6.2.", args =>
+        commands.Register(new("ai", "ai <status|test>", "Inspect the shared local inference foundation or run a text-only smoke test. Conversations share this service with deterministic fallback.", args =>
         {
             if (identity.IsAttachment) return new("Use the original host terminal for local AI diagnostics.");
             if (args.Count != 1 || args[0] is not ("status" or "test")) return new("Usage: ai status | ai test");

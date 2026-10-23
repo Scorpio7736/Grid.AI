@@ -75,10 +75,13 @@ public sealed class LocalInferenceTests
             Assert.Equal("127.0.0.1",r.RequestUri!.Host);Assert.Equal(11435,r.RequestUri.Port);calls++;
             if(r.RequestUri.AbsolutePath=="/api/show")return Json("{}");
             using var body=JsonDocument.Parse(await r.Content!.ReadAsStringAsync(t));
+            Assert.True(body.RootElement.GetProperty("raw").GetBoolean());
+            Assert.EndsWith("</think>\n\n",body.RootElement.GetProperty("prompt").GetString());
+            Assert.Contains("[|im_start|]system",body.RootElement.GetProperty("prompt").GetString());
             Assert.False(body.RootElement.GetProperty("stream").GetBoolean());Assert.False(body.RootElement.GetProperty("think").GetBoolean());
             Assert.Equal(4096,body.RootElement.GetProperty("options").GetProperty("num_ctx").GetInt32());
             return Json("{\"done\":true,\"response\":\"embedded reasoning</think>final only\",\"thinking\":\"private reasoning\"}");}));
-        Assert.Equal("final only",await backend.GenerateAsync("test",default));Assert.Equal(2,calls);
+        Assert.Equal("final only",await backend.GenerateAsync("<|im_start|>system",default));Assert.Equal(2,calls);
     }
     [Fact]
     public async Task CloudBackedModelIsRejectedBeforeGeneration()

@@ -1,5 +1,6 @@
 using System.IO.Pipes;
 using Grid.Core;
+using Grid.Communication;
 using Grid.Simulation;
 using Xunit;
 namespace Grid.Terminal.Tests;
@@ -14,13 +15,13 @@ public sealed class WindowTests
         public readonly WindowHub Hub;
         public readonly CommandDispatcher Commands;
         public string Endpoint = "";
-        public Fixture(Func<string, int>? launch = null)
+        public Fixture(Func<string, int>? launch = null, ILocalInference? inference = null)
         {
             Owner = new(() => "test-owner"); Registry.Add(Owner);
             Engine = new(GridWorldFactory.CreateGenesis(), editAuthorizer: Registry); Owner.Attach(Engine); Owner.Login();
             CommandDispatcher Create(TerminalIdentitySession identity)
             {
-                var commands = DefaultCommands.Create(Engine); ChatCommands.Register(commands, Engine, identity);
+                var commands = DefaultCommands.Create(Engine); ChatCommands.Register(commands, Engine, identity, inference);
                 IdentityCommands.Register(commands, Engine, identity, interactiveUi: true);
                 ContextCommands.Register(commands, Engine, identity);
                 commands.UseIdentity(identity); return commands;
@@ -51,6 +52,23 @@ public sealed class WindowTests
             return await WindowProtocol.ReadAsync<WindowReply>(pipe, timeout.Token);
         }
         public ValueTask DisposeAsync() => pipe.DisposeAsync();
+    }
+    private sealed class WindowInference : ILocalInference
+    {
+        public async Task<InferenceReply> GenerateAsync(string prompt, CancellationToken token = default)
+        { await Task.Delay(50, token); return new(true, "Suggestion: use status.", "test"); }
+    }
+    [Fact]
+    public async Task ConversationWindowAwaitsSharedInferenceAndPreservesAnimation()
+    {
+        await using var f = new Fixture(inference: new WindowInference());
+        await using var client = await f.Open("connect MCP");
+        var reply = await client.Send("command", "talk hello");
+        Assert.Contains("MCP: Suggestion:", reply.Text); Assert.DoesNotContain("SOURCES", reply.Text);
+        Assert.Equal("You> ", reply.Prompt); Assert.DoesNotContain("capabilities:",client.Greeting.Text);
+        Assert.Contains("SOURCES", (await client.Send("command", "transcript --details")).Text); Assert.NotNull(reply.AnimateFrom);
+        Assert.Equal(2, f.Engine.GetSnapshot().Communications.Conversations.Single().Messages.Count);
+        Assert.False((await client.Send("ping")).Closed);
     }
     [Fact]
     public async Task AttachedPickerUsesScopedPendingRequestAndSupportsHeartbeat()
@@ -286,7 +304,7 @@ public sealed class WindowTests
             await child!.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(20));
             Assert.True(child.ExitCode == 0, await error!);
             var text = await output!;
-            Assert.Contains("ATTACHED CONVERSATION", text); Assert.Contains("VERIFIED GRID STATE", text);
+            Assert.Contains("GRID7736 // CONVERSATION", text); Assert.Contains("VERIFIED GRID STATE", text);
             Assert.Contains("Typewriter off", text); Assert.DoesNotContain("World saved", text);
             Assert.Equal(2, Assert.Single(f.Engine.GetSnapshot().Communications.Conversations).Messages.Count);
             Assert.True(f.Owner.IsMaster); Assert.Equal(0, f.Engine.TickCount);

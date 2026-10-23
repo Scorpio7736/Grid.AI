@@ -1,6 +1,6 @@
 # Tasks and shared local AI — manual acceptance test
 
-Run these tests in the updated terminal as Master Control in the original host window. Task commands require a saved world. These tests cover existing task execution and the 6.1 inference foundation; AI-driven conversations remain planned for 6.2.
+Run these tests in the updated terminal as Master Control in the original host window. Task commands require a saved world. These tests cover existing task execution and the 6.1 inference foundation; AI-driven conversations are now implemented in 6.2; see the [conversation acceptance test](Project_GRID_Grounded_Conversations_Implementation.md).
 
 ## Task test
 

@@ -77,7 +77,7 @@ try
         JnCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         MaxisCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         TaskCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
-        var chat = ChatCommands.Register(dispatcher, engine, session); ResourcesCommand.Register(dispatcher, engine);
+        var chat = ChatCommands.Register(dispatcher, engine, session, localAi, persistence is null ? null : token => persistence.SaveAsync(token)); ResourcesCommand.Register(dispatcher, engine);
         VoiceCommands.Register(dispatcher, engine, session, chat, save: persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult());
         ContextCommands.Register(dispatcher, engine, session, persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult());
         if (store is not null) HistoryCommand.Register(dispatcher, store);
