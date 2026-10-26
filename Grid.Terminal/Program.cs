@@ -5,6 +5,8 @@ using Grid.Terminal;
 using Grid.Simulation.Resources;
 using Grid.Simulation.Applications;
 
+if (args.SequenceEqual(new[] { "--verify-assistance" })) return await RuntimeVerification.RunAsync(assistanceOnly:true);
+
 if (args.SequenceEqual(new[] { "--verify-runtime" })) return await RuntimeVerification.RunAsync();
 
 if ((args.Length == 2 || args.Length == 3 && args[2] == "--no-color") && args[0] == "--attach") return await AttachedTerminal.RunAsync(args[1], args.Length == 3);

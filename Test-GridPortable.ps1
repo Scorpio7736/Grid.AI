@@ -1,4 +1,4 @@
-param([Parameter(Mandatory=$true)][string]$PackageRoot)
+param([Parameter(Mandatory=$true)][string]$PackageRoot, [switch]$AssistanceOnly)
 $ErrorActionPreference = 'Stop'
 $package = (Resolve-Path -LiteralPath $PackageRoot).Path
 $exe = Join-Path $package 'app\Grid.Terminal.exe'
@@ -6,7 +6,7 @@ if (!(Test-Path -LiteralPath $exe)) { throw 'Portable apphost missing.' }
 $verificationHome = Join-Path $package ('verification-home-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $verificationHome | Out-Null
 $start = New-Object System.Diagnostics.ProcessStartInfo
-$start.FileName=$exe; $start.Arguments='--verify-runtime'; $start.WorkingDirectory=$package
+$start.FileName=$exe; $start.Arguments=if($AssistanceOnly){'--verify-assistance'}else{'--verify-runtime'}; $start.WorkingDirectory=$package
 $start.UseShellExecute=$false; $start.CreateNoWindow=$true
 $start.RedirectStandardOutput=$true; $start.RedirectStandardError=$true
 $start.EnvironmentVariables['PATH']=Join-Path $env:SystemRoot 'System32'

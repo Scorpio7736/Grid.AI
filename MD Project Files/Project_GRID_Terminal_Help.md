@@ -1,5 +1,11 @@
 # GRID7736 - Terminal Help
 
+**AI response recovery — 2026-10-26:** Truncated answers now get one bounded larger retry, and rejected responses are distinguished from an offline service. Advice and analysis prompts were refined; MCP greetings no longer receive unrelated district counts. **759 Release tests passed**, and the bundled model answered the reported HTML question successfully. [Fix, limits and regression test](Project_GRID_AI_Response_Recovery.md).
+
+
+**6.3 completed — 2026-10-26:** `assist advice/analyze/propose` now provides scoped local-AI guidance and typed MCP drafts. `assist submit` creates only tasks awaiting approval; no automatic execution. Captured context stays within explicit agent/project grants, and assistance outputs are not copied into chat recall. **752 Release tests passed**; bundled-model analysis/drafting verified. [Commands and limits](Project_GRID_Task_Assistance_Implementation.md). Earlier 6.3-pending statements are historical; monitor assistance remains planned in 6.3A.
+
+
 **Automatic conversation recall added — 2026-10-25:** Ordinary saved discussions and their relevant details now carry across conversations/restarts, alongside explicit memory. Private recall stays within the same agent/project; shared meeting recall requires the exact same group. `memory history` reviews candidates; `memory forget-history` excludes prior discussions while retaining explicit memories and transcripts. **728 tests passed**; bundled-model recall/clearing verified. [Behavior, bounds and test](Project_GRID_Automatic_Conversation_Recall.md). This supersedes earlier explicit-only recall descriptions.
 
 
@@ -842,3 +848,22 @@ memory
 ```
 
 Ordinary discussions are recalled automatically. `memory save` additionally preserves explicit confirmed entries. Recall is bounded to relevant excerpts and keeps private agent/project and exact meeting-group boundaries.
+
+## Task assistance — 6.3
+
+```text
+assist
+    - assist advice <request>
+      # USAGE: Request recommendations without creating tasks or changing project files.
+    - assist analyze <request>
+      # USAGE: Analyze captures granted to the connected agent in the current project.
+    - assist propose <request>
+      # USAGE: Generate a validated typed draft, without creating tasks.
+    - assist submit
+      # USAGE: Submit the draft through MCP; all steps still await approval.
+    - assist discard
+      # USAGE: Drop the current draft.
+    # EXAMPLE: assist propose Check current resource status using VOLT.
+```
+
+Start GRID and connect to an agent as Master Control. Use `memory scope <project>` in an empty conversation to match imported context. Import with an explicit grant, for example `context add -search persistent grid MCP`. Use the original terminal for `tasks inspect`, `tasks approve`, and `tasks run`. Analysis responses are transient; captured file content is not copied into automatic conversation memory.

@@ -23,6 +23,7 @@ public sealed partial class ChatCommands
                 return new("Typewriter " + (commands.Typewriter ? "on." : "off."));
             }) { Capability = "chat" });
         commands.Register(new("memory", "memory <list|scope|save|correct|forget> ...", "Review and manage explicit private agent/project memory. User-confirmed context is not verified host evidence.", chat.Memory) { Capability = "chat" });
+        commands.Register(new("assist", "assist <advice|analyze|propose|submit|discard> ...", "Scoped AI guidance and reviewed MCP task drafts; never automatic execution.", chat.Assist) { Capability = "chat" });
         commands.ConversationConnected = () => chat.active is not null;
         if (identity is not null) identity.Changed += () => chat.active = null;
         commands.Register(new("agent", "agent meetings <AGENT> <AGENT> [...] [-inline]", "Open a shared meeting in a new window. Use talk @AGENT message to direct a turn.", args => chat.Meeting(args, commands)) { Capability = "chat" });
@@ -113,8 +114,9 @@ public sealed partial class ChatCommands
                 {
                     if (!Current()) return new("Conversation stopped or session revoked; nothing stored.");
                     var result = Response(engine.CompleteGroundedTurn(turn, reply, token));
+                    var fallbackNotice = reply.ResponseRejected ? "AI response rejected: " + reply.Reason + " Using a basic reply.\n" : "Local AI is unavailable; using a basic reply.\n";
                     return reply.Available && CommunicationState.ValidContent(reply.Text) ? result : result with
-                    { Text = "Local AI is unavailable; using a basic reply.\n" + result.Text, AnimateFrom = result.AnimateFrom is { } offset ? offset + "Local AI is unavailable; using a basic reply.\n".Length : null };
+                    { Text = fallbackNotice + result.Text, AnimateFrom = result.AnimateFrom is { } offset ? offset + fallbackNotice.Length : null };
                 }, "grounded-reply");
                 if (save is not null) await save(token);
                 return result;

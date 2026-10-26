@@ -1,5 +1,11 @@
 # Project GRID — Master Development Checklist
 
+**AI response recovery — 2026-10-26:** Truncated answers now get one bounded larger retry, and rejected responses are distinguished from an offline service. Advice and analysis prompts were refined; MCP greetings no longer receive unrelated district counts. **759 Release tests passed**, and the bundled model answered the reported HTML question successfully. [Fix, limits and regression test](Project_GRID_AI_Response_Recovery.md).
+
+
+**6.3 completed — 2026-10-26:** `assist advice/analyze/propose` now provides scoped local-AI guidance and typed MCP drafts. `assist submit` creates only tasks awaiting approval; no automatic execution. Captured context stays within explicit agent/project grants, and assistance outputs are not copied into chat recall. **752 Release tests passed**; bundled-model analysis/drafting verified. [Commands and limits](Project_GRID_Task_Assistance_Implementation.md). Earlier 6.3-pending statements are historical; monitor assistance remains planned in 6.3A.
+
+
 **Automatic conversation recall added — 2026-10-25:** Ordinary saved discussions and their relevant details now carry across conversations/restarts, alongside explicit memory. Private recall stays within the same agent/project; shared meeting recall requires the exact same group. `memory history` reviews candidates; `memory forget-history` excludes prior discussions while retaining explicit memories and transcripts. **728 tests passed**; bundled-model recall/clearing verified. [Behavior, bounds and test](Project_GRID_Automatic_Conversation_Recall.md). This supersedes earlier explicit-only recall descriptions.
 
 
@@ -921,6 +927,18 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 Fixed a user-reported Windows dialog failure: FolderBrowserDialog supports Description, not Title. Removed the unsupported property, explicitly emit JSON null on cancellation (Windows PowerShell otherwise emits no JSON for null), suppress first-use progress and keep raw helper stderr/CLIXML out of terminal errors. **392 terminal tests passed**, including three new tests executing the actual Windows PowerShell helper with a real Windows Forms dialog object. Tests substitute only the modal ShowDialog result for selection/cancellation and verify concise failure output. Physical dialog interaction remains a manual check. Earlier injected-picker tests did not cover this platform failure. Restart GRID to load the corrected binary. Schema remains v21.
 
+## 4.2H Conversation readability and typewriter repair
+
+**Planned — user report 2026-10-26; not implemented or verified.** The user reports that typewriter animation does not work. Earlier 4.2E/runtime completion notes are historical verification, not confirmation that this reported regression is fixed.
+
+- [ ] Reproduce and fix missing typewriter animation in the user's normal launch path, inline chat, dedicated conversation windows and meetings; check replies from both `talk` and assistance workflows
+- [ ] Preserve working `typewriter on/off`, skip-animation controls and intentional instant output for redirected/no-animation modes; verify that startup defaults do not silently suppress animation
+- [ ] Improve conversation layout with clear speaker labels, spacing between turns and readable wrapping/code blocks
+- [ ] Use light blue for user/agent speaker labels and chat headings
+- [ ] Use yellow for agent response text and white for user-entered text and displayed user messages
+- [ ] Apply these conversation colors consistently in inline chat, attached windows, meetings and transcript views; preserve red errors and readable no-color output
+- [ ] Verify actual visible animation and colors in the user's terminal, in addition to automated renderer tests; record completion evidence only after the regression is resolved
+
 ## 4.3 User-supplied context (GRID-REQ-002)
 
 **Implemented - 2026-10-20.** Terminal `context add/list/read/revoke/remove` captures explicit local files with project labels, version fingerprints, retention and optional registered-Agent grants. Text/source support is strict UTF-8; initial document support is DOCX main-body text. Unsupported formats are refused.
@@ -1183,13 +1201,18 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 6.3 Task assistance and context (GRID-REQ-002)
 
-- [ ] Interpret user requests as advice, analysis or proposed execution
-- [ ] Read and analyze user-supplied context within permitted scope
-- [ ] Provide recommendations without changing files when requested
-- [ ] Support project-context retrieval across conversations
-- [ ] Allow agents to collaborate through MCP
-- [ ] Produce structured typed task proposals
-- [ ] Validate each proposal against registered capabilities
+**Implemented 2026-10-26.** Explicit advice/analysis/proposal modes use captured grants and the existing MCP approval broker.
+
+- [x] Interpret user requests as advice, analysis or proposed execution
+- [x] Read and analyze user-supplied context within permitted scope
+- [x] Provide recommendations without changing files when requested
+- [x] Support project-context retrieval across conversations
+- [x] Allow agents to collaborate through MCP
+- [x] Produce structured typed task proposals
+- [x] Validate each proposal against registered capabilities
+- [x] Recover once from length-limited model replies without accepting partial output; distinguish response rejection from service failure; verify the HTML advice regression and MCP greeting grounding (2026-10-26, 759 tests)
+
+**Completion verification (2026-10-26):** 752 Release tests passed; bundled local-model captured-context analysis and typed proposal smoke test passed. Draft preview is mutation-free; submission creates only awaiting-approval tasks. Context/project/session changes invalidate pending work. Schema v23 unchanged. Intent is explicitly selected through `assist`; project context is bounded captured text, and assistance responses remain outside automatic conversation memory. [Implementation, limits and acceptance commands](Project_GRID_Task_Assistance_Implementation.md).
 
 ## 6.3A Monitor selection and screen assistance
 
@@ -1226,6 +1249,18 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 - [ ] Test context/provenance retention and removal
 - [ ] Test file modification approvals and rollback
 - [ ] Demonstrate advice-only and approved editing workflows
+
+## 6.6 Unified `talk` workflow — deferred until AI-agent features are complete
+
+**Planned — requested 2026-10-26; not implemented.** Schedule this rework after the remaining Phase 5/6 agent and intelligence features, including screen/context assistance (6.3A), authorized editing (6.4) and intelligence verification (6.5), are implemented and verified. This is a later integration rework, not a replacement for finishing those features first.
+
+- [ ] Make `talk <message>` the normal entry point: the user describes what they need without choosing separate context, assist, advice, analysis or task-proposal commands
+- [ ] Interpret intent and route to conversation/recall, permitted project context, advice, analysis, screen assistance, task planning or authorized editing as appropriate
+- [ ] Ask a short clarification when intent, target or required context is ambiguous; open the existing file/monitor selection flow when needed instead of making the user learn another command
+- [ ] Coordinate specialist involvement through MCP and return a coherent response to the user
+- [ ] Preserve agent/project/meeting scope, context grants and revocation, memory correction/forgetting, draft review, task approval and editing rollback boundaries; inferred intent alone must not grant access or bypass approval
+- [ ] Keep explicit commands available for advanced control, inspection and troubleshooting while making them optional for ordinary conversation workflows
+- [ ] Test end-to-end requests through `talk` alone, including advice-only requests, context selection, ambiguous requests, proposed actions, denied actions and unavailable local AI; update help and documentation after verification
 
 ---
 
@@ -1443,6 +1478,8 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 6. [x] Record completion notes and verification evidence for all completed modules through 4.5. Continue this documentation practice for future modules.
 
 # Current Next Steps
+
+**Newly requested planning items (2026-10-26):** Address the reported typewriter/readability fixes in 4.2H. Defer the unified `talk` rework in 6.6 until the remaining AI-agent features and their verification are complete.
 
 1. [x] Complete 5.1: named system-agent/task contracts, durable task queue and capability-scoped demonstration broker.
 2. [ ] Begin 5.2: MCP task coordination and delegation.

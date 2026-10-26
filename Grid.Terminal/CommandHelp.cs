@@ -16,6 +16,7 @@ public static class CommandHelp
         "jn" => ["jn scopes", "jn register <alias> \"absolute-file-or-directory\"", "jn revoke <alias>", "jn quota", "jn quota inspect <proposal-reference>", "jn quota approve <proposal-reference>"],
         "maxis" => ["maxis workspaces", "maxis register <alias> \"absolute-root\" \"relative/project.csproj\"", "maxis revoke <alias>"],
         "mcp" => ["mcp request \"SPECIALIST: demo text; SPECIALIST: demo text\" [request-key]", "mcp plans", "mcp inspect <plan-id>", "mcp brief [plan-id]"],
+        "assist" => ["assist advice <request>", "assist analyze <request>", "assist propose <request>", "assist submit", "assist discard"],
         "memory" => ["memory list", "memory history", "memory forget-history", "memory scope <project>", "memory save preference <key> <text>", "memory save decision <key> <text>", "memory save fact <key> <text>", "memory save unfinished <key> <text>", "memory correct <key> <text>", "memory forget <key>"],
         "agent" => ["agent meetings MCP MAXIS JN", "agent meetings MCP MAXIS -inline"],
         "agents" => ["agents"],

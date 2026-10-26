@@ -59,6 +59,14 @@ public sealed class WindowTests
         { await Task.Delay(50, token); return new(true, "Suggestion: use status.", "test"); }
     }
     [Fact]
+    public async Task ConversationWindowAwaitsAssistanceWithoutExecutingTasks()
+    {
+        await using var f=new Fixture(inference:new WindowInference()); f.Engine.StartAgents(f.Owner.Reference);
+        await using var client=await f.Open("connect MCP");
+        var reply=await client.Send("command","assist advice How should I inspect status?");
+        Assert.Contains("Suggestion: use status.",reply.Text); Assert.Empty(f.Engine.GetSnapshot().Tasks.Records);
+    }
+    [Fact]
     public async Task PrivateConversationWindowSupportsMemoryAndLogoutRevokesIt()
     {
         await using var f = new Fixture(); f.Engine.StartAgents(f.Owner.Reference);

@@ -27,6 +27,14 @@ public sealed class GroundedDialogueTests
     private static ILocalInference Reply(string text = "Suggestion: inspect the current status.") => new Inference((_,_) => Task.FromResult(new InferenceReply(true,text,"test")));
 
     [Fact]
+    public void GreetingsDoNotTurnWorldDistrictCountsIntoMcpAssignments()
+    {
+        var f=new Fixture(Reply());var id=f.Chat.ActiveConversation!.Value;
+        var greeting=f.Engine.PrepareGroundedTurn(id,f.Engine.LocalOperator,"hello?");
+        Assert.DoesNotContain("; districts ",greeting.Facts);Assert.Contains("no numbered-district authority assignment",greeting.Prompt);
+        var status=f.Engine.PrepareGroundedTurn(id,f.Engine.LocalOperator,"world status");Assert.Contains("; districts ",status.Facts);
+    }
+    [Fact]
     public async Task ProductionChatStoresAttributedPairWithoutTasksAndPersistsOnce()
     {
         var saves = 0; var f = new Fixture(Reply(), _ => { saves++; return Task.CompletedTask; });

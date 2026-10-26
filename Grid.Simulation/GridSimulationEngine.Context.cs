@@ -5,6 +5,8 @@ namespace Grid.Simulation;
 
 public sealed partial class GridSimulationEngine
 {
+    private long contextRevision;
+    public long ContextRevision { get { lock(gate) return contextRevision; } }
     private ContextState context = ContextState.Empty;
     private readonly Dictionary<Guid, (ContextDocument Document, Guid Session)> temporaryContext = new();
     public void AddContext(EditSessionReference session, ContextDocument document, bool persistent)
@@ -19,6 +21,7 @@ public sealed partial class GridSimulationEngine
                 if (document.GrantedAgentId is { } agent && (!identities.RegisteredAgents.Contains(agent) || world.GetProgram(agent).Kind != ResidentKind.Agent))
                     throw new ArgumentException("Context can only be granted to a registered Agent.");
             ContextState.Validate(new(context.Documents.Concat(temporaryContext.Values.Select(t => t.Document)).Concat(documents).ToArray()));
+            contextRevision++;
             foreach (var document in documents)
             {
                 if (persistent) context = new(Array.AsReadOnly(context.Documents.Append(document).ToArray()));
@@ -49,11 +52,17 @@ public sealed partial class GridSimulationEngine
                 if (remove) temporaryContext.Remove(id); else temporaryContext[id] = (temporary.Document with { GrantedAgentId = null }, temporary.Session);
             }
             else throw new ArgumentException("Context not found in this scope.");
+            contextRevision++;
             RecordEvent(remove ? "ContextRemoved" : "ContextRevoked", id, null, "Context access changed; no source/body recorded.");
         }
     }
     public void ClearTemporaryContext(Guid session)
     {
-        lock (gate) foreach (var id in temporaryContext.Where(p => p.Value.Session == session).Select(p => p.Key).ToArray()) temporaryContext.Remove(id);
+        lock (gate)
+        {
+            var ids=temporaryContext.Where(p => p.Value.Session == session).Select(p => p.Key).ToArray();
+            if(ids.Length>0) contextRevision++;
+            foreach(var id in ids) temporaryContext.Remove(id);
+        }
     }
 }

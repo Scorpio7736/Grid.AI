@@ -5,7 +5,7 @@ namespace Grid.Terminal;
 
 public static class RuntimeVerification
 {
-    public static async Task<int> RunAsync()
+    public static async Task<int> RunAsync(bool assistanceOnly = false)
     {
         await using var runtime=await BundledAiRuntime.StartAsync(BundledAiRuntime.FindRoot(AppContext.BaseDirectory));
         Console.WriteLine(runtime.Status);
@@ -20,9 +20,12 @@ public static class RuntimeVerification
         var identity=new TerminalIdentitySession(()=>"runtime-verification");registry.Add(identity);identity.Attach(engine);identity.Login();engine.StartAgents(identity.Reference);
         var commands=DefaultCommands.Create(engine);ChatCommands.Register(commands,engine,identity,inference);commands.UseIdentity(identity);
         commands.Execute("connect MCP");
+        var success=true;
+        if(!assistanceOnly)
+        {
         var reply=await commands.Execute("talk Hello MCP. Who are you?").BrokerOperation!(default);
         Console.WriteLine(reply.Text);
-        var success=commands.Execute("transcript --details").Text.Contains("AI SUGGESTION",StringComparison.Ordinal) && reply.AnimateFrom is not null;
+        success=commands.Execute("transcript --details").Text.Contains("AI SUGGESTION",StringComparison.Ordinal) && reply.AnimateFrom is not null;
         commands.Execute("disconnect");
         Console.WriteLine(commands.Execute("agent meetings MCP MAXIS JN -inline").Text);
         foreach (var (input, role) in new[] { ("What should I check before building code?", "MAXIS"), ("@JN What should I check before archiving files?", "JN") })
@@ -68,8 +71,24 @@ public static class RuntimeVerification
         var cleared = await commands.Execute("talk What is our project mascot?").BrokerOperation!(default);
         Console.WriteLine(cleared.Text);
         success &= !cleared.Text.Contains("Copperfin",StringComparison.OrdinalIgnoreCase);
+        }
+        var greeting=await commands.Execute("talk hello?").BrokerOperation!(default);
+        Console.WriteLine(greeting.Text);
+        success &= !System.Text.RegularExpressions.Regex.IsMatch(greeting.Text,@"(?i)district\s+\d+");
+        var html=await commands.Execute("assist advice how i can center a div in html").BrokerOperation!(default);
+        Console.WriteLine(html.Text);
+        success &= html.Text.StartsWith("AI advice",StringComparison.Ordinal) &&
+            (html.Text.Contains("flex",StringComparison.OrdinalIgnoreCase) || html.Text.Contains("grid",StringComparison.OrdinalIgnoreCase) || html.Text.Contains("margin",StringComparison.OrdinalIgnoreCase));
+        var doc=new ContextDocument(Guid.NewGuid(),"general","captured-release.txt",new string('A',64),48,DateTimeOffset.UtcNow,DateTimeOffset.UtcNow,"utf8","The release verification code is Cobalt42.",engine.ResolveProgram("MCP").Id);
+        engine.AddContext(identity.Reference,doc,true);
+        var analysis=await commands.Execute("assist analyze What is the release verification code in the captured file?").BrokerOperation!(default);
+        Console.WriteLine(analysis.Text);
+        success &= analysis.Text.Contains("Cobalt42",StringComparison.OrdinalIgnoreCase);
+        var proposal=await commands.Execute("assist propose Create one VOLT volt.status current step to inspect resource status.").BrokerOperation!(default);
+        Console.WriteLine(proposal.Text);
+        success &= proposal.Text.Contains("DRAFT ONLY",StringComparison.Ordinal) && proposal.Text.Contains("volt.status",StringComparison.Ordinal);
         success &= engine.GetSnapshot().Tasks.Records.Count == 0;
-        Console.WriteLine(success ? "Bundled runtime, model, grounded dialogue, meeting routing, memory recall/correction/forgetting, automatic conversation recall, representative tone and animation metadata verified. No saved world opened." : "Conversation verification failed; inspect bundled runtime diagnostics.");
+        Console.WriteLine(success ? (assistanceOnly ? "Bundled runtime, scoped context analysis and typed task drafting verified. No saved world opened." : "Bundled runtime, model, grounded dialogue, meeting routing, memory recall/correction/forgetting, automatic conversation recall, representative tone, scoped context analysis, typed task drafting and animation metadata verified. No saved world opened.") : "Conversation verification failed; inspect bundled runtime diagnostics.");
         return success ? 0 : 1;
     }
 }

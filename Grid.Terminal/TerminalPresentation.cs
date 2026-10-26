@@ -9,7 +9,7 @@ public static class TerminalPresentation
             ("WORLD & POPULATION", ["status", "city", "districts", "programs", "inspect", "jobs"]),
             ("MONITORING & ANALYTICS", ["live", "behaviors", "activity", "social", "resources", "history"]),
             ("IDENTITY & ADMINISTRATION", ["login", "credentials", "logout", "whoami", "switch", "self", "register-agent", "edit", "apply-edit", "cancel-edit"]),
-            ("CONVERSATIONS", ["memory", "agent", "connect", "talk", "conversations", "transcript", "resume", "disconnect"]),
+            ("CONVERSATIONS", ["assist", "memory", "agent", "connect", "talk", "conversations", "transcript", "resume", "disconnect"]),
             ("SYSTEM & TERMINAL", ["clear", "help", "nge", "exit"])
         };
         var lines = new List<string> { "PROJECT GRID TERMINAL", "COMMAND REFERENCE", new('=', Math.Min(68, TerminalTable.Width)) };

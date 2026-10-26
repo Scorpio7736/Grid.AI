@@ -13,6 +13,76 @@ public sealed class LocalInferenceTests
     private sealed class Handler(Func<HttpRequestMessage,CancellationToken,Task<HttpResponseMessage>> action) : HttpMessageHandler
     { protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)=>action(request,token); }
     private static HttpResponseMessage Json(string text)=>new(HttpStatusCode.OK){Content=new StringContent(text)};
+    [Theory]
+    [InlineData(false)][InlineData(true)]
+    public async Task TruncatedAnswersRetryOnceWithLargerBudgetAndPreserveMode(bool structured)
+    {
+        var limits=new List<int>();var prompts=new List<string>();
+        using var backend=new OllamaLocalBackend(new Handler(async(r,t)=>
+        {
+            if(r.RequestUri!.AbsolutePath=="/api/show") return Json("{}");
+            using var body=JsonDocument.Parse(await r.Content!.ReadAsStringAsync(t));
+            limits.Add(body.RootElement.GetProperty("options").GetProperty("num_predict").GetInt32());
+            prompts.Add(body.RootElement.GetProperty("prompt").GetString()!);
+            Assert.Equal(structured ? "json" : "",body.RootElement.GetProperty("format").GetString());
+            return limits.Count==1 ? Json("{\"done\":true,\"done_reason\":\"length\",\"response\":\"TRUNCATED_SECRET\"}") : Json("{\"done\":true,\"done_reason\":\"stop\",\"response\":\"complete final answer\"}");
+        }));
+        await using var service=new SharedLocalInference(backend);
+        var reply=structured ? await service.GenerateStructuredAsync("answer") : await service.GenerateAsync("answer");
+        Assert.True(reply.Available);Assert.False(reply.ResponseRejected);Assert.Equal("complete final answer",reply.Text);
+        Assert.Equal(new[]{512,1536},limits);Assert.Equal(prompts[0],prompts[1]);
+    }
+    [Fact]
+    public async Task RepeatedTruncationIsRejectedWithAccurateReasonAndQueueStillWorks()
+    {
+        var calls=0;var truncate=true;
+        using var backend=new OllamaLocalBackend(new Handler((r,_)=>
+        {
+            if(r.RequestUri!.AbsolutePath=="/api/show") return Task.FromResult(Json("{}"));
+            calls++;return Task.FromResult(Json(truncate ? "{\"done\":true,\"done_reason\":\"length\",\"response\":\"partial\"}" : "{\"done\":true,\"response\":\"ready\"}"));
+        }));
+        await using var service=new SharedLocalInference(backend);var reply=await service.GenerateAsync("answer");
+        Assert.False(reply.Available);Assert.True(reply.ResponseRejected);Assert.Empty(reply.Text);Assert.Contains("response limit",reply.Reason);Assert.DoesNotContain("unavailable",reply.Reason);Assert.Equal(2,calls);
+        truncate=false;Assert.Equal("ready",(await service.GenerateAsync("test")).Text);
+    }
+    [Fact]
+    public async Task IncompleteResponseIsNotRetriedOrMisreportedAsOffline()
+    {
+        var calls=0;
+        using var backend=new OllamaLocalBackend(new Handler((r,_)=>
+        {
+            if(r.RequestUri!.AbsolutePath=="/api/show") return Task.FromResult(Json("{}"));
+            calls++;return Task.FromResult(Json("{\"done\":false,\"response\":\"partial\"}"));
+        }));
+        await using var service=new SharedLocalInference(backend);var reply=await service.GenerateAsync("answer");
+        Assert.True(reply.ResponseRejected);Assert.Contains("incomplete",reply.Reason);Assert.Equal(1,calls);Assert.Empty(reply.Text);
+    }
+    [Fact]
+    public async Task CancellationBetweenAttemptsPreventsRetry()
+    {
+        var calls=0;using var cancel=new CancellationTokenSource();
+        using var backend=new OllamaLocalBackend(new Handler((r,_)=>
+        {
+            if(r.RequestUri!.AbsolutePath=="/api/show") return Task.FromResult(Json("{}"));
+            calls++;cancel.Cancel();return Task.FromResult(Json("{\"done\":true,\"done_reason\":\"length\",\"response\":\"partial\"}"));
+        }));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(()=>backend.GenerateAsync("answer",cancel.Token));Assert.Equal(1,calls);
+    }
+    [Fact]
+    public async Task StructuredGenerationUsesJsonModeThroughSharedQueueWithoutChangingPlainRequests()
+    {
+        var formats=new List<string>();
+        using var backend=new OllamaLocalBackend(new Handler(async(r,t)=>
+        {
+            if(r.RequestUri!.AbsolutePath=="/api/show") return Json("{}");
+            using var body=JsonDocument.Parse(await r.Content!.ReadAsStringAsync(t)); formats.Add(body.RootElement.GetProperty("format").GetString()!);
+            return Json("{\"done\":true,\"response\":\"{}\"}");
+        }));
+        await using var service=new SharedLocalInference(backend);
+        Assert.True((await service.GenerateStructuredAsync("Return JSON.")).Available);
+        Assert.True((await service.GenerateAsync("Hello.")).Available);
+        Assert.Equal(new[]{"json",""},formats);
+    }
     [Fact]
     public async Task ConcurrentRequestsAreFifoAndOnlyOneBackendCallIsActive()
     {

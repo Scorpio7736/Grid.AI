@@ -30,14 +30,16 @@ public sealed partial class GridSimulationEngine
             var snapshot = GetSnapshot();
             var program = snapshot.Programs.Single(p => p.Id == other.Id);
             // Program identities do not gain global state or another agent's private memories through chat.
+            var wantsWorldCounts = System.Text.RegularExpressions.Regex.IsMatch(input,@"(?i)\b(status|world|districts?|population|residents?|clock|ticks?)\b");
+            var worldCounts = wantsWorldCounts ? $"; districts {snapshot.Districts.Count}; residents {snapshot.Programs.Count}" : "";
             var facts = actor.Kind == ParticipantKind.Human
-                ? $"[world tick {snapshot.TickCount}] Clock {(snapshot.IsRunning ? "running" : "paused")}; districts {snapshot.Districts.Count}; residents {snapshot.Programs.Count}. " +
+                ? $"[world tick {snapshot.TickCount}] Clock {(snapshot.IsRunning ? "running" : "paused")}{worldCounts}. " +
                   $"[resident {program.Id}] {Clip(program.Name,80)}; category {program.Kind}; occupation {Clip(program.Occupation,100)}; status {program.Status}."
                 : $"[identity {actor.Id}, tick {snapshot.TickCount}] Active program {Clip(actor.Name,80)}; global state and other agents' memories excluded.";
             var role = snapshot.Tasks.Agents.SingleOrDefault(a => a.Id == other.Id)?.Role.ToString() ?? (program.Kind == Grid.Core.ResidentKind.Agent ? program.Name.ToUpperInvariant() : "Resident");
             var personality = role switch
             {
-                "MCP" => "MCP: concise coordinator; give useful practical guidance yourself and suggest the appropriate specialist when useful. Never refuse an ordinary advice question just because you coordinate. Never claim execution.",
+                "MCP" => "MCP: concise coordinator for GRID as a whole, with no numbered-district authority assignment. Never invent an assignment from world counts or earlier model replies; give useful practical guidance yourself and suggest the appropriate specialist when useful. Never refuse an ordinary advice question just because you coordinate. Never claim execution.",
                 "MAXIS" => "MAXIS: practical software engineer for C#/.NET; code and builds mean computer software, not buildings or zoning. Give debugging steps, tests and tradeoffs.",
                 "SENTINEL" => "SENTINEL: measured security analyst; distinguish evidence from suspicion.",
                 "JN" => "JN: practical file archivist; explain backups, filenames and retention. Do not invent organization policies or approval requirements.",

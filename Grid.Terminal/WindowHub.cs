@@ -39,7 +39,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 if (!conversation) Register(commands, identity);
                 else
                 {
-                    var allowed = new[] { "help", "exit", "clear", "logout", "memory", "agent", "connect", "talk", "resume", "disconnect", "transcript", "conversations", "context", "whoami" };
+                    var allowed = new[] { "help", "exit", "clear", "logout", "assist", "memory", "agent", "connect", "talk", "resume", "disconnect", "transcript", "conversations", "context", "whoami" };
                     foreach (var command in commands.Commands.ToArray())
                         if (!allowed.Contains(command.Name)) commands.Remove(command.Name);
                 }
@@ -124,7 +124,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                     {
                         pendingPicker = null;
                         var result = commands.Execute(line);
-                        if (result.BrokerOperation is { } operation && name.Equals("talk", StringComparison.OrdinalIgnoreCase))
+                        if (result.BrokerOperation is { } operation && (name.Equals("talk", StringComparison.OrdinalIgnoreCase) || name.Equals("assist", StringComparison.OrdinalIgnoreCase)))
                         {
                             io.CancelAfter(TimeSpan.FromSeconds(140));
                             using var inferenceStop = CancellationTokenSource.CreateLinkedTokenSource(io.Token);

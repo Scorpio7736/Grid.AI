@@ -11,12 +11,20 @@ public sealed partial class GridSimulationEngine
         if (!actor.IsMasterControl && actor.AgentId != mcp.Id) throw DeniedTask(actor, "Only Master Control or the registered MCP role can coordinate requests.");
         return mcp;
     }
-    public CoordinationPlan Coordinate(EditSessionReference session, string request, string requestKey)
+    public CoordinationPlan Coordinate(EditSessionReference session, string request, string requestKey, bool previewOnly = false, AssistanceGuard? guard = null)
     {
         using var lease = TaskLease(session);
         lock (gate)
         {
             RequireAgentActivity();
+            if(guard is not null)
+            {
+                var conversation=GetConversation(guard.ConversationId);
+                if(!lease.Identity.IsMasterControl || conversation.IsMeeting || conversation.Status!=Grid.Communication.ConversationStatus.Open ||
+                    !conversation.Participants.Any(p=>Grid.Communication.CommunicationState.SameIdentity(p,LocalOperator)) ||
+                    guard.Activity!=runVersion || guard.Context!=contextRevision || guard.Memory!=communications.MemoryRevision)
+                    throw new InvalidOperationException("Assistance scope changed; request a new draft.");
+            }
             var mcp = Coordinator(lease.Identity);
             if (!TaskState.Label(requestKey, 80)) throw new ArgumentException("Request key must contain 1..80 printable characters.");
             var previous = tasks.Plans.SingleOrDefault(p => p.RequestKey == requestKey);
@@ -43,7 +51,7 @@ public sealed partial class GridSimulationEngine
             var plan = new CoordinationPlan(planId, requestKey, request, mcp.Id, lease.Identity.OperatorId, lease.Identity.AgentId, utc,
                 Array.AsReadOnly(children.Select(t => t.Id).ToArray()));
             var next = tasks with { Records = Array.AsReadOnly(tasks.Records.Concat(children).ToArray()), Plans = Array.AsReadOnly(tasks.Plans.Append(plan).ToArray()) };
-            TaskState.Validate(next); tasks = next; // Commit the whole plan, never a partially parsed request.
+            TaskState.Validate(next); if(previewOnly) return plan; tasks = next; // Commit the whole plan, never a partially parsed request.
             RecordEvent("CoordinationPlanned", plan.Id, "MCP", $"{children.Count} subtasks delegated; none approved or executed.",
                 System.Text.Json.JsonSerializer.Serialize(new { operatorId = lease.Identity.OperatorId, activeAgentId = lease.Identity.AgentId, coordinatorId = mcp.Id, planId }));
             return plan;
