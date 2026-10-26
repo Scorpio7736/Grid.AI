@@ -59,6 +59,18 @@ public sealed class WindowTests
         { await Task.Delay(50, token); return new(true, "Suggestion: use status.", "test"); }
     }
     [Fact]
+    public async Task PrivateConversationWindowSupportsMemoryAndLogoutRevokesIt()
+    {
+        await using var f = new Fixture(); f.Engine.StartAgents(f.Owner.Reference);
+        await using var client = await f.Open("connect MCP");
+        Assert.Contains("Memory project:",(await client.Send("command","memory scope grid")).Text);
+        Assert.Contains("Saved",(await client.Send("command","memory save fact release Release codename is Moonstone.")).Text);
+        Assert.Contains("Moonstone",(await client.Send("command","memory list")).Text);
+        Assert.Contains("Corrected",(await client.Send("command","memory correct release Release codename is Sunstone.")).Text);
+        Assert.Contains("Forgotten",(await client.Send("command","memory forget release")).Text);
+        f.Owner.Logout(); Assert.True((await client.Send("ping")).Closed);
+    }
+    [Fact]
     public async Task ConversationWindowAwaitsSharedInferenceAndPreservesAnimation()
     {
         await using var f = new Fixture(inference: new WindowInference());
@@ -202,6 +214,21 @@ public sealed class WindowTests
         Assert.Contains("connect -inline", CommandHelp.Complete("connect -i", f.Commands.Commands));
     }
 
+    [Fact]
+    public async Task MeetingWindowUsesTypewriterSharedHistoryAndResumeAfterDetach()
+    {
+        await using var f = new Fixture(); f.Engine.StartAgents(f.Owner.Reference);
+        await using var child = await f.Open("agent meetings MCP MAXIS JN");
+        Assert.Equal("conversation",child.Greeting.Mode); Assert.Contains("Meeting:",child.Greeting.Text);
+        var reply=await child.Send("command","talk @MAXIS build this"); Assert.NotNull(reply.AnimateFrom); Assert.Contains("MAXIS:",reply.Text);
+        var meeting=Assert.Single(f.Engine.GetSnapshot().Communications.Conversations); Assert.True(meeting.IsMeeting);
+        Assert.True((await child.Send("command","exit")).Closed);
+        Assert.Equal(ConversationStatus.Open,f.Engine.GetConversation(meeting.Id).Status);
+        await using var resumed=await f.Open("resume "+meeting.Id);
+        Assert.Contains("JN:",(await resumed.Send("command","talk @JN files")).Text);
+        Assert.Equal(4,f.Engine.GetConversation(meeting.Id).Messages.Count);
+        f.Owner.Logout(); Assert.True((await resumed.Send("ping")).Closed);
+    }
     [Fact]
     public async Task DedicatedConversationStoresCompleteTurnsAndClosePreservesResume()
     {

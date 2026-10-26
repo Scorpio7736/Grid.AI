@@ -1,5 +1,11 @@
 # Project GRID — Grounded agent conversations (6.2)
 
+**6.2B completed — 2026-10-25:** Explicit `memory save/list/correct/forget` controls now preserve user-confirmed context by agent/project across conversations and restarts. Recall excludes stale/forgotten context and private meeting imports; tone instructions favor direct, serious, useful replies. Schema v23; **723 tests passed**, plus bundled-model recall/correction/forgetting checks. [Commands, scope and limitations](Project_GRID_Persistent_Conversation_Memory_Implementation.md). Earlier 6.2B-pending notes are historical; 6.3 task/context assistance remains planned.
+
+
+**6.2A completed — 2026-10-25:** `agent meetings MCP MAXIS JN` opens a shared conversation window; `talk @MAXIS <message>` directs a turn. One responder is chosen by deterministic specialty-keyword rules, with shared history and private-context isolation. Reviewed voice uses `-inline` in the original host. Schema v22; **697 tests passed**. [Commands, limits and verification](Project_GRID_Multi_Agent_Meetings_Implementation.md). Earlier meeting-pending statements below describe historical milestones; 6.2B memory and 6.3 task assistance remain planned.
+
+
 ## Conversation readability follow-up — implemented 2026-10-22
 
 Normal chat and `transcript` now display spaced `You:` / agent-name replies. Saved snapshot facts, source labels, ticks, origins and IDs are hidden from the default display and remain accessible with `transcript --details` or `transcript CONVERSATION_ID --details`. Existing transcripts retain their full original contents; this is a display change with no schema migration. Human text is not parsed as an agent metadata envelope.

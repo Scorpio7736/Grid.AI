@@ -46,14 +46,15 @@ public sealed partial class GridSimulationEngine
             if (c.Status != ConversationStatus.Open) throw new InvalidOperationException("Conversation has ended; connect to start another.");
             if (origin is not (MessageOrigin.Terminal or MessageOrigin.Microphone)) throw new ArgumentException("Invalid dialogue origin.");
             if (!CommunicationState.ValidContent(text)) throw new ArgumentException("Message must contain 1..4096 characters of valid text.");
-            var other = c.Participants.Single(p => !CommunicationState.SameIdentity(p, human));
+            var selection = DialogueResponder(c, human, text);
+            var other = selection.Recipient;
             if (other.Kind != ParticipantKind.Program) throw new ArgumentException("Dialogue requires a program recipient.");
             other = Canonical(other);
             if (communications.Conversations.Sum(x => x.Messages.Count) > CommunicationState.MaxMessages - 2)
                 throw new InvalidOperationException("Two message slots are required; no part of this turn was stored.");
             var snapshot = GetSnapshot(); var program = snapshot.Programs.Single(p => p.Id == other.Id);
             var query = text.Trim().ToLowerInvariant();
-            var reply = generated ?? (query switch {
+            var reply = generated ?? (c.IsMeeting ? "[LOCAL FALLBACK] " + selection.Reason + ". Local AI is unavailable; I cannot provide an AI answer. Ask a focused question when AI is available, or use GRID commands for verified details. No task was executed." : query switch {
                 "status" when human.Kind == ParticipantKind.Program => $"[VERIFIED OWN STATE at tick {snapshot.TickCount}] Active identity {human.Name} ({human.Id}); no global history or task visibility is granted.",
                 "status" => $"[VERIFIED GRID STATE at tick {snapshot.TickCount}] Clock: {(snapshot.IsRunning ? "running" : "paused")}; elapsed: {snapshot.ElapsedSimulationTime}; districts: {snapshot.Districts.Count}; residents: {snapshot.Programs.Count}.",
                 "who are you" or "who are you?" => $"[VERIFIED GRID STATE at tick {snapshot.TickCount}] {program.Name}; resident ID {program.Id}; kind {program.Kind}; occupation {program.Occupation}. This reply is produced by GRID's deterministic adapter, not the host application.",

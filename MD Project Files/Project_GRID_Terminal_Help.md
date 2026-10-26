@@ -1,5 +1,11 @@
 # GRID7736 - Terminal Help
 
+**6.2B completed — 2026-10-25:** Explicit `memory save/list/correct/forget` controls now preserve user-confirmed context by agent/project across conversations and restarts. Recall excludes stale/forgotten context and private meeting imports; tone instructions favor direct, serious, useful replies. Schema v23; **723 tests passed**, plus bundled-model recall/correction/forgetting checks. [Commands, scope and limitations](Project_GRID_Persistent_Conversation_Memory_Implementation.md). Earlier 6.2B-pending notes are historical; 6.3 task/context assistance remains planned.
+
+
+**6.2A completed — 2026-10-25:** `agent meetings MCP MAXIS JN` opens a shared conversation window; `talk @MAXIS <message>` directs a turn. One responder is chosen by deterministic specialty-keyword rules, with shared history and private-context isolation. Reviewed voice uses `-inline` in the original host. Schema v22; **697 tests passed**. [Commands, limits and verification](Project_GRID_Multi_Agent_Meetings_Implementation.md). Earlier meeting-pending statements below describe historical milestones; 6.2B memory and 6.3 task assistance remain planned.
+
+
 ## Agent lifecycle — 5.9
 
 Start GRID before talking to agents or running tasks. Existing identities/history remain saved while paused; transcripts and task inspection remain available. `agents initialize` only shows migration guidance, and connect no longer creates MCP. Explicit launch `--start` initializes after owner login; normal startup is paused.
@@ -779,3 +785,44 @@ tasks
 ```
 
 MCP example: `mcp request "VOLT: status current; RELAY: notify Phase 5.6 test"`. Approve/dispatch each child individually. Inspect results using `volt status`, `relay inbox`, `relay deliveries`, and `mcp brief`. Local speech is separate from conversation voice mute preferences and occurs only on an approved relay.speak task. See [full acceptance test](Project_GRID_VOLT_RELAY_Implementation.md).
+
+## Multi-agent meetings — 6.2A
+
+```text
+agent
+    - agent meetings MCP MAXIS JN
+      # USAGE: Open a shared meeting window with 2–6 registered agents after grid -start.
+    - agent meetings MCP MAXIS JN -inline
+      # USAGE: Keep the meeting in the original host for reviewed voice input.
+    # EXAMPLE: agent meetings MCP MAXIS JN
+
+talk
+    - talk <message>
+      # USAGE: Address the group; one participant responds according to specialty keywords.
+    - talk @MAXIS <message>
+      # USAGE: Direct this turn to MAXIS, who must belong to the meeting.
+    # EXAMPLE: talk @JN What should I consider before archiving files?
+```
+
+`transcript --details` shows evidence and routing details. `exit` detaches; `disconnect` ends the meeting. Private conversations, social memories and captured files are not automatically shared. Meetings do not execute tasks.
+
+## Persistent private memory — 6.2B
+
+Connect to an agent as Master Control. Use a new, empty conversation for `memory scope`; the default project is `general`. Ordinary chat is not saved as permanent memory automatically.
+
+```text
+memory
+    - memory list
+      # USAGE: Review the current agent/project's entries, timestamps and sources.
+    - memory scope <project>
+      # USAGE: Select a project before the conversation's first message.
+    - memory save <preference|decision|fact|unfinished> <key> <text>
+      # USAGE: Save explicit user-confirmed context for later conversations/restarts.
+    - memory correct <key> <text>
+      # USAGE: Correct or reconfirm an existing entry; exclude older scoped history from recall.
+    - memory forget <key>
+      # USAGE: Block recall/reuse of this key; retain the original transcript for inspection.
+    # EXAMPLE: memory save fact release Release codename is Moonstone.
+```
+
+Memories stay private to the agent/project and are not imported into meetings. Entries expire from recall after 30 days until reconfirmed. `memory list` remains available for review. Corrections/forgetting preserve source transcripts but suppress earlier scoped history from AI prompts. See [implementation and test](Project_GRID_Persistent_Conversation_Memory_Implementation.md).

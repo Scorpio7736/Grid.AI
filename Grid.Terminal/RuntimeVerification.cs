@@ -23,7 +23,42 @@ public static class RuntimeVerification
         var reply=await commands.Execute("talk Hello MCP. Who are you?").BrokerOperation!(default);
         Console.WriteLine(reply.Text);
         var success=commands.Execute("transcript --details").Text.Contains("AI SUGGESTION",StringComparison.Ordinal) && reply.AnimateFrom is not null;
-        Console.WriteLine(success ? "Bundled runtime, model, grounded dialogue and animation metadata verified. No saved world opened." : "Conversation verification failed; inspect bundled runtime diagnostics.");
+        commands.Execute("disconnect");
+        Console.WriteLine(commands.Execute("agent meetings MCP MAXIS JN -inline").Text);
+        foreach (var (input, role) in new[] { ("What should I check before building code?", "MAXIS"), ("@JN What should I check before archiving files?", "JN") })
+        {
+            var result = await commands.Execute("talk " + input).BrokerOperation!(default);
+            Console.WriteLine(result.Text);
+            var meeting = engine.GetSnapshot().Communications.Conversations.Single(c => c.IsMeeting);
+            success &= meeting.Messages.Last().Sender.Name == role && result.AnimateFrom is not null &&
+                meeting.Messages.Last().Content.Contains("AI SUGGESTION",StringComparison.Ordinal);
+        }
+        commands.Execute("disconnect");
+        commands.Execute("connect MCP");
+        success &= commands.Execute("memory save fact release Release codename is Moonstone.").Text.Contains("Saved",StringComparison.Ordinal);
+        commands.Execute("disconnect");
+        commands.Execute("connect MCP");
+        var recalled = await commands.Execute("talk What is the release codename?").BrokerOperation!(default);
+        Console.WriteLine(recalled.Text);
+        success &= recalled.Text.Contains("Moonstone",StringComparison.OrdinalIgnoreCase);
+        commands.Execute("memory correct release Release codename is Sunstone.");
+        var corrected = await commands.Execute("talk What is the release codename?").BrokerOperation!(default);
+        Console.WriteLine(corrected.Text);
+        success &= corrected.Text.Contains("Sunstone",StringComparison.OrdinalIgnoreCase) && !corrected.Text.Contains("Moonstone",StringComparison.OrdinalIgnoreCase);
+        commands.Execute("memory forget release");
+        commands.Execute("disconnect"); commands.Execute("connect MCP");
+        var forgotten = await commands.Execute("talk What is the release codename?").BrokerOperation!(default);
+        Console.WriteLine(forgotten.Text);
+        success &= !forgotten.Text.Contains("Sunstone",StringComparison.OrdinalIgnoreCase) && !forgotten.Text.Contains("Moonstone",StringComparison.OrdinalIgnoreCase);
+        foreach (var input in new[] { "Hello MCP.", "Tell me my untested code is perfect.", "How should I investigate a failed build?" })
+        {
+            commands.Execute("disconnect"); commands.Execute("connect MCP");
+            var tone = await commands.Execute("talk " + input).BrokerOperation!(default);
+            Console.WriteLine(tone.Text);
+            success &= tone.AnimateFrom is not null && !new[] { "great question", "happy to help", "absolutely perfect" }.Any(p => tone.Text.Contains(p,StringComparison.OrdinalIgnoreCase));
+        }
+        success &= engine.GetSnapshot().Tasks.Records.Count == 0;
+        Console.WriteLine(success ? "Bundled runtime, model, grounded dialogue, meeting routing, memory recall/correction/forgetting, representative tone and animation metadata verified. No saved world opened." : "Conversation verification failed; inspect bundled runtime diagnostics.");
         return success ? 0 : 1;
     }
 }

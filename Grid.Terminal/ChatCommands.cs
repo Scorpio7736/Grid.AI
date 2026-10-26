@@ -3,7 +3,7 @@ using Grid.Simulation;
 namespace Grid.Terminal;
 
 /// <summary>Per-terminal active conversation; transcripts and the local operator handle belong to the saved world.</summary>
-public sealed class ChatCommands
+public sealed partial class ChatCommands
 {
     private readonly GridSimulationEngine engine;
     private Guid? active;
@@ -22,8 +22,10 @@ public sealed class ChatCommands
                 commands.Typewriter = args[0].Equals("on", StringComparison.OrdinalIgnoreCase);
                 return new("Typewriter " + (commands.Typewriter ? "on." : "off."));
             }) { Capability = "chat" });
+        commands.Register(new("memory", "memory <list|scope|save|correct|forget> ...", "Review and manage explicit private agent/project memory. User-confirmed context is not verified host evidence.", chat.Memory) { Capability = "chat" });
         commands.ConversationConnected = () => chat.active is not null;
         if (identity is not null) identity.Changed += () => chat.active = null;
+        commands.Register(new("agent", "agent meetings <AGENT> <AGENT> [...] [-inline]", "Open a shared meeting in a new window. Use talk @AGENT message to direct a turn.", args => chat.Meeting(args, commands)) { Capability = "chat" });
         commands.Register(new("connect", "connect [program-id|name] [-inline]", "Open a dedicated conversation window; default contact is MCP. -inline keeps voice-compatible chat here.", chat.Connect));
         commands.Register(new("talk", "talk <message>", "Send to the connected program and receive grounded local AI dialogue or a labeled deterministic fallback.", chat.Talk));
         commands.Register(new("conversations", "conversations", "List the active identity's stored conversations.", chat.List));
@@ -44,6 +46,28 @@ public sealed class ChatCommands
         var c = engine.GetSnapshot().Communications.Conversations.SingleOrDefault(c => c.Id == id && Owned(c));
         return c ?? throw new ArgumentException("No conversation for this identity with that ID. Use conversations.");
     }
+    private CommandResult Meeting(IReadOnlyList<string> args, CommandDispatcher commands)
+    {
+        if (args.Count < 3 || !args[0].Equals("meetings", StringComparison.OrdinalIgnoreCase)) return new("Usage: agent meetings MCP MAXIS [JN ...] [-inline]");
+        if (identity is null || !identity.IsMaster) return new("Access denied. Human Master Control starts meetings.");
+        if (active is not null) return new("Already connected. Disconnect before opening a meeting here.");
+        var inline = args.Count(a => a.Equals("-inline",StringComparison.OrdinalIgnoreCase));
+        if (inline > 1) return new("Use -inline only once.");
+        var names = args.Skip(1).Where(a => !a.Equals("-inline",StringComparison.OrdinalIgnoreCase)).ToArray();
+        try
+        {
+            var participants = engine.MeetingParticipants(identity.Reference,names);
+            if (inline == 0 && commands.OpenConversation is not null)
+                return commands.OpenConversation(new[] { "agent", "meetings" }.Concat(names).ToArray());
+            active = engine.StartMeeting(identity.Reference,names);
+            save?.Invoke(CancellationToken.None).GetAwaiter().GetResult();
+            return new("Meeting: " + string.Join(", ",participants.Select(p => TerminalTable.Safe(p.Name))) +
+                "\nOne participant replies per turn. Use talk <message> or talk @MAXIS <message>.\nThis transcript is shared. Private files and memories are not automatically included. Chat does not execute tasks.");
+        }
+        catch (Exception e) when (e is ArgumentException or InvalidOperationException or UnauthorizedAccessException) { return new("Meeting error: " + e.Message); }
+        catch (Exception e) when (e is IOException or Microsoft.Data.Sqlite.SqliteException) { return new("Meeting save failed; it may remain in memory. Resolve persistence before continuing."); }
+    }
+    private string Contacts(Conversation c) => string.Join(", ", c.Participants.Where(p => !CommunicationState.SameIdentity(p, Actor)).Select(p => TerminalTable.Safe(p.Name)));
     private CommandResult Connect(IReadOnlyList<string> args)
     {
         engine.RequireAgentActivity();
@@ -53,7 +77,7 @@ public sealed class ChatCommands
         var name = args.Count == 0 ? "MCP" : string.Join(" ", args);
         var recipient = engine.ResolveProgram(name);
         active = engine.StartConversation(Actor, recipient);
-        return new($"Connected to {TerminalTable.Safe(recipient.Name)}\nAI conversation; replies can be mistaken. Chat does not execute tasks.\nUse talk <message>. Read history with transcript; use transcript --details for sources and technical details.");
+        return new($"Connected to {TerminalTable.Safe(recipient.Name)}\nAI conversation; replies can be mistaken. Chat does not execute tasks.\nUse talk <message>. Use memory save to retain confirmed details across conversations. Read history with transcript; use transcript --details for sources and technical details.");
     }
     private CommandResult Talk(IReadOnlyList<string> args)
     {
@@ -67,7 +91,7 @@ public sealed class ChatCommands
         var turn = engine.PrepareGroundedTurn(id, Actor, text, origin);
         var reference = identity.Reference;
         var consumed = 0;
-        bool Current() => engine.IsRunning && engine.ActivityGeneration == turn.ActivityGeneration && identity.IsAuthenticated && identity.Reference == reference && active == id;
+        bool Current() => engine.ConversationMemoryRevision == turn.MemoryRevision && engine.IsRunning && engine.ActivityGeneration == turn.ActivityGeneration && identity.IsAuthenticated && identity.Reference == reference && active == id;
         return new("", BrokerOperation: async token =>
         {
             if (Interlocked.Exchange(ref consumed, 1) != 0) return new("Conversation request already consumed.");
@@ -103,7 +127,7 @@ public sealed class ChatCommands
     }
     private CommandResult List(IReadOnlyList<string> args) => args.Count != 0 ? new("Usage: conversations") :
         new(TerminalTable.Render(["Conversation ID", "Contact", "Status", "Messages"], engine.GetSnapshot().Communications.Conversations.Where(Owned)
-            .Select(c => new[] { c.Id.ToString(), c.Participants.Single(p => !CommunicationState.SameIdentity(p, Actor)).Name, c.Status.ToString(), c.Messages.Count.ToString() })));
+            .Select(c => new[] { c.Id.ToString(), Contacts(c), c.Status.ToString(), c.Messages.Count.ToString() })));
     private CommandResult Transcript(IReadOnlyList<string> args)
     {
         var details = args.Contains("--details", StringComparer.OrdinalIgnoreCase);
@@ -112,7 +136,7 @@ public sealed class ChatCommands
         var id = ids.Length == 1 ? Guid.Parse(ids[0]) : active;
         if (id is null) return new("No conversation connected. Use transcript <conversation-id>; find IDs with conversations.");
         var c = Find(id.Value);
-        return new((details ? $"Conversation {c.Id} | {c.Status}\n" : "Conversation with " + TerminalTable.Safe(c.Participants.Single(p => !CommunicationState.SameIdentity(p, Actor)).Name) + "\n\n") + (c.Messages.Count == 0 ? "No messages." : Render(c.Messages, details)));
+        return new((details ? $"Conversation {c.Id} | {c.Status}\n" : "Conversation with " + TerminalTable.Safe(Contacts(c)) + "\n\n") + (c.Messages.Count == 0 ? "No messages." : Render(c.Messages, details)));
     }
     private CommandResult Resume(IReadOnlyList<string> args)
     {

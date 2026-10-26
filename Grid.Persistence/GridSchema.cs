@@ -12,7 +12,7 @@ internal sealed record SchemaMigration(int Version, string Name, string Sql)
 
 public static class GridSchema
 {
-    public const int CurrentVersion = 21;
+    public const int CurrentVersion = 23;
     public const int ApplicationId = 0x47524944; // ASCII GRID
 
     internal static readonly IReadOnlyList<SchemaMigration> Migrations = Array.AsReadOnly(new[]
@@ -159,7 +159,9 @@ public static class GridSchema
         new SchemaMigration(18, "JN scopes and logical storage governance", "SELECT 1;"),
         new SchemaMigration(19, "VOLT pacing and RELAY delivery records", "SELECT 1;"),
         new SchemaMigration(20, "Retained task archives and batch operations", "SELECT 1;"),
-        new SchemaMigration(21, "Explicit human task denial", "SELECT 1;")
+        new SchemaMigration(21, "Explicit human task denial", "SELECT 1;"),
+        new SchemaMigration(22, "Shared multi-agent meetings", "SELECT 1;"),
+        new SchemaMigration(23, "Scoped user-confirmed conversation memory", "SELECT 1;")
     });
 
     internal static void Migrate(SqliteConnection connection, bool allowCreate = true) => Migrate(connection, Migrations, allowCreate);

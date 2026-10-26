@@ -1,5 +1,11 @@
 # GRID7736
 
+**6.2B completed — 2026-10-25:** Explicit `memory save/list/correct/forget` controls now preserve user-confirmed context by agent/project across conversations and restarts. Recall excludes stale/forgotten context and private meeting imports; tone instructions favor direct, serious, useful replies. Schema v23; **723 tests passed**, plus bundled-model recall/correction/forgetting checks. [Commands, scope and limitations](MD%20Project%20Files/Project_GRID_Persistent_Conversation_Memory_Implementation.md). Earlier 6.2B-pending notes are historical; 6.3 task/context assistance remains planned.
+
+
+**6.2A completed — 2026-10-25:** `agent meetings MCP MAXIS JN` opens a shared conversation window; `talk @MAXIS <message>` directs a turn. One responder is chosen by deterministic specialty-keyword rules, with shared history and private-context isolation. Reviewed voice uses `-inline` in the original host. Schema v22; **697 tests passed**. [Commands, limits and verification](MD%20Project%20Files/Project_GRID_Multi_Agent_Meetings_Implementation.md). Earlier meeting-pending statements below describe historical milestones; 6.2B memory and 6.3 task assistance remain planned.
+
+
 **5.9 completed (2026-10-23):** `grid -start` initializes/resumes agents; `grid -pause` stops new agent activity and interrupts in-flight work. Identities/history persist; no tasks are replayed or approved on resume. Normal startup is paused. 672 tests passed. [Lifecycle and test commands](MD%20Project%20Files/Project_GRID_Agent_Lifecycle_Implementation.md).
 
 **4.2G completed (2026-10-23):** Use `grid -start` / `grid -pause`, `tasks -completed` / `tasks -list`, and `tasks deny <reference> "reason"`. Transfer roots and `-select` create a new GRID7736 child without overwriting existing files. Schema v21; 658 tests passed. [Commands and verification](MD%20Project%20Files/Project_GRID_Terminal_Controls_Implementation.md).

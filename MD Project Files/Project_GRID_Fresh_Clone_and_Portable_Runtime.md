@@ -1,5 +1,8 @@
 # Fresh clone and prepared portable runtime
 
+**6.2B completed — 2026-10-25:** Explicit `memory save/list/correct/forget` controls now preserve user-confirmed context by agent/project across conversations and restarts. Recall excludes stale/forgotten context and private meeting imports; tone instructions favor direct, serious, useful replies. Schema v23; **723 tests passed**, plus bundled-model recall/correction/forgetting checks. [Commands, scope and limitations](Project_GRID_Persistent_Conversation_Memory_Implementation.md). Earlier 6.2B-pending notes are historical; 6.3 task/context assistance remains planned.
+
+
 **Implemented and verified — 2026-10-23.** This fixes hidden runtime assumptions exposed by deleting the old checkout and cloning again. It is a portable-runtime foundation, not completion of all PC/Flash edition, voice, device migration or clean-machine release gates.
 
 ## Source clone versus prepared release

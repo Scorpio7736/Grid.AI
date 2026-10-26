@@ -237,7 +237,7 @@ public sealed class TaskBatchTests : IDisposable
         using (var db = new SqliteConnection("Pooling=False;Data Source=" + Path.Combine(folder,"world.db")))
         {
             db.Open(); using var command = db.CreateCommand();
-            command.CommandText = "DELETE FROM SchemaMigrations WHERE Version = 21; PRAGMA user_version=20;"; command.ExecuteNonQuery();
+            command.CommandText = "DELETE FROM SchemaMigrations WHERE Version >= 21; PRAGMA user_version=20;"; command.ExecuteNonQuery();
         }
         using var upgraded = new WorldStore(Path.Combine(folder,"world.db"));
         var saved = upgraded.Load(); Assert.Equal(Status.AwaitingApproval, Assert.Single(saved.State.Tasks.Records).Status);

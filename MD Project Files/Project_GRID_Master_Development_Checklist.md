@@ -1,8 +1,14 @@
 # Project GRID — Master Development Checklist
 
+**6.2B completed — 2026-10-25:** Explicit `memory save/list/correct/forget` controls now preserve user-confirmed context by agent/project across conversations and restarts. Recall excludes stale/forgotten context and private meeting imports; tone instructions favor direct, serious, useful replies. Schema v23; **723 tests passed**, plus bundled-model recall/correction/forgetting checks. [Commands, scope and limitations](Project_GRID_Persistent_Conversation_Memory_Implementation.md). Earlier 6.2B-pending notes are historical; 6.3 task/context assistance remains planned.
+
+
+**6.2A completed — 2026-10-25:** `agent meetings MCP MAXIS JN` opens a shared conversation window; `talk @MAXIS <message>` directs a turn. One responder is chosen by deterministic specialty-keyword rules, with shared history and private-context isolation. Reviewed voice uses `-inline` in the original host. Schema v22; **697 tests passed**. [Commands, limits and verification](Project_GRID_Multi_Agent_Meetings_Implementation.md). Earlier meeting-pending statements below describe historical milestones; 6.2B memory and 6.3 task assistance remain planned.
+
+
 ## New planned interaction and task commands — 2026-10-21
 
-The following user-requested additions are **planned, not implemented**: multi-agent meetings (6.2A), meeting-window integration (6.2A; one-to-one windows/typewriter implemented in 4.2E), monitor selection and screen assistance (6.3A), bulk/agent-filtered task commands (5.8, subsequently completed 2026-10-22), and the transfer command rename (4.2F, subsequently completed 2026-10-22). Existing completed items and verification history remain unchanged. These additions do not grant new agent privileges or automatic task approval.
+The following user-requested additions were **originally planned** (see the completion notes and checked sections for current status): multi-agent meetings (6.2A), meeting-window integration (6.2A; one-to-one windows/typewriter implemented in 4.2E), monitor selection and screen assistance (6.3A), bulk/agent-filtered task commands (5.8, subsequently completed 2026-10-22), and the transfer command rename (4.2F, subsequently completed 2026-10-22). Existing completed items and verification history remain unchanged. These additions do not grant new agent privileges or automatic task approval.
 
 
 ## System-agent names updated - 2026-10-21
@@ -869,7 +875,7 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 
 ## 4.2E Conversation windows and typewriter responses
 
-**One-to-one implementation delivered - 2026-10-21.** Default connect/resume opens dedicated windows; meeting integration depends on 6.2A and remains planned.
+**One-to-one implementation delivered - 2026-10-21.** Default connect/resume opens dedicated windows; meeting integration was subsequently completed in 6.2A on 2026-10-25.
 
 - [x] Open one-to-one agent conversations in a new dedicated window connected to the same authoritative GRID host
 - [x] Keep the original terminal available; closing a conversation window ends/detaches that view without shutting down GRID
@@ -879,7 +885,7 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 - [x] Keep animation separate from message persistence and task execution; save each complete response once and never interleave speakers' output
 - [x] Verify window lifecycle, history, identity isolation and animation cancellation; add help and completion examples
 
-- [ ] Integrate multi-agent meeting windows when the 6.2A meeting/participant service is implemented
+- [x] Integrate multi-agent meeting windows when the 6.2A meeting/participant service is implemented — completed 2026-10-25; see 6.2A
 
 **Completion verification (2026-10-21):** 572 tests passed (14 Core, 157 Simulation, 97 Persistence, 304 Terminal), including 12 new window/renderer cases and a real attached conversation process. Default connect/resume opens a dedicated view; exit detaches and disconnect ends the conversation. Typewriter responses support skip, per-window on/off and instant output for redirected/reduced-motion use. Complete turns are recorded before animation and use existing host persistence. Explicit `-inline` preserves original-host voice compatibility. No schema change; visible window placement/animation feel remains a manual smoke check. See [implementation, limits and acceptance test](Project_GRID_Conversation_Windows_Implementation.md).
 
@@ -1145,27 +1151,31 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 6.2A Multi-agent meetings
 
-**Planned - 2026-10-21.** `agent meetings [list of agent names]` starts a meeting with multiple selected agents; example: `agent meetings MCP MAXIS JN`. Square brackets describe the participant list and are not typed literally.
+**Implemented - 2026-10-25 (planned 2026-10-21).** `agent meetings [list of agent names]` starts a meeting with multiple selected agents; example: `agent meetings MCP MAXIS JN`. Square brackets describe the participant list and are not typed literally.
 
-- [ ] Parse and validate multiple registered agent names, rejecting duplicates/unknown participants with useful feedback
-- [ ] Open the meeting in a dedicated conversation window with typewriter agent responses (4.2E)
-- [ ] Let the user speak/type to the group; select the participant best suited to answer using request relevance and agent expertise, rather than making every agent reply
-- [ ] Support explicit direction to a particular participant and route that turn to the named agent instead of automatic responder selection; document the addressing syntax
-- [ ] Define deterministic tie/fallback behavior when no participant is suitable or local inference is unavailable, without fabricating an answer
-- [ ] Show who is responding, keep shared meeting history and preserve participant-specific access to private context
-- [ ] Prevent meeting participation or responder selection from granting another agent's capabilities; proposed actions still follow normal approval
-- [ ] Verify participant selection, directed turns, response ordering, scoped context, window lifecycle and offline fallback
+- [x] Parse and validate multiple registered agent names, rejecting duplicates/unknown participants with useful feedback
+- [x] Open the meeting in a dedicated conversation window with typewriter agent responses (4.2E)
+- [x] Let the user speak/type to the group; select the participant best suited to answer using request relevance and agent expertise, rather than making every agent reply
+- [x] Support explicit direction to a particular participant and route that turn to the named agent instead of automatic responder selection; document the addressing syntax
+- [x] Define deterministic tie/fallback behavior when no participant is suitable or local inference is unavailable, without fabricating an answer
+- [x] Show who is responding, keep shared meeting history and preserve participant-specific access to private context
+- [x] Prevent meeting participation or responder selection from granting another agent's capabilities; proposed actions still follow normal approval
+- [x] Verify participant selection, directed turns, response ordering, scoped context, window lifecycle and offline fallback
+
+**Completion verification (2026-10-25):** 697 tests passed, zero failed/skipped; schema v22 preserves existing conversations. Dedicated windows, directed `talk @AGENT` turns, deterministic specialty-keyword routing, scoped shared history, offline fallback and reviewed voice via `-inline` are implemented. Private files/social memories are excluded from meeting prompts. Selection is keyword-based; native voice capture stays in the original host. [Implementation, limits and test commands](Project_GRID_Multi_Agent_Meetings_Implementation.md).
 
 ## 6.2B Persistent agent memory and professional tone
 
-**Planned; restored 2026-10-23. Not implemented.** Prioritize before further intelligence expansion. Current recall is selected-conversation excerpts and social-simulation memories only.
+**Implemented 2026-10-25 (planning restored 2026-10-23).** Explicit user-confirmed memories persist by agent/project. Ordinary chat is not automatically mined.
 
-- [ ] Persist relevant user preferences, decisions, project facts and unfinished work across conversations/restarts
-- [ ] Preserve source messages, timestamps and agent/project scope; distinguish observations/confirmed facts from model suggestions
-- [ ] Retrieve only relevant permitted memories; handle stale/conflicting facts and prevent cross-agent leakage
-- [ ] Provide memory review/correct/forget controls, including prevention of re-ingesting forgotten items from retained history
-- [ ] Require professional, direct, serious, helpful responses without flattery, unnecessary politeness/reassurance or repeated disclaimers; retain specialties and respectful disagreement
-- [ ] Verify new-conversation and restart recall, corrections, forgetting, privacy, offline storage and representative tone cases
+- [x] Persist relevant user preferences, decisions, project facts and unfinished work across conversations/restarts
+- [x] Preserve source messages, timestamps and agent/project scope; distinguish observations/confirmed facts from model suggestions
+- [x] Retrieve only relevant permitted memories; handle stale/conflicting facts and prevent cross-agent leakage
+- [x] Provide memory review/correct/forget controls, including prevention of re-ingesting forgotten items from retained history
+- [x] Require professional, direct, serious, helpful responses without flattery, unnecessary politeness/reassurance or repeated disclaimers; retain specialties and respectful disagreement
+- [x] Verify new-conversation and restart recall, corrections, forgetting, privacy, offline storage and representative tone cases
+
+**Completion verification (2026-10-25):** 723 tests passed, zero failures/skips; schema v23. Memory review/save/correct/forget, provenance, stale/conflict handling, private-scope retrieval, retained-history exclusion and pending-reply cancellation are implemented. Professional tone instructions were strengthened and real bundled-model recall/correction/forgetting and tone examples passed. Model output remains unverified; this is bounded explicit memory, not automatic semantic extraction. [Implementation, limits and acceptance commands](Project_GRID_Persistent_Conversation_Memory_Implementation.md).
 
 ## 6.3 Task assistance and context (GRID-REQ-002)
 

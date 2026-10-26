@@ -27,7 +27,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
             if (stopping) return new("Error: GRID host is shutting down.");
             if (active >= 16) return new("Error: maximum of 16 attached windows reached; close one first.");
             if (!owner.IsAuthenticated) return new("Access denied. Login before opening windows.");
-            if (view is not null && (view.Count == 0 || !(conversation ? view[0].ToLowerInvariant() is "connect" or "resume" : WindowCommands.Supports(view[0])) || !source.IsAllowed(view[0]))) return new("Access denied or unsupported data command.");
+            if (view is not null && (view.Count == 0 || !(conversation ? view[0].ToLowerInvariant() is "connect" or "resume" or "agent" : WindowCommands.Supports(view[0])) || !source.IsAllowed(view[0]))) return new("Access denied or unsupported data command.");
             TerminalIdentitySession? identity = null; NamedPipeServerStream? pipe = null;
             try
             {
@@ -39,7 +39,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 if (!conversation) Register(commands, identity);
                 else
                 {
-                    var allowed = new[] { "help", "exit", "clear", "logout", "connect", "talk", "resume", "disconnect", "transcript", "conversations", "context", "whoami" };
+                    var allowed = new[] { "help", "exit", "clear", "logout", "memory", "agent", "connect", "talk", "resume", "disconnect", "transcript", "conversations", "context", "whoami" };
                     foreach (var command in commands.Commands.ToArray())
                         if (!allowed.Contains(command.Name)) commands.Remove(command.Name);
                 }
