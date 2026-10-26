@@ -7,11 +7,20 @@ public sealed partial class ChatCommands
     {
         if (identity is null || !identity.IsMaster) return new("Access denied: memory controls require human Master Control.");
         if (active is not { } id) return new("Connect to an agent first. Memory is scoped to that agent and the conversation project (default: general).");
-        const string usage = "Usage: memory list | memory scope <project> (empty conversation) | memory save <preference|decision|fact|unfinished> <key> <text> | memory correct <key> <text> | memory forget <key>";
+        const string usage = "Usage: memory history | memory forget-history | memory list | memory scope <project> (empty conversation) | memory save <preference|decision|fact|unfinished> <key> <text> | memory correct <key> <text> | memory forget <key>";
         if (args.Count == 0) return new(usage);
         try
         {
             var action = args[0].ToLowerInvariant();
+            if (action == "history" && args.Count == 1)
+                return new("Automatic recall candidates (latest 20; model selects relevant bounded excerpts):\n" + TerminalTable.Render(["Conversation","Date UTC","Speaker","Excerpt"],
+                    engine.ReviewConversationRecall(identity.Reference,id).Select(x => new[] { x.ConversationId.ToString(),x.Message.CreatedAtUtc.ToString("u"),x.Message.Sender.Name,x.Message.Sender.Kind == ParticipantKind.Program ? ConversationText(x.Message.Content) : x.Message.Content })));
+            if (action == "forget-history" && args.Count == 1)
+            {
+                engine.ForgetConversationRecall(identity.Reference,id);
+                save?.Invoke(CancellationToken.None).GetAwaiter().GetResult();
+                return new("Earlier conversation recall cleared for this agent/project or meeting group. Transcripts and explicit memories retained; future messages can be recalled.");
+            }
             if (action == "list" && args.Count == 1)
             {
                 var memories = engine.ReviewMemories(identity.Reference,id);

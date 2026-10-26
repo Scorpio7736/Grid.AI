@@ -62,11 +62,55 @@ public sealed class ConversationMemoryTests
         var review=restored.Commands.Execute("memory list").Text; Assert.Contains("release",review); Assert.Contains(message.Id.ToString(),review); Assert.Contains("grid",review);
     }
     [Fact]
-    public async Task OrdinaryDialogueAndModelClaimsAreNeverSilentlySaved()
+    public async Task OrdinaryDialogueIsRecalledWithoutPromotingItToConfirmedMemory()
     {
         var f=new Fixture(); f.Connect(); await f.Talk("My favorite color is teal.");
         Assert.Empty(f.Engine.GetSnapshot().Communications.Memories);
-        f.Disconnect(); f.Connect(); await f.Talk("What do you remember?"); Assert.DoesNotContain("teal",f.Ai.Prompt);
+        f.Disconnect(); f.Connect(); await f.Talk("What do you remember?"); Assert.Contains("teal",f.Ai.Prompt); Assert.Contains("user said",f.Ai.Prompt);
+    }
+    [Fact]
+    public async Task AutomaticRecallSurvivesRestartAndIncludesItemsWithoutSaveCommand()
+    {
+        var f=new Fixture(); var original=f.Connect(); await f.Talk("The release codename is Copperfin. We still need to test the installer."); f.Disconnect();
+        var restored=new Fixture(f.Engine.GetSnapshot()); restored.Connect(); await restored.Talk("What was the release codename and unfinished installer work?");
+        Assert.Contains("Copperfin",restored.Ai.Prompt); Assert.Contains("test the installer",restored.Ai.Prompt);
+        Assert.Contains("prior conversation " + original,restored.Commands.Execute("transcript --details").Text);
+        Assert.Empty(restored.Engine.GetSnapshot().Communications.Memories);
+    }
+    [Fact]
+    public async Task AutomaticRecallRespectsAgentAndProjectBoundaries()
+    {
+        var f=new Fixture(); f.Connect("MCP","alpha"); await f.Talk("The release codename is Copperfin."); f.Disconnect();
+        foreach(var (agent,project) in new[]{("MAXIS","alpha"),("MCP","beta")})
+        { f.Connect(agent,project); await f.Talk("What do you remember about the release?"); Assert.DoesNotContain("Copperfin",f.Ai.Prompt); f.Disconnect(); }
+    }
+    [Fact]
+    public async Task AutomaticRecallForgetHistorySurvivesRestartButKeepsExplicitMemories()
+    {
+        var f=new Fixture(); f.Connect(); await f.Talk("The release codename is Copperfin."); f.Save("Keep answers short.","style",MemoryKind.Preference); f.Disconnect();
+        f.Connect(); Assert.Contains("Copperfin",f.Commands.Execute("memory history").Text);
+        Assert.Contains("recall cleared",f.Commands.Execute("memory forget-history").Text);
+        var restored=new Fixture(f.Engine.GetSnapshot()); restored.Connect(); await restored.Talk("What do you remember about the release?");
+        Assert.DoesNotContain("Copperfin",restored.Ai.Prompt); Assert.Contains("Keep answers short",restored.Ai.Prompt);
+        await restored.Talk("The new project mascot is Firebird."); restored.Disconnect(); restored.Connect(); await restored.Talk("What is the project mascot?"); Assert.Contains("Firebird",restored.Ai.Prompt);
+    }
+    [Fact]
+    public async Task MeetingRecallRequiresTheExactSameGroupAndNeverImportsPrivateDiscussion()
+    {
+        var f=new Fixture(); f.Connect(); await f.Talk("Private mascot is Copperfin."); f.Disconnect();
+        f.Commands.Execute("agent meetings MCP MAXIS -inline"); await f.Talk("Our shared mascot is Firebird."); f.Disconnect();
+        f.Commands.Execute("agent meetings MCP MAXIS JN -inline"); await f.Talk("@MCP What mascot did we discuss?"); Assert.DoesNotContain("Firebird",f.Ai.Prompt); Assert.DoesNotContain("Copperfin",f.Ai.Prompt); f.Disconnect();
+        f.Commands.Execute("agent meetings MAXIS MCP -inline"); await f.Talk("@MCP What mascot did we discuss?"); Assert.Contains("Firebird",f.Ai.Prompt); Assert.DoesNotContain("Copperfin",f.Ai.Prompt);
+        f.Commands.Execute("memory forget-history"); f.Disconnect(); f.Commands.Execute("agent meetings MCP MAXIS -inline"); await f.Talk("@MCP What mascot did we discuss?"); Assert.DoesNotContain("Firebird",f.Ai.Prompt);
+    }
+    [Fact]
+    public async Task RelevantTailOfLongMessageAndUnverifiedAgentSuggestionsCanBeRecalled()
+    {
+        var f=new Fixture(); var id=f.Connect(); f.Engine.SendMessage(id,f.Engine.LocalOperator,new string('x',650) + " The release codename is Copperfin."); f.Disconnect(); f.Connect();
+        await f.Talk("What is the release codename?"); Assert.Contains("Copperfin",f.Ai.Prompt);
+        for(var i=0;i<3;i++) f.Engine.SendMessage(f.Chat.ActiveConversation!.Value,f.Engine.LocalOperator,"The build has a new label " + i);
+        f.Disconnect(); f.Connect(); await f.Talk("What did you suggest about build output?"); Assert.Contains("agent suggested (unverified)",f.Ai.Prompt);
+        Assert.True(System.Text.Encoding.UTF8.GetByteCount(f.Ai.Prompt)<=3200);
     }
     [Fact]
     public async Task CorrectionKeepsSourcesButRemovesOldContentFromPromptsAndRejectsInFlightReply()

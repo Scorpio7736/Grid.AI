@@ -1,10 +1,13 @@
 # Persistent conversation memory and professional tone — 6.2B
 
+**Automatic conversation recall added — 2026-10-25:** Ordinary saved discussions and their relevant details now carry across conversations/restarts, alongside explicit memory. Private recall stays within the same agent/project; shared meeting recall requires the exact same group. `memory history` reviews candidates; `memory forget-history` excludes prior discussions while retaining explicit memories and transcripts. **728 tests passed**; bundled-model recall/clearing verified. [Behavior, bounds and test](Project_GRID_Automatic_Conversation_Recall.md). This supersedes earlier explicit-only recall descriptions.
+
+
 Implemented 2026-10-25. Schema v23 stores explicit user-confirmed context alongside conversations in the existing local SQLite save. No new service, online dependency or external memory store is required.
 
 ## What is remembered
 
-In a one-to-one agent conversation, Master Control can save preferences, decisions, project facts and unfinished work. Saving is explicit with `memory save`; ordinary chat and AI replies are **not automatically mined or promoted into permanent facts**. The agent receives relevant saved context in later conversations and after restarts. These are user-confirmed assertions, distinct from measured engine observations and unverified model suggestions.
+In a one-to-one agent conversation, Master Control can save preferences, decisions, project facts and unfinished work. Saving is explicit with `memory save`; ordinary chat and AI replies are **not automatically mined or promoted into permanent facts**. The agent receives relevant saved context in later conversations and after restarts. Ordinary conversation history is additionally retrieved automatically under the scoped rules in the follow-up above. These are user-confirmed assertions, distinct from measured engine observations and unverified model suggestions.
 
 Scope is the persistent agent ID plus a project label. A new conversation defaults to `general`. Use `memory scope <project>` before its first message to choose another project. Project/key labels are case-insensitive, normalized to lowercase, and allow 1–48 ASCII letters, digits, dots, hyphens or underscores. Project labels partition memory; they do not register filesystem access or grant project/task capabilities.
 
@@ -37,7 +40,7 @@ Entries become stale after 30 days and are excluded from model recall until expl
 
 An existing key cannot be overwritten with `save`: use `correct` to resolve a conflict explicitly. Different keys are not semantically reconciled; the user must review contradictory assertions. A correction or forget advances history recall cutoffs across existing private conversations for that agent/project. Earlier transcript excerpts are then excluded from prompts, including potentially derived old answers. This intentionally sacrifices some earlier conversational continuity to avoid reintroducing obsolete facts. New messages remain eligible.
 
-Forgetting empties the memory value and retains a tombstone plus provenance. The original transcripts remain readable; this is **forgetting for AI recall, not secure deletion of transcripts or backups**. The forgotten key cannot be reused automatically or through `correct`. A deliberate new key can explicitly save new information. There is no automatic transcript re-ingestion. Explicitly retyping an old fact into a new user message supplies it again; forgetting cannot erase a human's later input.
+Forgetting empties the memory value and retains a tombstone plus provenance. The original transcripts remain readable; this is **forgetting for AI recall, not secure deletion of transcripts or backups**. The forgotten key cannot be reused automatically or through `correct`. A deliberate new key can explicitly save new information. Forgotten or corrected source history is not automatically re-ingested; eligible ordinary discussion can now be recalled. Explicitly retyping an old fact into a new user message supplies it again; forgetting cannot erase a human's later input.
 
 Memory/scope revisions invalidate and cancel pending inference so an old response cannot commit after a correction or forget. Changes are saved through the host's normal save callback. Save failures are reported and may leave the change only in memory. Storage limits: 256 entries including tombstones, 32 source revisions per entry, and existing conversation/message limits; capacity failures do not partially append a source. No automatic eviction is implemented.
 

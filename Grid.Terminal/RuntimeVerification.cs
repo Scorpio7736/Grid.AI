@@ -57,8 +57,19 @@ public static class RuntimeVerification
             Console.WriteLine(tone.Text);
             success &= tone.AnimateFrom is not null && !new[] { "great question", "happy to help", "absolutely perfect" }.Any(p => tone.Text.Contains(p,StringComparison.OrdinalIgnoreCase));
         }
+        commands.Execute("disconnect"); commands.Execute("connect MCP");
+        await commands.Execute("talk Our project mascot is Copperfin.").BrokerOperation!(default);
+        commands.Execute("disconnect"); commands.Execute("connect MCP");
+        var automatic = await commands.Execute("talk What is our project mascot?").BrokerOperation!(default);
+        Console.WriteLine(automatic.Text);
+        success &= automatic.Text.Contains("Copperfin",StringComparison.OrdinalIgnoreCase);
+        commands.Execute("memory forget-history");
+        commands.Execute("disconnect"); commands.Execute("connect MCP");
+        var cleared = await commands.Execute("talk What is our project mascot?").BrokerOperation!(default);
+        Console.WriteLine(cleared.Text);
+        success &= !cleared.Text.Contains("Copperfin",StringComparison.OrdinalIgnoreCase);
         success &= engine.GetSnapshot().Tasks.Records.Count == 0;
-        Console.WriteLine(success ? "Bundled runtime, model, grounded dialogue, meeting routing, memory recall/correction/forgetting, representative tone and animation metadata verified. No saved world opened." : "Conversation verification failed; inspect bundled runtime diagnostics.");
+        Console.WriteLine(success ? "Bundled runtime, model, grounded dialogue, meeting routing, memory recall/correction/forgetting, automatic conversation recall, representative tone and animation metadata verified. No saved world opened." : "Conversation verification failed; inspect bundled runtime diagnostics.");
         return success ? 0 : 1;
     }
 }

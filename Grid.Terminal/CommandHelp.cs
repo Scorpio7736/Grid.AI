@@ -16,7 +16,7 @@ public static class CommandHelp
         "jn" => ["jn scopes", "jn register <alias> \"absolute-file-or-directory\"", "jn revoke <alias>", "jn quota", "jn quota inspect <proposal-reference>", "jn quota approve <proposal-reference>"],
         "maxis" => ["maxis workspaces", "maxis register <alias> \"absolute-root\" \"relative/project.csproj\"", "maxis revoke <alias>"],
         "mcp" => ["mcp request \"SPECIALIST: demo text; SPECIALIST: demo text\" [request-key]", "mcp plans", "mcp inspect <plan-id>", "mcp brief [plan-id]"],
-        "memory" => ["memory list", "memory scope <project>", "memory save preference <key> <text>", "memory save decision <key> <text>", "memory save fact <key> <text>", "memory save unfinished <key> <text>", "memory correct <key> <text>", "memory forget <key>"],
+        "memory" => ["memory list", "memory history", "memory forget-history", "memory scope <project>", "memory save preference <key> <text>", "memory save decision <key> <text>", "memory save fact <key> <text>", "memory save unfinished <key> <text>", "memory correct <key> <text>", "memory forget <key>"],
         "agent" => ["agent meetings MCP MAXIS JN", "agent meetings MCP MAXIS -inline"],
         "agents" => ["agents"],
         "tasks" => ["tasks", "tasks -completed", "tasks -list", "tasks deny <id> \"reason\"","tasks list", "tasks list -archived", "tasks approve -all", "tasks run -all", "tasks clear -all", "tasks propose SENTINEL sentinel.defender status", "tasks propose SENTINEL sentinel.firewall status", "tasks propose SENTINEL sentinel.events recent", "tasks inspect <id>", "tasks propose <agent-id|name> <capability> \"argument\" [request-key]", "tasks approve <id>", "tasks cancel <id>", "tasks retry <id>", "tasks run"],

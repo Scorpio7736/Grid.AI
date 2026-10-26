@@ -1,5 +1,8 @@
 # Project GRID — Master Development Checklist
 
+**Automatic conversation recall added — 2026-10-25:** Ordinary saved discussions and their relevant details now carry across conversations/restarts, alongside explicit memory. Private recall stays within the same agent/project; shared meeting recall requires the exact same group. `memory history` reviews candidates; `memory forget-history` excludes prior discussions while retaining explicit memories and transcripts. **728 tests passed**; bundled-model recall/clearing verified. [Behavior, bounds and test](Project_GRID_Automatic_Conversation_Recall.md). This supersedes earlier explicit-only recall descriptions.
+
+
 **6.2B completed — 2026-10-25:** Explicit `memory save/list/correct/forget` controls now preserve user-confirmed context by agent/project across conversations and restarts. Recall excludes stale/forgotten context and private meeting imports; tone instructions favor direct, serious, useful replies. Schema v23; **723 tests passed**, plus bundled-model recall/correction/forgetting checks. [Commands, scope and limitations](Project_GRID_Persistent_Conversation_Memory_Implementation.md). Earlier 6.2B-pending notes are historical; 6.3 task/context assistance remains planned.
 
 
@@ -1166,9 +1169,10 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 6.2B Persistent agent memory and professional tone
 
-**Implemented 2026-10-25 (planning restored 2026-10-23).** Explicit user-confirmed memories persist by agent/project. Ordinary chat is not automatically mined.
+**Implemented 2026-10-25 (planning restored 2026-10-23).** Explicit memories persist by agent/project, and ordinary conversations now provide automatic scoped historical recall.
 
 - [x] Persist relevant user preferences, decisions, project facts and unfinished work across conversations/restarts
+- [x] Automatically recall relevant prior conversations and discussion items alongside explicit memories; exact-group meeting recall and history review/forget controls (2026-10-25; 728 tests)
 - [x] Preserve source messages, timestamps and agent/project scope; distinguish observations/confirmed facts from model suggestions
 - [x] Retrieve only relevant permitted memories; handle stale/conflicting facts and prevent cross-agent leakage
 - [x] Provide memory review/correct/forget controls, including prevention of re-ingesting forgotten items from retained history

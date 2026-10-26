@@ -77,7 +77,7 @@ public sealed partial class ChatCommands
         var name = args.Count == 0 ? "MCP" : string.Join(" ", args);
         var recipient = engine.ResolveProgram(name);
         active = engine.StartConversation(Actor, recipient);
-        return new($"Connected to {TerminalTable.Safe(recipient.Name)}\nAI conversation; replies can be mistaken. Chat does not execute tasks.\nUse talk <message>. Use memory save to retain confirmed details across conversations. Read history with transcript; use transcript --details for sources and technical details.");
+        return new($"Connected to {TerminalTable.Safe(recipient.Name)}\nAI conversation; replies can be mistaken. Chat does not execute tasks.\nUse talk <message>. Earlier conversations are recalled automatically; memory save pins specific details. Read history with transcript; use transcript --details for sources and technical details.");
     }
     private CommandResult Talk(IReadOnlyList<string> args)
     {

@@ -1,5 +1,8 @@
 # GRID7736 - Terminal Help
 
+**Automatic conversation recall added — 2026-10-25:** Ordinary saved discussions and their relevant details now carry across conversations/restarts, alongside explicit memory. Private recall stays within the same agent/project; shared meeting recall requires the exact same group. `memory history` reviews candidates; `memory forget-history` excludes prior discussions while retaining explicit memories and transcripts. **728 tests passed**; bundled-model recall/clearing verified. [Behavior, bounds and test](Project_GRID_Automatic_Conversation_Recall.md). This supersedes earlier explicit-only recall descriptions.
+
+
 **6.2B completed — 2026-10-25:** Explicit `memory save/list/correct/forget` controls now preserve user-confirmed context by agent/project across conversations and restarts. Recall excludes stale/forgotten context and private meeting imports; tone instructions favor direct, serious, useful replies. Schema v23; **723 tests passed**, plus bundled-model recall/correction/forgetting checks. [Commands, scope and limitations](Project_GRID_Persistent_Conversation_Memory_Implementation.md). Earlier 6.2B-pending notes are historical; 6.3 task/context assistance remains planned.
 
 
@@ -826,3 +829,16 @@ memory
 ```
 
 Memories stay private to the agent/project and are not imported into meetings. Entries expire from recall after 30 days until reconfirmed. `memory list` remains available for review. Corrections/forgetting preserve source transcripts but suppress earlier scoped history from AI prompts. See [implementation and test](Project_GRID_Persistent_Conversation_Memory_Implementation.md).
+
+## Automatic conversation recall
+
+```text
+memory
+    - memory history
+      # USAGE: Review recent eligible discussion from earlier conversations in this scope.
+    - memory forget-history
+      # USAGE: Exclude earlier scoped discussion from AI recall; retain transcripts and explicit memory entries.
+    # EXAMPLE: memory history
+```
+
+Ordinary discussions are recalled automatically. `memory save` additionally preserves explicit confirmed entries. Recall is bounded to relevant excerpts and keeps private agent/project and exact meeting-group boundaries.
