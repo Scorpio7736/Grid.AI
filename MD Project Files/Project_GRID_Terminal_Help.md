@@ -1,5 +1,7 @@
 # GRID7736 - Terminal Help
 
+**4.2H implemented — 2026-10-26:** Conversation labels are light blue, agent bodies yellow and user text white. Assistance now animates; Enter no longer accidentally skips a reply. **772 Release tests passed**, plus an interactive Windows-console probe. User desktop/window visual acceptance remains open. [Changes, verification and test commands](Project_GRID_Conversation_Display_Repair.md).
+
 **AI response recovery — 2026-10-26:** Truncated answers now get one bounded larger retry, and rejected responses are distinguished from an offline service. Advice and analysis prompts were refined; MCP greetings no longer receive unrelated district counts. **759 Release tests passed**, and the bundled model answered the reported HTML question successfully. [Fix, limits and regression test](Project_GRID_AI_Response_Recovery.md).
 
 
@@ -135,7 +137,7 @@ Agent switches accept any initialized role, case-insensitively; omit the agent f
 
 ## Conversation-window update — 4.2E (2026-10-21)
 
-`connect` and `resume` now open a dedicated conversation window by default. The original terminal remains usable. Within the new window, `talk` returns a labeled typewriter response; any key skips animation. `transcript` is instant. `exit` closes the view while retaining an open conversation for later resume; `disconnect` ends it. Parent logout/identity changes revoke attached views. Meetings remain planned in 6.2A.
+`connect` and `resume` now open a dedicated conversation window by default. The original terminal remains usable. Within the new window, `talk` returns a labeled typewriter response; any key except Enter skips animation. `transcript` is instant. `exit` closes the view while retaining an open conversation for later resume; `disconnect` ends it. Parent logout/identity changes revoke attached views. Meetings are implemented in 6.2A; use `agent meetings MCP MAXIS` (or add `-inline`).
 
 ```text
 connect

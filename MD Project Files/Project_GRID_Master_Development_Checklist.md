@@ -1,5 +1,7 @@
 # Project GRID — Master Development Checklist
 
+**4.2H implemented — 2026-10-26:** Conversation labels are light blue, agent bodies yellow and user text white. Assistance now animates; Enter no longer accidentally skips a reply. **772 Release tests passed**, plus an interactive Windows-console probe. User desktop/window visual acceptance remains open. [Changes, verification and test commands](Project_GRID_Conversation_Display_Repair.md).
+
 **AI response recovery — 2026-10-26:** Truncated answers now get one bounded larger retry, and rejected responses are distinguished from an offline service. Advice and analysis prompts were refined; MCP greetings no longer receive unrelated district counts. **759 Release tests passed**, and the bundled model answered the reported HTML question successfully. [Fix, limits and regression test](Project_GRID_AI_Response_Recovery.md).
 
 
@@ -929,15 +931,18 @@ Fixed a user-reported Windows dialog failure: FolderBrowserDialog supports Descr
 
 ## 4.2H Conversation readability and typewriter repair
 
-**Planned — user report 2026-10-26; not implemented or verified.** The user reports that typewriter animation does not work. Earlier 4.2E/runtime completion notes are historical verification, not confirmation that this reported regression is fixed.
+**Implemented — 2026-10-26; user desktop visual acceptance remains open.** Assistance lacked animation metadata; all conversation surfaces now carry explicit speaker/body colors. New agent text animates at approximately 20 ms per Unicode text element, and queued Enter presses cannot skip it. Earlier 4.2E/runtime notes are historical verification.
 
-- [ ] Reproduce and fix missing typewriter animation in the user's normal launch path, inline chat, dedicated conversation windows and meetings; check replies from both `talk` and assistance workflows
-- [ ] Preserve working `typewriter on/off`, skip-animation controls and intentional instant output for redirected/no-animation modes; verify that startup defaults do not silently suppress animation
-- [ ] Improve conversation layout with clear speaker labels, spacing between turns and readable wrapping/code blocks
-- [ ] Use light blue for user/agent speaker labels and chat headings
-- [ ] Use yellow for agent response text and white for user-entered text and displayed user messages
-- [ ] Apply these conversation colors consistently in inline chat, attached windows, meetings and transcript views; preserve red errors and readable no-color output
-- [ ] Verify actual visible animation and colors in the user's terminal, in addition to automated renderer tests; record completion evidence only after the regression is resolved
+- [x] Repair missing assistance animation and carry the shared renderer through inline chat, dedicated/attached windows and meetings; verify `talk` and assistance paths
+- [x] Preserve `typewriter on/off`, deliberate skip controls and intentional instant output for redirected/no-animation modes; verify default-on behavior in the normal executable (Enter is now ignored for skipping)
+- [x] Keep clear speaker labels, spacing between turns, native console wrapping and code blocks; separate assistance headings, answers and source/review notes
+- [x] Use light blue for user/agent speaker labels and chat headings
+- [x] Use yellow for agent response text and white for user-entered text and displayed user messages
+- [x] Apply conversation colors consistently in inline chat, attached windows, meetings and transcript views; preserve red errors and readable no-color output
+- [x] Verify with 772 Release tests (14 Core, 157 Simulation, 99 Persistence, 502 Terminal), including real named-pipe window tests; exercise the normal executable with bundled AI in an isolated interactive Windows ConPTY console
+- [ ] Confirm final visual appearance in the user's desktop terminal and detached conversation/meeting windows; the interactive console probe and automated window tests do not substitute for that desktop acceptance
+
+**Completion notes:** Presentation-only metadata, no database migration (schema v23), no new runtime dependencies. Normal-executable checks confirmed inline/assistance animation, actual console color sequences, queued-Enter resilience and instant-off behavior. A CSS advice request hit the existing model output limit; a shorter request succeeded. This does not change AI generation limits or implement the deferred 6.6 unified `talk` workflow. See [4.2H implementation and manual test](Project_GRID_Conversation_Display_Repair.md).
 
 ## 4.3 User-supplied context (GRID-REQ-002)
 
@@ -1479,7 +1484,7 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 # Current Next Steps
 
-**Newly requested planning items (2026-10-26):** Address the reported typewriter/readability fixes in 4.2H. Defer the unified `talk` rework in 6.6 until the remaining AI-agent features and their verification are complete.
+**Updated planning items (2026-10-26):** 4.2H is implemented and console/test-verified; user desktop visual acceptance remains open. Defer the unified `talk` rework in 6.6 until the remaining AI-agent features and their verification are complete.
 
 1. [x] Complete 5.1: named system-agent/task contracts, durable task queue and capability-scoped demonstration broker.
 2. [ ] Begin 5.2: MCP task coordination and delegation.

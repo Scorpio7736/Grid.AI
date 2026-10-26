@@ -9,7 +9,9 @@ public static class TerminalTheme
         Environment.GetEnvironmentVariable("TERM"), Environment.GetEnvironmentVariable("NO_COLOR"));
     public static ConsoleColor? Color(string line)
     {
-        if (new[] { "error", "failed", "denied", "invalid", "refused", "rejected", "unavailable" }.Any(w => line.Contains(w, StringComparison.OrdinalIgnoreCase))) return ConsoleColor.Red;
+        if (line.StartsWith("AI response rejected", StringComparison.OrdinalIgnoreCase) ||
+            line.StartsWith("Local AI unavailable", StringComparison.OrdinalIgnoreCase)) return ConsoleColor.Red;
+        if (new[] { "error", "failed", "denied", "invalid", "refused" }.Any(w => line.Contains(w, StringComparison.OrdinalIgnoreCase))) return ConsoleColor.Red;
         if (line.Contains('|') || line.Contains("  ") && line.Contains("---") || line.Trim().All(c => c is '=' or '-' or '+' or ' ')) return ConsoleColor.Yellow;
         return ConsoleColor.Cyan;
     }

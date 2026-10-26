@@ -1,5 +1,7 @@
 # Project GRID — Conversation windows and typewriter responses (4.2E)
 
+**4.2H implemented — 2026-10-26:** Conversation labels are light blue, agent bodies yellow and user text white. Assistance now animates; Enter no longer accidentally skips a reply. **772 Release tests passed**, plus an interactive Windows-console probe. User desktop/window visual acceptance remains open. [Changes, verification and test commands](Project_GRID_Conversation_Display_Repair.md).
+
 **6.3 completed — 2026-10-26:** `assist advice/analyze/propose` now provides scoped local-AI guidance and typed MCP drafts. `assist submit` creates only tasks awaiting approval; no automatic execution. Captured context stays within explicit agent/project grants, and assistance outputs are not copied into chat recall. **752 Release tests passed**; bundled-model analysis/drafting verified. [Commands and limits](Project_GRID_Task_Assistance_Implementation.md). Earlier 6.3-pending statements are historical; monitor assistance remains planned in 6.3A.
 
 
@@ -31,7 +33,7 @@ The host validates the launching session and the actual attached process before 
 
 ## Typewriter display
 
-New agent replies in dedicated windows appear with a typewriter effect. The user message appears immediately; the agent's labeled response follows at approximately 12 ms per Unicode text element. Any key skips the rest of the current animation; that key is consumed. Commands are read only after the response finishes, so turns cannot interleave within the view. Transcript/history output remains instant.
+New agent replies in dedicated windows appear with a typewriter effect. The user message appears immediately; the agent's labeled response follows at approximately 20 ms per Unicode text element. Any key except Enter skips the rest of the current animation; that key is consumed. Commands are read only after the response finishes, so turns cannot interleave within the view. Transcript/history output remains instant.
 
 ```text
 typewriter
@@ -42,7 +44,7 @@ typewriter
     # EXAMPLE: typewriter off
 ```
 
-Preference is per window, not persisted. Set the environment variable `GRID_TYPEWRITER=off` before launching GRID to disable animation in all inherited windows for reduced-motion/accessibility needs. Redirected input/output and `TERM=dumb` also force instant text. `typewriter on` does not override those environment/terminal constraints.
+Preference is per window, not persisted. Set the environment variable `GRID_TYPEWRITER=off` before launching GRID to disable animation in all inherited windows for reduced-motion/accessibility needs. Redirected input/output and `TERM=dumb` also force instant text. `typewriter on` overrides the initial `GRID_TYPEWRITER=off` preference, but cannot override redirected streams or `TERM=dumb`.
 
 The engine generates and records the complete turn before display. Animation never calls the engine, appends partial messages or executes tasks. Existing host autosave/orderly-shutdown persistence applies; animation does not add an immediate durable-save guarantee. Attachment heartbeats run during animation (every 16 displayed text elements), checking revocation and keeping the pipe alive. Cancellation stops rendering without removing or duplicating the recorded turn. This is presentation animation, not streamed model generation.
 
@@ -64,7 +66,7 @@ Attached windows still do not own microphone/speaker controls. For voice, use `c
 Commands used: `dotnet test <project>/<project>.csproj -c Verification --no-restore --verbosity minimal`, serially for Grid.Core.Tests, Grid.Simulation.Tests, Grid.Persistence.Tests and Grid.Terminal.Tests. Terminal tests were rerun after terminal-only fixes. Automated subprocess tests use hidden redirected consoles; physical window placement, colors and animation timing require the following manual smoke test.
 
 1. Launch the updated GRID, log in, and run `connect MCP`. Confirm a new conversation window opens while the original terminal still accepts `status`.
-2. In the new window, run `talk status`. Confirm the MCP label and typewriter response. Press a key during a reply to finish it immediately.
+2. In the new window, run `talk status`. Confirm the MCP label and typewriter response. Press Escape during a reply to finish it immediately.
 3. Run `typewriter off`, then `talk who are you`; confirm instant output. `transcript` must contain one user/agent pair per turn.
 4. Run `exit` in the conversation window. Confirm the main GRID remains running. Use `conversations`, copy the full ID, and run `resume ID` to reopen the retained conversation.
 5. Confirm parent logout revokes the view. Separately, test `connect MCP -inline` in the original host if using microphone commands.
