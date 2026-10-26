@@ -22,9 +22,18 @@ public static class TerminalTheme
     }
 }
 
-public sealed class TerminalOutput(TextWriter inner, bool color) : TextWriter
+public sealed class TerminalOutput(TextWriter inner, bool color) : TextWriter, IConversationOutput
 {
     public override Encoding Encoding => inner.Encoding;
+    public Task WriteConversationAsync(string text,ConsoleColor tone)
+    {
+        if(!color) { inner.Write(text); return Task.CompletedTask; }
+        var previous=Console.ForegroundColor;
+        try { Console.ForegroundColor=tone; inner.Write(text); }
+        finally { Console.ForegroundColor=previous; }
+        return Task.CompletedTask;
+    }
+
     public override Task WriteAsync(string? value) { TerminalTheme.Write(inner, value ?? "", color); return Task.CompletedTask; }
     public override Task WriteLineAsync(string? value)
     {

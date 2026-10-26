@@ -16,7 +16,7 @@ public sealed partial class ChatCommands
     {
         var chat = new ChatCommands(engine) { identity = identity, inference = inference, save = save };
         if (identity?.IsAttachment != true)
-            commands.Register(new("typewriter", "typewriter <on|off>", "Animate inline agent replies; any key skips. Redirected output remains instant.", args =>
+            commands.Register(new("typewriter", "typewriter <on|off>", "Animate inline agent replies; any key except Enter skips. Redirected output remains instant.", args =>
             {
                 if (args.Count != 1 || args[0].ToLowerInvariant() is not ("on" or "off")) return new("Usage: typewriter <on|off>");
                 commands.Typewriter = args[0].Equals("on", StringComparison.OrdinalIgnoreCase);
@@ -116,7 +116,7 @@ public sealed partial class ChatCommands
                     var result = Response(engine.CompleteGroundedTurn(turn, reply, token));
                     var fallbackNotice = reply.ResponseRejected ? "AI response rejected: " + reply.Reason + " Using a basic reply.\n" : "Local AI is unavailable; using a basic reply.\n";
                     return reply.Available && CommunicationState.ValidContent(reply.Text) ? result : result with
-                    { Text = fallbackNotice + result.Text, AnimateFrom = result.AnimateFrom is { } offset ? offset + fallbackNotice.Length : null };
+                    { Text = fallbackNotice + result.Text, Presentation = new[] { new ConversationSpan(0,fallbackNotice.Length,ConversationTone.Error) }.Concat(ConversationPresentation.Shift(result.Presentation,fallbackNotice.Length)).ToArray(), AnimateFrom = result.AnimateFrom is { } offset ? offset + fallbackNotice.Length : null };
                 }, "grounded-reply");
                 if (save is not null) await save(token);
                 return result;
@@ -138,7 +138,8 @@ public sealed partial class ChatCommands
         var id = ids.Length == 1 ? Guid.Parse(ids[0]) : active;
         if (id is null) return new("No conversation connected. Use transcript <conversation-id>; find IDs with conversations.");
         var c = Find(id.Value);
-        return new((details ? $"Conversation {c.Id} | {c.Status}\n" : "Conversation with " + TerminalTable.Safe(Contacts(c)) + "\n\n") + (c.Messages.Count == 0 ? "No messages." : Render(c.Messages, details)));
+        var heading=details ? $"Conversation {c.Id} | {c.Status}\n" : "Conversation with " + TerminalTable.Safe(Contacts(c)) + "\n\n";
+        return new(heading+(c.Messages.Count==0 ? "No messages." : Render(c.Messages,details)),Presentation:MessagePresentation(c.Messages,details,heading.Length));
     }
     private CommandResult Resume(IReadOnlyList<string> args)
     {
@@ -162,7 +163,7 @@ public sealed partial class ChatCommands
         var rows = messages.ToArray();
         var text = Render(rows);
         // A turn is already stored in full by the engine; animation is display metadata only.
-        return new(text, AnimateFrom: rows.Length > 1 ? Render(rows.Take(1)).Length + 2 : null);
+        return new(text, AnimateFrom: rows.Length > 1 ? Render(rows.Take(1)).Length + 2 : null, Presentation: MessagePresentation(rows));
     }
     private string Render(IEnumerable<GridMessage> messages, bool details = false) => string.Join("\n\n", messages.Select(m =>
     {
@@ -171,6 +172,19 @@ public sealed partial class ChatCommands
             CommunicationState.SameIdentity(m.Sender, Actor) ? "You" : TerminalTable.Safe(m.Sender.Name);
         return label + ": " + new string(content.Select(c => char.IsControl(c) && c != '\n' ? ' ' : c).ToArray());
     }));
+    private IReadOnlyList<ConversationSpan> MessagePresentation(IEnumerable<GridMessage> messages,bool details=false,int offset=0)
+    {
+        var spans=new List<ConversationSpan>();
+        foreach(var message in messages)
+        {
+            var rendered=Render([message],details);
+            var label=details ? $"#{message.Sequence} {TerminalTable.Safe(message.Sender.Name)} (tick {message.Tick}, {message.Origin})" : CommunicationState.SameIdentity(message.Sender,Actor) ? "You" : TerminalTable.Safe(message.Sender.Name);
+            spans.Add(new(offset,label.Length+2,ConversationTone.Heading));
+            spans.Add(new(offset+label.Length+2,rendered.Length-label.Length-2,message.Sender.Kind==ParticipantKind.Human || CommunicationState.SameIdentity(message.Sender,Actor) ? ConversationTone.User : ConversationTone.Agent));
+            offset+=rendered.Length+2;
+        }
+        return spans.AsReadOnly();
+    }
     // Display only: preserve the complete original envelope in storage and --details.
     private static string ConversationText(string text)
     {

@@ -69,11 +69,11 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
             using var io = CancellationTokenSource.CreateLinkedTokenSource(stop.Token);
             io.CancelAfter(TimeSpan.FromSeconds(10));
             var typewriter = !string.Equals(Environment.GetEnvironmentVariable("GRID_TYPEWRITER"), "off", StringComparison.OrdinalIgnoreCase);
-            if (mode is "conversation" or "terminal") commands.Register(new("typewriter", "typewriter <on|off>", "Animate agent replies; any key skips the current animation. Off displays instantly.", args =>
+            if (mode is "conversation" or "terminal") commands.Register(new("typewriter", "typewriter <on|off>", "Animate agent replies; any key except Enter skips the current animation. Off displays instantly.", args =>
             {
                 if (args.Count != 1 || args[0].ToLowerInvariant() is not ("on" or "off")) return new("Usage: typewriter <on|off>");
                 typewriter = args[0].Equals("on", StringComparison.OrdinalIgnoreCase);
-                return new("Typewriter " + (typewriter ? "on. Any key skips animation." : "off. Responses display instantly."));
+                return new("Typewriter " + (typewriter ? "on. Any key except Enter skips animation." : "off. Responses display instantly."));
             }) { Capability = "chat" });
             WindowReply Reply(string text = "", bool closed = false, bool live = false, bool clear = false, bool logout = false) =>
                 new(text, mode == "conversation" ? "You> " : commands.Prompt, commands.Commands.Select(c => new WindowCommandInfo(c.Name, c.Usage, c.Description)).ToArray(), closed, live, clear, logout, mode, Typewriter: typewriter);
@@ -85,7 +85,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 conversationText = commands.ExecuteTokens(initialConversation).Text.Replace("Ordinary GRID commands still work.", "Use the original terminal for ordinary GRID commands.");
                 if (commands.ConversationConnected?.Invoke() != true)
                 { await WindowProtocol.WriteAsync(pipe, Reply(conversationText, closed: true), io.Token); return; }
-                conversationText += "\nTypewriter: any key skips; typewriter off disables it. Exit closes this window; disconnect ends the conversation.";
+                conversationText += "\nTypewriter: any key except Enter skips; typewriter off disables it. Exit closes this window; disconnect ends the conversation.";
             }
             await WindowProtocol.WriteAsync(pipe, Reply(mode == "conversation" ? "GRID7736 // CONVERSATION\n\n" + conversationText :
                 $"GRID7736 // ATTACHED {mode.ToUpperInvariant()}\n{identity.Describe()}\nOriginal host owns simulation/save. Closing this window only detaches.\n" +
@@ -139,7 +139,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                             result = await completion;
                         }
                         pendingPicker = result.ContextPicker;
-                        reply = Reply(result.Text, result.ExitRequested, result.LiveViewRequested, result.ClearRequested, result.LogoutRequested) with { PickFiles = pendingPicker is not null, AnimateFrom = result.AnimateFrom };
+                        reply = Reply(result.Text, result.ExitRequested, result.LiveViewRequested, result.ClearRequested, result.LogoutRequested) with { PickFiles = pendingPicker is not null, AnimateFrom = result.AnimateFrom, Presentation = result.Presentation };
                     }
                 }
                 else reply = Reply("Error: unsupported window request.");

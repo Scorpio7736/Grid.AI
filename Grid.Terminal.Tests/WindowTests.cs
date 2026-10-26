@@ -64,7 +64,9 @@ public sealed class WindowTests
         await using var f=new Fixture(inference:new WindowInference()); f.Engine.StartAgents(f.Owner.Reference);
         await using var client=await f.Open("connect MCP");
         var reply=await client.Send("command","assist advice How should I inspect status?");
-        Assert.Contains("Suggestion: use status.",reply.Text); Assert.Empty(f.Engine.GetSnapshot().Tasks.Records);
+        Assert.Contains("Suggestion: use status.",reply.Text);Assert.NotNull(reply.AnimateFrom);
+        var style=Assert.Single(reply.Presentation!,s=>s.Tone==ConversationTone.Agent);
+        Assert.Equal("Suggestion: use status.",reply.Text.Substring(style.Start,style.Length)); Assert.Empty(f.Engine.GetSnapshot().Tasks.Records);
     }
     [Fact]
     public async Task PrivateConversationWindowSupportsMemoryAndLogoutRevokesIt()
@@ -85,6 +87,12 @@ public sealed class WindowTests
         await using var client = await f.Open("connect MCP");
         var reply = await client.Send("command", "talk hello");
         Assert.Contains("MCP: Suggestion:", reply.Text); Assert.DoesNotContain("SOURCES", reply.Text);
+        Assert.Contains(reply.Presentation!,s=>s.Tone==ConversationTone.User);
+        Assert.Contains(reply.Presentation!,s=>s.Tone==ConversationTone.Agent);
+        var transcript=await client.Send("command","transcript");
+        Assert.Null(transcript.AnimateFrom);Assert.Contains(transcript.Presentation!,s=>s.Tone==ConversationTone.Agent);
+        Assert.False((await client.Send("command","typewriter off")).Typewriter);
+        Assert.True((await client.Send("command","typewriter on")).Typewriter);
         Assert.Equal("You> ", reply.Prompt); Assert.DoesNotContain("capabilities:",client.Greeting.Text);
         Assert.Contains("SOURCES", (await client.Send("command", "transcript --details")).Text); Assert.NotNull(reply.AnimateFrom);
         Assert.Equal(2, f.Engine.GetSnapshot().Communications.Conversations.Single().Messages.Count);

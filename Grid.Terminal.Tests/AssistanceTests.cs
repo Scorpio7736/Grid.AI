@@ -61,6 +61,10 @@ public sealed class AssistanceTests
         var f=new Fixture(); f.Document(); f.Document("OWNER_SECRET",role:null); f.Document("OTHER_AGENT",role:"MAXIS"); f.Document("OTHER_PROJECT",project:"elsewhere");
         var result=await f.Run("assist "+mode+" Explain deployment settings.");
         Assert.Contains("CAPTURED_DEPLOYMENT",f.Ai.Prompt); Assert.DoesNotContain("OWNER_SECRET",f.Ai.Prompt); Assert.DoesNotContain("OTHER_AGENT",f.Ai.Prompt); Assert.DoesNotContain("OTHER_PROJECT",f.Ai.Prompt);
+        Assert.NotNull(result.AnimateFrom);
+        var body=Assert.Single(result.Presentation!,s=>s.Tone==ConversationTone.Agent);
+        Assert.Equal(f.Ai.Reply,result.Text.Substring(body.Start,body.Length));
+        Assert.Equal(body.Start,result.AnimateFrom);
         Assert.Contains("notes.txt",result.Text); Assert.Empty(f.Engine.GetSnapshot().Tasks.Records); Assert.Empty(f.Engine.GetConversation(f.Chat.ActiveConversation!.Value).Messages); Assert.Equal(0,f.Saves);
     }
     [Fact]
@@ -79,7 +83,8 @@ public sealed class AssistanceTests
     public async Task TypedDraftDoesNotCreateTasksUntilSubmittedAndAllStepsRequireApproval()
     {
         var f=new Fixture(); f.Ai.Reply=Proposal;
-        Assert.Contains("DRAFT ONLY",(await f.Run("assist propose Check resources and firewall status.")).Text);
+        var draft=await f.Run("assist propose Check resources and firewall status.");
+        Assert.Contains("DRAFT ONLY",draft.Text);Assert.NotNull(draft.AnimateFrom);Assert.Contains(draft.Presentation!,s=>s.Tone==ConversationTone.Agent);
         Assert.True(f.Ai.Structured); Assert.Empty(f.Engine.GetSnapshot().Tasks.Records); Assert.Empty(f.Engine.GetSnapshot().Tasks.Plans);
         Assert.Contains("await approval",f.Commands.Execute("assist submit").Text);
         var tasks=f.Engine.GetSnapshot().Tasks; Assert.Equal(2,tasks.Records.Count); Assert.Single(tasks.Plans);

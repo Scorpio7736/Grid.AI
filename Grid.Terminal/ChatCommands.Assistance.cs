@@ -77,9 +77,9 @@ public sealed partial class ChatCommands
                         var key=Guid.NewGuid().ToString("N");
                         engine.Coordinate(reference,proposal.Request,key,previewOnly:true,guard:guard);
                         assistanceDraft=new(proposal,guard,reference,key);
-                        return new("DRAFT ONLY — no tasks created.\n"+TerminalTable.Render(["Agent","Capability","Argument"],proposal.Steps.Select(s=>new[]{s.Role.ToString(),s.Capability,s.Argument}))+"\nReview, then assist submit or assist discard. Submission still requires task approval before execution.");
+                        return ConversationPresentation.AgentReply("DRAFT ONLY — no tasks created.",TerminalTable.Render(["Agent","Capability","Argument"],proposal.Steps.Select(s=>new[]{s.Role.ToString(),s.Capability,s.Argument})),"Review, then assist submit or assist discard. Submission still requires task approval before execution.");
                     }
-                    return new("AI "+mode+" — suggestions, no actions executed.\n"+new string(reply.Text.Select(c=>char.IsControl(c) && c!='\n' ? ' ' : c).ToArray())+"\nCaptured sources: "+(included.Count==0 ? "none in this agent/project scope" : string.Join("; ",included.Select(d=>Path.GetFileName(d.SourcePath)+" "+d.SourceHash[..12]+" @ "+d.CapturedUtc.ToString("O"))))+"\nCaptured excerpts may be incomplete. Response is not added to conversation memory.");
+                    return ConversationPresentation.AgentReply("AI "+mode+" — suggestions, no actions executed.",new string(reply.Text.Select(c=>char.IsControl(c) && c!='\n' ? ' ' : c).ToArray()),"Captured sources: "+(included.Count==0 ? "none in this agent/project scope" : string.Join("; ",included.Select(d=>Path.GetFileName(d.SourcePath)+" "+d.SourceHash[..12]+" @ "+d.CapturedUtc.ToString("O"))))+"\nCaptured excerpts may be incomplete. Response is not added to conversation memory.");
                 }
                 catch(OperationCanceledException) { return new("Assistance cancelled; nothing created."); }
                 catch(Exception e) when(e is ArgumentException or InvalidOperationException or JsonException or UnauthorizedAccessException) {return new("Assistance refused: "+e.Message);}

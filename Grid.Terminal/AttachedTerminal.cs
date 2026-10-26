@@ -127,8 +127,8 @@ public static class AttachedTerminal
                     var animate = reply.Typewriter && TypewriterRenderer.Enabled(Console.IsInputRedirected, Console.IsOutputRedirected,
                         Environment.GetEnvironmentVariable("TERM"), null);
                     await TypewriterRenderer.WriteAsync(output, reply.Text, reply.AnimateFrom, animate,
-                        () => { if (!Console.KeyAvailable) return false; Console.ReadKey(true); return true; },
-                        async () => { if (reply.Closed) return; var heartbeat = await Send(new("ping")); if (heartbeat.Closed) throw new IOException(heartbeat.Text); }, stop.Token);
+                        TypewriterRenderer.SkipRequested,
+                        async () => { if (reply.Closed) return; var heartbeat = await Send(new("ping")); if (heartbeat.Closed) throw new IOException(heartbeat.Text); }, stop.Token, presentation: reply.Presentation);
                 }
                 if (reply.Live) await Live();
             }

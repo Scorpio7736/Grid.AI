@@ -123,8 +123,8 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                     await TypewriterRenderer.WriteAsync(output, result.Text, result.AnimateFrom,
                         interactiveConfirmation && commands.Typewriter && TypewriterRenderer.Enabled(Console.IsInputRedirected, Console.IsOutputRedirected,
                             Environment.GetEnvironmentVariable("TERM"), null),
-                        () => { if (!Console.KeyAvailable) return false; Console.ReadKey(true); return true; },
-                        () => { if (result.AnimateFrom is not null && (!commands.IsAllowed("talk") || commands.IdentityGeneration != generation)) throw new OperationCanceledException("Conversation session revoked."); return Task.CompletedTask; }, shutdown.Token);
+                        TypewriterRenderer.SkipRequested,
+                        () => { if (result.AnimateFrom is not null && (!commands.IsAllowed("talk") || commands.IdentityGeneration != generation)) throw new OperationCanceledException("Conversation session revoked."); return Task.CompletedTask; }, shutdown.Token, presentation: result.Presentation);
                 }
                 if (result.Transfer is { } request)
                 {

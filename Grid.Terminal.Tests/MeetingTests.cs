@@ -63,6 +63,9 @@ public sealed class MeetingTests
         var f=new Fixture(); var id=f.Meeting("RELAY VOLT SENTINEL JN MAXIS MCP");
         var result=await f.Talk(input); var messages=f.Engine.GetConversation(id).Messages;
         Assert.Equal(2,messages.Count); Assert.Equal(expected,messages[1].Sender.Name); Assert.NotNull(result.AnimateFrom);
+        Assert.Contains(result.Presentation!,s=>s.Tone==ConversationTone.Heading && result.Text.Substring(s.Start,s.Length)==expected+": ");
+        var body=Assert.Single(result.Presentation!,s=>s.Tone==ConversationTone.Agent);
+        Assert.Equal("Shared answer only.",result.Text.Substring(body.Start,body.Length));
         Assert.Contains(expected+":",result.Text); Assert.Empty(f.Engine.GetSnapshot().Tasks.Records);
         Assert.Contains("SHARED MEETING",f.Ai.Prompt); Assert.Equal(2,f.Saves);
     }
