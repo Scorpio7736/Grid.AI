@@ -11,39 +11,39 @@ public static class TypewriterRenderer
     public static bool IsSkipKey(ConsoleKey key) => key != ConsoleKey.Enter;
     public static bool SkipRequested()
     {
-        if(!Console.KeyAvailable) return false;
+        if (!Console.KeyAvailable) return false;
         return IsSkipKey(Console.ReadKey(true).Key);
     }
     public static async Task WriteAsync(TextWriter output, string text, int? animateFrom, bool enabled,
         Func<bool> skip, Func<Task> validateSession, CancellationToken token,
         Func<CancellationToken, Task>? delay = null, IReadOnlyList<ConversationSpan>? presentation = null)
     {
-        var spans=(presentation ?? []).OrderBy(s=>s.Start).ToArray();
-        var previousEnd=0;
-        foreach(var span in spans)
+        var spans = (presentation ?? []).OrderBy(s => s.Start).ToArray();
+        var previousEnd = 0;
+        foreach (var span in spans)
         {
-            if(span.Start<previousEnd || span.Length<0 || span.Start>text.Length-span.Length || !Enum.IsDefined(span.Tone)) throw new ArgumentException("Invalid conversation presentation.");
-            previousEnd=span.Start+span.Length;
+            if (span.Start < previousEnd || span.Length < 0 || span.Start > text.Length - span.Length || !Enum.IsDefined(span.Tone)) throw new ArgumentException("Invalid conversation presentation.");
+            previousEnd = span.Start + span.Length;
         }
-        ConversationSpan? At(int index) => spans.FirstOrDefault(s=>index>=s.Start && index<s.Start+s.Length);
-        async Task WriteRange(int start,int length)
+        ConversationSpan? At(int index) => spans.FirstOrDefault(s => index >= s.Start && index < s.Start + s.Length);
+        async Task WriteRange(int start, int length)
         {
-            var end=start+length;
-            for(var index=start;index<end;)
+            var end = start + length;
+            for (var index = start; index < end;)
             {
-                var span=At(index);
-                var next=span is null ? Math.Min(end,spans.Where(s=>s.Start>index).Select(s=>s.Start).DefaultIfEmpty(end).Min()) : Math.Min(end,span.Start+span.Length);
-                var value=text[index..next];
-                if(spans.Length>0 && output is IConversationOutput styled) await styled.WriteConversationAsync(value,ConversationPresentation.Color(span?.Tone ?? ConversationTone.Heading));
+                var span = At(index);
+                var next = span is null ? Math.Min(end, spans.Where(s => s.Start > index).Select(s => s.Start).DefaultIfEmpty(end).Min()) : Math.Min(end, span.Start + span.Length);
+                var value = text[index..next];
+                if (spans.Length > 0 && output is IConversationOutput styled) await styled.WriteConversationAsync(value, ConversationPresentation.Color(span?.Tone ?? ConversationTone.Heading));
                 else await output.WriteAsync(value);
-                index=next;
+                index = next;
             }
         }
         token.ThrowIfCancellationRequested();
         await validateSession();
         if (!enabled || animateFrom is not { } start || start < 0 || start >= text.Length)
-        { await WriteRange(0,text.Length); await output.WriteLineAsync(""); await output.FlushAsync(); return; }
-        await WriteRange(0,start);
+        { await WriteRange(0, text.Length); await output.WriteLineAsync(""); await output.FlushAsync(); return; }
+        await WriteRange(0, start);
         var elements = StringInfo.GetTextElementEnumerator(text[start..]);
         var count = 0;
         while (elements.MoveNext())
@@ -54,12 +54,12 @@ public static class TypewriterRenderer
             if (skip())
             {
                 await validateSession();
-                await WriteRange(start+elements.ElementIndex,text.Length-start-elements.ElementIndex);
+                await WriteRange(start + elements.ElementIndex, text.Length - start - elements.ElementIndex);
                 break;
             }
-            await WriteRange(start+elements.ElementIndex,elements.GetTextElement().Length);
+            await WriteRange(start + elements.ElementIndex, elements.GetTextElement().Length);
             await output.FlushAsync();
-            if(spans.Length==0 || At(start+elements.ElementIndex)?.Tone==ConversationTone.Agent)
+            if (spans.Length == 0 || At(start + elements.ElementIndex)?.Tone == ConversationTone.Agent)
                 await (delay?.Invoke(token) ?? Task.Delay(20, token));
         }
         await output.WriteLineAsync("");
