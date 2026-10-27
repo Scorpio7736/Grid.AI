@@ -1,5 +1,7 @@
 # Project GRID — Authorized editing workflows (6.4)
 
+**Planned CRUD expansion — 2026-10-27:** Existing reviewed single-file editing is not complete conversational CRUD. 6.9 adds natural create/read/update/delete, recoverable deletion and authoritative-host execution requested from attached agent chats; approval, path checks and rollback remain required. [Before-Phase-7 plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+
 **6.6 integration — 2026-10-27:** `talk edit a file` asks for workspace, target and explicitly granted MAXIS context, then uses the existing review/approval/apply/rollback implementation. Exact-ID `talk` aliases preserve all safeguards and original-host restrictions. [Steps and verification](Project_GRID_Unified_Talk_Workflow.md).
 
 **6.5 live verification — 2026-10-27:** The bundled model generated a reviewable synthetic edit; generation did not write, unapproved application was refused, explicit approval allowed application, and rollback restored the original bytes. This extends the earlier 6.4 regression evidence. [Captured report and repeatable demo](Project_GRID_Intelligence_Verification.md).

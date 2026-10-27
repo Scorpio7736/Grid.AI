@@ -1,5 +1,7 @@
 # Project GRID - Terminal UX, Portability and Offline Operation
 
+**Superseding planned requirements — 2026-10-27:** Before Phase 7, replace the login Enter gate with a five-second ASCII animation; use yellow terminal messages including errors, white user text and light-blue prompts/labels. Prove actual copy/transfer AI operation offline on another device and include PDF/DOCX assets. [Scope and acceptance](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+
 **6.3 completed — 2026-10-26:** `assist advice/analyze/propose` now provides scoped local-AI guidance and typed MCP drafts. `assist submit` creates only tasks awaiting approval; no automatic execution. Captured context stays within explicit agent/project grants, and assistance outputs are not copied into chat recall. **752 Release tests passed**; bundled-model analysis/drafting verified. [Commands and limits](Project_GRID_Task_Assistance_Implementation.md). Earlier 6.3-pending statements are historical; monitor assistance remains planned in 6.3A.
 
 

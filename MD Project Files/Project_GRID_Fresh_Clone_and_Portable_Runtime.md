@@ -1,5 +1,7 @@
 # Fresh clone and prepared portable runtime
 
+**Reported second-device failure — 2026-10-27:** Portable AI remains an unresolved pre-Phase-7 blocker despite same-PC probe passes. Verify the actual copy/transfer destination on a second supported device without installed AI, models, SDK or network; package every active model and extraction dependency under the new base-size budget. [Required plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+
 **6.6 verification — 2026-10-27:** The standalone app supports `launch.cmd --verify-talk`, an opt-in synthetic bundled-model check for unified conversations, context, plans and edits. All 12 checks passed. No download, saved-world load or desktop capture occurs. [Repeatable verification](Project_GRID_Unified_Talk_Workflow.md).
 
 **6.5 verification — 2026-10-27:** Portable builds now include `Test-GridPortable.ps1`. Its `-IntelligenceOnly` option invokes the bundled `--verify-intelligence` diagnostic under restricted PATH/profile/model-cache settings. Ten live checks passed. No downloads or global model installation are used by this diagnostic; the package must contain its runtime/model. [Commands and limits](Project_GRID_Intelligence_Verification.md).

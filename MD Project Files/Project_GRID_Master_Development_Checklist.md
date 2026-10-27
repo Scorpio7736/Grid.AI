@@ -1284,9 +1284,92 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 **Completion / verification:** 873 Release tests passed, including 26 new cases. All 12 live bundled-model checks passed; malformed proposal output discovered during verification was corrected with an explicit local JSON schema plus independent validation and one bounded unified-flow retry. Approval never follows inferred intent. File/screen selection remains explicit; task dispatch and edits retain original-host restrictions. `tasks run <id>` now supports exact-target dispatch. No database migration or new dependency. Routing supports common phrases rather than arbitrary autonomous tool use. See [workflow, tests and limitations](Project_GRID_Unified_Talk_Workflow.md). Existing manual desktop/window acceptance remains open.
 
+
+## Mandatory pre-Phase-7 work — requested 2026-10-27
+
+**Planned, not implemented. Phase 7 is blocked until 6.7–6.15 pass acceptance.** These requirements supersede conflicting future color, base-storage and delivery-order assumptions while preserving prior completion history. The reported conversation loop and second-device AI failure remain unresolved. See [detailed plan, dependencies and acceptance criteria](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+
+## 6.7 Login animation and consistent terminal colors
+
+**Planned — required before Phase 7.**
+
+- [ ] Replace post-login Enter gate with a five-second GRID7736 ASCII animation and automatic entry; support skip/static output
+- [ ] Use yellow terminal/agent/error output, white user text and light-blue prompts/labels consistently across windows
+- [ ] Verify timing, readability, no-color behavior and manual host/attached startup
+
+## 6.8 Natural conversation and follow-up recovery
+
+**Planned — required before Phase 7.**
+
+- [ ] Accept ordinary connected-chat sentences and talk aliases; preserve quoted text and spaced paths
+- [ ] Resolve analyze/continue paraphrases, cancel/change intent and file-picker retries without modal loops
+- [ ] Replay the reported PDF/HTML conversation and verify direct analysis after consent; include CSS answer correctness
+
+## 6.9 Conversation-driven file Create/Read/Update/Delete
+
+**Planned — required before Phase 7.**
+
+- [ ] Implement scoped CRUD requests with target clarification and exact reviewed approvals
+- [ ] Support approved operations requested from agent windows through the authoritative host
+- [ ] Add recoverable deletion, stale-content protection, rollback and end-to-end denied/cancelled/restart tests
+
+## 6.10 Durable conversation memory and delegated context
+
+**Planned — required before Phase 7.**
+
+- [ ] Retain approved facts, decisions, task outcomes and file-derived summaries across chat end/restart/transfer
+- [ ] Separate temporary documents from durable memory and implement provenance, correction, forgetting and revocation
+- [ ] Verify user-to-agent grants and cross-agent/project privacy without silently making temporary uploads permanent
+
+## 6.11 MCP Master Control Program digital-helper workflow
+
+**Planned — required before Phase 7.**
+
+- [ ] Define MCP as Master Control Program and the primary user-facing digital helper
+- [ ] Implement request analysis, clarification, specialist assignment, human approval, execution and verified final briefing
+- [ ] Support extensible custom tasks and a near-Master-Control delegated authority matrix with reserved human controls
+- [ ] Test approval binding, no self-approval/elevation, revocation, interruption and evidence-backed completion
+
+## 6.12 MCP specialist invitations in the current chat
+
+**Planned — required before Phase 7.**
+
+- [ ] Let MCP invite a suitable agent into the current conversation with visible membership and necessary confirmation
+- [ ] Allow direct user instruction to invited agents and unified MCP progress/completion reports
+- [ ] Limit shared history/context and test declined invitations, removal, scope changes and restart
+
+## 6.13 Role-specific models and 20 GB base GRID budget
+
+**Planned — required before Phase 7.**
+
+- [ ] Benchmark and select an offline model profile for every agent; document role fit and fallback
+- [ ] Enforce a 20,000,000,000-byte base ceiling covering code, app, runtimes, models and extraction dependencies
+- [ ] Deduplicate shared assets and separately expose mutable-data growth, staging/headroom and total portable footprint
+- [ ] Verify measured package size, offline quality and CPU/low-memory operation
+
+## 6.14 Complete portable copy/transfer and offline AI repair
+
+**Planned — required before Phase 7.**
+
+- [ ] Diagnose why the actual copied GRID fails to run AI on another device
+- [ ] Copy/transfer and verify the full required asset/user-state manifest with destination-relative paths
+- [ ] Provide bundled runtime/models/extractors and CPU fallback without global AI/.NET/SDK or network dependencies
+- [ ] Verify actual copyto/transferto destinations on a second supported PC or clean VM offline, including restart and changed drive letter
+
+## 6.15 PDF/DOCX import and mandatory Phase 7 acceptance
+
+**Planned — required before Phase 7.**
+
+- [ ] Implement offline PDF extraction and validate complete DOCX paragraphs/tables; update picker filters and errors
+- [ ] Handle scans/OCR-or-clear-no-text outcomes, provenance, limits, corruption, encryption and cancellation
+- [ ] Bundle extraction assets inside the 20 GB budget and verify them on the second device
+- [ ] Complete and record all 6.7–6.15 automated/live/manual acceptance results before any Phase 7 work
+
 ---
 
 # Phase 7 — The City
+
+**Entry gate:** Do not begin Phase 7 until mandatory sections 6.7–6.15 are implemented and their acceptance evidence is reviewed. In particular, the actual copied/transferred GRID must run AI offline on a second supported device.
 
 ## 7.1 Godot foundation
 

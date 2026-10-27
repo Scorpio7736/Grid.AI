@@ -1,5 +1,7 @@
 # Automatic conversation recall — 6.2B follow-up
 
+**Planned extension — 2026-10-27:** Existing automatic recall remains implemented. Before Phase 7, 6.10 must retain approved task outcomes and file-derived summaries across chat end/restart/transfer while separating temporary raw documents, durable memory and agent grants, with correction/forgetting and provenance. [Plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+
 Implemented 2026-10-25 at the user's request. Agents now recall ordinary conversations and relevant details without requiring `memory save`. Explicit memory requests continue to work alongside automatic discussion recall. Schema v23 is unchanged: saved transcripts, project scope and recall cutoffs already persist in SQLite.
 
 ## Behavior

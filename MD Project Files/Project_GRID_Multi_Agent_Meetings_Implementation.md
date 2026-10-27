@@ -1,5 +1,7 @@
 # Multi-agent meetings — 6.2A
 
+**Planned before Phase 7 — 2026-10-27:** 6.12 lets MCP invite specialists into its current chat and lets the user direct them there. Membership must not automatically disclose private history/context; define confirmation, task ownership and revocation. Existing fixed meetings remain implemented history. [Plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+
 **6.3A implemented — 2026-10-26:** `screen options/monitoring/ask/status/stop` provides one-shot selected-monitor assistance using offline Windows OCR and local AI. Human Master Control only; no recording, saved screen context or actions. **799 Release tests passed**, including attached-window and synthetic native-OCR checks. User desktop acceptance remains manual. [Commands, limits and verification](Project_GRID_Screen_Assistance_Implementation.md).
 
 **6.3 completed — 2026-10-26:** `assist advice/analyze/propose` now provides scoped local-AI guidance and typed MCP drafts. `assist submit` creates only tasks awaiting approval; no automatic execution. Captured context stays within explicit agent/project grants, and assistance outputs are not copied into chat recall. **752 Release tests passed**; bundled-model analysis/drafting verified. [Commands and limits](Project_GRID_Task_Assistance_Implementation.md). Earlier 6.3-pending statements are historical; monitor assistance remains planned in 6.3A.

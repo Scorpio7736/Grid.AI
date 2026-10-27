@@ -1,5 +1,7 @@
 # Project GRID — Master Overview
 
+**Pre-Phase-7 direction — planned 2026-10-27:** MCP means Master Control Program and will be the user’s digital helper with near-Master-Control delegated operational authority, human approvals, custom tasks and specialist invitations. Complete conversational CRUD, durable context, role-specific model profiles, a 20 GB base package and proven offline second-device operation before Phase 7. [Authoritative plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+
 **6.3 completed — 2026-10-26:** `assist advice/analyze/propose` now provides scoped local-AI guidance and typed MCP drafts. `assist submit` creates only tasks awaiting approval; no automatic execution. Captured context stays within explicit agent/project grants, and assistance outputs are not copied into chat recall. **752 Release tests passed**; bundled-model analysis/drafting verified. [Commands and limits](Project_GRID_Task_Assistance_Implementation.md). Earlier 6.3-pending statements are historical; monitor assistance remains planned in 6.3A.
 
 

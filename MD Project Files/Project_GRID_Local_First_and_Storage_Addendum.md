@@ -1,5 +1,7 @@
 # Project GRID — Local-First Architecture and Storage Planning
 
+**New planned base ceiling — 2026-10-27:** The base GRID package, including code, runtimes, models and extraction assets, must fit 20,000,000,000 bytes before Phase 7. This is distinct from historical JN managed-data governance; define separate data growth and staging/headroom budgets and report total portable size. No silent base-cap increase. [Budget and portability plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+
 **6.3 completed — 2026-10-26:** `assist advice/analyze/propose` now provides scoped local-AI guidance and typed MCP drafts. `assist submit` creates only tasks awaiting approval; no automatic execution. Captured context stays within explicit agent/project grants, and assistance outputs are not copied into chat recall. **752 Release tests passed**; bundled-model analysis/drafting verified. [Commands and limits](Project_GRID_Task_Assistance_Implementation.md). Earlier 6.3-pending statements are historical; monitor assistance remains planned in 6.3A.
 
 

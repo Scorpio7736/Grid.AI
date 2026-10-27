@@ -1,5 +1,7 @@
 # Project GRID — Shared local AI foundation (6.1)
 
+**Planned before Phase 7 — 2026-10-27:** Select benchmarked offline model profiles for every agent; shared weights are allowed where suitable. All required models/runtime/code/extractors must fit the 20 GB decimal base package and work from an actual portable destination on another supported device. Current shared Qwen setup does not prove these requirements. [Plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+
 **6.6 integration — 2026-10-27:** Structured inference now optionally carries a trusted JSON schema through the bounded queue and bundled backend. Proposal schemas constrain output shape; independent capability/argument validation and human review remain mandatory. Structured-mode instructions were corrected after live malformed proposals. [Unified workflow and evidence](Project_GRID_Unified_Talk_Workflow.md).
 
 **AI response recovery — 2026-10-26:** Truncated answers now get one bounded larger retry, and rejected responses are distinguished from an offline service. Advice and analysis prompts were refined; MCP greetings no longer receive unrelated district counts. **759 Release tests passed**, and the bundled model answered the reported HTML question successfully. [Fix, limits and regression test](Project_GRID_AI_Response_Recovery.md).

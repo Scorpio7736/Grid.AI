@@ -1,5 +1,7 @@
 # Project GRID - Current Implementation and Verification
 
+**New required work — 2026-10-27 (planned only):** 6.7–6.15 must finish before Phase 7. The user reports a literal-follow-up analysis loop and copied-device AI failure; neither is resolved by this documentation update. PDF remains unsupported and DOCX limited. Prior 6.6 test results remain historical. [Required changes and acceptance](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+
 **6.6 implemented — 2026-10-27:** Unified `talk` supports conversation/advice, scoped analysis, file/monitor follow-ups, MCP drafts and reviewed editing. Explicit approvals and original-host execution remain. **873 Release tests and 12 bundled-model checks passed.** [Workflow and test commands](Project_GRID_Unified_Talk_Workflow.md). Earlier 6.6-planned statements below are historical.
 
 **6.5 completed — 2026-10-27:** 847 Release tests and 171 focused intelligence tests passed. Ten bundled-model checks passed, including injected context, advice-only operation, approval enforcement and exact-byte editing rollback. New repeatable diagnostics and captured evidence: [Intelligence verification](Project_GRID_Intelligence_Verification.md). Model accuracy remains fallible; 6.6 is still planned.

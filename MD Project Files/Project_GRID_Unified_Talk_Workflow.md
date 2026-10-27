@@ -1,5 +1,7 @@
 # Project GRID — 6.6 Unified Talk Workflow
 
+**Reported defects / planned follow-up — 2026-10-27:** Current literal `continue` handling can trap natural replies, file selection can repeat unnecessarily, and PDF import is unsupported. 6.8 must fix the supplied transcript; 6.9–6.12 extend actionable chat, memory, MCP and invitations. 6.6 completion is historical, not proof of these additions. [Mandatory pre-Phase-7 plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+
 Implemented 2026-10-27. `talk <message>` is now the usual entry point for conversation, advice, permitted file analysis, screen assistance, MCP task planning and reviewed workspace editing. Explicit commands remain available.
 
 ## Start here
