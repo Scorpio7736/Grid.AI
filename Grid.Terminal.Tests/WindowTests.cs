@@ -15,13 +15,13 @@ public sealed class WindowTests
         public readonly WindowHub Hub;
         public readonly CommandDispatcher Commands;
         public string Endpoint = "";
-        public Fixture(Func<string, int>? launch = null, ILocalInference? inference = null)
+        public Fixture(Func<string, int>? launch = null, ILocalInference? inference = null, IScreenContextProvider? screens = null)
         {
             Owner = new(() => "test-owner"); Registry.Add(Owner);
             Engine = new(GridWorldFactory.CreateGenesis(), editAuthorizer: Registry); Owner.Attach(Engine); Owner.Login(); Engine.PrepareChatFixture();
             CommandDispatcher Create(TerminalIdentitySession identity)
             {
-                var commands = DefaultCommands.Create(Engine); ChatCommands.Register(commands, Engine, identity, inference);
+                var commands = DefaultCommands.Create(Engine); ChatCommands.Register(commands, Engine, identity, inference, screenProvider: screens);
                 IdentityCommands.Register(commands, Engine, identity, interactiveUi: true);
                 ContextCommands.Register(commands, Engine, identity);
                 commands.UseIdentity(identity); return commands;
@@ -58,6 +58,25 @@ public sealed class WindowTests
         public async Task<InferenceReply> GenerateAsync(string prompt, CancellationToken token = default)
         { await Task.Delay(50, token); return new(true, "Suggestion: use status.", "test"); }
     }
+    [Fact]
+    public async Task ScreenAssistanceUsesWindowScopeAndPropagatesStyledReply()
+    {
+        var provider=new ScreenTests.Provider();
+        await using var f=new Fixture(inference:new WindowInference(),screens:provider);
+        f.Engine.StartAgents(f.Owner.Reference);
+        await using var client=await f.Open("connect MCP");
+        Assert.Contains("LEFT",(await client.Send("command","screen options")).Text);
+        Assert.Contains("selected",(await client.Send("command","screen monitoring 1")).Text);
+        var reply=await client.Send("command","screen ask Explain the text");
+        Assert.Contains("Suggestion: use status",reply.Text); Assert.NotNull(reply.AnimateFrom);
+        Assert.Contains(reply.Presentation!,s=>s.Tone==ConversationTone.Agent);
+        Assert.Equal(1,provider.Captures);
+        Assert.Empty(f.Engine.GetSnapshot().Communications.Conversations.Single().Messages);
+        Assert.Contains("Select a screen first",f.Commands.Execute("screen ask Explain").Text);
+        Assert.Contains("stopped",(await client.Send("command","screen stop")).Text, StringComparison.OrdinalIgnoreCase);
+        f.Owner.Logout(); Assert.True((await client.Send("ping")).Closed);
+    }
+
     [Fact]
     public async Task ConversationWindowAwaitsAssistanceWithoutExecutingTasks()
     {

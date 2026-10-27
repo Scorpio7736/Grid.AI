@@ -16,6 +16,7 @@ public static class CommandHelp
         "jn" => ["jn scopes", "jn register <alias> \"absolute-file-or-directory\"", "jn revoke <alias>", "jn quota", "jn quota inspect <proposal-reference>", "jn quota approve <proposal-reference>"],
         "maxis" => ["maxis workspaces", "maxis register <alias> \"absolute-root\" \"relative/project.csproj\"", "maxis revoke <alias>"],
         "mcp" => ["mcp request \"SPECIALIST: demo text; SPECIALIST: demo text\" [request-key]", "mcp plans", "mcp inspect <plan-id>", "mcp brief [plan-id]"],
+        "screen" => ["screen options", "screen monitoring <id>", "screen ask <request>", "screen ask @MAXIS <request>", "screen status", "screen stop"],
         "assist" => ["assist advice <request>", "assist analyze <request>", "assist propose <request>", "assist submit", "assist discard"],
         "memory" => ["memory list", "memory history", "memory forget-history", "memory scope <project>", "memory save preference <key> <text>", "memory save decision <key> <text>", "memory save fact <key> <text>", "memory save unfinished <key> <text>", "memory correct <key> <text>", "memory forget <key>"],
         "agent" => ["agent meetings MCP MAXIS JN", "agent meetings MCP MAXIS -inline"],
@@ -36,6 +37,12 @@ public static class CommandHelp
     public static string Render(TerminalCommand command) => command.Name + "\n" + string.Join("\n", Options(command).Select(option =>
         $"    - {option}\n      # USAGE: {Description(command, option)}")) + $"\n    # EXAMPLE: {Example(command)}";
     private static string Description(TerminalCommand command, string option) => option.EndsWith(" -opninwin") ? "Open permitted data in a separate window; live updates, other data is a snapshot. Combine with supported command arguments." : option switch {
+        "screen options" => "List current monitors; refresh IDs and clear any previous selection. No capture.",
+        "screen monitoring <id>" => "Select a listed monitor for this connected agent or meeting. No capture until screen ask.",
+        "screen ask <request>" => "Capture one frame from the selected monitor; analyze its OCR text offline. No recording, history or actions.",
+        "screen ask @MAXIS <request>" => "Direct one-shot screen assistance to a participant in the current meeting.",
+        "screen status" => "Show this terminal's selection and capture state.",
+        "screen stop" => "Clear selection and cancel pending screen assistance in this terminal.",
         "help -md" => "Read the bundled Markdown help reference offline in this terminal.",
         "programs -active" => "List freshly observed Running applications.",
         "programs -possible" => "List current and previously known application candidates.",
@@ -45,6 +52,7 @@ public static class CommandHelp
     };
     private static string Example(TerminalCommand c) => c.Name switch {
         "volt" => "volt status", "relay" => "relay inbox", "jn" => "jn quota", "maxis" => "maxis workspaces", "mcp" => "mcp plans", "tasks" => "tasks list",
+        "screen" => "screen options",
         "programs" => "programs -active ids", "inspect" => "inspect program MCP", "talk" => "talk status",
         "edit" => "edit MCP occupation \"Local coordinator\"", "switch" => "switch master", "login" => "login",
         "grid" => "grid -copyto \"E:\\GRID7736 Copy\"",

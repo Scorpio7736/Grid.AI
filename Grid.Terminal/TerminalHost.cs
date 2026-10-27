@@ -63,6 +63,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 }
                 if (result.BrokerOperation is { } dispatch)
                 {
+                    if (!string.IsNullOrWhiteSpace(result.Text)) await output.WriteLineAsync(result.Text);
                     using var brokerStop = CancellationTokenSource.CreateLinkedTokenSource(shutdown.Token);
                     var operation = dispatch(brokerStop.Token);
                     if (await Task.WhenAny(operation, scheduler, autosave, monitoring) != operation) brokerStop.Cancel();

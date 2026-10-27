@@ -88,6 +88,8 @@ public static class AttachedTerminal
                 var input = new ConsoleTerminalInput(metadata, TerminalTheme.Enabled(noColor));
                 var line = await Read(input, reply.Prompt);
                 if (line is null) break;
+                if (line.TrimStart().StartsWith("screen ask ", StringComparison.OrdinalIgnoreCase))
+                    await output.WriteLineAsync("SCREEN CAPTURE REQUESTED — one selected-monitor frame; offline OCR/local AI, no continuous recording.");
                 reply = await Send(new("command", line));
                 if (reply.PickFiles)
                 {

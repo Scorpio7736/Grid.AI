@@ -12,9 +12,11 @@ public sealed partial class ChatCommands
     private TerminalIdentitySession? identity;
     private Recipient Actor => identity?.CurrentRecipient ?? engine.LocalOperator;
     private ChatCommands(GridSimulationEngine engine) => this.engine = engine;
-    public static ChatCommands Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession? identity = null, ILocalInference? inference = null, Func<CancellationToken, Task>? save = null)
+    public static ChatCommands Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession? identity = null, ILocalInference? inference = null, Func<CancellationToken, Task>? save = null, IScreenContextProvider? screenProvider = null)
     {
         var chat = new ChatCommands(engine) { identity = identity, inference = inference, save = save };
+        chat.screens = screenProvider ?? new WindowsScreenContextProvider();
+        commands.Register(new("screen", "screen <options|monitoring|ask|status|stop> ...", "One-shot offline screen OCR assistance; never background recording or actions.", chat.Screen) { Capability = "world.admin" });
         if (identity?.IsAttachment != true)
             commands.Register(new("typewriter", "typewriter <on|off>", "Animate inline agent replies; any key except Enter skips. Redirected output remains instant.", args =>
             {
@@ -25,7 +27,7 @@ public sealed partial class ChatCommands
         commands.Register(new("memory", "memory <list|scope|save|correct|forget> ...", "Review and manage explicit private agent/project memory. User-confirmed context is not verified host evidence.", chat.Memory) { Capability = "chat" });
         commands.Register(new("assist", "assist <advice|analyze|propose|submit|discard> ...", "Scoped AI guidance and reviewed MCP task drafts; never automatic execution.", chat.Assist) { Capability = "chat" });
         commands.ConversationConnected = () => chat.active is not null;
-        if (identity is not null) identity.Changed += () => chat.active = null;
+        if (identity is not null) identity.Changed += () => { chat.active = null; chat.StopScreen(); };
         commands.Register(new("agent", "agent meetings <AGENT> <AGENT> [...] [-inline]", "Open a shared meeting in a new window. Use talk @AGENT message to direct a turn.", args => chat.Meeting(args, commands)) { Capability = "chat" });
         commands.Register(new("connect", "connect [program-id|name] [-inline]", "Open a dedicated conversation window; default contact is MCP. -inline keeps voice-compatible chat here.", chat.Connect));
         commands.Register(new("talk", "talk <message>", "Send to the connected program and receive grounded local AI dialogue or a labeled deterministic fallback.", chat.Talk));
@@ -153,6 +155,7 @@ public sealed partial class ChatCommands
     }
     private CommandResult Disconnect(IReadOnlyList<string> args)
     {
+        StopScreen();
         if (args.Count != 0) return new("Usage: disconnect");
         if (active is not { } id) return new("No conversation connected.");
         engine.EndConversation(id, Actor); active = null;

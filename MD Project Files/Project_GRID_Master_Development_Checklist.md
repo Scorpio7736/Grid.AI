@@ -1,5 +1,7 @@
 # Project GRID — Master Development Checklist
 
+**6.3A implemented — 2026-10-26:** `screen options/monitoring/ask/status/stop` provides one-shot selected-monitor assistance using offline Windows OCR and local AI. Human Master Control only; no recording, saved screen context or actions. **799 Release tests passed**, including attached-window and synthetic native-OCR checks. User desktop acceptance remains manual. [Commands, limits and verification](Project_GRID_Screen_Assistance_Implementation.md).
+
 **4.2H implemented — 2026-10-26:** Conversation labels are light blue, agent bodies yellow and user text white. Assistance now animates; Enter no longer accidentally skips a reply. **772 Release tests passed**, plus an interactive Windows-console probe. User desktop/window visual acceptance remains open. [Changes, verification and test commands](Project_GRID_Conversation_Display_Repair.md).
 
 **AI response recovery — 2026-10-26:** Truncated answers now get one bounded larger retry, and rejected responses are distinguished from an offline service. Advice and analysis prompts were refined; MCP greetings no longer receive unrelated district counts. **759 Release tests passed**, and the bundled model answered the reported HTML question successfully. [Fix, limits and regression test](Project_GRID_AI_Response_Recovery.md).
@@ -1221,17 +1223,21 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 6.3A Monitor selection and screen assistance
 
-**Planned - 2026-10-21.** Agents can help with what the user is viewing using explicitly selected screen context and local analysis.
+**Implemented — 2026-10-26.** One frame per `screen ask`, using installed Windows OCR and local AI. Human Master Control selects the monitor with `screen options` and `screen monitoring <id>` in an open agent conversation or meeting. No background recorder or general image understanding.
 
-- [ ] Add `screen options` to list all connected monitors with a numeric ID and useful identifying information (name, resolution and primary status)
-- [ ] Add `screen monitoring [monitor number]`, for example `screen monitoring 2`, to select that monitor as visual context for the user's request
-- [ ] Define capture cadence and one-shot versus ongoing monitoring behavior explicitly; show when capture is active and provide an obvious stop command/control
-- [ ] Limit capture to the selected monitor; handle monitor disconnects and changed IDs without silently switching to another screen
-- [ ] Route screen context to the requested agent or meeting within its authorized session; keep processing offline and define transient capture/retention behavior
-- [ ] Support installed local vision/OCR capabilities with clear unavailable/unsupported responses; never claim to have seen a screen when capture failed
-- [ ] Treat on-screen text as untrusted context, not instructions authorizing tools, credentials, actions or permission changes
-- [ ] Keep screen assistance observational unless the user separately requests an action supported by an approved capability
-- [ ] Verify monitor enumeration/selection, capture stop/logout, permissions, offline operation and unavailable vision/capture fallback; document help and completion
+- [x] Add `screen options` to list all connected monitors with a numeric ID and useful identifying information (name, resolution and primary status)
+- [x] Add `screen monitoring [monitor number]`, for example `screen monitoring 2`, to select that monitor as visual context for the user's request
+- [x] Define capture cadence and one-shot versus ongoing monitoring behavior explicitly; show when capture is active and provide an obvious stop command/control
+- [x] Limit capture to the selected monitor; handle monitor disconnects and changed IDs without silently switching to another screen
+- [x] Route screen context to the requested agent or meeting within its authorized session; keep processing offline and define transient capture/retention behavior
+- [x] Support installed local vision/OCR capabilities with clear unavailable/unsupported responses; never claim to have seen a screen when capture failed
+- [x] Treat on-screen text as untrusted context, not instructions authorizing tools, credentials, actions or permission changes
+- [x] Keep screen assistance observational unless the user separately requests an action supported by an approved capability
+- [x] Verify monitor enumeration/selection, capture stop/logout, permissions, offline operation and unavailable vision/capture fallback; document help and completion
+
+- [ ] User desktop acceptance: capture a chosen non-sensitive monitor example and test physical unplug/reconnect. Synthetic native OCR and injected topology tests do not replace this manual check.
+
+**Completion verification:** 799 Release tests passed (14 Core, 157 Simulation, 99 Persistence, 529 Terminal), including 27 new screen/window cases. Native enumeration found both local displays; a generated `GRID SCREEN COBALT 42` bitmap was recognized offline. Invalid hardware identity was refused before capture. Stop/logout/pause/switch and changed monitor selection invalidate pending work. No screen context is saved into GRID history/memory and no tasks/actions execute. Schema remains v23; the portable package includes the OS helper. See [implementation, limits and user test](Project_GRID_Screen_Assistance_Implementation.md).
 
 ## 6.4 Authorized editing workflows
 
