@@ -1,5 +1,7 @@
 # Task assistance and scoped context — 6.3
 
+**6.6 integration — 2026-10-27:** Natural `talk` requests can enter scoped analysis or MCP proposal creation. Local proposals now use an explicit JSON schema and independent validation; unified requests retry invalid formatting at most once. `talk submit plan` still creates only AwaitingApproval tasks. Ordinary advice retains conversation recall; file analysis remains outside it. [Unified workflow](Project_GRID_Unified_Talk_Workflow.md).
+
 **6.5 verification — 2026-10-27:** Advice-only operation, uploaded injection, forged approvals, offline/timeout fallback and context removal/provenance are now covered by the phase verification suite. Live bundled-model analysis passed without creating tasks or conversation recall. [Results and repeatable checks](Project_GRID_Intelligence_Verification.md).
 
 **6.4 implemented — 2026-10-26:** Original-host `changes` drafts new/revised workspace files from captured context or local MAXIS AI, previews complete content/hashes, requires explicit approval, and applies with backups and guarded rollback. Optional verification uses separately approved MAXIS tasks. **838 Release tests passed**. Drafts are transient; recovery files persist. [Workflow, limits and demo](Project_GRID_Authorized_Editing_Implementation.md).

@@ -14,7 +14,7 @@ public sealed partial class ChatCommands
     private ChatCommands(GridSimulationEngine engine) => this.engine = engine;
     public static ChatCommands Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession? identity = null, ILocalInference? inference = null, Func<CancellationToken, Task>? save = null, IScreenContextProvider? screenProvider = null)
     {
-        var chat = new ChatCommands(engine) { identity = identity, inference = inference, save = save };
+        var chat = new ChatCommands(engine) { identity = identity, inference = inference, save = save, dispatcher = commands };
         chat.screens = screenProvider ?? new WindowsScreenContextProvider();
         commands.Register(new("screen", "screen <options|monitoring|ask|status|stop> ...", "One-shot offline screen OCR assistance; never background recording or actions.", chat.Screen) { Capability = "world.admin" });
         if (identity?.IsAttachment != true)
@@ -25,12 +25,12 @@ public sealed partial class ChatCommands
                 return new("Typewriter " + (commands.Typewriter ? "on." : "off."));
             }) { Capability = "chat" });
         commands.Register(new("memory", "memory <list|scope|save|correct|forget> ...", "Review and manage explicit private agent/project memory. User-confirmed context is not verified host evidence.", chat.Memory) { Capability = "chat" });
-        commands.Register(new("assist", "assist <advice|analyze|propose|submit|discard> ...", "Scoped AI guidance and reviewed MCP task drafts; never automatic execution.", chat.Assist) { Capability = "chat" });
+        commands.Register(new("assist", "assist <advice|analyze|propose|submit|discard> ...", "Scoped AI guidance and reviewed MCP task drafts; never automatic execution.", args => chat.Assist(args)) { Capability = "chat" });
         commands.ConversationConnected = () => chat.active is not null;
-        if (identity is not null) identity.Changed += () => { chat.active = null; chat.StopScreen(); };
+        if (identity is not null) identity.Changed += () => { chat.active = null; chat.followUp = null; chat.talkDetails = null; chat.StopScreen(); };
         commands.Register(new("agent", "agent meetings <AGENT> <AGENT> [...] [-inline]", "Open a shared meeting in a new window. Use talk @AGENT message to direct a turn.", args => chat.Meeting(args, commands)) { Capability = "chat" });
         commands.Register(new("connect", "connect [program-id|name] [-inline]", "Open a dedicated conversation window; default contact is MCP. -inline keeps voice-compatible chat here.", chat.Connect));
-        commands.Register(new("talk", "talk <message>", "Send to the connected program and receive grounded local AI dialogue or a labeled deterministic fallback.", chat.Talk));
+        commands.Register(new("talk", "talk <message>", "Conversation, advice, scoped files, screen assistance and reviewed plans/edits. Missing details are requested; intent never grants permission.", chat.Talk));
         commands.Register(new("conversations", "conversations", "List the active identity's stored conversations.", chat.List));
         commands.Register(new("transcript", "transcript [conversation-id] [--details]", "Read the conversation; --details includes saved facts, sources and message metadata.", chat.Transcript));
         commands.Register(new("resume", "resume <conversation-id> [-inline]", "Open a conversation window for a saved conversation; -inline resumes here.", chat.Resume));
@@ -65,7 +65,7 @@ public sealed partial class ChatCommands
             active = engine.StartMeeting(identity.Reference,names);
             save?.Invoke(CancellationToken.None).GetAwaiter().GetResult();
             return new("Meeting: " + string.Join(", ",participants.Select(p => TerminalTable.Safe(p.Name))) +
-                "\nOne participant replies per turn. Use talk <message> or talk @MAXIS <message>.\nThis transcript is shared. Private files and memories are not automatically included. Chat does not execute tasks.");
+                "\nOne participant replies per turn. Use talk <message> or talk @MAXIS <message>.\nThis transcript is shared. Private files and memories are not automatically included. Freeform replies never execute tasks.");
         }
         catch (Exception e) when (e is ArgumentException or InvalidOperationException or UnauthorizedAccessException) { return new("Meeting error: " + e.Message); }
         catch (Exception e) when (e is IOException or Microsoft.Data.Sqlite.SqliteException) { return new("Meeting save failed; it may remain in memory. Resolve persistence before continuing."); }
@@ -80,13 +80,12 @@ public sealed partial class ChatCommands
         var name = args.Count == 0 ? "MCP" : string.Join(" ", args);
         var recipient = engine.ResolveProgram(name);
         active = engine.StartConversation(Actor, recipient);
-        return new($"Connected to {TerminalTable.Safe(recipient.Name)}\nAI conversation; replies can be mistaken. Chat does not execute tasks.\nUse talk <message>. Earlier conversations are recalled automatically; memory save pins specific details. Read history with transcript; use transcript --details for sources and technical details.");
+        return new($"Connected to {TerminalTable.Safe(recipient.Name)}\nAI conversation; replies can be mistaken. Freeform replies never execute tasks.\nUse talk <message> for conversation, advice or reviewed work. Follow-up questions guide file/screen selection. Earlier conversations are recalled automatically; memory save pins specific details. Read history with transcript; use transcript --details for sources and technical details.");
     }
     private CommandResult Talk(IReadOnlyList<string> args)
     {
         if (args.Count == 0) return new("Usage: talk <message>");
-        if (active is not { } id) return new("No conversation connected. Use connect [program-id|name], or resume <conversation-id>.");
-        return Send(id, string.Join(" ", args), MessageOrigin.Terminal);
+        return UnifiedTalk(string.Join(" ", args));
     }
     private CommandResult Send(Guid id, string text, MessageOrigin origin)
     {

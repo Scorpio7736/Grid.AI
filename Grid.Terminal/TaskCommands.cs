@@ -84,14 +84,15 @@ public static class TaskCommands
                     }
                     save(CancellationToken.None).GetAwaiter().GetResult(); return new("Task updated and saved.\n\n" + TaskDisplay.Inspect(engine.TasksFor(identity.Reference), engine.TasksFor(identity.Reference).Records.Single(t => t.Id == id)));
                 }
-                if (args.Count == 1 && args[0] == "run")
+                if (args.Count is 1 or 2 && args[0] == "run")
                 {
                     if (identity.IsAttachment) return new("Run the broker from the original host terminal. Attached terminals may propose, inspect, approve or cancel within their authority.");
                     if (!identity.IsMaster) return new("Access denied. Human Master Control dispatches approved tasks.");
                     var reference = identity.Reference;
+                    var selected = args.Count == 2 ? engine.TasksFor(reference).Records.Single(t => t.Id == TaskDisplay.Resolve(args[1], engine.TasksFor(reference).Records.Select(r => r.Id), "task")) : null;
                     return new("", BrokerOperation: async token =>
                     {
-                        try { return new(await engine.RunNextTaskAsync(reference, save, token)); }
+                        try { return new(await engine.RunNextTaskAsync(reference, save, token, selected)); }
                         catch (Exception e) when (Expected(e)) { return Error(e); }
                     });
                 }
@@ -183,5 +184,5 @@ public static class TaskCommands
     }
     private static bool Expected(Exception e) => e is ArgumentException or InvalidOperationException or IOException or UnauthorizedAccessException or System.Data.Common.DbException;
     private static CommandResult Error(Exception e) => new("Task error: " + e.Message + (e is IOException or System.Data.Common.DbException ? " In-memory changes may remain; resolve persistence before continuing." : ""));
-    public const string Usage = "Usage: tasks [-completed|-list] [-AGENT] | tasks list [-AGENT] [-archived] | deny <id> \"reason\" | approve -all [-AGENT] | run -all [-AGENT] | clear -all [-AGENT] | inspect <id> | propose <agent-id|name> <capability> \"argument\" [request-key] | approve <id> | cancel <id> | retry <id> | run. Run without -all dispatches one approved task; bulk run stops at the first unsuccessful attempt. MAXIS build/test executes project-defined code.";
+    public const string Usage = "Usage: tasks [-completed|-list] [-AGENT] | tasks list [-AGENT] [-archived] | deny <id> \"reason\" | approve -all [-AGENT] | run -all [-AGENT] | clear -all [-AGENT] | inspect <id> | propose <agent-id|name> <capability> \"argument\" [request-key] | approve <id> | cancel <id> | retry <id> | run [id]. Run with an ID dispatches only that exact approved task. Run without -all dispatches one approved task; bulk run stops at the first unsuccessful attempt. MAXIS build/test executes project-defined code.";
 }

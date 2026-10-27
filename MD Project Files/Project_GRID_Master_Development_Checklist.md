@@ -1269,17 +1269,20 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 **Completion / verification — 2026-10-27:** 847 Release tests passed, including 171 categorized intelligence tests. Added nine adversarial regression cases and an opt-in bundled-model diagnostic; all ten live checks passed, including advice-only analysis, approval refusal, approved editing and exact-byte rollback. Captured evidence and repeatable commands are in [Intelligence verification](Project_GRID_Intelligence_Verification.md). Synthetic data only; no saved user world or actual desktop capture. Freeform AI can still be wrong: verified permissions prevent model text from executing actions, not all inaccurate statements. Schema v23 unchanged. 6.6 remains planned.
 
-## 6.6 Unified `talk` workflow — deferred until AI-agent features are complete
+## 6.6 Unified `talk` workflow
 
-**Planned — requested 2026-10-26; not implemented.** Schedule this rework after the remaining Phase 5/6 agent and intelligence features, including screen/context assistance (6.3A), authorized editing (6.4) and intelligence verification (6.5), are implemented and verified. This is a later integration rework, not a replacement for finishing those features first.
+**Implemented — 2026-10-27.** Unified `talk` now routes common requests through the existing conversation, context, screen, MCP proposal and editing boundaries. Ordinary advice retains memory and tone; missing details use scoped follow-ups. Explicit commands remain available.
 
-- [ ] Make `talk <message>` the normal entry point: the user describes what they need without choosing separate context, assist, advice, analysis or task-proposal commands
-- [ ] Interpret intent and route to conversation/recall, permitted project context, advice, analysis, screen assistance, task planning or authorized editing as appropriate
-- [ ] Ask a short clarification when intent, target or required context is ambiguous; open the existing file/monitor selection flow when needed instead of making the user learn another command
-- [ ] Coordinate specialist involvement through MCP and return a coherent response to the user
-- [ ] Preserve agent/project/meeting scope, context grants and revocation, memory correction/forgetting, draft review, task approval and editing rollback boundaries; inferred intent alone must not grant access or bypass approval
-- [ ] Keep explicit commands available for advanced control, inspection and troubleshooting while making them optional for ordinary conversation workflows
-- [ ] Test end-to-end requests through `talk` alone, including advice-only requests, context selection, ambiguous requests, proposed actions, denied actions and unavailable local AI; update help and documentation after verification
+- [x] Make `talk <message>` the normal entry point: the user describes what they need without choosing separate context, assist, advice, analysis or task-proposal commands
+- [x] Interpret intent and route to conversation/recall, permitted project context, advice, analysis, screen assistance, task planning or authorized editing as appropriate
+- [x] Ask a short clarification when intent, target or required context is ambiguous; open the existing file/monitor selection flow when needed instead of making the user learn another command
+- [x] Coordinate specialist involvement through MCP and return a coherent response to the user
+- [x] Preserve agent/project/meeting scope, context grants and revocation, memory correction/forgetting, draft review, task approval and editing rollback boundaries; inferred intent alone must not grant access or bypass approval
+- [x] Keep explicit commands available for advanced control, inspection and troubleshooting while making them optional for ordinary conversation workflows
+- [x] Test end-to-end requests through `talk` alone, including advice-only requests, context selection, ambiguous requests, proposed actions, denied actions and unavailable local AI; update help and documentation after verification
+
+
+**Completion / verification:** 873 Release tests passed, including 26 new cases. All 12 live bundled-model checks passed; malformed proposal output discovered during verification was corrected with an explicit local JSON schema plus independent validation and one bounded unified-flow retry. Approval never follows inferred intent. File/screen selection remains explicit; task dispatch and edits retain original-host restrictions. `tasks run <id>` now supports exact-target dispatch. No database migration or new dependency. Routing supports common phrases rather than arbitrary autonomous tool use. See [workflow, tests and limitations](Project_GRID_Unified_Talk_Workflow.md). Existing manual desktop/window acceptance remains open.
 
 ---
 

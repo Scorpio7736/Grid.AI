@@ -1,5 +1,7 @@
 # Project GRID — Authorized editing workflows (6.4)
 
+**6.6 integration — 2026-10-27:** `talk edit a file` asks for workspace, target and explicitly granted MAXIS context, then uses the existing review/approval/apply/rollback implementation. Exact-ID `talk` aliases preserve all safeguards and original-host restrictions. [Steps and verification](Project_GRID_Unified_Talk_Workflow.md).
+
 **6.5 live verification — 2026-10-27:** The bundled model generated a reviewable synthetic edit; generation did not write, unapproved application was refused, explicit approval allowed application, and rollback restored the original bytes. This extends the earlier 6.4 regression evidence. [Captured report and repeatable demo](Project_GRID_Intelligence_Verification.md).
 
 Implemented 2026-10-26. The original host's `changes` command supports bounded single-file creation/replacement in a registered MAXIS workspace. Human Master Control must review and approve every change. Stage/AI generation never applies files. The existing `maxis.suggest` capability remains a staged literal suggestion; it has not gained automatic apply rights.

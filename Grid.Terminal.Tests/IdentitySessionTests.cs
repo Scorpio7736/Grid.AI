@@ -59,7 +59,8 @@ public sealed class IdentitySessionTests
         Assert.Contains("MCP", commands.Execute("self").Text);
         Assert.DoesNotContain("apply-edit", commands.Execute("help").Text);
         commands.Execute("switch master"); Assert.True(session.IsMaster);
-        Assert.Contains("No conversation", commands.Execute("talk hi").Text);
+        Assert.Contains("MCP", commands.Execute("talk hi").Text);
+        Assert.Equal(2, engine.GetSnapshot().Communications.Conversations.Count);
     }
     [Fact]
     public void OtherAgentCannotReadUnrelatedConversationAndStatusDoesNotExposeGlobalState()

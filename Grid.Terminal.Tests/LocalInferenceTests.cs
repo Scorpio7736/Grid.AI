@@ -14,6 +14,25 @@ public sealed class LocalInferenceTests
     private sealed class Handler(Func<HttpRequestMessage,CancellationToken,Task<HttpResponseMessage>> action) : HttpMessageHandler
     { protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)=>action(request,token); }
     private static HttpResponseMessage Json(string text)=>new(HttpStatusCode.OK){Content=new StringContent(text)};
+    [Fact]
+    [Trait("Phase", "6.6")]
+    public async Task ProposalSchemaReachesBackendAndSurvivesTruncationRetry()
+    {
+        const string schema = "{\"type\":\"object\",\"properties\":{\"steps\":{\"type\":\"array\"}},\"required\":[\"steps\"]}";
+        var calls = 0;
+        using var backend = new OllamaLocalBackend(new Handler(async (request, token) =>
+        {
+            if (request.RequestUri!.AbsolutePath == "/api/show") return Json("{}");
+            using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(token));
+            Assert.Equal(schema, body.RootElement.GetProperty("format").GetRawText());
+            Assert.Contains("exact schema", body.RootElement.GetProperty("prompt").GetString());
+            return ++calls == 1 ? Json("{\"done\":true,\"done_reason\":\"length\",\"response\":\"partial\"}")
+                : Json("{\"done\":true,\"done_reason\":\"stop\",\"response\":\"{\\\"steps\\\":[]}\"}");
+        }));
+        await using var inference = new SharedLocalInference(backend);
+        var result = await inference.GenerateStructuredAsync("Plan one task", schema);
+        Assert.True(result.Available); Assert.Equal("{\"steps\":[]}", result.Text); Assert.Equal(2, calls);
+    }
     [Theory]
     [InlineData(false)][InlineData(true)]
     public async Task TruncatedAnswersRetryOnceWithLargerBudgetAndPreserveMode(bool structured)

@@ -163,8 +163,9 @@ public sealed class WindowTests
         await using var f = new Fixture(); await using var first = await f.Open(); await using var second = await f.Open();
         Assert.Contains("Opened conversation", (await first.Send("command", "connect")).Text);
         await using var conversation = new Client(f.Endpoint); await conversation.Connect();
-        Assert.Contains("No conversation", (await second.Send("command", "talk hello")).Text);
-        Assert.Contains("No conversation", f.Commands.Execute("talk hello").Text);
+        Assert.Contains("MCP", (await second.Send("command", "talk hello")).Text);
+        Assert.Contains("MCP", f.Commands.Execute("talk hello").Text);
+        Assert.Equal(3, f.Engine.GetSnapshot().Communications.Conversations.Count);
         var preview = await first.Send("command", "edit MCP occupation WindowTest");
         var id = System.Text.RegularExpressions.Regex.Match(preview.Text, @"Preview ([0-9a-f-]+)").Groups[1].Value;
         Assert.NotEmpty(id);
@@ -272,11 +273,13 @@ public sealed class WindowTests
         Assert.Equal("conversation", child.Greeting.Mode);
         Assert.Contains("Connected to MCP", child.Greeting.Text);
         Assert.DoesNotContain(child.Greeting.Commands!, c => c.Name is "step" or "voice" or "switch");
-        Assert.Contains("No conversation", f.Commands.Execute("talk hello").Text);
+        var connectedId = Assert.Single(f.Engine.GetSnapshot().Communications.Conversations).Id;
+        Assert.Contains("MCP", f.Commands.Execute("talk hello").Text);
         var response = await child.Send("command", "talk status");
         Assert.NotNull(response.AnimateFrom);
         Assert.Contains("MCP", response.Text[response.AnimateFrom!.Value..]);
-        var saved = Assert.Single(f.Engine.GetSnapshot().Communications.Conversations);
+        var saved = f.Engine.GetConversation(connectedId);
+        Assert.Equal(2, f.Engine.GetSnapshot().Communications.Conversations.Count);
         Assert.Equal(2, saved.Messages.Count);
         Assert.Contains(saved.Messages[1].Content, response.Text);
         Assert.Null((await child.Send("command", "transcript")).AnimateFrom);

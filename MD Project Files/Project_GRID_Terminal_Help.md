@@ -1,5 +1,7 @@
 # GRID7736 - Terminal Help
 
+**6.6 unified talk — 2026-10-27:** Start with `grid -start`, then `talk How can I center a div?`, `talk analyze my document`, `talk check resources` or `talk edit a file`. Follow the questions using `talk`; use `talk cancel` to abandon a follow-up. `talk details` reveals analysis sources. Plans require `talk submit plan`, then exact-ID approval and separate dispatch. [Full commands, examples and boundaries](Project_GRID_Unified_Talk_Workflow.md). `tasks run <id>` dispatches only that approved task; `tasks run` still selects the next queued task.
+
 **6.5 diagnostic — 2026-10-27:** From PowerShell, run `Test-GridPortable.ps1 -PackageRoot <package-folder> -IntelligenceOnly`, or the packaged `launch.cmd --verify-intelligence`. These are diagnostic launch options, not `grid>` commands. They use a temporary synthetic world/workspace, retain a JSON report and return failure if a check fails. [Commands, evidence and limitations](Project_GRID_Intelligence_Verification.md).
 
 **6.4 implemented — 2026-10-26:** Original-host `changes` drafts new/revised workspace files from captured context or local MAXIS AI, previews complete content/hashes, requires explicit approval, and applies with backups and guarded rollback. Optional verification uses separately approved MAXIS tasks. **838 Release tests passed**. Drafts are transient; recovery files persist. [Workflow, limits and demo](Project_GRID_Authorized_Editing_Implementation.md).

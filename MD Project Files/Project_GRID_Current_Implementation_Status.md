@@ -1,5 +1,7 @@
 # Project GRID - Current Implementation and Verification
 
+**6.6 implemented — 2026-10-27:** Unified `talk` supports conversation/advice, scoped analysis, file/monitor follow-ups, MCP drafts and reviewed editing. Explicit approvals and original-host execution remain. **873 Release tests and 12 bundled-model checks passed.** [Workflow and test commands](Project_GRID_Unified_Talk_Workflow.md). Earlier 6.6-planned statements below are historical.
+
 **6.5 completed — 2026-10-27:** 847 Release tests and 171 focused intelligence tests passed. Ten bundled-model checks passed, including injected context, advice-only operation, approval enforcement and exact-byte editing rollback. New repeatable diagnostics and captured evidence: [Intelligence verification](Project_GRID_Intelligence_Verification.md). Model accuracy remains fallible; 6.6 is still planned.
 
 **6.4 implemented — 2026-10-26:** Original-host `changes` drafts new/revised workspace files from captured context or local MAXIS AI, previews complete content/hashes, requires explicit approval, and applies with backups and guarded rollback. Optional verification uses separately approved MAXIS tasks. **838 Release tests passed**. Drafts are transient; recovery files persist. [Workflow, limits and demo](Project_GRID_Authorized_Editing_Implementation.md).

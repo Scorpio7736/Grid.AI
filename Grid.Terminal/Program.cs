@@ -5,6 +5,7 @@ using Grid.Terminal;
 using Grid.Simulation.Resources;
 using Grid.Simulation.Applications;
 
+if (args.SequenceEqual(new[] { "--verify-talk" })) return await IntelligenceVerification.RunAsync(unifiedTalk: true);
 if (args.SequenceEqual(new[] { "--verify-intelligence" })) return await IntelligenceVerification.RunAsync();
 
 if (args.SequenceEqual(new[] { "--verify-assistance" })) return await RuntimeVerification.RunAsync(assistanceOnly:true);

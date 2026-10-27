@@ -1,5 +1,7 @@
 # Project GRID — 6.5 Intelligence Verification
 
+**6.6 follow-up — 2026-10-27:** Unified `talk` is now implemented and verified. `--verify-talk` extends the synthetic probe to 12 checks through the unified workflow; the original `--verify-intelligence` remains available. [6.6 results and limits](Project_GRID_Unified_Talk_Workflow.md). Earlier planned references below describe the 6.5 milestone.
+
 Completed 2026-10-27. This milestone verifies the existing intelligence features and adds repeatable diagnostics; it does not implement the planned 6.6 unified `talk` workflow.
 
 ## Results
