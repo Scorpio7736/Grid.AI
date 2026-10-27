@@ -14,6 +14,7 @@ public static class CommandHelp
         "volt" => ["volt status"],
         "relay" => ["relay inbox", "relay inspect <notification-reference>", "relay deliveries", "relay ack <notification-reference>"],
         "jn" => ["jn scopes", "jn register <alias> \"absolute-file-or-directory\"", "jn revoke <alias>", "jn quota", "jn quota inspect <proposal-reference>", "jn quota approve <proposal-reference>"],
+        "changes" => ["changes stage <workspace> <relative-file> <context-id|name>", "changes suggest <workspace> <relative-file> <context-id|name> <request>", "changes list", "changes preview <id>", "changes approve <id> [high-risk]", "changes apply <id>", "changes rollback <id>", "changes discard <id>", "changes verify <id> <build|test>"],
         "maxis" => ["maxis workspaces", "maxis register <alias> \"absolute-root\" \"relative/project.csproj\"", "maxis revoke <alias>"],
         "mcp" => ["mcp request \"SPECIALIST: demo text; SPECIALIST: demo text\" [request-key]", "mcp plans", "mcp inspect <plan-id>", "mcp brief [plan-id]"],
         "screen" => ["screen options", "screen monitoring <id>", "screen ask <request>", "screen ask @MAXIS <request>", "screen status", "screen stop"],
@@ -37,6 +38,13 @@ public static class CommandHelp
     public static string Render(TerminalCommand command) => command.Name + "\n" + string.Join("\n", Options(command).Select(option =>
         $"    - {option}\n      # USAGE: {Description(command, option)}")) + $"\n    # EXAMPLE: {Example(command)}";
     private static string Description(TerminalCommand command, string option) => option.EndsWith(" -opninwin") ? "Open permitted data in a separate window; live updates, other data is a snapshot. Combine with supported command arguments." : option switch {
+        "changes stage <workspace> <relative-file> <context-id|name>" => "Draft a complete replacement/new file from captured context in the workspace project. No files written.",
+        "changes suggest <workspace> <relative-file> <context-id|name> <request>" => "Ask local MAXIS AI for a draft using explicitly granted context. Review and approval remain mandatory.",
+        "changes preview <id>" => "Show the complete before/after content and hashes, or applied state and recovery path.",
+        "changes approve <id> [high-risk]" => "Approve exact hashes. Code/configuration requires the literal high-risk acknowledgement; nothing is applied yet.",
+        "changes apply <id>" => "Apply the approved file with durable backup and stale-source checks.",
+        "changes rollback <id>" => "Restore the original, or remove a newly created file, only if unchanged since apply. Backups remain.",
+        "changes verify <id> <build|test>" => "Propose a separately approved MAXIS verification task. Does not start a process automatically.",
         "screen options" => "List current monitors; refresh IDs and clear any previous selection. No capture.",
         "screen monitoring <id>" => "Select a listed monitor for this connected agent or meeting. No capture until screen ask.",
         "screen ask <request>" => "Capture one frame from the selected monitor; analyze its OCR text offline. No recording, history or actions.",
@@ -52,6 +60,7 @@ public static class CommandHelp
     };
     private static string Example(TerminalCommand c) => c.Name switch {
         "volt" => "volt status", "relay" => "relay inbox", "jn" => "jn quota", "maxis" => "maxis workspaces", "mcp" => "mcp plans", "tasks" => "tasks list",
+        "changes" => "changes list",
         "screen" => "screen options",
         "programs" => "programs -active ids", "inspect" => "inspect program MCP", "talk" => "talk status",
         "edit" => "edit MCP occupation \"Local coordinator\"", "switch" => "switch master", "login" => "login",

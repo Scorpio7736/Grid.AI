@@ -6,6 +6,7 @@ namespace Grid.Simulation.Tasks;
 public sealed class MaxisRuntime(string artifactsRoot, string? bundledDotnetRoot = null)
 {
     private readonly string artifacts = Path.GetFullPath(artifactsRoot);
+    public string EditArtifactsRoot => DevelopmentPolicy.CheckedPath(artifacts, "workspace-edits");
     public string AttemptDirectory(TaskRecord task) => Path.Combine(artifacts, task.Id.ToString("N") + "-" + (task.Attempts + 1));
     public void CheckWorkspace(DevelopmentWorkspace workspace)
     {

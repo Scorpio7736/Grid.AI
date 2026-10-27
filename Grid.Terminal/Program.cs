@@ -88,6 +88,7 @@ try
         WorkplaceCommands.Register(dispatcher, engine); SocialCommand.Register(dispatcher, engine);
         VoltRelayCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         JnCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
+        WorkspaceChangeCommands.Register(dispatcher, engine, session, localAi);
         MaxisCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         TaskCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         var chat = ChatCommands.Register(dispatcher, engine, session, localAi, persistence is null ? null : token => persistence.SaveAsync(token)); ResourcesCommand.Register(dispatcher, engine);

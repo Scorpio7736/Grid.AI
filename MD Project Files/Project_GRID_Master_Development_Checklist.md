@@ -1,5 +1,7 @@
 # Project GRID — Master Development Checklist
 
+**6.4 implemented — 2026-10-26:** Original-host `changes` drafts new/revised workspace files from captured context or local MAXIS AI, previews complete content/hashes, requires explicit approval, and applies with backups and guarded rollback. Optional verification uses separately approved MAXIS tasks. **838 Release tests passed**. Drafts are transient; recovery files persist. [Workflow, limits and demo](Project_GRID_Authorized_Editing_Implementation.md).
+
 **6.3A implemented — 2026-10-26:** `screen options/monitoring/ask/status/stop` provides one-shot selected-monitor assistance using offline Windows OCR and local AI. Human Master Control only; no recording, saved screen context or actions. **799 Release tests passed**, including attached-window and synthetic native-OCR checks. User desktop acceptance remains manual. [Commands, limits and verification](Project_GRID_Screen_Assistance_Implementation.md).
 
 **4.2H implemented — 2026-10-26:** Conversation labels are light blue, agent bodies yellow and user text white. Assistance now animates; Enter no longer accidentally skips a reply. **772 Release tests passed**, plus an interactive Windows-console probe. User desktop/window visual acceptance remains open. [Changes, verification and test commands](Project_GRID_Conversation_Display_Repair.md).
@@ -1241,14 +1243,18 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 6.4 Authorized editing workflows
 
-- [ ] Support creating new output files in approved workspaces
-- [ ] Generate patches or revised files from supplied context
-- [ ] Show diffs or previews before sensitive edits
-- [ ] Require approval according to file and operation risk
-- [ ] Apply approved edits with rollback/backup where feasible
-- [ ] Run optional builds and tests after edits
-- [ ] Report exactly what changed and any failures
-- [ ] Avoid silent deletion or unrestricted command execution
+**Implemented — 2026-10-26.** `changes` provides single-file UTF-8 creation/replacement, deterministic context staging or strict local-AI drafts, complete before/after previews, hash-bound approval, durable backups and guarded rollback. Original host, human Master Control, running GRID and a registered MAXIS workspace are required.
+
+- [x] Support creating new output files in approved workspaces
+- [x] Generate patches or revised files from supplied context
+- [x] Show diffs or previews before sensitive edits
+- [x] Require approval according to file and operation risk
+- [x] Apply approved edits with rollback/backup where feasible
+- [x] Run optional builds and tests after edits
+- [x] Report exactly what changed and any failures
+- [x] Avoid silent deletion or unrestricted command execution
+
+**Completion verification:** 838 Release tests passed (14 Core, 157 Simulation, 99 Persistence, 568 Terminal), including 39 new workflow cases and actual temporary-workspace build/test process probes. No automatic execution or deletion command, no multi-file transaction and no schema change (v23). Code/configuration requires explicit high-risk acknowledgement. Drafts/approvals are transient; disk recovery evidence survives restart, with manual recovery after restart. AI tests use controlled responses. [Details and safe demo](Project_GRID_Authorized_Editing_Implementation.md).
 
 ## 6.5 Intelligence verification
 
