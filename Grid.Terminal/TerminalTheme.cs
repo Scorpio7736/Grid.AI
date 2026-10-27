@@ -7,14 +7,9 @@ public static class TerminalTheme
         !noColor && !redirected && !string.Equals(term, "dumb", StringComparison.OrdinalIgnoreCase) && environmentNoColor is null;
     public static bool Enabled(bool noColor) => SupportsColor(noColor, Console.IsOutputRedirected,
         Environment.GetEnvironmentVariable("TERM"), Environment.GetEnvironmentVariable("NO_COLOR"));
-    public static ConsoleColor? Color(string line)
-    {
-        if (line.StartsWith("AI response rejected", StringComparison.OrdinalIgnoreCase) ||
-            line.StartsWith("Local AI unavailable", StringComparison.OrdinalIgnoreCase)) return ConsoleColor.Red;
-        if (new[] { "error", "failed", "denied", "invalid", "refused" }.Any(w => line.Contains(w, StringComparison.OrdinalIgnoreCase))) return ConsoleColor.Red;
-        if (line.Contains('|') || line.Contains("  ") && line.Contains("---") || line.Trim().All(c => c is '=' or '-' or '+' or ' ')) return ConsoleColor.Yellow;
-        return ConsoleColor.Cyan;
-    }
+    public static ConsoleColor? Color(string line) => ConsoleColor.Yellow;
+    public static Task PromptAsync(TextWriter writer, string text) => writer is IConversationOutput colored
+        ? colored.WriteConversationAsync(text, ConsoleColor.Cyan) : writer.WriteAsync(text);
     public static void Write(TextWriter writer, string text, bool enabled)
     {
         if (!enabled || Color(text) is not { } color) { writer.Write(text); return; }

@@ -1,5 +1,7 @@
 # Project GRID — Conversation display repair (4.2H)
 
+**6.7 palette update — 2026-10-27:** Conversation/error/source-footer output is now yellow; user bodies are white and speaker labels/prompts light blue. The original typing behavior remains. This supersedes the earlier red-error color rule. [Implementation and verification](Project_GRID_Login_Animation_and_Colors.md).
+
 Implemented 2026-10-26. This is a terminal presentation change; schema v23, stored conversations, recall, permissions and task approval remain unchanged. The unified `talk` workflow is still deferred to 6.6.
 
 ## Changes

@@ -1287,15 +1287,17 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## Mandatory pre-Phase-7 work — requested 2026-10-27
 
-**Planned, not implemented. Phase 7 is blocked until 6.7–6.15 pass acceptance.** These requirements supersede conflicting future color, base-storage and delivery-order assumptions while preserving prior completion history. The reported conversation loop and second-device AI failure remain unresolved. See [detailed plan, dependencies and acceptance criteria](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+**6.7 implemented; 6.8–6.15 planned. Phase 7 remains blocked until all required acceptance is complete.** These requirements supersede conflicting future color, base-storage and delivery-order assumptions while preserving prior completion history. The reported conversation loop and second-device AI failure remain unresolved. See [detailed plan, dependencies and acceptance criteria](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
 
 ## 6.7 Login animation and consistent terminal colors
 
-**Planned — required before Phase 7.**
+**Implemented — 2026-10-27.**
 
-- [ ] Replace post-login Enter gate with a five-second GRID7736 ASCII animation and automatic entry; support skip/static output
-- [ ] Use yellow terminal/agent/error output, white user text and light-blue prompts/labels consistently across windows
-- [ ] Verify timing, readability, no-color behavior and manual host/attached startup
+- [x] Replace post-login Enter gate with a five-second GRID7736 ASCII animation and automatic entry; support skip/static output
+- [x] Use yellow terminal/agent/error output, white user text and light-blue prompts/labels consistently across windows
+- [x] Verify elapsed timing, no-color behavior and host/attached presentation; retain final user-window visual acceptance in 6.15
+
+**Completion verification:** User-supplied banner adopted at opening/login/shutdown. Five-second elapsed-time reveal replaces the post-login Enter gate; any key skips and `GRID_ANIMATION=off`/redirected/dumb output is static. Yellow messages/errors/footers, white user text and light-blue prompts/labels share the original/attached renderers. **886 Release tests passed**, including 13 new cases; a real Windows ConPTY login reached the prompt in **5.109 seconds** with verified colors and masked password. No user world loaded. [Implementation and evidence](Project_GRID_Login_Animation_and_Colors.md). 6.8–6.15 remain outstanding.
 
 ## 6.8 Natural conversation and follow-up recovery
 

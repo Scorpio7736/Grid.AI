@@ -42,23 +42,8 @@ public static class TerminalPresentation
     {
         var status = !success ? "SHUTDOWN ERROR - review diagnostics above." :
             persistent ? "WORLD SAVED // USER DISCONNECTED" : "EPHEMERAL SESSION // NOT SAVED";
-        if ((width ?? TerminalTable.Width) < 78) return $"\nGRID7736 // DISCONNECTED\n\n{status}";
-        return """
-
-            +============================================================================+
-            |                                                                            |
-            |   ______   ______    _____   ______     ______  ______   ______   ______   |
-            |  / ____/  / __   \  |_   _| |  __  \   |____  ||____  | |____  | / ____/  |
-            | | |  ___ | |__)  |    | |   | |  \  |       / /     / /      / / | |___    |
-            | | | |_  ||  _   /     | |   | |   | |      / /     / /    __/ /  |  __ \   |
-            | | |__|  || | \  \    _| |_  | |__/  |     / /     / /    |__  \  | |__| |  |
-            |  \______/ |_|  \_\  |_____| |______/     /_/     /_/    |_____/  \____/   |
-            |                                                                            |
-            |============================================================================|
-            |                                                                            |
-            |                        GRID7736 // DISCONNECTED                            |
-            |                                                                            |
-            +============================================================================+
-            """ + "\n\n" + status;
+        var banner = GridBanner.Render(width ?? TerminalTable.Width);
+        if (banner == "GRID7736 // WELCOME") banner = "GRID7736";
+        return "\n" + banner + "\n\nGRID7736 // DISCONNECTED\n\n" + status;
     }
 }

@@ -1,5 +1,7 @@
 # Project GRID - Chat workflow and agent handoff
 
+**6.7 completed — 2026-10-27:** New banner at opening/login/shutdown, five-second monotonic login reveal, key skip and `GRID_ANIMATION=off` static mode. Prompts must use explicit light-blue rendering; ordinary messages and unstyled conversation footers are yellow, user text white. 886 tests and Windows ConPTY login/color verification passed. No new schema/dependency. 6.8–6.15 remain pending. [Guide](../Project_GRID_Login_Animation_and_Colors.md).
+
 **Mandatory scheduling update — 2026-10-27:** The user requires 6.7–6.15 before Phase 7. This turn only plans changes; do not claim bugs fixed or new capabilities shipped. Prioritize the reported analysis loop and actual second-device AI failure. Preserve completed history, but follow the new MCP Master Control Program/CRUD/context/model/20 GB/color/animation/PDF requirements and acceptance gate. [Authoritative plan](../Project_GRID_Pre_Phase_7_Readiness_Plan.md).
 
 **6.6 handoff — 2026-10-27:** Unified `talk` is implemented. 873 Release tests and 12 live checks passed. Preserve phrase-based routing, per-terminal scope guards, explicit grants, independent schema/capability validation, exact-ID approvals/dispatch and editing rollback. Ordinary advice retains recall; captured-file analysis does not enter memory. Explicit commands remain. [Workflow, evidence and limitations](../Project_GRID_Unified_Talk_Workflow.md). Earlier 6.6-planned notes are historical; manual desktop/window acceptance remains open.

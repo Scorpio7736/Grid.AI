@@ -28,7 +28,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
             while (!shutdown.IsCancellationRequested)
             {
                 if (sessionUi is not null) await sessionUi.RefreshAsync();
-                if (showPrompt) { await output.WriteAsync(commands.Prompt); await output.FlushAsync(); }
+                if (showPrompt) { await TerminalTheme.PromptAsync(output, commands.Prompt); await output.FlushAsync(); }
                 // Console.In may block synchronously even through ReadLineAsync. Keep that read
                 // off the control thread so Ctrl+C and scheduler faults can still end the session.
                 var read = sessionUi is null ? Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token) : sessionUi.Input.ReadAsync(false, shutdown.Token);
@@ -49,7 +49,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                         await output.WriteLineAsync(result.Text);
                         while (true)
                         {
-                            await output.WriteAsync("Confirm this task batch? [y/N] "); await output.FlushAsync();
+                            await TerminalTheme.PromptAsync(output, "Confirm this task batch? [y/N] "); await output.FlushAsync();
                             var answerTask = sessionUi is null ? Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token) : sessionUi.Input.ReadAsync(false, shutdown.Token);
                             if (await Task.WhenAny(answerTask, scheduler, autosave, monitoring) != answerTask) { shutdown.Cancel(); break; }
                             var answer = await answerTask;
@@ -156,6 +156,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                             await output.WriteLineAsync(GridTransfer.Preview(plan)); await output.FlushAsync();
                             while (true)
                             {
+                                await TerminalTheme.PromptAsync(output, "Confirm transfer? [y/N] "); await output.FlushAsync();
                                 var confirmation = sessionUi is null ? Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token) : sessionUi.Input.ReadAsync(false, shutdown.Token);
                                 if (await Task.WhenAny(confirmation, scheduler, autosave, monitoring) != confirmation) { shutdown.Cancel(); break; }
                                 var answer = await confirmation;
@@ -192,6 +193,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                             await output.FlushAsync();
                             while (true)
                             {
+                                await TerminalTheme.PromptAsync(output, "Nullify GRID? [y/N] "); await output.FlushAsync();
                                 var confirmationRead = sessionUi is null ? Task.Run(() => input.ReadLine()).WaitAsync(shutdown.Token) : sessionUi.Input.ReadAsync(false, shutdown.Token);
                                 if (await Task.WhenAny(confirmationRead, scheduler, autosave, monitoring) != confirmationRead)
                                 { shutdown.Cancel(); shutdown.Token.ThrowIfCancellationRequested(); }

@@ -5,14 +5,7 @@ public sealed class TerminalSessionUi(TerminalIdentitySession identity, ITermina
 {
     private bool wasAuthenticated;
     public ITerminalInput Input => input;
-    public static string Opening(int width = 80) => width < 58 ? "GRID7736 // WELCOME" : """
-        +======================================================+
-        |                                                      |
-        |                    G R I D 7 7 3 6                   |
-        |                    ENTER THE GRID                    |
-        |                                                      |
-        +======================================================+
-        """;
+    public static string Opening(int width = 80) => GridBanner.Render(width);
     private void Clear() { try { if (input.Interactive) clear?.Invoke(); } catch (Exception e) when (e is IOException or InvalidOperationException or PlatformNotSupportedException) { } }
     public async Task<bool> StartAsync(CancellationToken token)
     {
@@ -33,7 +26,7 @@ public sealed class TerminalSessionUi(TerminalIdentitySession identity, ITermina
     }
     private async Task<string?> Read(string prompt, bool secret, CancellationToken token)
     {
-        await output.WriteAsync(prompt); await output.FlushAsync(); return await input.ReadAsync(secret, token);
+        await TerminalTheme.PromptAsync(output, prompt); await output.FlushAsync(); return await input.ReadAsync(secret, token);
     }
     private async Task<bool> Setup(CancellationToken token)
     {
@@ -68,11 +61,10 @@ public sealed class TerminalSessionUi(TerminalIdentitySession identity, ITermina
             if (identity.IsAuthenticated)
             {
                 wasAuthenticated = true; Clear();
-                await output.WriteLineAsync($"Welcome, {TerminalTable.Safe(identity.DisplayName)}\nAuthority level: Master Control\nNo Windows elevation is granted.");
-                if (input.Interactive)
-                {
-                    while (true) { var line = await Read("Press Enter to continue to terminal: ", false, token); if (line is null) return false; if (line.Length == 0) break; }
-                }
+                var welcome = $"Welcome, {TerminalTable.Safe(identity.DisplayName)}\nAuthority level: Master Control\nNo Windows elevation is granted.";
+                await GridLoginAnimation.RunAsync(output, welcome,
+                    GridLoginAnimation.Enabled(input is ConsoleTerminalInput && input.Interactive,
+                        Environment.GetEnvironmentVariable("TERM"), Environment.GetEnvironmentVariable("GRID_ANIMATION")), clear, token);
             }
         }
         if (result.LogoutRequested)

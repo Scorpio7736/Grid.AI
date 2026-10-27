@@ -1,5 +1,7 @@
 # Project GRID - Current Implementation and Verification
 
+**6.7 implemented — 2026-10-27:** New user banner, five-second skippable login animation, automatic terminal entry and yellow messages/white user text/light-blue prompts. 886 Release tests passed; real Windows-console login/color probe passed. [Behavior and evidence](Project_GRID_Login_Animation_and_Colors.md). 6.8–6.15 remain planned.
+
 **New required work — 2026-10-27 (planned only):** 6.7–6.15 must finish before Phase 7. The user reports a literal-follow-up analysis loop and copied-device AI failure; neither is resolved by this documentation update. PDF remains unsupported and DOCX limited. Prior 6.6 test results remain historical. [Required changes and acceptance](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
 
 **6.6 implemented — 2026-10-27:** Unified `talk` supports conversation/advice, scoped analysis, file/monitor follow-ups, MCP drafts and reviewed editing. Explicit approvals and original-host execution remain. **873 Release tests and 12 bundled-model checks passed.** [Workflow and test commands](Project_GRID_Unified_Talk_Workflow.md). Earlier 6.6-planned statements below are historical.

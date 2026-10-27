@@ -33,7 +33,7 @@ public static class AttachedTerminal
             if (reply.Closed) return 1;
             async Task<string?> Read(ConsoleTerminalInput input, string prompt)
             {
-                await output.WriteAsync(prompt); await output.FlushAsync();
+                await TerminalTheme.PromptAsync(output, prompt); await output.FlushAsync();
                 using var readStop = CancellationTokenSource.CreateLinkedTokenSource(stop.Token);
                 var read = input.ReadAsync(false, readStop.Token);
                 try
@@ -140,7 +140,7 @@ public static class AttachedTerminal
         catch (Exception e) when (e is IOException or TimeoutException or OperationCanceledException or UnauthorizedAccessException or System.Text.Json.JsonException)
         {
             if (!Console.IsOutputRedirected) Console.Clear();
-            Console.Error.WriteLine("GRID DISCONNECTED: " + e.Message + "\nThis window will not reload or create a world.");
+            TerminalTheme.Write(Console.Error, "GRID DISCONNECTED: " + e.Message + "\nThis window will not reload or create a world.\n", TerminalTheme.Enabled(noColor));
             return 1;
         }
         finally { Console.CancelKeyPress -= cancel; Console.ForegroundColor = color; }

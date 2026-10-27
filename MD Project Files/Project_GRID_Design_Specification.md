@@ -1,5 +1,7 @@
 # Project GRID
 
+**6.7 delivered — 2026-10-27:** User banner and five-second automatic login transition implemented. Yellow terminal messages/errors, white user text and light-blue prompts/labels replace previous palette assumptions. Remaining pre-Phase-7 scope is still planned. [Implementation](Project_GRID_Login_Animation_and_Colors.md).
+
 **Required design update — planned 2026-10-27:** Sections 6.7–6.15 precede Phase 7: conversational CRUD/memory/context, MCP Master Control Program delegated authority and invitations, model profiles, 20 GB base footprint, complete offline transfers and PDF/DOCX support. Yellow output/white user text/light-blue prompts and five-second login animation supersede prior UX targets when implemented. Existing architecture/history remains. [Detailed contract](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
 
 **6.4 implemented — 2026-10-26:** Original-host `changes` drafts new/revised workspace files from captured context or local MAXIS AI, previews complete content/hashes, requires explicit approval, and applies with backups and guarded rollback. Optional verification uses separately approved MAXIS tasks. **838 Release tests passed**. Drafts are transient; recovery files persist. [Workflow, limits and demo](Project_GRID_Authorized_Editing_Implementation.md).

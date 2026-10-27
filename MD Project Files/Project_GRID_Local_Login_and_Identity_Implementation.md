@@ -1,5 +1,7 @@
 # Project GRID - Local Login and Identity Sessions (4.2A)
 
+**6.7 login update — 2026-10-27:** Successful authentication now shows a five-second skippable banner animation and enters the terminal automatically. Welcome name/authority remain; no post-login Enter read. Masking, setup and logout confirmation are preserved. [Timing/static modes and evidence](Project_GRID_Login_Animation_and_Colors.md).
+
 ## Current 4.2B completion - 2026-10-20
 
 Terminal UX and local password credentials are implemented and verified by 368 passing tests. Schema v12 preserves existing owners and adds authenticated credential migration/rotation. New worlds use interactive setup; existing owners use `login master`, then `credentials`. Read [4.2B implementation notes](Project_GRID_Terminal_UX_Implementation.md) for exact behavior and limits. Earlier 4.2A/schema v11 notes below describe their historical milestone. Full Flash GRID packaging remains planned.

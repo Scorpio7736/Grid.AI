@@ -29,7 +29,7 @@ try
     if (TerminalTheme.Enabled(options.NoColor))
     {
         originalForeground = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.ForegroundColor = ConsoleColor.Yellow;
     }
     if (packageRoot is null && TerminalEnvironment.Ensure() is { } environmentMessage)
         Console.WriteLine(environmentMessage);

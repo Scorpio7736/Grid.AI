@@ -1,5 +1,7 @@
 # Project GRID — Required Work Before Phase 7
 
+**Status update — 2026-10-27:** 6.7 is implemented: user-supplied banner, elapsed-time login animation, automatic entry and revised colors; 886 tests and native console verification passed. [6.7 implementation](Project_GRID_Login_Animation_and_Colors.md). The planning text below records the approved requirements; 6.8–6.15 remain unimplemented and Phase 7 stays blocked.
+
 **Planned — 2026-10-27. Documentation only; none of the additions below is implemented by this planning update.** All sections 6.7–6.15 in the master checklist are mandatory before Phase 7 begins. Completed milestones and their dated verification remain historical evidence, not proof that the newly reported failures are resolved.
 
 ## Reported problems and design direction

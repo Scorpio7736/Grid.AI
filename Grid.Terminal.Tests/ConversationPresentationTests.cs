@@ -23,7 +23,7 @@ public sealed class ConversationPresentationTests
         await TypewriterRenderer.WriteAsync(output, text, user.Length + 2, true, () => false, () => Task.CompletedTask, default, _ => { delays++; return Task.CompletedTask; }, spans);
         Assert.Equal(text + Environment.NewLine, output.ToString());
         Assert.Equal("MCP: fake error", output.OfColor(ConsoleColor.White));
-        Assert.Equal(body, output.OfColor(ConsoleColor.Yellow));
+        Assert.Contains(body, output.OfColor(ConsoleColor.Yellow));
         Assert.Empty(output.OfColor(ConsoleColor.Red));
         Assert.Equal(System.Globalization.StringInfo.ParseCombiningCharacters(body).Length, delays);
     }
@@ -32,8 +32,8 @@ public sealed class ConversationPresentationTests
     {
         var result = ConversationPresentation.AgentReply("MCP", "Ready", "Sources"); var output = new RecordingOutput();
         await TypewriterRenderer.WriteAsync(output, result.Text, result.AnimateFrom, false, () => throw new Exception("keyboard"), () => Task.CompletedTask, default, _ => throw new Exception("delay"), result.Presentation);
-        Assert.Equal("Ready", output.OfColor(ConsoleColor.Yellow));
-        Assert.Contains("Sources", output.OfColor(ConsoleColor.Cyan));
+        Assert.Contains("Ready", output.OfColor(ConsoleColor.Yellow));
+        Assert.Contains("Sources", output.OfColor(ConsoleColor.Yellow));
         Assert.Equal(result.Text + Environment.NewLine, output.ToString());
     }
     [Fact]
@@ -41,7 +41,8 @@ public sealed class ConversationPresentationTests
     {
         var result = ConversationPresentation.AgentReply("MCP", "A response", "Footer"); var output = new RecordingOutput();
         await TypewriterRenderer.WriteAsync(output, result.Text, result.AnimateFrom, true, () => true, () => Task.CompletedTask, default, _ => throw new Exception("delay"), result.Presentation);
-        Assert.Equal("A response", output.OfColor(ConsoleColor.Yellow));
+        Assert.Contains("A response", output.OfColor(ConsoleColor.Yellow));
+        Assert.Contains("Footer", output.OfColor(ConsoleColor.Yellow));
         Assert.Equal(result.Text + Environment.NewLine, output.ToString());
     }
     [Fact]
@@ -67,7 +68,7 @@ public sealed class ConversationPresentationTests
     {
         var output = new RecordingOutput();
         await TypewriterRenderer.WriteAsync(output, "You: Hi\nMCP: Ready", null, true, () => throw new Exception(), () => Task.CompletedTask, default, presentation: [new(0, 5, ConversationTone.Heading), new(5, 2, ConversationTone.User), new(8, 5, ConversationTone.Heading), new(13, 5, ConversationTone.Agent)]);
-        Assert.Equal("Hi", output.OfColor(ConsoleColor.White)); Assert.Equal("Ready", output.OfColor(ConsoleColor.Yellow));
+        Assert.Equal("Hi", output.OfColor(ConsoleColor.White)); Assert.Contains("Ready", output.OfColor(ConsoleColor.Yellow));
     }
     [Theory]
     [InlineData(ConsoleKey.Enter, false)]
@@ -78,7 +79,7 @@ public sealed class ConversationPresentationTests
     [Theory]
     [InlineData("AI response rejected; no proposal created.")]
     [InlineData("Local AI unavailable.")]
-    public void CommandFailuresRemainRed(string text) => Assert.Equal(ConsoleColor.Red,TerminalTheme.Color(text));
+    public void CommandFailuresRemainYellow(string text) => Assert.Equal(ConsoleColor.Yellow,TerminalTheme.Color(text));
 
     [Fact]
     public void ConversationRolesUseRequestedPalette()
@@ -86,6 +87,6 @@ public sealed class ConversationPresentationTests
         Assert.Equal(ConsoleColor.Cyan, ConversationPresentation.Color(ConversationTone.Heading));
         Assert.Equal(ConsoleColor.White, ConversationPresentation.Color(ConversationTone.User));
         Assert.Equal(ConsoleColor.Yellow, ConversationPresentation.Color(ConversationTone.Agent));
-        Assert.Equal(ConsoleColor.Red, ConversationPresentation.Color(ConversationTone.Error));
+        Assert.Equal(ConsoleColor.Yellow, ConversationPresentation.Color(ConversationTone.Error));
     }
 }

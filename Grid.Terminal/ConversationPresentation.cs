@@ -8,7 +8,7 @@ public interface IConversationOutput
 }
 public static class ConversationPresentation
 {
-    public static ConsoleColor Color(ConversationTone tone) => tone switch { ConversationTone.User => ConsoleColor.White, ConversationTone.Agent => ConsoleColor.Yellow, ConversationTone.Error => ConsoleColor.Red, _ => ConsoleColor.Cyan };
+    public static ConsoleColor Color(ConversationTone tone) => tone switch { ConversationTone.User => ConsoleColor.White, ConversationTone.Heading => ConsoleColor.Cyan, _ => ConsoleColor.Yellow };
     public static CommandResult AgentReply(string heading, string body, string footer = "")
     {
         var text = heading + "\n\n" + body + (footer.Length == 0 ? "" : "\n\n" + footer);

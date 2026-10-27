@@ -34,7 +34,7 @@ public static class TypewriterRenderer
                 var span = At(index);
                 var next = span is null ? Math.Min(end, spans.Where(s => s.Start > index).Select(s => s.Start).DefaultIfEmpty(end).Min()) : Math.Min(end, span.Start + span.Length);
                 var value = text[index..next];
-                if (spans.Length > 0 && output is IConversationOutput styled) await styled.WriteConversationAsync(value, ConversationPresentation.Color(span?.Tone ?? ConversationTone.Heading));
+                if (spans.Length > 0 && output is IConversationOutput styled) await styled.WriteConversationAsync(value, ConversationPresentation.Color(span?.Tone ?? ConversationTone.Agent));
                 else await output.WriteAsync(value);
                 index = next;
             }

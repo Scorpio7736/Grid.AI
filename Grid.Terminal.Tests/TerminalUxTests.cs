@@ -25,7 +25,7 @@ public sealed class TerminalUxTests
     {
         var (engine, identity, commands) = Fixture();
         const string password = "test-only-passphrase";
-        var input = new Input("Jack", password, password, "Jack", password, "", "n", "invalid", "y");
+        var input = new Input("Jack", password, password, "Jack", password, "n", "invalid", "y");
         var output = new StringWriter(); var clears = 0; var ui = new TerminalSessionUi(identity, input, output, () => { clears++; return true; });
         Assert.True(await ui.StartAsync(default)); Assert.False(identity.IsAuthenticated); Assert.True(identity.UsesPassword);
         Assert.True(await ui.HandleAsync(commands.Execute("login"), default)); Assert.True(identity.IsMaster);
@@ -87,7 +87,7 @@ public sealed class TerminalUxTests
         Assert.Empty(CommandHelp.Complete("edit \"Secret", commands.Commands));
         identity.Logout(); Assert.Empty(CommandHelp.Complete("ed", commands.Commands));
         Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Name | Value")); Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("---+---"));
-        Assert.Equal(ConsoleColor.Red, TerminalTheme.Color("Access denied")); Assert.Equal(ConsoleColor.Cyan, TerminalTheme.Color("Welcome"));
+        Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Access denied")); Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Welcome"));
         Assert.Contains("GRID7736", TerminalSessionUi.Opening(30));
         Assert.Contains("OFFLINE MARKDOWN HELP", commands.Execute("help -md").Text);
         Assert.Contains("# GRID7736", commands.Execute("help -md").Text);
