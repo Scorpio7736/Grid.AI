@@ -1,5 +1,7 @@
 # Project GRID - Chat workflow and agent handoff
 
+**6.8 completed — 2026-10-27:** Raw connected chat, preserved quotes, scoped automatic post-import analysis and recoverable follow-ups are implemented. Keep host/attached parsing aligned via `ParseInput`; never execute model output. Pasted paths need explicit import consent; stale/replaced callbacks must not run. 904 tests and six bundled-model checks passed. 6.9–6.15 remain pending. [Guide](../Project_GRID_Conversation_Recovery_Implementation.md).
+
 **6.7 completed — 2026-10-27:** New banner at opening/login/shutdown, five-second monotonic login reveal, key skip and `GRID_ANIMATION=off` static mode. Prompts must use explicit light-blue rendering; ordinary messages and unstyled conversation footers are yellow, user text white. 886 tests and Windows ConPTY login/color verification passed. No new schema/dependency. 6.8–6.15 remain pending. [Guide](../Project_GRID_Login_Animation_and_Colors.md).
 
 **Mandatory scheduling update — 2026-10-27:** The user requires 6.7–6.15 before Phase 7. This turn only plans changes; do not claim bugs fixed or new capabilities shipped. Prioritize the reported analysis loop and actual second-device AI failure. Preserve completed history, but follow the new MCP Master Control Program/CRUD/context/model/20 GB/color/animation/PDF requirements and acceptance gate. [Authoritative plan](../Project_GRID_Pre_Phase_7_Readiness_Plan.md).

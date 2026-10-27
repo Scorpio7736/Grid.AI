@@ -99,6 +99,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 }
                 if (result.ContextPicker is { } completeSelection)
                 {
+                    if (!string.IsNullOrWhiteSpace(result.Text)) await output.WriteLineAsync(result.Text);
                     if (!interactiveConfirmation) result = new("File picker requires an interactive terminal; use context add with an absolute file path.");
                     else
                     {
@@ -113,6 +114,12 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                                 break;
                             }
                             result = completeSelection(await pick);
+                            if (result.BrokerOperation is { } analyze)
+                            {
+                                var analysis = analyze(pickerStop.Token);
+                                if (await Task.WhenAny(analysis, scheduler, autosave, monitoring) != analysis) pickerStop.Cancel();
+                                result = await analysis;
+                            }
                         }
                         catch (IOException e) { result = new("Context error: " + e.Message); }
                     }

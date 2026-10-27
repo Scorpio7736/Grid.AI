@@ -1,5 +1,7 @@
 # Project GRID - Terminal Conversations (4.2)
 
+**6.8 update — 2026-10-27:** Connected chat now accepts direct sentences; `talk` remains an alias and explicit terminal commands remain reserved. Scoped imports automatically continue analysis; failed uploads retain the request. [Recovery behavior and verification](Project_GRID_Conversation_Recovery_Implementation.md).
+
 **6.3A implemented — 2026-10-26:** `screen options/monitoring/ask/status/stop` provides one-shot selected-monitor assistance using offline Windows OCR and local AI. Human Master Control only; no recording, saved screen context or actions. **799 Release tests passed**, including attached-window and synthetic native-OCR checks. User desktop acceptance remains manual. [Commands, limits and verification](Project_GRID_Screen_Assistance_Implementation.md).
 
 **4.2H implemented — 2026-10-26:** Conversation labels are light blue, agent bodies yellow and user text white. Assistance now animates; Enter no longer accidentally skips a reply. **772 Release tests passed**, plus an interactive Windows-console probe. User desktop/window visual acceptance remains open. [Changes, verification and test commands](Project_GRID_Conversation_Display_Repair.md).

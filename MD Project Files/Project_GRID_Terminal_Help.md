@@ -1,8 +1,10 @@
 # GRID7736 - Terminal Help
 
+**6.8 implemented — 2026-10-27:** After connecting, type ordinary sentences or use `talk`. Quotes are preserved. `select files` opens once and runs analysis after scoped import; retry failures with `continue to analyze`, `analyze`, or `select files`. `cancel` and `go back` leave/change the flow; a new question replaces it. Paths require confirmation before reading. [Examples and limits](Project_GRID_Conversation_Recovery_Implementation.md).
+
 **6.7 implemented — 2026-10-27:** Login enters the terminal after a five-second logo animation; any key skips. `GRID_ANIMATION=off` selects static reduced-motion output. Messages/errors are yellow, user text white, prompts/labels light blue. [Details and visual test](Project_GRID_Login_Animation_and_Colors.md). Earlier planned/red-error/Enter-gate notes describe previous behavior.
 
-**Planned before Phase 7 — 2026-10-27:** Five-second login animation, revised colors, natural connected chat and complete reviewed file operations are not implemented yet. Current analysis may require the exact `talk continue`; `continue to analyze` is a reported defect, not an equivalent supported command today. PDF is currently unsupported; DOCX support is limited. [Fix plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+**Remaining before Phase 7:** Complete reviewed file operations, extended memory/MCP workflows, portable AI repair and PDF/full DOCX support remain planned. 6.7 login/colors and 6.8 natural chat/recovery are implemented. [Remaining plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
 
 **6.6 unified talk — 2026-10-27:** Start with `grid -start`, then `talk How can I center a div?`, `talk analyze my document`, `talk check resources` or `talk edit a file`. Follow the questions using `talk`; use `talk cancel` to abandon a follow-up. `talk details` reveals analysis sources. Plans require `talk submit plan`, then exact-ID approval and separate dispatch. [Full commands, examples and boundaries](Project_GRID_Unified_Talk_Workflow.md). `tasks run <id>` dispatches only that approved task; `tasks run` still selects the next queued task.
 

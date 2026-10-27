@@ -7,6 +7,25 @@ namespace Grid.Terminal.Tests;
 
 public sealed class WindowTests
 {
+    [Fact, Trait("Phase", "6.8")]
+    public async Task AttachedDirectChatAndPickerRunAnalysisWithoutContinue()
+    {
+        await using var f = new Fixture(inference: new WindowInference());
+        f.Engine.StartAgents(f.Owner.Reference);
+        await using var client = await f.Open("connect MCP");
+        var reply = await client.Send("command", "What's a div with id \"Test\"?");
+        Assert.Contains("Suggestion: use status", reply.Text); Assert.NotNull(reply.AnimateFrom);
+        var picker = await client.Send("command", "select files"); Assert.True(picker.PickFiles);
+        var path = Path.Combine(Path.GetTempPath(), "Grid68-" + Guid.NewGuid() + ".html");
+        try
+        {
+            File.WriteAllText(path, "<h1>INDIGO</h1>");
+            reply = await client.Send("context-files", files: [path]);
+            Assert.Contains("Suggestion: use status", reply.Text); Assert.NotNull(reply.AnimateFrom);
+            Assert.NotNull(reply.Presentation); Assert.Empty(f.Engine.GetSnapshot().Tasks.Records);
+        }
+        finally { File.Delete(path); }
+    }
     private sealed class Fixture : IAsyncDisposable
     {
         public readonly TerminalSessionRegistry Registry = new();
@@ -286,7 +305,7 @@ public sealed class WindowTests
         Assert.False((await child.Send("command", "typewriter off")).Typewriter);
         Assert.True((await child.Send("command", "typewriter on")).Typewriter);
         Assert.Contains("Usage", (await child.Send("command", "typewriter invalid")).Text);
-        Assert.Contains("Unknown", (await child.Send("command", "step")).Text);
+        Assert.Contains("You: step", (await child.Send("command", "step")).Text);
         Assert.True((await child.Send("command", "exit")).Closed);
         Assert.Equal(Grid.Communication.ConversationStatus.Open, f.Engine.GetConversation(saved.Id).Status);
         await using var resumed = await f.Open("resume " + saved.Id);

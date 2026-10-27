@@ -27,7 +27,7 @@ public sealed partial class ChatCommands
     // recalled message or OCR text is ever interpreted as a command or authorization.
     private CommandResult UnifiedTalk(string text)
     {
-        if (!CommunicationState.ValidContent(text)) return new("Error: Please provide a valid message.");
+        if (!CommunicationState.ValidContent(text) || string.IsNullOrWhiteSpace(text.Trim().Trim('"', '\''))) return new("Error: Please provide a valid message.");
         if (active is null)
         {
             if (identity?.IsMaster != true) return new("No conversation connected. Use connect [program-id|name], or resume <conversation-id>.");
@@ -37,13 +37,18 @@ public sealed partial class ChatCommands
         var id = active!.Value;
         engine.RequireAgentActivity();
         var input = text.Trim();
-        if (input.Equals("cancel", StringComparison.OrdinalIgnoreCase))
+        if (Starts(input, @"^(cancel|never mind|nevermind|cancel that|stop that)[.!]?$"))
         { followUp = null; return Explain("Follow-up cancelled. No action taken."); }
         if (followUp is { } pending)
         {
             followUp = null;
             if (!Current(pending)) return Explain("The session or scope changed. Please repeat your request; nothing was performed.");
-            return ContinueTalk(pending, input);
+            if (Starts(input, @"^(go back|back|change (the )?(file|target)|choose another file)[.!]?$"))
+                return Ask(pending.Kind is "workspace" or "target" or "edit-files" or "edit-context" ? "workspace" : "files",
+                    pending.Request, "Choose another target. For a document, say select files; for an edit, give the registered workspace name.");
+            if (IsFollowUp(pending, input)) return ContinueTalk(pending, input);
+            // A different sentence replaces the pending request; it is never coerced into a target or consent.
+
         }
         input = Regex.Replace(input, @"^(?:(?:can|could|would) you\s+|please\s+|I (?:want|need) you to\s+)+", "", RegexOptions.IgnoreCase).Trim();
         // Directed meeting turns retain the established participant/recall routing.
@@ -51,6 +56,7 @@ public sealed partial class ChatCommands
         if (identity?.IsMaster != true)
             return identity is not null && Starts(input, @"^(build|test|plan|edit|approve|run|apply|delete|select files|look at .*screen)\b")
                 ? Explain("Access denied. Operational assistance requires human Master Control.") : Send(id, input, MessageOrigin.Terminal);
+        if (LooksLikePath(input)) return ConfirmFile(Pending("files", "Analyze the selected file."), input);
         if (input.Equals("details", StringComparison.OrdinalIgnoreCase))
         {
             if (talkDetails is { } details && Current(details.Scope)) return new(details.Text);
@@ -108,8 +114,9 @@ public sealed partial class ChatCommands
         {
             if (Find(id).IsMeeting) return Explain("Use a one-to-one conversation for private file analysis; meeting grants are not inferred.");
             var c = Find(id); var agent = c.Participants.Single(p => p.Kind == ParticipantKind.Program);
-            if (Starts(input, @"^(select|upload|add) files\b") || !engine.ContextFor(agent.Id, identity.SessionId).Any(d => d.Project.Equals(c.ProjectScope, StringComparison.OrdinalIgnoreCase)))
-                return Ask("files", input, $"No files are granted to {agent.Name} in project {c.ProjectScope}. Reply talk select files to choose temporary files and grant them to this agent, or talk cancel.");
+            if (Starts(input, @"^(select|upload|add) files\b")) return SelectFiles(Pending("files", "Analyze the selected files."));
+            if (!engine.ContextFor(agent.Id, identity.SessionId).Any(d => d.Project.Equals(c.ProjectScope, StringComparison.OrdinalIgnoreCase)))
+                return Ask("files", input, $"Choose temporary files to share with {agent.Name} in project {c.ProjectScope}. For example: select files. You can cancel or ask something else.");
             return Analysis(input);
         }
         if (Starts(input, @"^(build|test|run tests|plan|propose|check (the )?(resources|firewall|defender)|inspect workspace|notify|inventory)\b"))
@@ -133,6 +140,7 @@ public sealed partial class ChatCommands
 
     private CommandResult ContinueTalk(FollowUp p, string input)
     {
+        if (p.Kind is "target" or "edit-context" or "workspace" or "task-workspace") input = input.Trim().Trim('"', '\'');
         if (p.Kind == "task-workspace")
         {
             var workspace = engine.TasksFor(identity!.Reference).Workspaces.SingleOrDefault(w => w.Enabled && w.Name.Equals(input, StringComparison.OrdinalIgnoreCase));
@@ -148,25 +156,19 @@ public sealed partial class ChatCommands
         }
         if (p.Kind == "capture") return input.Equals("capture", StringComparison.OrdinalIgnoreCase)
             ? Screen(["ask", p.Request]) : Ask("capture", p.Request, "Reply talk capture for one frame, or talk cancel.");
-        if (p.Kind is "files" or "edit-files")
+        if (p.Kind is "files" or "edit-files" or "file-confirm")
         {
-            if (!input.Equals("select files", StringComparison.OrdinalIgnoreCase))
-                return Ask(p.Kind, p.Request, "Reply talk select files to open the picker, or talk cancel.", p.Workspace, p.Target);
-            var c = Find(p.Conversation); var agent = p.Kind == "edit-files" ? "MAXIS" : c.Participants.Single(x => x.Kind == ParticipantKind.Program).Name;
-            var project = p.Kind == "edit-files" ? p.Workspace : p.Project;
-            var selection = Dispatch("context", "add", "-search", "temporary", project, agent);
-            if (selection.ContextPicker is not { } picker) return selection;
-            return selection with { ContextPicker = paths =>
-            {
-                if (!Current(p)) return Explain("File selection expired; nothing imported. Repeat the request.");
-                var imported = picker(paths);
-                if (!imported.Text.StartsWith("Imported ", StringComparison.Ordinal)) return imported;
-                followUp = Pending(p.Kind == "edit-files" ? "edit-context" : "analyze", p.Request, p.Workspace, p.Target);
-                return imported with { Text = imported.Text + (p.Kind == "edit-files" ? "\nReply talk <context filename or ID> to draft the edit." : "\nReply talk continue to analyze these files, or talk cancel.") };
-            }};
+            if (Starts(input, @"^(select|upload|add) files[.!]?$")) return SelectFiles(p with { Kind = p.Kind == "edit-files" ? "edit-files" : "files" });
+            if (p.Kind == "file-confirm" && Starts(input, @"^(yes|yes please|confirm)[.!]?$")) return SelectFiles(p, [p.Target]);
+            if (LooksLikePath(input)) return ConfirmFile(p, input);
+            return Ask(p.Kind, p.Request, "Choose files to share first. For example: select files. Or ask another question.", p.Workspace, p.Target);
         }
-        if (p.Kind == "analyze") return input.Equals("continue", StringComparison.OrdinalIgnoreCase) ? Analysis(p.Request)
-            : Ask("analyze", p.Request, "Reply talk continue to analyze, or talk cancel.");
+        if (p.Kind == "analyze")
+        {
+            if (Starts(input, @"^(select|upload|add) files[.!]?$")) return SelectFiles(Pending("files", p.Request));
+            if (LooksLikePath(input)) return ConfirmFile(p, input);
+            return Analysis(p.Request);
+        }
         if (p.Kind == "workspace")
         {
             var workspace = engine.TasksFor(identity!.Reference).Workspaces.SingleOrDefault(w => w.Enabled && w.Name.Equals(input, StringComparison.OrdinalIgnoreCase));
@@ -182,16 +184,80 @@ public sealed partial class ChatCommands
         if (p.Kind == "edit-context") return TalkHints(Dispatch("changes", "suggest", p.Workspace, p.Target, input, p.Request));
         return Explain("Please repeat your request.");
     }
+    private static bool LooksLikePath(string input)
+    {
+        var path = input.Trim().Trim('"', '\'');
+        if (Starts(input, @"^(what|how|why|who|can|could|please|explain|write|make|analy[sz]e|review|read|help|tell|is|does|do)\s")) return false;
+        return !path.Contains('\n') && (Regex.IsMatch(path, @"^(?:[A-Za-z]:[\\/]|\\\\|\.?\.?[\\/]|Documents[\\/])") ||
+            Regex.IsMatch(path, @"^[^<>?*|]+\.(?:pdf|docx|txt|md|html|css|cs|json)[""']?$", RegexOptions.IgnoreCase));
+    }
+    private bool IsFollowUp(FollowUp p, string input)
+    {
+        if (Starts(input, @"^(hello|hi|thanks|thank you)[.!?]?$")) return false;
+        if (Starts(input, @"^(select|upload|add) files[.!]?$|^(continue(?: to analy[sz]e)?|analy[sz]e(?: the file uploaded| (?:the|my) (?:file|document)s?)?)[.!]?$"))
+            return p.Kind is "files" or "file-confirm" or "edit-files" or "analyze";
+        if (p.Kind == "file-confirm" && Starts(input, @"^(yes|yes please|confirm)[.!]?$")) return true;
+        if ((p.Kind is "files" or "file-confirm" or "edit-files" or "target" or "analyze") && LooksLikePath(input)) return true;
+        if (p.Kind == "monitor") return int.TryParse(input, out _);
+        if (p.Kind == "capture") return input.Equals("capture", StringComparison.OrdinalIgnoreCase);
+        if (p.Kind is "workspace" or "task-workspace")
+            return engine.TasksFor(identity!.Reference).Workspaces.Any(w => w.Enabled && w.Name.Equals(input, StringComparison.OrdinalIgnoreCase)) || !input.Contains(' ');
+        if (p.Kind == "target") return !input.Contains(' ');
+        if (p.Kind == "edit-context") return Guid.TryParse(input, out _) || LooksLikePath(input);
+        return false;
+    }
+    private CommandResult ConfirmFile(FollowUp p, string path)
+    {
+        if (Find(p.Conversation).IsMeeting) return Explain("Use a one-to-one conversation for private file analysis.");
+        var agent = Find(p.Conversation).Participants.Single(x => x.Kind == ParticipantKind.Program).Name;
+        var target = path.Trim().Trim('"', '\'');
+        return Ask("file-confirm", p.Request, $"Import {TerminalTable.Safe(target)} as temporary context for {agent} in {p.Project}, then analyze it? Say yes to confirm, select files to choose another file, or cancel. Nothing has been read yet.", target: target);
+    }
+    private CommandResult SelectFiles(FollowUp p, IReadOnlyList<string>? supplied = null)
+    {
+        var c = Find(p.Conversation);
+        var agent = p.Kind == "edit-files" ? "MAXIS" : c.Participants.Single(x => x.Kind == ParticipantKind.Program).Name;
+        var project = p.Kind == "edit-files" ? p.Workspace : p.Project;
+        var selection = Dispatch("context", "add", "-search", "temporary", project, agent);
+        if (selection.ContextPicker is not { } picker) return selection;
+        followUp = p;
+        var used = 0;
+        CommandResult Complete(IReadOnlyList<string> paths)
+        {
+            if (Interlocked.Exchange(ref used, 1) != 0 || !Current(p) || !ReferenceEquals(followUp, p))
+                return Explain("File selection expired; nothing imported. Repeat the request.");
+            var imported = picker(paths);
+            if (!imported.Text.StartsWith("Imported ", StringComparison.Ordinal))
+            {
+                followUp = Pending(p.Kind, p.Request, p.Workspace, p.Target);
+                return imported with { Text = imported.Text + "\nYour request is retained. Try select files again, give another path, or cancel." };
+            }
+            if (p.Kind == "edit-files") return Ask("edit-context", p.Request,
+                imported.Text + "\nWhich captured context should MAXIS use? Give its filename or ID.", p.Workspace, p.Target);
+            return Analysis(p.Request);
+        }
+        return supplied is null ? selection with {
+            Text = $"Select files to share temporarily with {agent} in project {project}. Selecting confirms this grant and starts analysis; Cancel imports nothing.",
+            ContextPicker = Complete } : Complete(supplied);
+    }
     private static CommandResult After(CommandResult result, Func<CommandResult, CommandResult> next) => result.BrokerOperation is { } operation
         ? result with { BrokerOperation = async token => next(await operation(token)) } : next(result);
     private CommandResult Analysis(string request)
     {
-        var scope = Pending("details", request);
+        var scope = Pending("analyze", request);
+        followUp = scope;
         talkDetails = null;
-        return After(Assist(["analyze", request]), result =>
+        var analysis = Assist(["analyze", request]);
+        if (analysis.BrokerOperation is { } operation)
+            analysis = analysis with { BrokerOperation = token => Current(scope) && ReferenceEquals(followUp, scope)
+                ? operation(token) : Task.FromResult(Explain("Analysis was replaced, cancelled or expired.")) };
+        return After(analysis, result =>
         {
             if (!Current(scope)) return Explain("Analysis expired; the session or context changed.");
-            if (result.Presentation?.FirstOrDefault(s => s.Tone == ConversationTone.Agent) is not { } body) return result;
+            if (!ReferenceEquals(followUp, scope)) return Explain("Analysis was replaced or cancelled.");
+            if (result.Presentation?.FirstOrDefault(s => s.Tone == ConversationTone.Agent) is not { } body)
+                return result with { Text = result.Text + "\nYour analysis request is retained. Say continue to retry, or ask something else." };
+            followUp = null;
             talkDetails = (scope, result.Text);
             return ConversationPresentation.AgentReply(Contacts(Find(scope.Conversation)), result.Text.Substring(body.Start, body.Length), "Use talk details for sources. File analysis is not added to conversation memory.");
         });

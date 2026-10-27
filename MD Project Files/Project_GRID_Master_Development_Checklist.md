@@ -1287,7 +1287,7 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## Mandatory pre-Phase-7 work — requested 2026-10-27
 
-**6.7 implemented; 6.8–6.15 planned. Phase 7 remains blocked until all required acceptance is complete.** These requirements supersede conflicting future color, base-storage and delivery-order assumptions while preserving prior completion history. The reported conversation loop and second-device AI failure remain unresolved. See [detailed plan, dependencies and acceptance criteria](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+**6.7–6.8 implemented; 6.9–6.15 planned. Phase 7 remains blocked until all required acceptance is complete.** These requirements supersede conflicting future color, base-storage and delivery-order assumptions while preserving prior completion history. The reported conversation loop is repaired in 6.8; the second-device AI failure remains unresolved. See [detailed plan, dependencies and acceptance criteria](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
 
 ## 6.7 Login animation and consistent terminal colors
 
@@ -1301,11 +1301,13 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 6.8 Natural conversation and follow-up recovery
 
-**Planned — required before Phase 7.**
+**Implemented — 2026-10-27.**
 
-- [ ] Accept ordinary connected-chat sentences and talk aliases; preserve quoted text and spaced paths
-- [ ] Resolve analyze/continue paraphrases, cancel/change intent and file-picker retries without modal loops
-- [ ] Replay the reported PDF/HTML conversation and verify direct analysis after consent; include CSS answer correctness
+- [x] Accept ordinary connected-chat sentences and talk aliases; preserve quoted text and spaced paths
+- [x] Resolve analyze/continue paraphrases, cancel/change intent and file-picker retries without modal loops
+- [x] Replay the reported PDF/HTML conversation and verify direct analysis after consent; include CSS answer correctness
+
+**Completion verification:** Raw connected chat preserves quotes; explicit commands remain available. Scoped file selection starts analysis automatically in host/attached windows. Failed uploads retain the goal; analyze/continue paraphrases, target changes, cancellation and unrelated questions escape the former loop. Pasted paths require explicit confirmation before import. **904 Release tests passed**, including 18 new cases; **six bundled-model checks passed**, including working constrained-width CSS and failed-PDF-to-HTML recovery. PDF extraction remains 6.15, full CRUD 6.9, durable file-derived recall 6.10 and cross-device AI 6.14. [Implementation, test steps and captured evidence](Project_GRID_Conversation_Recovery_Implementation.md).
 
 ## 6.9 Conversation-driven file Create/Read/Update/Delete
 

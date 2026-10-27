@@ -93,6 +93,7 @@ public static class AttachedTerminal
                 reply = await Send(new("command", line));
                 if (reply.PickFiles)
                 {
+                    if (!string.IsNullOrWhiteSpace(reply.Text)) await output.WriteLineAsync(reply.Text);
                     using var pickerStop = CancellationTokenSource.CreateLinkedTokenSource(stop.Token);
                     var pick = ContextFilePicker.PickAsync(pickerStop.Token);
                     try

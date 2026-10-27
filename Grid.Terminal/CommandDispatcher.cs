@@ -45,10 +45,24 @@ public sealed class CommandDispatcher
     {
         try
         {
-            return ExecuteTokens(Parse(line));
+            return ExecuteTokens(ParseInput(line));
         }
         catch (ArgumentException e) { return new("Error: " + e.Message); }
     }
+    // Chat is raw text, not shell-like command tokens. Explicit command names remain reserved.
+    public IReadOnlyList<string> ParseInput(string line)
+    {
+        var text = line.Trim();
+        var boundary = text.IndexOfAny([' ', '\t', '\r', '\n']);
+        var name = boundary < 0 ? text : text[..boundary];
+        if (name.Equals("talk", StringComparison.OrdinalIgnoreCase))
+            return boundary < 0 ? ["talk"] : ["talk", text[(boundary + 1)..].Trim()];
+        if (text.Length > 0 && ConversationConnected?.Invoke() == true &&
+            (!commands.ContainsKey(name) || text.StartsWith("help me ", StringComparison.OrdinalIgnoreCase)))
+            return ["talk", text];
+        return Parse(line);
+    }
+
     public CommandResult ExecuteTokens(IReadOnlyList<string> tokens)
     {
         try
@@ -58,7 +72,7 @@ public sealed class CommandDispatcher
                 return new($"Unknown command '{tokens[0]}'. Type help for available commands.");
             CommandResult Run()
             {
-                if (tokens.Skip(1).Contains("-opninwin", StringComparer.OrdinalIgnoreCase))
+                if (command.Name != "talk" && tokens.Skip(1).Contains("-opninwin", StringComparer.OrdinalIgnoreCase))
                 {
                     if (!WindowCommands.Supports(command.Name) || tokens.Count(t => t.Equals("-opninwin", StringComparison.OrdinalIgnoreCase)) != 1)
                         return new("Error: -opninwin is supported only once on read-only data commands or live.");

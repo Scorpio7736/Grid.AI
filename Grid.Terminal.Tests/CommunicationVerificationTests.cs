@@ -70,7 +70,7 @@ public sealed class CommunicationVerificationTests
         Assert.Contains("Error", session.Commands.Execute("connect missing-recipient").Text);
         Assert.Empty(session.Engine.GetSnapshot().Communications.Conversations);
         session.Commands.Execute("connect"); var id = session.Chat.ActiveConversation!.Value;
-        foreach (var command in new[] { "talk", "talk \"\"", "talk \"unterminated", "talk " + new string('x', 4097), "talk bad\u001b[2J", "resume malformed-id", "transcript " + Guid.NewGuid() })
+        foreach (var command in new[] { "talk", "talk \"\"", "talk " + new string('x', 4097), "talk bad\u001b[2J", "resume malformed-id", "transcript " + Guid.NewGuid() })
         {
             var result = session.Commands.Execute(command);
             Assert.False(string.IsNullOrWhiteSpace(result.Text));
@@ -78,7 +78,7 @@ public sealed class CommunicationVerificationTests
         }
         session.Commands.Execute("talk \"Hello café 世界\"");
         var messages = session.Engine.GetConversation(id).Messages;
-        Assert.Equal("Hello café 世界", messages[0].Content); Assert.Equal(2, messages.Count);
+        Assert.Equal("\"Hello café 世界\"", messages[0].Content); Assert.Equal(2, messages.Count);
         Assert.Equal(new long[] { 1, 2 }, messages.Select(m => m.Sequence));
     }
     [Fact]

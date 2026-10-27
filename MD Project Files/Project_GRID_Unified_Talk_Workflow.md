@@ -1,6 +1,6 @@
 # Project GRID — 6.6 Unified Talk Workflow
 
-**Reported defects / planned follow-up — 2026-10-27:** Current literal `continue` handling can trap natural replies, file selection can repeat unnecessarily, and PDF import is unsupported. 6.8 must fix the supplied transcript; 6.9–6.12 extend actionable chat, memory, MCP and invitations. 6.6 completion is historical, not proof of these additions. [Mandatory pre-Phase-7 plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
+**6.8 follow-up implemented — 2026-10-27:** Direct connected chat, preserved quotes, automatic post-import analysis and retry/cancel/change handling repair the reported loop. PDF remains unsupported; 6.9–6.15 are still planned. [Implementation and evidence](Project_GRID_Conversation_Recovery_Implementation.md).
 
 Implemented 2026-10-27. `talk <message>` is now the usual entry point for conversation, advice, permitted file analysis, screen assistance, MCP task planning and reviewed workspace editing. Explicit commands remain available.
 
@@ -40,10 +40,9 @@ When no file is granted to the current agent/project, GRID asks for a selection:
 talk select files
 ```
 
-This opens the existing file picker. Choosing files explicitly grants temporary captured context to the named current agent in the displayed project. It does not grant other agents access or reopen files automatically. After selection:
+This opens the existing file picker. Choosing files explicitly grants temporary captured context to the named current agent in the displayed project. It does not grant other agents access or reopen files automatically. After selection, analysis starts automatically. If inference fails, `continue`, `continue to analyze`, `analyze` or `analyze the file uploaded` retries the retained goal. Inspect sources only when needed:
 
 ```text
-talk continue
 talk details
 ```
 

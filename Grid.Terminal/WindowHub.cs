@@ -90,6 +90,21 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
             await WindowProtocol.WriteAsync(pipe, Reply(mode == "conversation" ? "GRID7736 // CONVERSATION\n\n" + conversationText :
                 $"GRID7736 // ATTACHED {mode.ToUpperInvariant()}\n{identity.Describe()}\nOriginal host owns simulation/save. Closing this window only detaches.\n" +
                 (mode == "snapshot" ? snapshot : conversationText)), io.Token);
+            async Task<CommandResult> CompleteConversationOperation(CommandResult result)
+            {
+                if (result.BrokerOperation is not { } operation) return result;
+                io.CancelAfter(TimeSpan.FromSeconds(140));
+                using var inferenceStop = CancellationTokenSource.CreateLinkedTokenSource(io.Token);
+                var completion = operation(inferenceStop.Token);
+                while (!completion.IsCompleted)
+                {
+                    await Task.WhenAny(completion, Task.Delay(100, io.Token));
+                    try { using var client = Process.GetProcessById(pid); if (client.HasExited) inferenceStop.Cancel(); }
+                    catch (ArgumentException) { inferenceStop.Cancel(); }
+                    if (inferenceStop.IsCancellationRequested) break;
+                }
+                return await completion;
+            }
             Func<IReadOnlyList<string>, CommandResult>? pendingPicker = null;
             while (!stop.IsCancellationRequested)
             {
@@ -106,16 +121,18 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 else if (request.Kind == "context-files")
                 {
                     var complete = pendingPicker; pendingPicker = null;
-                    reply = complete is null ? Reply("Error: no file selection pending.") : Reply(complete(request.Files ?? []).Text);
+                    var result = complete is null ? new CommandResult("Error: no file selection pending.") : complete(request.Files ?? []);
+                    result = await CompleteConversationOperation(result);
+                    reply = Reply(result.Text) with { AnimateFrom = result.AnimateFrom, Presentation = result.Presentation };
                 }
                 else if (request.Kind == "logout") { identity.Logout(); reply = Reply("Logged out; attached window detached.", closed: true); }
                 else if (request.Kind == "command" && request.Command is { Length: <= 8192 } line)
                 {
                     // Lifecycle changes stay on the owning host, so there is one final save/delete/transfer authority.
-                    string name;
-                    try { name = CommandDispatcher.Parse(line).FirstOrDefault() ?? ""; }
+                    IReadOnlyList<string> tokens;
+                    try { tokens = commands.ParseInput(line); }
                     catch (ArgumentException e) { await WindowProtocol.WriteAsync(pipe, Reply("Error: " + e.Message), io.Token); continue; }
-                    var tokens = CommandDispatcher.Parse(line);
+                    var name = tokens.FirstOrDefault() ?? "";
                     var gridControl = name.Equals("grid", StringComparison.OrdinalIgnoreCase) && tokens.Count == 2 &&
                         (tokens[1].Equals("-start", StringComparison.OrdinalIgnoreCase) || tokens[1].Equals("-pause", StringComparison.OrdinalIgnoreCase));
                     if (new[] { "login", "credentials", "nge", "tranexist", "copexist" }.Contains(name, StringComparer.OrdinalIgnoreCase) || name.Equals("grid", StringComparison.OrdinalIgnoreCase) && !gridControl)
@@ -124,20 +141,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                     {
                         pendingPicker = null;
                         var result = commands.Execute(line);
-                        if (result.BrokerOperation is { } operation && (name.Equals("talk", StringComparison.OrdinalIgnoreCase) || name.Equals("assist", StringComparison.OrdinalIgnoreCase) || name.Equals("screen", StringComparison.OrdinalIgnoreCase)))
-                        {
-                            io.CancelAfter(TimeSpan.FromSeconds(140));
-                            using var inferenceStop = CancellationTokenSource.CreateLinkedTokenSource(io.Token);
-                            var completion = operation(inferenceStop.Token);
-                            while (!completion.IsCompleted)
-                            {
-                                await Task.WhenAny(completion, Task.Delay(100, io.Token));
-                                try { using var client = Process.GetProcessById(pid); if (client.HasExited) inferenceStop.Cancel(); }
-                                catch (ArgumentException) { inferenceStop.Cancel(); }
-                                if (inferenceStop.IsCancellationRequested) break;
-                            }
-                            result = await completion;
-                        }
+                        if (name.ToLowerInvariant() is "talk" or "assist" or "screen") result = await CompleteConversationOperation(result);
                         pendingPicker = result.ContextPicker;
                         reply = Reply(result.Text, result.ExitRequested, result.LiveViewRequested, result.ClearRequested, result.LogoutRequested) with { PickFiles = pendingPicker is not null, AnimateFrom = result.AnimateFrom, Presentation = result.Presentation };
                     }
