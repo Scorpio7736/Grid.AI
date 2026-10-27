@@ -5,6 +5,7 @@ using Grid.Simulation;
 using Xunit;
 namespace Grid.Terminal.Tests;
 
+[Trait("Phase", "6.5")]
 public sealed class GroundedDialogueTests
 {
     private sealed class Inference(Func<string,CancellationToken,Task<InferenceReply>> run) : ILocalInference

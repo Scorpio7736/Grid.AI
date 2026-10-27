@@ -18,5 +18,6 @@ New-Item -ItemType Directory -Path (Join-Path $Destination 'data') -Force | Out-
 Set-Content -LiteralPath (Join-Path $Destination 'grid-package.json') -Value '{"version":1,"selfContained":true,"runtime":"runtime"}' -Encoding UTF8
 Set-Content -LiteralPath (Join-Path $Destination 'launch.cmd') -Encoding ASCII -Value '@echo off', 'setlocal DisableDelayedExpansion', '"%~dp0app\Grid.Terminal.exe" %*', 'exit /b %errorlevel%'
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'THIRD_PARTY_RUNTIME_NOTICES.md') -Destination $Destination
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Test-GridPortable.ps1') -Destination $Destination
 Set-Content -LiteralPath (Join-Path $Destination 'transfer-status.txt') -Value 'Package ready.' -Encoding UTF8
 Write-Output "Portable Windows x64 package: $Destination. Start launch.cmd. No installed .NET/Ollama or user model cache is required; Windows and supported hardware drivers are still required."

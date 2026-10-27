@@ -1,5 +1,7 @@
 # Project GRID - Current Implementation and Verification
 
+**6.5 completed — 2026-10-27:** 847 Release tests and 171 focused intelligence tests passed. Ten bundled-model checks passed, including injected context, advice-only operation, approval enforcement and exact-byte editing rollback. New repeatable diagnostics and captured evidence: [Intelligence verification](Project_GRID_Intelligence_Verification.md). Model accuracy remains fallible; 6.6 is still planned.
+
 **6.4 implemented — 2026-10-26:** Original-host `changes` drafts new/revised workspace files from captured context or local MAXIS AI, previews complete content/hashes, requires explicit approval, and applies with backups and guarded rollback. Optional verification uses separately approved MAXIS tasks. **838 Release tests passed**. Drafts are transient; recovery files persist. [Workflow, limits and demo](Project_GRID_Authorized_Editing_Implementation.md).
 
 **6.3A implemented — 2026-10-26:** `screen options/monitoring/ask/status/stop` provides one-shot selected-monitor assistance using offline Windows OCR and local AI. Human Master Control only; no recording, saved screen context or actions. **799 Release tests passed**, including attached-window and synthetic native-OCR checks. User desktop acceptance remains manual. [Commands, limits and verification](Project_GRID_Screen_Assistance_Implementation.md).

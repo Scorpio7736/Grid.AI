@@ -1,5 +1,7 @@
 # GRID7736 - Terminal Help
 
+**6.5 diagnostic — 2026-10-27:** From PowerShell, run `Test-GridPortable.ps1 -PackageRoot <package-folder> -IntelligenceOnly`, or the packaged `launch.cmd --verify-intelligence`. These are diagnostic launch options, not `grid>` commands. They use a temporary synthetic world/workspace, retain a JSON report and return failure if a check fails. [Commands, evidence and limitations](Project_GRID_Intelligence_Verification.md).
+
 **6.4 implemented — 2026-10-26:** Original-host `changes` drafts new/revised workspace files from captured context or local MAXIS AI, previews complete content/hashes, requires explicit approval, and applies with backups and guarded rollback. Optional verification uses separately approved MAXIS tasks. **838 Release tests passed**. Drafts are transient; recovery files persist. [Workflow, limits and demo](Project_GRID_Authorized_Editing_Implementation.md).
 
 **6.3A implemented — 2026-10-26:** `screen options/monitoring/ask/status/stop` provides one-shot selected-monitor assistance using offline Windows OCR and local AI. Human Master Control only; no recording, saved screen context or actions. **799 Release tests passed**, including attached-window and synthetic native-OCR checks. User desktop acceptance remains manual. [Commands, limits and verification](Project_GRID_Screen_Assistance_Implementation.md).

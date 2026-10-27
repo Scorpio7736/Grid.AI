@@ -6,6 +6,7 @@ using Microsoft.Data.Sqlite;
 using Xunit;
 namespace Grid.Terminal.Tests;
 
+[Trait("Phase", "6.5")]
 public sealed class ConversationMemoryTests
 {
     private sealed class Clock : TimeProvider

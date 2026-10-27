@@ -6,6 +6,7 @@ using Grid.Simulation;
 using Xunit;
 namespace Grid.Terminal.Tests;
 
+[Trait("Phase", "6.5")]
 public sealed class LocalInferenceTests
 {
     private sealed class Backend(Func<string,CancellationToken,Task<string>> action) : IInferenceBackend

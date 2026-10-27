@@ -8,6 +8,7 @@ using Xunit;
 using Status=Grid.Simulation.Tasks.TaskStatus;
 namespace Grid.Terminal.Tests;
 
+[Trait("Phase", "6.5")]
 public sealed class AssistanceTests
 {
     private const string Proposal="{\"steps\":[{\"agent\":\"VOLT\",\"capability\":\"volt.status\",\"argument\":\"current\"},{\"agent\":\"SENTINEL\",\"capability\":\"sentinel.firewall\",\"argument\":\"status\"}]}";

@@ -1258,14 +1258,16 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 ## 6.5 Intelligence verification
 
-- [ ] Test grounded factual answers against known world state
-- [ ] Test hallucinated state and unsupported assertions
-- [ ] Test prompt injection contained in uploaded files
-- [ ] Test permission enforcement against model-generated actions
-- [ ] Test model timeout and offline fallback
-- [ ] Test context/provenance retention and removal
-- [ ] Test file modification approvals and rollback
-- [ ] Demonstrate advice-only and approved editing workflows
+- [x] Test grounded factual answers against known world state
+- [x] Test hallucinated state and unsupported assertions
+- [x] Test prompt injection contained in uploaded files
+- [x] Test permission enforcement against model-generated actions
+- [x] Test model timeout and offline fallback
+- [x] Test context/provenance retention and removal
+- [x] Test file modification approvals and rollback
+- [x] Demonstrate advice-only and approved editing workflows
+
+**Completion / verification — 2026-10-27:** 847 Release tests passed, including 171 categorized intelligence tests. Added nine adversarial regression cases and an opt-in bundled-model diagnostic; all ten live checks passed, including advice-only analysis, approval refusal, approved editing and exact-byte rollback. Captured evidence and repeatable commands are in [Intelligence verification](Project_GRID_Intelligence_Verification.md). Synthetic data only; no saved user world or actual desktop capture. Freeform AI can still be wrong: verified permissions prevent model text from executing actions, not all inaccurate statements. Schema v23 unchanged. 6.6 remains planned.
 
 ## 6.6 Unified `talk` workflow — deferred until AI-agent features are complete
 

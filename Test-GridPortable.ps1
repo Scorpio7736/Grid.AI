@@ -1,12 +1,13 @@
-param([Parameter(Mandatory=$true)][string]$PackageRoot, [switch]$AssistanceOnly)
+param([Parameter(Mandatory=$true)][string]$PackageRoot, [switch]$AssistanceOnly, [switch]$IntelligenceOnly)
 $ErrorActionPreference = 'Stop'
+if ($AssistanceOnly -and $IntelligenceOnly) { throw 'Choose either AssistanceOnly or IntelligenceOnly.' }
 $package = (Resolve-Path -LiteralPath $PackageRoot).Path
 $exe = Join-Path $package 'app\Grid.Terminal.exe'
 if (!(Test-Path -LiteralPath $exe)) { throw 'Portable apphost missing.' }
 $verificationHome = Join-Path $package ('verification-home-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $verificationHome | Out-Null
 $start = New-Object System.Diagnostics.ProcessStartInfo
-$start.FileName=$exe; $start.Arguments=if($AssistanceOnly){'--verify-assistance'}else{'--verify-runtime'}; $start.WorkingDirectory=$package
+$start.FileName=$exe; $start.Arguments=if($IntelligenceOnly){'--verify-intelligence'}elseif($AssistanceOnly){'--verify-assistance'}else{'--verify-runtime'}; $start.WorkingDirectory=$package
 $start.UseShellExecute=$false; $start.CreateNoWindow=$true
 $start.RedirectStandardOutput=$true; $start.RedirectStandardError=$true
 $start.EnvironmentVariables['PATH']=Join-Path $env:SystemRoot 'System32'
@@ -19,7 +20,7 @@ $start.EnvironmentVariables.Remove('GRID_AI_DISABLED')
 $process=[System.Diagnostics.Process]::Start($start)
 try {
     $stdout=$process.StandardOutput.ReadToEndAsync(); $stderr=$process.StandardError.ReadToEndAsync()
-    if (!$process.WaitForExit(240000)) { if (!$process.HasExited) { & (Join-Path $env:SystemRoot 'System32\taskkill.exe') /PID $process.Id /T /F | Out-Null }; throw 'Portable runtime verification timed out.' }
+    if (!$process.WaitForExit($(if($IntelligenceOnly){480000}else{240000}))) { if (!$process.HasExited) { & (Join-Path $env:SystemRoot 'System32\taskkill.exe') /PID $process.Id /T /F | Out-Null }; throw 'Portable runtime verification timed out.' }
     Write-Output $stdout.GetAwaiter().GetResult()
     $errors=$stderr.GetAwaiter().GetResult(); if ($errors) { Write-Output $errors }
     if ($process.ExitCode -ne 0) { throw "Portable verification failed: $($process.ExitCode)" }

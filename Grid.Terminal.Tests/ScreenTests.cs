@@ -5,6 +5,7 @@ using System.Text.Json;
 using Xunit;
 namespace Grid.Terminal.Tests;
 
+[Trait("Phase", "6.5")]
 public sealed class ScreenTests
 {
     internal sealed class Provider : IScreenContextProvider

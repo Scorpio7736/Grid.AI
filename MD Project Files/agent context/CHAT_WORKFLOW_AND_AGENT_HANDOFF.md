@@ -1,5 +1,7 @@
 # Project GRID - Chat workflow and agent handoff
 
+**6.5 handoff — 2026-10-27:** Intelligence verification is complete: 847 Release tests, 171 phase-tagged tests and ten live bundled-model checks passed. See [verification guide](../Project_GRID_Intelligence_Verification.md) and its captured report. Keep model quality separate from enforced permissions; do not claim universal hallucination prevention. The diagnostic uses synthetic data and retains temporary artifacts. 6.6 unified `talk` remains planned. Preserve earlier implementation history and outstanding manual desktop acceptance.
+
 **6.4 implemented — 2026-10-26:** Original-host `changes` drafts new/revised workspace files from captured context or local MAXIS AI, previews complete content/hashes, requires explicit approval, and applies with backups and guarded rollback. Optional verification uses separately approved MAXIS tasks. **838 Release tests passed**. Drafts are transient; recovery files persist. [Workflow, limits and demo](../Project_GRID_Authorized_Editing_Implementation.md).
 
 **6.3A implemented — 2026-10-26:** `screen options/monitoring/ask/status/stop` provides one-shot selected-monitor assistance using offline Windows OCR and local AI. Human Master Control only; no recording, saved screen context or actions. **799 Release tests passed**, including attached-window and synthetic native-OCR checks. User desktop acceptance remains manual. [Commands, limits and verification](../Project_GRID_Screen_Assistance_Implementation.md).

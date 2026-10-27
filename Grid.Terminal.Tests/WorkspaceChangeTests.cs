@@ -8,6 +8,7 @@ using Grid.Simulation.Tasks;
 using Xunit;
 namespace Grid.Terminal.Tests;
 
+[Trait("Phase", "6.5")]
 public sealed class WorkspaceChangeTests : IDisposable
 {
     private readonly string folder = Path.Combine(Path.GetTempPath(), "GridChanges-" + Guid.NewGuid().ToString("N"));
