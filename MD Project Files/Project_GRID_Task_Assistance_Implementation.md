@@ -1,5 +1,7 @@
 # Task assistance and scoped context — 6.3
 
+**6.9 update — 2026-10-27:** File-operation requests use typed host-reviewed changes independently of task proposals. Optional AI drafting returns content only; no target or permission is inferred from model output. Both original and attached conversations support exact approval/apply and recoverable deletion. [Implementation](Project_GRID_Conversational_File_Operations.md).
+
 **6.8 update — 2026-10-27:** Connected natural sentences and `talk` share the same bounded assistance routing. File-picker imports now automatically execute their analysis continuation, including attached windows; no task approvals or actions are inferred. [Completion evidence](Project_GRID_Conversation_Recovery_Implementation.md).
 
 **6.6 integration — 2026-10-27:** Natural `talk` requests can enter scoped analysis or MCP proposal creation. Local proposals now use an explicit JSON schema and independent validation; unified requests retry invalid formatting at most once. `talk submit plan` still creates only AwaitingApproval tasks. Ordinary advice retains conversation recall; file analysis remains outside it. [Unified workflow](Project_GRID_Unified_Talk_Workflow.md).

@@ -1,5 +1,7 @@
 # Project GRID — Conversation windows and typewriter responses (4.2E)
 
+**6.9 update — 2026-10-27:** Authenticated attached conversation dispatchers now expose reviewed `changes` operations and conversational CRUD. All file access remains in the host; the UI process only sends requests. Drafts/approvals are per dispatcher, parent revocation blocks work, and applied backups can be recovered by ID after closing/restarting. [Verification](Project_GRID_Conversational_File_Operations.md).
+
 **6.8 update — 2026-10-27:** Attached windows use the same raw chat parsing as the host, preserving quotes. The host awaits analysis after a picker reply and returns styled/typewriter output. Only scoped registered operations run; lifecycle/file-edit authority remains with the original host. [Tests and behavior](Project_GRID_Conversation_Recovery_Implementation.md).
 
 **4.2H implemented — 2026-10-26:** Conversation labels are light blue, agent bodies yellow and user text white. Assistance now animates; Enter no longer accidentally skips a reply. **772 Release tests passed**, plus an interactive Windows-console probe. User desktop/window visual acceptance remains open. [Changes, verification and test commands](Project_GRID_Conversation_Display_Repair.md).

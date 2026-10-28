@@ -12,7 +12,7 @@ public sealed partial class ChatCommands
     private FollowUp? followUp;
     private (FollowUp Scope, string Text)? talkDetails;
     private static bool Starts(string text, string pattern) => Regex.IsMatch(text, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-    private CommandResult Explain(string text) => ConversationPresentation.AgentReply("GRID", text);
+    private CommandResult Explain(string text) => ConversationPresentation.AgentReply("GRID", text) with { AnimateFrom = null };
     private CommandResult Dispatch(params string[] tokens) => dispatcher.ExecuteTokens(tokens);
     private FollowUp Pending(string kind, string request, string workspace = "", string target = "") =>
         new(kind, request, identity!.Reference, active!.Value, Find(active.Value).ProjectScope,
@@ -38,7 +38,14 @@ public sealed partial class ChatCommands
         engine.RequireAgentActivity();
         var input = text.Trim();
         if (Starts(input, @"^(cancel|never mind|nevermind|cancel that|stop that)[.!]?$"))
-        { followUp = null; return Explain("Follow-up cancelled. No action taken."); }
+        { followUp = null; CancelFileRequest(); return Explain("Follow-up cancelled. No new action taken; completed changes are not undone."); }
+        if (Starts(input, @"^creat[.!]?$"))
+            return Explain("To draft a file, say: create a file on my desktop called test.md and fill it with 10 random numbers. Review the preview, approve this change, then apply this change. You do not need to create the file manually.");
+        if (Starts(input, @"^reate (?:a |the )?file\b"))
+            return Explain("Did you mean create file? Resend: c" + input + "\nNothing was created or approved.");
+        if (Starts(input, @"^(?:where\b.*\b(?:file|saved?|written|created|put|it)\b|(?:what|show|tell)\b.*\b(?:save location|file location|file path|absolute path)\b)"))
+            return FileLocation();
+        if (TryFileConversation(input, out var fileReply)) return fileReply;
         if (followUp is { } pending)
         {
             followUp = null;

@@ -26,6 +26,59 @@ public sealed class WindowTests
         }
         finally { File.Delete(path); }
     }
+    [Fact, Trait("Phase", "6.9")]
+    public async Task AttachedFileOperationsRunOnHostAndParentRevocationStopsApproval()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "Grid69Window-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(folder, "source"));
+        File.WriteAllText(Path.Combine(folder, "source", "sample.csproj"), "<Project />");
+        try
+        {
+            await using var f = new Fixture(); f.Engine.StartAgents(f.Owner.Reference);
+            f.Engine.ConfigureMaxisRuntime(Path.Combine(folder, "artifacts"));
+            f.Engine.RegisterDevelopmentWorkspace(f.Owner.Reference, "demo", Path.Combine(folder, "source"), "sample.csproj");
+            await using var client = await f.Open("connect MCP");
+            var path = Path.Combine(folder, "source", "note.md");
+            Assert.Contains("CREATE", (await client.Send("command", "create file note.md in demo with content INDIGO")).Text);
+            await client.Send("command", "approve this change"); Assert.False(File.Exists(path));
+            await client.Send("command", "apply this change"); Assert.Equal("INDIGO", File.ReadAllText(path));
+            Assert.Contains("INDIGO", (await client.Send("command", "read file note.md in demo")).Text);
+            await client.Send("command", "update file note.md in demo with content UPDATED");
+            await client.Send("command", "approve this change"); await client.Send("command", "apply this change");
+            Assert.Equal("UPDATED", File.ReadAllText(path));
+            await client.Send("command", "delete file note.md in demo");
+            await client.Send("command", "approve high-risk"); await client.Send("command", "apply this change");
+            Assert.False(File.Exists(path)); await client.Send("command", "undo this change"); Assert.Equal("UPDATED", File.ReadAllText(path));
+            await client.Send("command", "delete file note.md in demo"); await client.Send("command", "approve high-risk");
+            f.Owner.Logout(); Assert.True((await client.Send("command", "apply this change")).Closed);
+            Assert.Equal("UPDATED", File.ReadAllText(path));
+        }
+        finally { Directory.Delete(folder, true); }
+    }
+    private sealed class FileDraftInference : ILocalInference
+    {
+        public Task<InferenceReply> GenerateAsync(string prompt, CancellationToken token = default) => Task.FromResult(new InferenceReply(true, "{\"content\":\"WINDOW DRAFT\"}", "controlled"));
+    }
+    [Fact, Trait("Phase", "6.9")]
+    public async Task AttachedAiDraftStaysUnapprovedAndCannotBeAppliedFromAnotherWindow()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "Grid69DraftWindow-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(folder, "source")); File.WriteAllText(Path.Combine(folder, "source", "sample.csproj"), "<Project />");
+        try
+        {
+            await using var f = new Fixture(inference: new FileDraftInference()); f.Engine.StartAgents(f.Owner.Reference);
+            f.Engine.ConfigureMaxisRuntime(Path.Combine(folder, "artifacts"));
+            f.Engine.RegisterDevelopmentWorkspace(f.Owner.Reference, "demo", Path.Combine(folder, "source"), "sample.csproj");
+            await using var client = await f.Open("connect MCP"); await using var other = await f.Open("connect MCP");
+            var response = await client.Send("command", "create file ai.md in demo with instructions Write a note.");
+            Assert.Contains("WINDOW DRAFT", response.Text); var path = Path.Combine(folder, "source", "ai.md"); Assert.False(File.Exists(path));
+            var id = System.Text.RegularExpressions.Regex.Match(response.Text, @"Change ([a-f0-9-]{36})").Groups[1].Value;
+            Assert.NotEmpty(id); await client.Send("command", "approve this change");
+            Assert.DoesNotContain("Applied demo", (await other.Send("command", "changes apply " + id)).Text); Assert.False(File.Exists(path));
+            await client.Send("command", "apply this change"); Assert.Equal("WINDOW DRAFT", File.ReadAllText(path));
+        }
+        finally { Directory.Delete(folder, true); }
+    }
     private sealed class Fixture : IAsyncDisposable
     {
         public readonly TerminalSessionRegistry Registry = new();
@@ -43,6 +96,7 @@ public sealed class WindowTests
                 var commands = DefaultCommands.Create(Engine); ChatCommands.Register(commands, Engine, identity, inference, screenProvider: screens);
                 IdentityCommands.Register(commands, Engine, identity, interactiveUi: true);
                 ContextCommands.Register(commands, Engine, identity);
+                WorkspaceChangeCommands.Register(commands, Engine, identity, inference);
                 commands.UseIdentity(identity); return commands;
             }
             Hub = new(Engine, Registry, Create, name => { Endpoint = name; return launch?.Invoke(name) ?? Environment.ProcessId; });

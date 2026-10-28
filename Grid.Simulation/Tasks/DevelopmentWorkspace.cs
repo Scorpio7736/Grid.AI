@@ -19,10 +19,12 @@ public static class DevelopmentPolicy
     }
     public static bool Relative(string path) => !string.IsNullOrWhiteSpace(path) && !Path.IsPathRooted(path) &&
         !path.Contains(':') && !path.Contains('|') && !path.Split(['/', '\\']).Any(p => p is ".." or "." or "");
-    public static string CheckedPath(string root, string relative = "")
+    public static string CheckedPath(string root, string relative = "", bool fileDestination = false)
     {
         var fullRoot = Path.GetFullPath(root);
-        if (!Path.IsPathFullyQualified(root) || root.StartsWith("\\\\", StringComparison.Ordinal) || fullRoot == Path.GetPathRoot(fullRoot)) throw new ArgumentException("Register a specific workspace directory, not a drive root.");
+        if (!Path.IsPathFullyQualified(root) || root.StartsWith(@"\\?\", StringComparison.Ordinal) || root.StartsWith(@"\\.\", StringComparison.Ordinal) ||
+            (!fileDestination && (root.StartsWith(@"\\", StringComparison.Ordinal) || fullRoot == Path.GetPathRoot(fullRoot))))
+            throw new ArgumentException("Use an absolute folder path; project workspaces cannot be drive roots or UNC shares and device paths are not supported.");
         if (relative.Length > 0 && !Relative(relative)) throw new ArgumentException("Use a workspace-relative path without traversal, streams or absolute paths.");
         var path = relative.Length == 0 ? fullRoot : Path.GetFullPath(Path.Combine(fullRoot, relative));
         for (var current = path; current is not null; current = Path.GetDirectoryName(current))

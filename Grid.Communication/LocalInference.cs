@@ -12,12 +12,14 @@ public sealed record InferenceReply(bool Available, string Text, string Reason, 
 public interface ILocalInference
 {
     Task<InferenceReply> GenerateAsync(string prompt, CancellationToken token = default);
+    Task<InferenceReply> GenerateFileAsync(string prompt, CancellationToken token = default) => GenerateStructuredAsync(prompt, token);
     Task<InferenceReply> GenerateStructuredAsync(string prompt, CancellationToken token = default) => GenerateAsync(prompt, token);
     Task<InferenceReply> GenerateStructuredAsync(string prompt, string schema, CancellationToken token = default) => GenerateStructuredAsync(prompt, token);
 }
 public interface IInferenceBackend
 {
     Task<string> GenerateAsync(string prompt, CancellationToken token);
+    Task<string> GenerateFileAsync(string prompt, CancellationToken token) => GenerateStructuredAsync(prompt, token);
     Task<string> GenerateStructuredAsync(string prompt, CancellationToken token) => GenerateAsync(prompt, token);
     Task<string> GenerateStructuredAsync(string prompt, string schema, CancellationToken token) => GenerateStructuredAsync(prompt, token);
 }
@@ -25,7 +27,7 @@ public interface IInferenceBackend
 /// <summary>One bounded FIFO worker per host, shared by future agent consumers. Never invokes tools.</summary>
 public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
 {
-    private sealed record Request(string Prompt, bool Structured, CancellationTokenSource Stop, TaskCompletionSource<InferenceReply> Result, string? Schema);
+    private sealed record Request(string Prompt, bool Structured, CancellationTokenSource Stop, TaskCompletionSource<InferenceReply> Result, string? Schema, bool FileDraft);
     private readonly Channel<Request> queue;
     private readonly CancellationTokenSource shutdown = new();
     private readonly Task worker;
@@ -47,16 +49,17 @@ public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
     public Task<InferenceReply> GenerateAsync(string prompt, CancellationToken token = default) => Enqueue(prompt,false,token);
     public Task<InferenceReply> GenerateStructuredAsync(string prompt, CancellationToken token = default) => Enqueue(prompt,true,token);
     public Task<InferenceReply> GenerateStructuredAsync(string prompt, string schema, CancellationToken token = default) => Enqueue(prompt,true,token,schema);
-    private async Task<InferenceReply> Enqueue(string prompt,bool structured,CancellationToken token,string? schema=null)
+    public Task<InferenceReply> GenerateFileAsync(string prompt, CancellationToken token = default) => Enqueue(prompt, true, token, fileDraft: true);
+    private async Task<InferenceReply> Enqueue(string prompt,bool structured,CancellationToken token,string? schema=null, bool fileDraft=false)
     {
-        if (string.IsNullOrWhiteSpace(prompt) || prompt.Length > 8192) throw new ArgumentException("Prompt must contain 1..8192 characters.");
+        if (string.IsNullOrWhiteSpace(prompt) || prompt.Length > (fileDraft ? 32768 : 8192)) throw new ArgumentException("Prompt must contain 1..8192 characters.");
         if (!enabled) return new(false, "", "Local AI disabled; deterministic GRID remains available.");
         if (shutdown.IsCancellationRequested) return new(false, "", "Local AI stopped.");
-        var stop = CancellationTokenSource.CreateLinkedTokenSource(token, shutdown.Token); stop.CancelAfter(deadline);
+        var stop = CancellationTokenSource.CreateLinkedTokenSource(token, shutdown.Token); stop.CancelAfter(fileDraft ? TimeSpan.FromSeconds(300) : deadline);
         var requestToken = stop.Token;
         var completion = new TaskCompletionSource<InferenceReply>(TaskCreationOptions.RunContinuationsAsynchronously);
         Interlocked.Increment(ref pending);
-        if (!queue.Writer.TryWrite(new(prompt, structured, stop, completion, schema)))
+        if (!queue.Writer.TryWrite(new(prompt, structured, stop, completion, schema, fileDraft)))
         { Interlocked.Decrement(ref pending); stop.Dispose(); return new(false, "", "Local AI queue full or stopped; try later."); }
         try { return await completion.Task.WaitAsync(requestToken); }
         catch (OperationCanceledException) { return new(false, "", "Local AI cancelled or timed out; deterministic GRID remains available."); }
@@ -70,16 +73,16 @@ public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
             try
             {
                 request.Stop.Token.ThrowIfCancellationRequested(); Interlocked.Exchange(ref active, 1);
-                var text = request.Schema is { } schema ? await backend.GenerateStructuredAsync(request.Prompt,schema,request.Stop.Token) : request.Structured ? await backend.GenerateStructuredAsync(request.Prompt,request.Stop.Token) : await backend.GenerateAsync(request.Prompt, request.Stop.Token);
+                var text = request.FileDraft ? await backend.GenerateFileAsync(request.Prompt, request.Stop.Token) : request.Schema is { } schema ? await backend.GenerateStructuredAsync(request.Prompt,schema,request.Stop.Token) : request.Structured ? await backend.GenerateStructuredAsync(request.Prompt,request.Stop.Token) : await backend.GenerateAsync(request.Prompt, request.Stop.Token);
                 request.Stop.Token.ThrowIfCancellationRequested();
-                if (string.IsNullOrWhiteSpace(text) || text.Length > 8192) throw new InvalidDataException("Empty or excessive model output.");
+                if (string.IsNullOrWhiteSpace(text) || text.Length > (request.FileDraft ? 131072 : 8192)) throw new InvalidDataException("Empty or excessive model output.");
                 request.Result.TrySetResult(new(true, text, "Local model output; unverified, no action executed.", timer.ElapsedMilliseconds));
             }
             catch (InvalidDataException e)
             {
                 var reason = (e.Data["GRID_FAILURE"] as string) switch
                 {
-                    "length" => "The model reached the response limit after one larger retry. Ask for a shorter answer or fewer proposal steps.",
+                    "length" => request.FileDraft ? "The file draft exceeded the extended output budget. No partial file was accepted. Request fewer sections or split the document into files." : "The model reached the response limit after one larger retry. Ask for a shorter answer or fewer proposal steps.",
                     "incomplete" => "The model returned an incomplete response. Retry the request.",
                     "thinking" => "The model did not finish its final answer. Retry the request.",
                     _ => "The model response failed validation. Retry the request; check ai status if it persists."
@@ -126,7 +129,8 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
     public Task<string> GenerateAsync(string prompt,CancellationToken token) => GenerateCore(prompt,false,token);
     public Task<string> GenerateStructuredAsync(string prompt,CancellationToken token) => GenerateCore(prompt,true,token);
     public Task<string> GenerateStructuredAsync(string prompt,string schema,CancellationToken token) => GenerateCore(prompt,true,token,schema);
-    private async Task<string> GenerateCore(string prompt,bool structured,CancellationToken token,string? schema=null)
+    public Task<string> GenerateFileAsync(string prompt, CancellationToken token) => GenerateCore(prompt, true, token, fileDraft: true);
+    private async Task<string> GenerateCore(string prompt,bool structured,CancellationToken token,string? schema=null, bool fileDraft=false)
     {
         using var model = await Post("api/show", new { model = Model }, token);
         if (model.RootElement.TryGetProperty("remote_model", out _) || model.RootElement.TryGetProperty("remote_host", out _))
@@ -142,7 +146,7 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
         {
             token.ThrowIfCancellationRequested();
             using var result = await Post("api/generate", new { model = Model, prompt = framed, raw = true, stream = false, think = false, keep_alive = "1m", format = schema is null ? (object)(structured ? "json" : "") : JsonSerializer.Deserialize<JsonElement>(schema),
-                options = new { num_ctx = 4096, num_predict = attempt==0 ? 512 : 1536, temperature = 0 } },token);
+                options = new { num_ctx = fileDraft ? 16384 : 4096, num_predict = fileDraft ? (attempt == 0 ? 4096 : 8192) : (attempt==0 ? 512 : 1536), temperature = 0 } },token);
             var root=result.RootElement;
             if (!root.TryGetProperty("done",out var done) || done.ValueKind!=JsonValueKind.True ||
                 !root.TryGetProperty("response",out var text) || text.ValueKind!=JsonValueKind.String)

@@ -1,5 +1,7 @@
 # Project GRID - Persistence architecture and schema history
 
+**6.9 recovery — 2026-10-27:** Applied file operations retain durable original/candidate bytes plus a phase/hash/approval report in the configured MAXIS workspace-edit artifacts. Explicit recovery validates the registered root/ID and backup hashes; rollback rechecks the current target. Unapplied approvals remain transient. No database schema change; filesystem operations and world saves are not a single transaction. [Restart/partial-failure rules](Project_GRID_Conversational_File_Operations.md).
+
 **6.3 completed — 2026-10-26:** `assist advice/analyze/propose` now provides scoped local-AI guidance and typed MCP drafts. `assist submit` creates only tasks awaiting approval; no automatic execution. Captured context stays within explicit agent/project grants, and assistance outputs are not copied into chat recall. **752 Release tests passed**; bundled-model analysis/drafting verified. [Commands and limits](Project_GRID_Task_Assistance_Implementation.md). Earlier 6.3-pending statements are historical; monitor assistance remains planned in 6.3A.
 
 

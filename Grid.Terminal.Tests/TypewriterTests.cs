@@ -50,4 +50,21 @@ public sealed class TypewriterTests
             () => false, () => ++checks == 2 ? Task.FromException(new IOException("revoked")) : Task.CompletedTask, default));
         Assert.Equal("", output.ToString());
     }
+    [Fact]
+    public void PrintableSkipKeyBecomesTypeaheadButControlKeysDoNot()
+    {
+        ConsoleInputBuffer.Clear();
+        try
+        {
+            Assert.True(TypewriterRenderer.HandleSkipKey(new ConsoleKeyInfo('c', ConsoleKey.C, false, false, false)));
+            Assert.True(ConsoleInputBuffer.TryRead(out var key)); Assert.Equal('c', key.KeyChar);
+            Assert.False(TypewriterRenderer.HandleSkipKey(new ConsoleKeyInfo('\r', ConsoleKey.Enter, false, false, false)));
+            Assert.True(TypewriterRenderer.HandleSkipKey(new ConsoleKeyInfo('\u001b', ConsoleKey.Escape, false, false, false)));
+            Assert.False(ConsoleInputBuffer.TryRead(out _));
+            ConsoleInputBuffer.Preserve(new ConsoleKeyInfo('x', ConsoleKey.X, false, false, false));
+            ConsoleInputBuffer.Clear(); Assert.False(ConsoleInputBuffer.TryRead(out _));
+        }
+        finally { ConsoleInputBuffer.Clear(); }
+    }
+
 }

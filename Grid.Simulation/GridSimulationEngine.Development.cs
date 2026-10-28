@@ -4,7 +4,10 @@ namespace Grid.Simulation;
 public sealed partial class GridSimulationEngine
 {
     private MaxisRuntime? maxisRuntime;
-    public void ConfigureMaxisRuntime(string artifactsRoot, string? bundledDotnetRoot = null) { lock(gate) { if (maxisRuntime is not null) throw new InvalidOperationException("MAXIS host already configured."); maxisRuntime = new(artifactsRoot, bundledDotnetRoot); } }
+    private string? desktopFileRoot;
+    private string? documentsFileRoot;
+    private IReadOnlyList<string>? fileSearchRoots;
+    public void ConfigureMaxisRuntime(string artifactsRoot, string? bundledDotnetRoot = null, string? desktopRoot = null, string? documentsRoot = null, IReadOnlyList<string>? folderSearchRoots = null) { lock(gate) { if (maxisRuntime is not null) throw new InvalidOperationException("MAXIS host already configured."); maxisRuntime = new(artifactsRoot, bundledDotnetRoot); desktopFileRoot = desktopRoot; documentsFileRoot = documentsRoot; fileSearchRoots = folderSearchRoots?.ToArray(); } }
     public void RegisterDevelopmentWorkspace(EditSessionReference session, string name, string root, string project)
     {
         using var lease = TaskLease(session,true);

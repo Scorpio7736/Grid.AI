@@ -27,7 +27,7 @@ public sealed partial class ChatCommands
         commands.Register(new("memory", "memory <list|scope|save|correct|forget> ...", "Review and manage explicit private agent/project memory. User-confirmed context is not verified host evidence.", chat.Memory) { Capability = "chat" });
         commands.Register(new("assist", "assist <advice|analyze|propose|submit|discard> ...", "Scoped AI guidance and reviewed MCP task drafts; never automatic execution.", args => chat.Assist(args)) { Capability = "chat" });
         commands.ConversationConnected = () => chat.active is not null;
-        if (identity is not null) identity.Changed += () => { chat.active = null; chat.followUp = null; chat.talkDetails = null; chat.StopScreen(); };
+        if (identity is not null) identity.Changed += () => { chat.active = null; chat.followUp = null; chat.fileRequest = null; chat.talkDetails = null; chat.StopScreen(); };
         commands.Register(new("agent", "agent meetings <AGENT> <AGENT> [...] [-inline]", "Open a shared meeting in a new window. Use talk @AGENT message to direct a turn.", args => chat.Meeting(args, commands)) { Capability = "chat" });
         commands.Register(new("connect", "connect [program-id|name] [-inline]", "Open a dedicated conversation window; default contact is MCP. -inline keeps voice-compatible chat here.", chat.Connect));
         commands.Register(new("talk", "talk <message>", "Conversation, advice, scoped files, screen assistance and reviewed plans/edits. Missing details are requested; intent never grants permission.", chat.Talk));
@@ -158,6 +158,7 @@ public sealed partial class ChatCommands
         if (args.Count != 0) return new("Usage: disconnect");
         if (active is not { } id) return new("No conversation connected.");
         engine.EndConversation(id, Actor); active = null;
+        CancelFileRequest(); followUp = null; lastFileReceipt = null; talkDetails = null;
         return new($"Ended conversation {id}. Transcript retained.");
     }
     private CommandResult Response(IEnumerable<GridMessage> messages)

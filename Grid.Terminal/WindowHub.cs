@@ -39,7 +39,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 if (!conversation) Register(commands, identity);
                 else
                 {
-                    var allowed = new[] { "help", "exit", "clear", "logout", "screen", "assist", "memory", "agent", "connect", "talk", "resume", "disconnect", "transcript", "conversations", "context", "whoami" };
+                    var allowed = new[] { "help", "exit", "clear", "logout", "changes", "screen", "assist", "memory", "agent", "connect", "talk", "resume", "disconnect", "transcript", "conversations", "context", "whoami" };
                     foreach (var command in commands.Commands.ToArray())
                         if (!allowed.Contains(command.Name)) commands.Remove(command.Name);
                 }
@@ -141,7 +141,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                     {
                         pendingPicker = null;
                         var result = commands.Execute(line);
-                        if (name.ToLowerInvariant() is "talk" or "assist" or "screen") result = await CompleteConversationOperation(result);
+                        if (name.ToLowerInvariant() is "talk" or "assist" or "screen" or "changes") result = await CompleteConversationOperation(result);
                         pendingPicker = result.ContextPicker;
                         reply = Reply(result.Text, result.ExitRequested, result.LiveViewRequested, result.ClearRequested, result.LogoutRequested) with { PickFiles = pendingPicker is not null, AnimateFrom = result.AnimateFrom, Presentation = result.Presentation };
                     }

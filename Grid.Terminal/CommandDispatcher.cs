@@ -45,14 +45,17 @@ public sealed class CommandDispatcher
     {
         try
         {
+            if (IsFence(line)) return new("Code-block marker ignored. Paste the command lines inside it.");
             return ExecuteTokens(ParseInput(line));
         }
         catch (ArgumentException e) { return new("Error: " + e.Message); }
     }
+    private static bool IsFence(string line) => System.Text.RegularExpressions.Regex.IsMatch(line.Trim(), @"^```(?:text|plaintext|powershell|pwsh|sh|bash)?$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
     // Chat is raw text, not shell-like command tokens. Explicit command names remain reserved.
     public IReadOnlyList<string> ParseInput(string line)
     {
         var text = line.Trim();
+        if (IsFence(text)) return [];
         var boundary = text.IndexOfAny([' ', '\t', '\r', '\n']);
         var name = boundary < 0 ? text : text[..boundary];
         if (name.Equals("talk", StringComparison.OrdinalIgnoreCase))
@@ -69,7 +72,10 @@ public sealed class CommandDispatcher
         {
             if (tokens.Count == 0) return new("");
             if (!commands.TryGetValue(tokens[0], out var command))
-                return new($"Unknown command '{tokens[0]}'. Type help for available commands.");
+                return new($"Unknown command '{tokens[0]}'. " +
+                    (ConversationConnected?.Invoke() == false && commands.ContainsKey("talk") && tokens[0].ToLowerInvariant() is "create" or "read" or "update" or "delete" or "reate"
+                        ? "No agent conversation is connected. Use connect MCP -inline, then repeat your file request."
+                        : "Type help for available commands."));
             CommandResult Run()
             {
                 if (command.Name != "talk" && tokens.Skip(1).Contains("-opninwin", StringComparer.OrdinalIgnoreCase))

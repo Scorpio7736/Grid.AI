@@ -12,7 +12,13 @@ public static class TypewriterRenderer
     public static bool SkipRequested()
     {
         if (!Console.KeyAvailable) return false;
-        return IsSkipKey(Console.ReadKey(true).Key);
+        return HandleSkipKey(Console.ReadKey(true));
+    }
+    internal static bool HandleSkipKey(ConsoleKeyInfo key)
+    {
+        // A printable key is the start of the operator's next input, not disposable animation control.
+        if (!char.IsControl(key.KeyChar)) ConsoleInputBuffer.Preserve(key);
+        return IsSkipKey(key.Key);
     }
     public static async Task WriteAsync(TextWriter output, string text, int? animateFrom, bool enabled,
         Func<bool> skip, Func<Task> validateSession, CancellationToken token,

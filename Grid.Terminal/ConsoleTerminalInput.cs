@@ -18,6 +18,7 @@ public sealed class ConsoleTerminalInput(CommandDispatcher commands, bool color)
             if (secret) throw new InvalidOperationException("Secret entry requires an interactive terminal.");
             return await Task.Run(Console.ReadLine, token).WaitAsync(token);
         }
+        if (secret) ConsoleInputBuffer.Clear();
         var text = new StringBuilder(); var cursor = 0; string[]? choices = null; var choice = 0;
         var origin = Console.CursorLeft; var row = Console.CursorTop; var priorColor = Console.ForegroundColor;
         try
@@ -26,8 +27,12 @@ public sealed class ConsoleTerminalInput(CommandDispatcher commands, bool color)
             while (true)
             {
                 token.ThrowIfCancellationRequested();
-                if (!Console.KeyAvailable) { await Task.Delay(20, token); continue; }
-                var key = Console.ReadKey(true);
+                ConsoleKeyInfo key;
+                if (!ConsoleInputBuffer.TryRead(out key))
+                {
+                    if (!Console.KeyAvailable) { await Task.Delay(20, token); continue; }
+                    key = Console.ReadKey(true);
+                }
                 if (key.Key == ConsoleKey.Enter) { Console.WriteLine(); return text.ToString(); }
                 if (key.Key == ConsoleKey.D && key.Modifiers.HasFlag(ConsoleModifiers.Control)) { Console.WriteLine(); return null; }
                 if (key.Key == ConsoleKey.Tab && !secret && cursor == text.Length)

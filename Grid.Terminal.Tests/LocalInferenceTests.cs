@@ -15,6 +15,33 @@ public sealed class LocalInferenceTests
     { protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)=>action(request,token); }
     private static HttpResponseMessage Json(string text)=>new(HttpStatusCode.OK){Content=new StringContent(text)};
     [Fact]
+    public async Task FileGenerationUsesExtendedBudgetAndRejectsTruncation()
+    {
+        var budgets = new List<int>(); var calls = 0;
+        using var backend = new OllamaLocalBackend(new Handler(async (request, token) =>
+        {
+            if (request.RequestUri!.AbsolutePath == "/api/show") return Json("{}");
+            using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(token));
+            Assert.Equal(16384, body.RootElement.GetProperty("options").GetProperty("num_ctx").GetInt32());
+            budgets.Add(body.RootElement.GetProperty("options").GetProperty("num_predict").GetInt32());
+            calls++;
+            return Json("{\"done\":true,\"done_reason\":\"length\",\"response\":\"partial\"}");
+        }));
+        await using var inference = new SharedLocalInference(backend);
+        var result = await inference.GenerateFileAsync("A detailed page");
+        Assert.Equal(new[] {4096, 8192}, budgets); Assert.Equal(2, calls);
+        Assert.False(result.Available); Assert.Empty(result.Text); Assert.Contains("No partial file", result.Reason);
+    }
+    [Fact]
+    public async Task FileOutputCanExceedChatLimitWithoutChangingChatLimit()
+    {
+        var output = JsonSerializer.Serialize(new { content = new string('x', 20000) });
+        await using var inference = new SharedLocalInference(new Backend((_, _) => Task.FromResult(output)));
+        var file = await inference.GenerateFileAsync("Detailed file"); Assert.True(file.Available); Assert.Equal(output, file.Text);
+        Assert.False((await inference.GenerateStructuredAsync("Ordinary proposal")).Available);
+    }
+
+    [Fact]
     [Trait("Phase", "6.6")]
     public async Task ProposalSchemaReachesBackendAndSurvivesTruncationRetry()
     {
