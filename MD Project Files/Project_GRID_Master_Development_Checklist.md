@@ -1365,11 +1365,30 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.10 Durable conversation memory and delegated context
 
-**Planned — required before Phase 7.**
+**Completed — 2026-10-28. Required before Phase 7; 6.11–6.15 remain pending.**
 
-- [ ] Retain approved facts, decisions, task outcomes and file-derived summaries across chat end/restart/transfer
-- [ ] Separate temporary documents from durable memory and implement provenance, correction, forgetting and revocation
-- [ ] Verify user-to-agent grants and cross-agent/project privacy without silently making temporary uploads permanent
+- [x] Retain approved facts, decisions, task outcomes and file-derived summaries across chat end/restart/transfer
+- [x] Separate temporary documents from durable memory and implement provenance, correction, forgetting and revocation
+- [x] Verify user-to-agent grants and cross-agent/project privacy without silently making temporary uploads permanent
+
+**Completion verification:** Schema v24 persists source provenance, summary-only grants and expiry. Revocation/correction blocks derived recall and pending replies; temporary document cleanup preserves only explicitly retained summaries. **989 tests passed** (13 new cases), including v23 upgrade and isolated copied-database restore. **Six bundled-model checks passed.** [Implementation, policy and manual test](Project_GRID_Durable_Memory_and_Delegated_Context.md).
+
+## 6.10A Terminal visual theme and responsive presentation
+
+**Planned — next item after completed 6.10; required before Phase 7.** Added 2026-10-28. [Complete user-provided specification](Project_GRID_Terminal_Visual_Theme_Specification.md).
+
+- [ ] Centralize all 13 supplied palette colors and semantic styles; solid colors only, no gradients/glow or added excessive animation.
+- [ ] Use dark navy backgrounds only where GRID owns rendering; preserve the host background elsewhere. Support truecolor, console-color fallbacks and plain text.
+- [ ] Keep typed input white and prompts light blue; use cyan commands, gray descriptions, amber notices/warnings, green success, red errors, gold approval labels and muted metadata consistently.
+- [ ] Introduce compact GRID headers, solid steel-blue section bars, consistent dividers and dynamically aligned command/options/description layouts.
+- [ ] Apply styling across login/welcome, help, status, agents, monitoring, tasks, approvals, conversation labels and system feedback without changing commands, parsing, access checks or workflows.
+- [ ] Implement responsive wrapping/stacking, narrow-window layouts, resizing, Unicode-safe visible widths and ASCII alternatives. Never count ANSI sequences in layout widths.
+- [ ] Prevent style bleeding, preserve cursor/input behavior, avoid ANSI leakage into redirected output, and use native brushes for any unsupported text surface rather than raw escape codes.
+- [ ] Preserve textual status labels and real-versus-simulated distinctions; theming must never imply permission, execution, host health or security verification.
+- [ ] Verify all 18 acceptance scenarios in the specification, with focused layout/escape/width tests, existing terminal/integration tests and native-console visual checks.
+- [ ] Record completion evidence and any terminal-specific limitations. Keep additional help navigation functionality separate.
+
+**Planning note:** This intentionally refines earlier blanket-yellow system/error output and large-header presentation. The exact palette, examples, renderer guidance and full verification list are preserved in the linked specification. Nothing in 6.10A is marked implemented yet.
 
 ## 6.11 MCP Master Control Program digital-helper workflow
 

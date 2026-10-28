@@ -38,7 +38,7 @@ public sealed partial class GridSimulationEngine
         lock (gate)
         {
             var (c, agent) = MemoryScope(conversationId);
-            return Array.AsReadOnly(communications.Memories.Where(m => m.AgentId == agent && m.Project == c.ProjectScope).OrderBy(m => m.Key).ToArray());
+            return Array.AsReadOnly(communications.Memories.Where(m => (m.AgentId == agent && m.Project == c.ProjectScope || MemoryVisible(m, agent, c.ProjectScope, timeProvider.GetUtcNow()))).OrderBy(m => m.Key).ToArray());
         }
     }
     public ConversationMemory SaveMemory(EditSessionReference session, Guid conversationId, string key, string content, MemoryKind kind = MemoryKind.Fact, bool correct = false)
@@ -46,6 +46,11 @@ public sealed partial class GridSimulationEngine
         using var lease = TaskLease(session,true);
         lock (gate)
         {
+            return SaveMemoryCore(conversationId, key, content, kind, correct);
+        }
+    }
+    private ConversationMemory SaveMemoryCore(Guid conversationId, string key, string content, MemoryKind kind, bool correct, MemoryProvenance? provenance = null)
+    {
             var (c, agent) = MemoryScope(conversationId); key = MemoryLabel(key);
             if (!Enum.IsDefined(kind) || !CommunicationState.ValidContent(content) || content.Length > 600) throw new ArgumentException("Memory text must contain 1–600 valid characters.");
             var old = communications.Memories.SingleOrDefault(m => m.AgentId == agent && m.Project == c.ProjectScope && m.Key == key);
@@ -55,12 +60,12 @@ public sealed partial class GridSimulationEngine
             var revision = checked(communications.MemoryRevision + 1);
             var message = SendMessage(c.Id, LocalOperator, content);
             var memory = new ConversationMemory(old?.Id ?? Guid.NewGuid(), agent, c.ProjectScope, key, old?.Kind ?? kind, content,
-                message.CreatedAtUtc, Array.AsReadOnly((old?.Sources ?? []).Append(new MemorySource(c.Id,message.Id)).ToArray()));
+                message.CreatedAtUtc, Array.AsReadOnly((old?.Sources ?? []).Append(new MemorySource(c.Id,message.Id)).ToArray()))
+            { Provenance = provenance ?? old?.Provenance, ExpiresAtUtc = old?.ExpiresAtUtc, Grants = Array.AsReadOnly((old?.Grants ?? []).Select(g => g with { Revoked = true }).ToArray()) };
             communications = communications with { Memories = Array.AsReadOnly(communications.Memories.Where(m => m.Id != memory.Id).Append(memory).ToArray()), MemoryRevision = revision };
-            if (old is not null) ExcludeOldMemoryHistory(agent,c.ProjectScope);
+            if (old is not null) InvalidateMemoryHistory(old);
             RecordEvent(correct ? "MemoryCorrected" : "MemorySaved", memory.Id, null, "Explicit user-confirmed context; no model claim promoted to fact.");
             return memory;
-        }
     }
     public void ForgetMemory(EditSessionReference session, Guid conversationId, string key)
     {
@@ -72,7 +77,7 @@ public sealed partial class GridSimulationEngine
                 ?? throw new ArgumentException("Unknown memory key.");
             communications = communications with { MemoryRevision = checked(communications.MemoryRevision + 1),
                 Memories = Array.AsReadOnly(communications.Memories.Select(m => m.Id == old.Id ? m with { Content = "", Forgotten = true } : m).ToArray()) };
-            ExcludeOldMemoryHistory(agent,c.ProjectScope);
+            InvalidateMemoryHistory(old);
             RecordEvent("MemoryForgotten",old.Id,null,"Recall disabled; original transcript retained, prior scoped history excluded from AI prompts.");
         }
     }
@@ -85,7 +90,7 @@ public sealed partial class GridSimulationEngine
     private IEnumerable<GridMessage> RecallHistory(Conversation c)
     {
         var sources = communications.Memories.SelectMany(m => m.Sources).Select(s => s.MessageId).ToHashSet();
-        var stale = communications.Memories.Where(m => m.Forgotten || m.IsStale(timeProvider.GetUtcNow())).Select(m => "user memory " + m.Id).ToArray();
+        var stale = communications.Memories.Where(m => m.Forgotten || m.IsStale(timeProvider.GetUtcNow()) || c.IsMeeting || !c.Participants.Any(p => p.Kind == ParticipantKind.Program && MemoryVisible(m, p.Id, c.ProjectScope, timeProvider.GetUtcNow()))).Select(m => "user memory " + m.Id).ToArray();
         return c.Messages.Where(m => m.Sequence > c.RecallAfterSequence && !sources.Contains(m.Id) && !stale.Any(label => m.Content.Contains(label,StringComparison.Ordinal)));
     }
     private IEnumerable<Conversation> RecallConversations(Conversation current) => communications.Conversations.Where(c =>
@@ -140,7 +145,7 @@ public sealed partial class GridSimulationEngine
     {
         var words = System.Text.RegularExpressions.Regex.Matches(input.ToLowerInvariant(), @"[\p{L}\p{N}]+").Select(m => m.Value).Where(w => w.Length > 3 && !new[] { "what","that","this","with","have","does","about","your","please" }.Contains(w)).ToHashSet();
         var recall = words.Contains("remember") || words.Contains("recall");
-        return communications.Memories.Where(m => m.AgentId == agent && m.Project == project && !m.Forgotten && !m.IsStale(timeProvider.GetUtcNow()))
+        return communications.Memories.Where(m => MemoryVisible(m, agent, project, timeProvider.GetUtcNow()))
             .Select(m => (Memory:m, Score:words.Count(w => (m.Key + " " + m.Content).Contains(w,StringComparison.OrdinalIgnoreCase))))
             .Where(x => recall || x.Score > 0 || x.Memory.Kind == MemoryKind.Preference)
             .OrderByDescending(x => x.Score).ThenByDescending(x => x.Memory.UpdatedAtUtc).ThenBy(x => x.Memory.Key,StringComparer.Ordinal).Take(3).Select(x => x.Memory);

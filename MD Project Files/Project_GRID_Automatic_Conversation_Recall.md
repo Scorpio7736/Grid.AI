@@ -1,5 +1,7 @@
 # Automatic conversation recall — 6.2B follow-up
 
+**6.10 completed — 2026-10-28:** Approved document summaries and recorded task outcomes persist with provenance, explicit recipient/project grants, expiry, correction and revocation. Temporary raw uploads stay temporary. Schema v24; **989 automated tests and six bundled-model checks passed**, including copied-database recall and in-flight revocation/expiry. [Commands, retention policy, migration and test](Project_GRID_Durable_Memory_and_Delegated_Context.md). Earlier private-only or 6.10-planned statements are historical; 6.11–6.15 remain required before Phase 7.
+
 **Planned extension — 2026-10-27:** Existing automatic recall remains implemented. Before Phase 7, 6.10 must retain approved task outcomes and file-derived summaries across chat end/restart/transfer while separating temporary raw documents, durable memory and agent grants, with correction/forgetting and provenance. [Plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
 
 Implemented 2026-10-25 at the user's request. Agents now recall ordinary conversations and relevant details without requiring `memory save`. Explicit memory requests continue to work alongside automatic discussion recall. Schema v23 is unchanged: saved transcripts, project scope and recall cutoffs already persist in SQLite.

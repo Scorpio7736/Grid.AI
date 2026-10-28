@@ -100,6 +100,14 @@ public sealed partial class GridSimulationEngine
         if (snapshot.Identities.RegisteredAgents.Any(id => !snapshot.Programs.Any(p => p.Id == id && p.Kind == ResidentKind.Agent)))
             throw new InvalidDataException("Registered agent identity is missing or has the wrong resident kind.");
         Grid.Communication.CommunicationState.Validate(snapshot.Communications, snapshot.TickCount);
+        if (snapshot.Communications.Memories.Any(m => !snapshot.Identities.RegisteredAgents.Contains(m.AgentId) || m.Grants.Any(g => !snapshot.Identities.RegisteredAgents.Contains(g.AgentId))))
+            throw new InvalidDataException("Memory owner or grant references an unregistered agent.");
+        foreach (var memory in snapshot.Communications.Memories.Where(m => !m.Forgotten && m.Provenance is { Kind: "context" }))
+        {
+            var source = snapshot.Context.Documents.SingleOrDefault(d => d.Id == memory.Provenance!.SourceId);
+            if (source is null ? !memory.Provenance!.SourceWasTemporary : source.SourceHash != memory.Provenance!.SourceHash || source.GrantedAgentId != memory.AgentId || !source.Project.Equals(memory.Project, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Durable memory source grant/hash does not match captured context.");
+        }
         Tasks.TaskState.Validate(snapshot.Tasks);
         if (snapshot.Tasks.Agents.Any(a => !snapshot.Programs.Any(p => p.Id == a.Id && p.Kind == ResidentKind.Agent) || !snapshot.Identities.RegisteredAgents.Contains(a.Id)))
             throw new InvalidDataException("Invalid system-agent identity binding.");

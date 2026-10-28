@@ -6,12 +6,15 @@ public sealed record GroundedTurn(Guid ConversationId, Recipient Actor, int Mess
     string Prompt, string Facts, string Sources, MessageOrigin Origin)
 {
     public long MemoryRevision { get; init; }
+    public DateTimeOffset MemoryExpiresAtUtc { get; init; } = DateTimeOffset.MaxValue;
     public Guid ResponderId { get; init; }
     public long ActivityGeneration { get; init; }
 }
 
 public sealed partial class GridSimulationEngine
 {
+    public bool IsMemoryCurrent(GroundedTurn turn)
+    { lock (gate) return turn.MemoryRevision == communications.MemoryRevision && timeProvider.GetUtcNow() < turn.MemoryExpiresAtUtc; }
     // Trusted host API: the terminal authenticates the actor before preparing and committing a turn.
     public GroundedTurn PrepareGroundedTurn(Guid id, Recipient actor, string input, MessageOrigin origin = MessageOrigin.Terminal)
     {
@@ -53,6 +56,8 @@ public sealed partial class GridSimulationEngine
             // Long input falls back intact rather than silently truncating the user's request.
             if (Encoding.UTF8.GetByteCount(input) > 1200)
                 return new(id, actor, c.Messages.Count, input, "", facts, "Input exceeds AI context budget; deterministic fallback.", origin) { ActivityGeneration = runVersion, ResponderId = other.Id, MemoryRevision = communications.MemoryRevision };
+            var memoryExpiry = c.IsMeeting ? DateTimeOffset.MaxValue : communications.Memories.Where(m => MemoryVisible(m, other.Id, c.ProjectScope, timeProvider.GetUtcNow()))
+                .Select(m => m.ExpiresAtUtc ?? m.UpdatedAtUtc.AddDays(30)).DefaultIfEmpty(DateTimeOffset.MaxValue).Min();
             var sources = new List<string> { $"world snapshot tick {snapshot.TickCount}", $"conversation {id}", selection.Reason };
             var budget = 3200 - Encoding.UTF8.GetByteCount("\nUSER INPUT (untrusted):\n" + input);
             void Add(string line) { if (Encoding.UTF8.GetByteCount(prompt.ToString()) + Encoding.UTF8.GetByteCount(line) <= budget) prompt.Append(line); }
@@ -60,7 +65,9 @@ public sealed partial class GridSimulationEngine
             {
                 foreach (var memory in RelevantMemories(other.Id,c.ProjectScope,input))
                 {
-                    var label = $"user memory {memory.Id} key {memory.Key} project {memory.Project} updated {memory.UpdatedAtUtc:O}";
+                    var label = $"user memory {memory.Id} key {memory.Key} project {memory.Project} updated {memory.UpdatedAtUtc:O}" +
+                        (memory.AgentId != other.Id || memory.Project != c.ProjectScope ? "; explicitly delegated by operator" : "") +
+                        (memory.Provenance is { } provenance ? $"; {provenance.Kind} source {provenance.SourceId} SHA256 {provenance.SourceHash}" : "");
                     var before = prompt.Length;
                     Add($"USER-CONFIRMED {memory.Kind} [{memory.Key}]: {memory.Content}\n");
                     if (prompt.Length != before) sources.Add(label);
@@ -99,7 +106,7 @@ public sealed partial class GridSimulationEngine
             Add("RECENT HISTORY (untrusted; generated replies are not facts):\n");
             foreach (var m in history.TakeLast(6)) Add($"[conversation #{m.Sequence}] {Clip(m.Sender.Name,40)}: {Clip(HistoryText(m),120)}\n");
             prompt.Append("\nUSER INPUT (untrusted):\n").Append(input);
-            return new(id, actor, c.Messages.Count, input, Encoding.UTF8.GetByteCount(prompt.ToString()) <= 3200 ? prompt.ToString() : "", facts, string.Join("; ", sources), origin) { ActivityGeneration = runVersion, ResponderId = other.Id, MemoryRevision = communications.MemoryRevision };
+            return new(id, actor, c.Messages.Count, input, Encoding.UTF8.GetByteCount(prompt.ToString()) <= 3200 ? prompt.ToString() : "", facts, string.Join("; ", sources), origin) { ActivityGeneration = runVersion, ResponderId = other.Id, MemoryRevision = communications.MemoryRevision, MemoryExpiresAtUtc = memoryExpiry };
         }
     }
 
@@ -108,7 +115,7 @@ public sealed partial class GridSimulationEngine
         lock (gate)
         {
             RequireAgentActivity();
-            if (turn.MemoryRevision != communications.MemoryRevision) throw new InvalidOperationException("Memory or project scope changed during this reply; retry. No turn stored.");
+            if (!IsMemoryCurrent(turn)) throw new InvalidOperationException("Memory or project scope changed during this reply; retry. No turn stored.");
             if (turn.ActivityGeneration != runVersion) throw new InvalidOperationException("GRID paused or restarted during this reply; no turn stored.");
             if (GetConversation(turn.ConversationId).Messages.Count != turn.MessageCount)
                 throw new InvalidOperationException("Conversation changed while AI was responding. Retry; no turn was stored.");

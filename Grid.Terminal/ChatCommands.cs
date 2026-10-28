@@ -24,7 +24,7 @@ public sealed partial class ChatCommands
                 commands.Typewriter = args[0].Equals("on", StringComparison.OrdinalIgnoreCase);
                 return new("Typewriter " + (commands.Typewriter ? "on." : "off."));
             }) { Capability = "chat" });
-        commands.Register(new("memory", "memory <list|scope|save|correct|forget> ...", "Review and manage explicit private agent/project memory. User-confirmed context is not verified host evidence.", chat.Memory) { Capability = "chat" });
+        commands.Register(new("memory", "memory <list|scope|save|save-summary|save-outcome|grant|revoke|expiry|correct|forget> ...", "Review durable agent/project memory, provenance, explicit retention and delegated summary grants. User-confirmed context is not verified host evidence.", chat.Memory) { Capability = "chat" });
         commands.Register(new("assist", "assist <advice|analyze|propose|submit|discard> ...", "Scoped AI guidance and reviewed MCP task drafts; never automatic execution.", args => chat.Assist(args)) { Capability = "chat" });
         commands.ConversationConnected = () => chat.active is not null;
         if (identity is not null) identity.Changed += () => { chat.active = null; chat.followUp = null; chat.fileRequest = null; chat.talkDetails = null; chat.StopScreen(); };
@@ -93,7 +93,7 @@ public sealed partial class ChatCommands
         var turn = engine.PrepareGroundedTurn(id, Actor, text, origin);
         var reference = identity.Reference;
         var consumed = 0;
-        bool Current() => engine.ConversationMemoryRevision == turn.MemoryRevision && engine.IsRunning && engine.ActivityGeneration == turn.ActivityGeneration && identity.IsAuthenticated && identity.Reference == reference && active == id;
+        bool Current() => engine.IsMemoryCurrent(turn) && engine.IsRunning && engine.ActivityGeneration == turn.ActivityGeneration && identity.IsAuthenticated && identity.Reference == reference && active == id;
         return new("", BrokerOperation: async token =>
         {
             if (Interlocked.Exchange(ref consumed, 1) != 0) return new("Conversation request already consumed.");

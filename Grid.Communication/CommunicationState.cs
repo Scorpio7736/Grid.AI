@@ -21,7 +21,7 @@ public sealed record CommunicationState(IReadOnlyList<Conversation> Conversation
     public const int MaxConversations = 128, MaxMessages = 2048, MaxContent = 4096;
     public static CommunicationState Copy(CommunicationState state) => new(Array.AsReadOnly(state.Conversations.Select(c => c with {
         Participants = Array.AsReadOnly(c.Participants.ToArray()), Messages = Array.AsReadOnly(c.Messages.ToArray()) }).ToArray())) { VoiceProfiles = Array.AsReadOnly(state.VoiceProfiles.ToArray()), MemoryRevision = state.MemoryRevision,
-        Memories = Array.AsReadOnly(state.Memories.Select(m => m with { Sources = Array.AsReadOnly(m.Sources.ToArray()) }).ToArray()) };
+        Memories = Array.AsReadOnly(state.Memories.Select(m => m with { Sources = Array.AsReadOnly(m.Sources.ToArray()), Grants = Array.AsReadOnly(m.Grants.ToArray()) }).ToArray()) };
     public static bool SameIdentity(Recipient a, Recipient b) => a.Kind == b.Kind && a.Id == b.Id;
     public static bool ValidRecipient(Recipient? r) => r is not null && Enum.IsDefined(r.Kind) && r.Id != Guid.Empty &&
         !string.IsNullOrWhiteSpace(r.Name) && r.Name.Length <= 80 && !r.Name.Any(char.IsControl);

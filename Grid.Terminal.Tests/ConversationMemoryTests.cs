@@ -62,6 +62,146 @@ public sealed class ConversationMemoryTests
         Assert.Single(restored.Engine.GetSnapshot().Communications.Memories); Assert.Empty(restored.Engine.GetSnapshot().Tasks.Records);
         var review=restored.Commands.Execute("memory list").Text; Assert.Contains("release",review); Assert.Contains(message.Id.ToString(),review); Assert.Contains("grid",review);
     }
+    private static ContextDocument SourceDocument(Fixture f, string project = "general", string agent = "MCP") =>
+        new(Guid.NewGuid(), project, @"C:\synthetic\source.txt", new string('A', 64), 20, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow,
+            "utf8", "RAW PRIVATE DOCUMENT BODY", f.Engine.ResolveProgram(agent).Id);
+    [Fact]
+    public async Task RetainedTaskOutcomeUsesTheActualTerminalState()
+    {
+        var f = new Fixture(); var conversation = f.Connect();
+        var task = f.Engine.ProposeTask(f.Owner.Reference, f.Engine.ResolveProgram("MAXIS").Id, "maxis.demo", "test", "outcome-probe");
+        Assert.Throws<InvalidOperationException>(() => f.Engine.RetainTaskOutcome(f.Owner.Reference, conversation, task.Id, "result", true));
+        f.Engine.ApproveTask(f.Owner.Reference, task.Id); await f.Engine.RunNextTaskAsync(f.Owner.Reference, _ => Task.CompletedTask, default);
+        var reply = f.Commands.Execute($"memory save-outcome {task.Id} result --retain"); Assert.Contains("Saved recorded", reply.Text);
+        var memory = Assert.Single(f.Engine.GetSnapshot().Communications.Memories); Assert.Equal(MemoryKind.Outcome, memory.Kind);
+        Assert.Contains("Completed", memory.Content); Assert.Equal(task.Id, memory.Provenance!.SourceId);
+    }
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task GrantRevocationOrExpiryCancelsPendingRecipientInference(bool expiry)
+    {
+        var clock = new Clock(); var f = new Fixture(time: clock); var sourceConversation = f.Connect(); f.Save();
+        f.Commands.Execute("memory grant release MAXIS general"); f.Commands.Execute("memory expiry release 1");
+        f.Disconnect(); var recipientConversation = f.Connect("MAXIS"); var ai = new WaitingModel();
+        var commands = DefaultCommands.Create(f.Engine); ChatCommands.Register(commands, f.Engine, f.Owner, ai); commands.UseIdentity(f.Owner);
+        commands.Execute("resume " + recipientConversation + " -inline");
+        var pending = commands.Execute("talk What do you remember?").BrokerOperation!(default);
+        await ai.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        if (expiry) clock.Now = clock.Now.AddDays(2);
+        else f.Engine.GrantMemory(f.Owner.Reference, sourceConversation, "release", f.Engine.ResolveProgram("MAXIS").Id, "general", true);
+        var reply = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Contains("cancelled", reply.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(f.Engine.GetConversation(recipientConversation).Messages);
+    }
+    [Fact]
+    public void Version23DatabaseMigratesWithoutLosingOldMemory()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "Grid610Migration-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(folder);
+        var path = Path.Combine(folder, "world.db"); var f = new Fixture(); f.Connect(); f.Save();
+        try
+        {
+            using(var store = new WorldStore(path)) store.Create(new WorldInfo(f.Engine.GetSnapshot().WorldId, "Migration", DateTimeOffset.UtcNow), f.Engine.GetSnapshot());
+            using(var connection = new SqliteConnection("Data Source=" + path))
+            {
+                connection.Open(); using var command = connection.CreateCommand();
+                command.CommandText = "SELECT StateJson FROM WorldCommunications";
+                var json = System.Text.Json.Nodes.JsonNode.Parse((string)command.ExecuteScalar()!)!;
+                foreach(var entry in json["Memories"]!.AsArray()) { entry!.AsObject().Remove("Grants"); entry.AsObject().Remove("Provenance"); entry.AsObject().Remove("ExpiresAtUtc"); }
+                command.CommandText = "UPDATE WorldCommunications SET StateJson=$json; DELETE FROM SchemaMigrations WHERE Version=24; PRAGMA user_version=23;";
+                command.Parameters.AddWithValue("$json", json.ToJsonString()); command.ExecuteNonQuery();
+            }
+            using var upgraded = new WorldStore(path); var state = upgraded.Load().State;
+            Assert.Equal("Release codename is Moonstone.", Assert.Single(state.Communications.Memories).Content);
+            Assert.Empty(state.Communications.Memories[0].Grants);
+            using var check = new SqliteConnection("Data Source=" + path); check.Open(); using var version = check.CreateCommand(); version.CommandText = "PRAGMA user_version";
+            Assert.Equal(24L, (long)version.ExecuteScalar()!);
+        }
+        finally { SqliteConnection.ClearAllPools(); Directory.Delete(folder, true); }
+    }
+
+    [Fact]
+    public async Task ApprovedTemporarySummarySurvivesRestartWithoutRawDocument()
+    {
+        var f = new Fixture(); var conversation = f.Connect(); var source = SourceDocument(f);
+        f.Engine.AddContext(f.Owner.Reference, source, persistent: false);
+        Assert.Throws<InvalidOperationException>(() => f.Engine.RetainContextSummary(f.Owner.Reference, conversation, source.Id, "release", "Release code is Pinecone.", false));
+        Assert.Empty(f.Engine.GetSnapshot().Communications.Memories);
+        var result = f.Commands.Execute($"memory save-summary {source.Id} release Release code is Pinecone. --retain");
+        Assert.Contains("Saved durable", result.Text);
+        var memory = Assert.Single(f.Engine.GetSnapshot().Communications.Memories);
+        Assert.Equal(source.Id, memory.Provenance!.SourceId); Assert.True(memory.Provenance.SourceWasTemporary);
+        Assert.Empty(f.Engine.GetSnapshot().Context.Documents);
+        f.Disconnect(); var restored = new Fixture(f.Engine.GetSnapshot()); restored.Connect(); await restored.Talk("What do you recall about the release?");
+        Assert.Contains("Pinecone", restored.Ai.Prompt); Assert.DoesNotContain("RAW PRIVATE", restored.Ai.Prompt);
+    }
+    [Theory]
+    [InlineData("other", "MCP")]
+    [InlineData("general", "MAXIS")]
+    public void SummaryRequiresSourceAgentAndProjectGrant(string project, string agent)
+    {
+        var f = new Fixture(); var conversation = f.Connect(); var source = SourceDocument(f, project, agent);
+        f.Engine.AddContext(f.Owner.Reference, source, false);
+        Assert.Throws<UnauthorizedAccessException>(() => f.Engine.RetainContextSummary(f.Owner.Reference, conversation, source.Id, "release", "Private summary", true));
+        Assert.Empty(f.Engine.GetSnapshot().Communications.Memories);
+    }
+    [Fact]
+    public async Task DelegationIsExplicitScopedAndRevocationExcludesDerivedRecall()
+    {
+        var f = new Fixture(); f.Connect(); f.Save("Release code is Pinecone.");
+        f.Disconnect(); f.Connect("MAXIS"); await f.Talk("What do you recall about release?"); Assert.DoesNotContain("Pinecone", f.Ai.Prompt);
+        f.Disconnect(); f.Connect(); Assert.Contains("Granted", f.Commands.Execute("memory grant release MAXIS projectx").Text);
+        f.Disconnect(); f.Connect("MAXIS"); await f.Talk("What do you recall?"); Assert.DoesNotContain("Pinecone", f.Ai.Prompt);
+        f.Disconnect(); f.Connect("MAXIS", "projectx"); await f.Talk("What do you recall?"); Assert.Contains("Pinecone", f.Ai.Prompt);
+        Assert.Contains("Unknown owned", f.Commands.Execute("memory grant release JN projectx").Text);
+        f.Disconnect(); f.Connect(); f.Commands.Execute("memory revoke release MAXIS projectx");
+        f.Disconnect(); f.Connect("MAXIS", "projectx"); await f.Talk("What do you recall about release?"); Assert.DoesNotContain("Pinecone", f.Ai.Prompt);
+    }
+    [Fact]
+    public async Task CorrectionRequiresFreshGrantAndExpiryStopsRecipientRecall()
+    {
+        var clock = new Clock(); var f = new Fixture(time: clock); f.Connect(); f.Save();
+        f.Commands.Execute("memory grant release MAXIS general"); f.Commands.Execute("memory correct release New code is Pinecone.");
+        Assert.True(Assert.Single(f.Engine.GetSnapshot().Communications.Memories).Grants[0].Revoked);
+        f.Commands.Execute("memory grant release MAXIS general"); f.Commands.Execute("memory expiry release 1");
+        f.Disconnect(); f.Connect("MAXIS"); await f.Talk("What do you recall?"); Assert.Contains("Pinecone", f.Ai.Prompt);
+        clock.Now = clock.Now.AddDays(2); f.Disconnect(); f.Connect("MAXIS"); await f.Talk("What do you recall?"); Assert.DoesNotContain("Pinecone", f.Ai.Prompt);
+    }
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public async Task ContextRevocationOrRemovalInvalidatesSummariesAndGrants(bool remove)
+    {
+        var f = new Fixture(); var conversation = f.Connect(); var source = SourceDocument(f); f.Engine.AddContext(f.Owner.Reference, source, true);
+        f.Engine.RetainContextSummary(f.Owner.Reference, conversation, source.Id, "release", "Release code is Pinecone.", true);
+        f.Commands.Execute("memory grant release MAXIS general");
+        f.Engine.ChangeContext(f.Owner.Reference, source.Id, remove);
+        var memory = Assert.Single(f.Engine.GetSnapshot().Communications.Memories); Assert.True(memory.Forgotten); Assert.Empty(memory.Content);
+        var restored = new Fixture(f.Engine.GetSnapshot()); restored.Connect("MAXIS"); await restored.Talk("What do you recall?"); Assert.DoesNotContain("Pinecone", restored.Ai.Prompt);
+    }
+    [Fact]
+    public async Task DurableSummaryAndGrantSurviveDatabaseCopy()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "Grid610-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(folder);
+        var path = Path.Combine(folder, "world.db"); var moved = Path.Combine(folder, "copied.db");
+        var f = new Fixture(); var conversation = f.Connect(); var source = SourceDocument(f); f.Engine.AddContext(f.Owner.Reference, source, false);
+        f.Engine.RetainContextSummary(f.Owner.Reference, conversation, source.Id, "release", "Release code is Pinecone.", true);
+        f.Commands.Execute("memory grant release MAXIS general"); f.Commands.Execute("memory expiry release never");
+        try
+        {
+            using(var store = new WorldStore(path)) store.Create(new WorldInfo(f.Engine.GetSnapshot().WorldId, "Memory", DateTimeOffset.UtcNow), f.Engine.GetSnapshot());
+            File.Copy(path, moved);
+            using var copy = new WorldStore(moved); var restored = new Fixture(copy.Load().State); restored.Connect("MAXIS"); await restored.Talk("What do you recall?");
+            Assert.Contains("Pinecone", restored.Ai.Prompt); Assert.Empty(restored.Engine.GetSnapshot().Context.Documents);
+        }
+        finally { SqliteConnection.ClearAllPools(); Directory.Delete(folder, true); }
+    }
+    [Fact]
+    public void InvalidProvenanceOrDelegationIsRejectedOnRestore()
+    {
+        var f = new Fixture(); f.Connect(); var memory = f.Save(); var snapshot = f.Engine.GetSnapshot();
+        foreach(var bad in new[] { memory with { Grants = [new(Guid.NewGuid(), "general")] }, memory with { Provenance = new("context", Guid.NewGuid(), "bad", true) }, memory with { Grants = null! } })
+            Assert.Throws<InvalidDataException>(() => GridSimulationEngine.Restore(snapshot with { Communications = snapshot.Communications with { Memories = [bad] } }));
+    }
+
     [Fact]
     public async Task OrdinaryDialogueIsRecalledWithoutPromotingItToConfirmedMemory()
     {

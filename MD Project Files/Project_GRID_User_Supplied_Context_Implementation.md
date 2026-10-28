@@ -1,5 +1,7 @@
 # Project GRID - User-Supplied Context Implementation
 
+**6.10 completed — 2026-10-28:** Approved document summaries and recorded task outcomes persist with provenance, explicit recipient/project grants, expiry, correction and revocation. Temporary raw uploads stay temporary. Schema v24; **989 automated tests and six bundled-model checks passed**, including copied-database recall and in-flight revocation/expiry. [Commands, retention policy, migration and test](Project_GRID_Durable_Memory_and_Delegated_Context.md). Earlier private-only or 6.10-planned statements are historical; 6.11–6.15 remain required before Phase 7.
+
 **Planned format/workflow repair — 2026-10-27:** PDF is currently unsupported; DOCX has limited extraction. 6.15 must add offline PDF support and validate full DOCX import, provenance, limits, picker filters and portable assets. 6.8 repairs post-import follow-up loops; 6.10 adds explicit durable retention/context handoff. [Pre-Phase-7 plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
 
 **6.3 completed — 2026-10-26:** `assist advice/analyze/propose` now provides scoped local-AI guidance and typed MCP drafts. `assist submit` creates only tasks awaiting approval; no automatic execution. Captured context stays within explicit agent/project grants, and assistance outputs are not copied into chat recall. **752 Release tests passed**; bundled-model analysis/drafting verified. [Commands and limits](Project_GRID_Task_Assistance_Implementation.md). Earlier 6.3-pending statements are historical; monitor assistance remains planned in 6.3A.

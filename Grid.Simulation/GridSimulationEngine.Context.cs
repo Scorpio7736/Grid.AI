@@ -52,6 +52,7 @@ public sealed partial class GridSimulationEngine
                 if (remove) temporaryContext.Remove(id); else temporaryContext[id] = (temporary.Document with { GrantedAgentId = null }, temporary.Session);
             }
             else throw new ArgumentException("Context not found in this scope.");
+            RevokeContextMemories(id);
             contextRevision++;
             RecordEvent(remove ? "ContextRemoved" : "ContextRevoked", id, null, "Context access changed; no source/body recorded.");
         }
