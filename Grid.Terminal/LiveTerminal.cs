@@ -59,10 +59,10 @@ public sealed class ConsoleLiveTerminal(bool noColor = false) : ILiveTerminal
         for (var row = 0; row < height - 1; row++)
         {
             var line = row < lines.Count ? lines[row] : "";
-            var fitted = line[..Math.Min(line.Length, width - 1)].PadRight(width - 1);
+            var fitted = TerminalLayout.Pad(TerminalLayout.Fit(line, width - 1), width - 1);
             if (previousLines[row] == fitted) continue;
             Console.SetCursorPosition(0, row);
-            TerminalTheme.Write(Console.Out, fitted, TerminalTheme.Enabled(noColor));
+            TerminalTheme.Write(Console.Out, fitted, TerminalTheme.Enabled(noColor), ownsSurface: true);
             previousLines[row] = fitted;
         }
     }

@@ -23,7 +23,7 @@ public sealed class ConsoleTerminalInput(CommandDispatcher commands, bool color)
         var origin = Console.CursorLeft; var row = Console.CursorTop; var priorColor = Console.ForegroundColor;
         try
         {
-            if (color) Console.ForegroundColor = ConsoleColor.White;
+            if (color) Console.ForegroundColor = GridTerminalTheme.Palette[TerminalRole.Input].Fallback;
             while (true)
             {
                 token.ThrowIfCancellationRequested();
@@ -46,25 +46,26 @@ public sealed class ConsoleTerminalInput(CommandDispatcher commands, bool color)
                     choices = null; choice = 0;
                     switch (key.Key)
                     {
-                        case ConsoleKey.LeftArrow: cursor = Math.Max(0, cursor - 1); break;
-                        case ConsoleKey.RightArrow: cursor = Math.Min(text.Length, cursor + 1); break;
+                        case ConsoleKey.LeftArrow: cursor = TerminalLayout.Previous(text.ToString(), cursor); break;
+                        case ConsoleKey.RightArrow: cursor = TerminalLayout.Next(text.ToString(), cursor); break;
                         case ConsoleKey.Home: cursor = 0; break;
                         case ConsoleKey.End: cursor = text.Length; break;
-                        case ConsoleKey.Backspace: if (cursor > 0) text.Remove(--cursor, 1); break;
-                        case ConsoleKey.Delete: if (cursor < text.Length) text.Remove(cursor, 1); break;
+                        case ConsoleKey.Backspace:
+                            if (cursor > 0) { var previous = TerminalLayout.Previous(text.ToString(), cursor); text.Remove(previous, cursor - previous); cursor = previous; } break;
+                        case ConsoleKey.Delete:
+                            if (cursor < text.Length) text.Remove(cursor, TerminalLayout.Next(text.ToString(), cursor) - cursor); break;
                         default:
                             if (!char.IsControl(key.KeyChar) && text.Length < (secret ? Grid.Communication.PasswordCredential.LegacyMaximumPasswordLength : 8192)) text.Insert(cursor++, key.KeyChar);
                             break;
                     }
                 }
-                origin = Math.Min(origin, Math.Max(0, Console.BufferWidth - 2));
-                var width = Math.Max(1, Console.BufferWidth - origin - 1);
-                var offset = Math.Max(0, cursor - width + 1);
-                var shown = secret ? new string('*', text.Length) : text.ToString();
-                shown = shown.Substring(offset, Math.Min(width, shown.Length - offset));
+                origin = Math.Min(origin, Math.Max(0, Console.WindowWidth - 2));
+                var width = Math.Max(1, Console.WindowWidth - origin - 1);
+                var shown = TerminalLayout.InputWindow(text.ToString(), cursor, width, secret);
                 row = Math.Min(row, Console.BufferHeight - 1);
-                Console.SetCursorPosition(origin, row); Console.Write(shown.PadRight(width));
-                Console.SetCursorPosition(origin + cursor - offset, row);
+                Console.SetCursorPosition(origin, row);
+                GridTerminalRenderer.Segment(Console.Out, shown.Text, TerminalRole.Input, TerminalCapabilities.Detect(color));
+                Console.SetCursorPosition(origin + shown.Cursor, row);
             }
         }
         finally { text.Clear(); if (color) Console.ForegroundColor = priorColor; }

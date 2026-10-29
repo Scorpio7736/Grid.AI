@@ -35,8 +35,17 @@ public static class CommandHelp
         "inspect" => ["inspect program <id|name>", "inspect district <id|name>"],
         _ => [c.Usage]
     };
-    public static string Render(TerminalCommand command) => command.Name + "\n" + string.Join("\n", Options(command).Select(option =>
-        $"    - {option}\n      # USAGE: {Description(command, option)}")) + $"\n    # EXAMPLE: {Example(command)}";
+    public static string Render(TerminalCommand command)
+    {
+        var width = TerminalTable.Width;
+        var options = Options(command).Select(option => new[] { command.Name,
+            option.StartsWith(command.Name + " ", StringComparison.Ordinal) ? option[(command.Name.Length + 1)..] : option == command.Name ? "" : option,
+            Description(command, option) });
+        return "COMMAND / " + command.Name + "\n" +
+            string.Join("\n", TerminalLayout.Paragraph("# USAGE: " + command.Usage, width)) + "\n" +
+            TerminalTable.Render(["COMMAND", "OPTIONS", "DESCRIPTION"], options, width, wrapWords: true) + "\n" +
+            string.Join("\n", TerminalLayout.Paragraph("# EXAMPLE: " + Example(command), width));
+    }
     private static string Description(TerminalCommand command, string option) => option.EndsWith(" -opninwin") ? "Open permitted data in a separate window; live updates, other data is a snapshot. Combine with supported command arguments." : option switch {
         "changes stage <workspace> <relative-file> <context-id|name>" => "Draft a complete replacement/new file from captured context in the workspace project. No files written.",
         "changes suggest <workspace> <relative-file> <context-id|name> <request>" => "Ask local MAXIS AI for a draft using explicitly granted context. Review and approval remain mandatory.",

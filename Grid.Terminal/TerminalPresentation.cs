@@ -19,23 +19,23 @@ public static class TerminalPresentation
             var members = group.Names.Select(n => commands.FirstOrDefault(c => c.Name.Equals(n, StringComparison.OrdinalIgnoreCase)))
                 .OfType<TerminalCommand>().ToArray();
             if (members.Length == 0) continue;
-            lines.Add("\n" + group.Title);
+            lines.Add("\n" + TerminalLayout.Pad(group.Title, TerminalTable.Width));
             lines.Add(string.Join("\n\n", members.Select(CommandHelp.Render)));
             listed.UnionWith(members.Select(c => c.Name));
         }
         var extensions = commands.Where(c => !listed.Contains(c.Name)).ToArray();
         if (extensions.Length > 0)
         {
-            lines.Add("\nEXTENSIONS");
+            lines.Add("\n" + TerminalLayout.Pad("EXTENSIONS", TerminalTable.Width));
             lines.Add(string.Join("\n\n", extensions.Select(CommandHelp.Render)));
         }
-        lines.Add("\nCOMMAND OPTIONS");
+        lines.Add("\n" + TerminalLayout.Pad("COMMAND OPTIONS", TerminalTable.Width));
         // Keep exact registered syntax available, including extension usage and history filters.
         lines.Add(string.Join("\n", commands.Select(c => c.Usage)));
         if (listed.Contains("inspect")) lines.Add("inspect program <id|name>\ninspect district <id|name>\nprograms ids\ndistricts ids");
         if (listed.Contains("resources")) lines.Add("resources details: include source, freshness, timestamps and measurement detail.");
         if (listed.Contains("programs")) lines.Add("programs -active: Running | -sleeping: On call or Sleeping | -possible: known installed/observed catalog.");
-        return string.Join("\n", lines);
+        return string.Join("\n", lines.SelectMany(block => block.Split('\n')).SelectMany(line => TerminalLayout.Wrap(line, TerminalTable.Width)));
     }
 
     public static string Farewell(bool success, bool persistent, int? width = null)

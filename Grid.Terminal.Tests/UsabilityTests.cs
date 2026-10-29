@@ -21,7 +21,7 @@ public sealed class UsabilityTests
     public void TablesSanitizeControlsAndPlainOutputContainsNoEscapeSequences()
     {
         var text = TerminalTable.Render(["Name"], [["Name\u001b[2J\nwide界"]]);
-        Assert.DoesNotContain('\u001b', text); Assert.All(text.Replace(Environment.NewLine, ""), c => Assert.InRange((int)c, 32, 126));
+        Assert.DoesNotContain('\u001b', text); Assert.Contains("界", text); Assert.DoesNotContain("\n", text.Replace(Environment.NewLine, ""));
     }
     [Fact]
     public void ColorPolicyHonorsFlagsEnvironmentAndRedirectionWithTextLabelsIntact()
@@ -42,7 +42,7 @@ public sealed class UsabilityTests
     {
         using var text = new StringWriter(); var output = new TerminalOutput(text, false);
         await output.WriteLineAsync("Working\nunknown"); await output.WriteAsync("grid> ");
-        Assert.Equal("Working" + Environment.NewLine + "unknown" + Environment.NewLine + "grid> ", text.ToString());
+        Assert.Equal("Working\nunknown" + Environment.NewLine + "grid> ", text.ToString());
     }
     [Fact]
     public async Task RepeatedLiveBackNavigationKeepsWorldAndPersistenceSessionOpenUntilExit()

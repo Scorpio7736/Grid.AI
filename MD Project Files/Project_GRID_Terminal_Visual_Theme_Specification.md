@@ -1,6 +1,8 @@
 # 6.10A — Terminal visual theme
 
-**Status: Planned — next development item after completed 6.10; required before Phase 7.** Added 2026-10-28. No theme implementation is included in this planning update.
+**2026-10-28 follow-up — GRID logo animation restored at user request:** Startup/login and shutdown show the supplied GRID7736 artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
+
+**Status: Implemented — 2026-10-28.** See [completion evidence and compatibility limits](Project_GRID_Terminal_Visual_Theme_Implementation.md). The original acceptance checklist below remains the unchanged user-provided specification; its verification mapping is recorded in the implementation document.
 
 The complete user-supplied specification follows unchanged. It refines the earlier yellow-output convention: generic notices remain amber, while structured errors, success, descriptions and approvals gain semantic colors. It also calls for compact major-screen headers rather than oversized logos; existing banner/animation history is preserved in earlier documents, but the new presentation requirements govern this item. Keep command semantics, authentication, authorization, confirmation and simulation behavior unchanged. A new `help <command>` feature is outside this presentation-only scope if not already implemented.
 

@@ -1,5 +1,7 @@
 # Project GRID — Required Work Before Phase 7
 
+**2026-10-28 follow-up — GRID logo animation restored at user request:** Startup/login and shutdown show the supplied GRID7736 artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
+
 **6.10 completed — 2026-10-28:** Approved document summaries and recorded task outcomes persist with provenance, explicit recipient/project grants, expiry, correction and revocation. Temporary raw uploads stay temporary. Schema v24; **989 automated tests and six bundled-model checks passed**, including copied-database recall and in-flight revocation/expiry. [Commands, retention policy, migration and test](Project_GRID_Durable_Memory_and_Delegated_Context.md). Earlier private-only or 6.10-planned statements are historical; 6.11–6.15 remain required before Phase 7.
 
 **2026-10-28 — longer file drafting and conversational revisions (current limits):** File generation now has its own inference profile: 4,096 output tokens initially, one 8,192-token retry only on explicit truncation, 16,384-token model context, a 300-second queue-inclusive deadline, and up to 131,072 serialized-response characters. Ordinary chat/proposal limits stay unchanged. Editable UTF-8 files now allow 64 KiB, replacing the earlier 16-KiB bound. The file-generation prompt accepts up to 24,000 UTF-8 bytes (including source/previous draft); it refuses oversized input rather than truncating it. These are bounded budgets, not a guarantee that every model request can produce an arbitrarily large file. Partial/truncated JSON is never staged.
@@ -84,9 +86,9 @@ Distinguish raw document retention, extracted context, conversation summaries an
 
 Acceptance: end a chat, restart, reconnect and recall an approved detail with provenance; repeat after portable copy. Verify another agent cannot retrieve private details without a grant, forgotten/corrected facts do not reappear, and temporary documents stay temporary unless the user approves retention.
 
-## 6.10A Terminal visual theme — planned next
+## 6.10A Terminal visual theme — implemented
 
-Implement the [complete supplied theme specification](Project_GRID_Terminal_Visual_Theme_Specification.md) after completed 6.10 and before 6.11. Centralize the exact palette, semantic output, compact headers and responsive layouts; verify truecolor/fallback/monochrome/redirected behavior and unchanged authorization. This is presentation-only. All 18 acceptance checks remain open. Phase 7 remains blocked until 6.10A and 6.11–6.15 are completed.
+**6.10A implemented — 2026-10-28:** Centralized 13-color terminal theme, semantic feedback, compact headers, section bars, responsive help tables and Unicode-aware layout/input are implemented. Truecolor is used in supported terminals, with console-color and plain-text fallbacks. User input stays white, prompts cyan, agent dialogue amber; errors are red, success green and approval labels gold. This supersedes historical blanket-yellow and oversized-header requirements. Commands, authentication and approval rules are unchanged. **999 automated tests passed**, plus Windows pseudoconsole login/color/masking/resize checks. [Implementation and limitations](Project_GRID_Terminal_Visual_Theme_Implementation.md). Phase 7 remains blocked on 6.11–6.15.
 
 ## 6.11 MCP — Master Control Program
 

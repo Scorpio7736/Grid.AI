@@ -77,7 +77,7 @@ public sealed class TerminalUxTests
     public void HelpCompletionAndPaletteFollowCapabilitiesAndNeverSuggestSecrets()
     {
         var (_, identity, commands) = Fixture();
-        var help = commands.Execute("help").Text; Assert.Contains("    - help -md", help); Assert.Contains("# USAGE:", help); Assert.Contains("# EXAMPLE:", help);
+        var help = commands.Execute("help").Text; Assert.Contains("-md", help); Assert.Contains("# USAGE:", help); Assert.Contains("# EXAMPLE:", help);
         Assert.Empty(CommandHelp.Complete("ed", commands.Commands)); Assert.Contains("login", CommandHelp.Complete("lo", commands.Commands));
         identity.Login();
         var manual = commands.Execute("help -md").Text;
@@ -86,8 +86,8 @@ public sealed class TerminalUxTests
         Assert.Contains("programs -active", CommandHelp.Complete("programs -a", commands.Commands));
         Assert.Empty(CommandHelp.Complete("edit \"Secret", commands.Commands));
         identity.Logout(); Assert.Empty(CommandHelp.Complete("ed", commands.Commands));
-        Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Name | Value")); Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("---+---"));
-        Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Access denied")); Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Welcome"));
+        Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Name | Value")); Assert.Equal(ConsoleColor.DarkCyan, TerminalTheme.Color("---+---"));
+        Assert.Equal(ConsoleColor.Red, TerminalTheme.Color("Access denied")); Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Welcome"));
         Assert.Contains("GRID7736", TerminalSessionUi.Opening(30));
         Assert.Contains("OFFLINE MARKDOWN HELP", commands.Execute("help -md").Text);
         Assert.Contains("# GRID7736", commands.Execute("help -md").Text);

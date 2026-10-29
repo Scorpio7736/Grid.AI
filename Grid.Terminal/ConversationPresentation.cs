@@ -8,11 +8,11 @@ public interface IConversationOutput
 }
 public static class ConversationPresentation
 {
-    public static ConsoleColor Color(ConversationTone tone) => tone switch { ConversationTone.User => ConsoleColor.White, ConversationTone.Heading => ConsoleColor.Cyan, _ => ConsoleColor.Yellow };
+    public static ConsoleColor Color(ConversationTone tone) => tone switch { ConversationTone.User => GridTerminalTheme.Palette[TerminalRole.Input].Fallback, ConversationTone.Heading => GridTerminalTheme.Palette[TerminalRole.Title].Fallback, ConversationTone.Error => GridTerminalTheme.Palette[TerminalRole.Error].Fallback, _ => GridTerminalTheme.Palette[TerminalRole.Notice].Fallback };
     public static CommandResult AgentReply(string heading, string body, string footer = "")
     {
         var text = heading + "\n\n" + body + (footer.Length == 0 ? "" : "\n\n" + footer);
-        return new(text, AnimateFrom: heading.Length + 2, Presentation: [new(0, heading.Length, ConversationTone.Heading), new(heading.Length + 2, body.Length, ConversationTone.Agent)]);
+        return new(text, AnimateFrom: heading.Length + 2, Presentation: [new(0, heading.Length, ConversationTone.Heading), new(heading.Length + 2, body.Length, heading == "GRID" && GridTerminalTheme.Role(body) == TerminalRole.Error ? ConversationTone.Error : ConversationTone.Agent)]);
     }
     public static IReadOnlyList<ConversationSpan> Shift(IReadOnlyList<ConversationSpan>? spans, int offset) =>
         spans?.Select(s => s with { Start = s.Start + offset }).ToArray() ?? [];

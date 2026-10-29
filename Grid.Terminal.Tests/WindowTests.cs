@@ -297,7 +297,7 @@ public sealed class WindowTests
         await using var f = new Fixture(_ => throw new IOException("test launch failure"));
         Assert.Contains("could not open", f.Commands.Execute("ntm").Text);
         Assert.Contains("Tick: 0", f.Commands.Execute("status").Text);
-        Assert.Contains("status -opninwin", f.Commands.Execute("help").Text);
+        Assert.Contains("-opninwin", f.Commands.Execute("help").Text);
         Assert.Contains("status -opninwin", CommandHelp.Complete("status -o", f.Commands.Commands));
         Assert.Contains("ntm", CommandHelp.Complete("nt", f.Commands.Commands));
     }

@@ -61,11 +61,13 @@ public sealed class LoginAnimationTests
     public void MotionPreferenceAndConsoleSupport(bool interactive, string term, string? preference, bool enabled)
         => Assert.Equal(enabled, GridLoginAnimation.Enabled(interactive, term, preference));
     [Fact]
-    public void LogoUsesUserArtworkWithReadableNarrowFallbackAndHonestShutdownStatus()
+    public void AnimatedArtworkHasReadableNarrowFallbackAndHonestShutdownStatus()
     {
         Assert.Contains("██████╗ ██████╗ ██╗██████╗", TerminalSessionUi.Opening(100));
         Assert.NotEqual(GridBanner.Render(100, 0), GridBanner.Render(100, 1));
-        Assert.Equal("GRID7736 // WELCOME", GridBanner.Render(30));
+        Assert.NotEqual(GridBanner.Render(100, .25), GridBanner.Render(100, .75));
+        Assert.All(GridBanner.Render(100, .5).Split('\n'), line => Assert.True(TerminalLayout.Width(line) <= 100));
+        Assert.Contains("GRID7736", GridBanner.Render(30));
         Assert.Equal("GRID7736", GridBanner.Render(20));
         Assert.Contains(GridBanner.Render(100), TerminalPresentation.Farewell(true, true, 100));
         Assert.Contains("SHUTDOWN ERROR", TerminalPresentation.Farewell(false, true, 100));

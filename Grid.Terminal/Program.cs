@@ -32,7 +32,7 @@ try
     if (TerminalTheme.Enabled(options.NoColor))
     {
         originalForeground = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.ForegroundColor = GridTerminalTheme.Palette[TerminalRole.Notice].Fallback;
     }
     if (packageRoot is null && TerminalEnvironment.Ensure() is { } environmentMessage)
         Console.WriteLine(environmentMessage);

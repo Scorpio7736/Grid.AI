@@ -1,5 +1,7 @@
 # Project GRID — Master Development Checklist
 
+**2026-10-28 follow-up — GRID logo animation restored at user request:** Startup/login and shutdown show the supplied GRID7736 artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
+
 **6.4 implemented — 2026-10-26:** Original-host `changes` drafts new/revised workspace files from captured context or local MAXIS AI, previews complete content/hashes, requires explicit approval, and applies with backups and guarded rollback. Optional verification uses separately approved MAXIS tasks. **838 Release tests passed**. Drafts are transient; recovery files persist. [Workflow, limits and demo](Project_GRID_Authorized_Editing_Implementation.md).
 
 **6.3A implemented — 2026-10-26:** `screen options/monitoring/ask/status/stop` provides one-shot selected-monitor assistance using offline Windows OCR and local AI. Human Master Control only; no recording, saved screen context or actions. **799 Release tests passed**, including attached-window and synthetic native-OCR checks. User desktop acceptance remains manual. [Commands, limits and verification](Project_GRID_Screen_Assistance_Implementation.md).
@@ -1375,20 +1377,20 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.10A Terminal visual theme and responsive presentation
 
-**Planned — next item after completed 6.10; required before Phase 7.** Added 2026-10-28. [Complete user-provided specification](Project_GRID_Terminal_Visual_Theme_Specification.md).
+**Implemented — 2026-10-28; required before Phase 7.** [Complete user-provided specification](Project_GRID_Terminal_Visual_Theme_Specification.md).
 
-- [ ] Centralize all 13 supplied palette colors and semantic styles; solid colors only, no gradients/glow or added excessive animation.
-- [ ] Use dark navy backgrounds only where GRID owns rendering; preserve the host background elsewhere. Support truecolor, console-color fallbacks and plain text.
-- [ ] Keep typed input white and prompts light blue; use cyan commands, gray descriptions, amber notices/warnings, green success, red errors, gold approval labels and muted metadata consistently.
-- [ ] Introduce compact GRID headers, solid steel-blue section bars, consistent dividers and dynamically aligned command/options/description layouts.
-- [ ] Apply styling across login/welcome, help, status, agents, monitoring, tasks, approvals, conversation labels and system feedback without changing commands, parsing, access checks or workflows.
-- [ ] Implement responsive wrapping/stacking, narrow-window layouts, resizing, Unicode-safe visible widths and ASCII alternatives. Never count ANSI sequences in layout widths.
-- [ ] Prevent style bleeding, preserve cursor/input behavior, avoid ANSI leakage into redirected output, and use native brushes for any unsupported text surface rather than raw escape codes.
-- [ ] Preserve textual status labels and real-versus-simulated distinctions; theming must never imply permission, execution, host health or security verification.
-- [ ] Verify all 18 acceptance scenarios in the specification, with focused layout/escape/width tests, existing terminal/integration tests and native-console visual checks.
-- [ ] Record completion evidence and any terminal-specific limitations. Keep additional help navigation functionality separate.
+- [x] Centralize all 13 supplied palette colors and semantic styles; solid colors only, no gradients/glow or added excessive animation.
+- [x] Use dark navy backgrounds only where GRID owns rendering; preserve the host background elsewhere. Support truecolor, console-color fallbacks and plain text.
+- [x] Keep typed input white and prompts light blue; use cyan commands, gray descriptions, amber notices/warnings, green success, red errors, gold approval labels and muted metadata consistently.
+- [x] Introduce compact GRID headers, solid steel-blue section bars, consistent dividers and dynamically aligned command/options/description layouts.
+- [x] Apply styling across login/welcome, help, status, agents, monitoring, tasks, approvals, conversation labels and system feedback without changing commands, parsing, access checks or workflows.
+- [x] Implement responsive wrapping/stacking, narrow-window layouts, resizing, Unicode-safe visible widths and ASCII alternatives. Never count ANSI sequences in layout widths.
+- [x] Prevent style bleeding, preserve cursor/input behavior, avoid ANSI leakage into redirected output, and use native brushes for any unsupported text surface rather than raw escape codes.
+- [x] Preserve textual status labels and real-versus-simulated distinctions; theming must never imply permission, execution, host health or security verification.
+- [x] Verify all 18 acceptance scenarios in the specification, with focused layout/escape/width tests, existing terminal/integration tests and native-console output checks (host font appearance remains a manual check).
+- [x] Record completion evidence and any terminal-specific limitations. Keep additional help navigation functionality separate.
 
-**Planning note:** This intentionally refines earlier blanket-yellow system/error output and large-header presentation. The exact palette, examples, renderer guidance and full verification list are preserved in the linked specification. Nothing in 6.10A is marked implemented yet.
+**6.10A implemented — 2026-10-28:** Centralized 13-color terminal theme, semantic feedback, compact headers, section bars, responsive help tables and Unicode-aware layout/input are implemented. Truecolor is used in supported terminals, with console-color and plain-text fallbacks. User input stays white, prompts cyan, agent dialogue amber; errors are red, success green and approval labels gold. This supersedes historical blanket-yellow and oversized-header requirements. Commands, authentication and approval rules are unchanged. **999 automated tests passed**, plus Windows pseudoconsole login/color/masking/resize checks. [Implementation and limitations](Project_GRID_Terminal_Visual_Theme_Implementation.md). Phase 7 remains blocked on 6.11–6.15.
 
 ## 6.11 MCP Master Control Program digital-helper workflow
 

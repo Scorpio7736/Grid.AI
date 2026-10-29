@@ -24,7 +24,7 @@ public sealed class IdentitySessionTests
         Assert.Contains("denied", commands.Execute("step").Text); Assert.Equal(0, engine.TickCount);
         Assert.Contains("denied", commands.Execute("nge").Text); Assert.Contains("denied", commands.Execute("connect").Text);
         var help = commands.Execute("help").Text;
-        Assert.Contains("login master", help); Assert.DoesNotContain("apply-edit", help); Assert.DoesNotContain("inspect program", help);
+        Assert.Contains("master", help); Assert.DoesNotContain("apply-edit", help); Assert.DoesNotContain("inspect program", help);
         Assert.Contains("locked", commands.Prompt);
         commands.Register(new("extension", "extension", "New administrative extension", _ => new("executed")));
         Assert.Contains("denied", commands.Execute("extension").Text);

@@ -79,7 +79,7 @@ public sealed class ConversationPresentationTests
     [Theory]
     [InlineData("AI response rejected; no proposal created.")]
     [InlineData("Local AI unavailable.")]
-    public void CommandFailuresRemainYellow(string text) => Assert.Equal(ConsoleColor.Yellow,TerminalTheme.Color(text));
+    public void CommandFailuresUseErrorColor(string text) => Assert.Equal(ConsoleColor.Red,TerminalTheme.Color(text));
 
     [Fact]
     public void ConversationRolesUseRequestedPalette()
@@ -87,6 +87,6 @@ public sealed class ConversationPresentationTests
         Assert.Equal(ConsoleColor.Cyan, ConversationPresentation.Color(ConversationTone.Heading));
         Assert.Equal(ConsoleColor.White, ConversationPresentation.Color(ConversationTone.User));
         Assert.Equal(ConsoleColor.Yellow, ConversationPresentation.Color(ConversationTone.Agent));
-        Assert.Equal(ConsoleColor.Yellow, ConversationPresentation.Color(ConversationTone.Error));
+        Assert.Equal(ConsoleColor.Red, ConversationPresentation.Color(ConversationTone.Error));
     }
 }

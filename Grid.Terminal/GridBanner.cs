@@ -18,11 +18,17 @@ public static class GridBanner
         """;
     public static string Render(int width, double progress = 1)
     {
-        var lines = Logo.Replace("\r\n", "\n").Split('\n');
-        if (width < lines.Max(l => l.Length)) return width < 26 ? "GRID7736" : "GRID7736 // WELCOME";
-        var columns = (int)Math.Ceiling(lines.Max(l => l.Length) * Math.Clamp(progress, 0, 1));
-        return string.Join("\n", lines.Select((line, row) => row < 2 || row > 7 ? line :
-            new string(line.Select((c, column) => column <= columns || c == '|' ? c : ' ').ToArray())));
+        var artwork = Logo.Replace("\r", "").Split('\n');
+        var logoWidth = artwork.Max(TerminalLayout.Width);
+        if (width >= logoWidth)
+        {
+            var revealed = (int)Math.Ceiling(logoWidth * Math.Clamp(progress, 0, 1));
+            return string.Join("\n", artwork.Select(line => TerminalLayout.Pad(TerminalLayout.Fit(line, revealed), TerminalLayout.Width(line))));
+        }
+        // Keep the compact fallback when the full logo would wrap.
+        if(width < 26) return "GRID7736";
+        var title = progress < 1 ? "PROJECT GRID // INITIALIZING" : "PROJECT GRID // GRID7736";
+        return string.Join("\n", TerminalLayout.Wrap(title, width)) + "\n" + new string('=', Math.Min(width, 78)) + "\nCOMMAND TERMINAL";
     }
 }
 

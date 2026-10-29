@@ -57,7 +57,7 @@ public sealed class GroundedDialogueTests
         var detailed = f.Commands.Execute("transcript --details").Text;
         Assert.Contains("OBSERVED FACTS", detailed); Assert.Contains("SOURCES", detailed); Assert.Contains("tick ", detailed);
         Assert.Equal(detailed, f.Commands.Execute("transcript " + f.Chat.ActiveConversation + " --details").Text);
-        Assert.Contains("transcript --details", f.Commands.Execute("help").Text);
+        Assert.Contains("--details", f.Commands.Execute("help").Text);
     }
     [Fact]
     public async Task RevocationDuringInferenceDiscardsEntireTurn()
