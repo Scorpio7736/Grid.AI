@@ -5,6 +5,7 @@ using Grid.Terminal;
 using Grid.Simulation.Resources;
 using Grid.Simulation.Applications;
 
+if (args.SequenceEqual(new[] { "--verify-mcp-workflow" })) return await McpWorkflowVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-durable-memory" })) return await DurableMemoryVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-file-operations" })) return await FileOperationsVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-conversation-recovery" })) return await ConversationRecoveryVerification.RunAsync();

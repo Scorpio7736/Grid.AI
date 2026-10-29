@@ -5,6 +5,18 @@ namespace Grid.Simulation;
 
 public sealed partial class GridSimulationEngine
 {
+    public static bool MeetingRoundRequested(string input) => System.Text.RegularExpressions.Regex.IsMatch(input.Trim(), @"(?i)^(each of you|all of you|everyone|you all)\b");
+    public static bool MeetingIntroductionsRequested(string input) => System.Text.RegularExpressions.Regex.IsMatch(input,
+        @"(?i)\bintroduce\b.*\b(yourselves|everyone|each|all)\b|\b(each of you|everyone|all of you)\b.*\bintroduce\b");
+    private static string MeetingRole(AgentRole role) => role switch
+    {
+        AgentRole.MCP => "Master Control Program, your digital helper. I coordinate reviewed work and bring back recorded results.",
+        AgentRole.MAXIS => "GRID's software engineer. I help with code, debugging, builds and tests.",
+        AgentRole.JN => "GRID's file archivist. I help with file inventories, duplicates, backups and retention.",
+        AgentRole.SENTINEL => "GRID's security analyst. I help interpret Defender, firewall and security observations.",
+        AgentRole.VOLT => "GRID's resource steward. I help interpret hardware resources and GRID pacing.",
+        _ => "GRID's messenger. I handle local notifications and recorded-result briefings."
+    };
     public IReadOnlyList<Recipient> MeetingParticipants(EditSessionReference session, IReadOnlyList<string> names)
     {
         using var lease = TaskLease(session, true);
@@ -52,7 +64,12 @@ public sealed partial class GridSimulationEngine
                 throw new InvalidOperationException("Meeting participant is unavailable; no silent substitution.");
             return (Recipient: Canonical(p), Role: agent.Role);
         }).ToArray();
-        var trimmed = input.TrimStart();
+        var trimmed = System.Text.RegularExpressions.Regex.Replace(input.TrimStart(), @"(?i)^(?:hey|hi|hello|greetings)[,!:]?\s+", "");
+        var firstName = System.Text.RegularExpressions.Regex.Match(trimmed, @"^[\p{L}\p{N}]+(?=$|[\s,:!?])").Value;
+        var named = candidates.Where(c => c.Role.ToString().Equals(firstName, StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (named.Length == 1) return (named[0].Recipient, "Directed by name to " + named[0].Role);
+        if (Enum.TryParse<AgentRole>(firstName, true, out var absent) && Enum.IsDefined(absent))
+            throw new ArgumentException("Directed agent is not in this meeting: " + firstName);
         if (trimmed.StartsWith('@'))
         {
             var end = trimmed.IndexOfAny([' ', ':', '\t', '\n']);

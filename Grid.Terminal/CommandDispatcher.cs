@@ -9,6 +9,7 @@ public sealed class CommandDispatcher
     public Func<IReadOnlyList<string>, CommandResult>? OpenWindow { get; set; }
     public Func<IReadOnlyList<string>, CommandResult>? OpenConversation { get; set; }
     public Func<bool>? ConversationConnected { get; set; }
+    public Func<string, bool>? ConversationParticipant { get; set; }
     public string Prompt => identity?.Prompt ?? "grid> ";
     public bool Typewriter { get; set; } = !string.Equals(Environment.GetEnvironmentVariable("GRID_TYPEWRITER"), "off", StringComparison.OrdinalIgnoreCase);
     public long? IdentityGeneration => identity?.Generation;
@@ -60,6 +61,13 @@ public sealed class CommandDispatcher
         var name = boundary < 0 ? text : text[..boundary];
         if (name.Equals("talk", StringComparison.OrdinalIgnoreCase))
             return boundary < 0 ? ["talk"] : ["talk", text[(boundary + 1)..].Trim()];
+        if (ConversationConnected?.Invoke() == true && ConversationParticipant?.Invoke(name) == true)
+        {
+            var second = boundary < 0 ? "" : text[(boundary + 1)..].Trim().Split(' ', '\t')[0];
+            var commandForm = commands.TryGetValue(name, out var registered) && CommandHelp.Options(registered).Any(option =>
+                option.Split(' ', StringSplitOptions.RemoveEmptyEntries).Skip(1).FirstOrDefault()?.Equals(second, StringComparison.OrdinalIgnoreCase) == true);
+            if (!commandForm) return ["talk", text];
+        }
         if (text.Length > 0 && ConversationConnected?.Invoke() == true &&
             (!commands.ContainsKey(name) || text.StartsWith("help me ", StringComparison.OrdinalIgnoreCase)))
             return ["talk", text];
@@ -71,6 +79,9 @@ public sealed class CommandDispatcher
         try
         {
             if (tokens.Count == 0) return new("");
+            // Route meeting shorthand before the generic connect window launcher.
+            if (tokens.Count > 1 && tokens[0].Equals("connect", StringComparison.OrdinalIgnoreCase) && tokens[1].Equals("meetings", StringComparison.OrdinalIgnoreCase))
+                tokens = new[] { "agent" }.Concat(tokens.Skip(1)).ToArray();
             if (!commands.TryGetValue(tokens[0], out var command))
                 return new($"Unknown command '{tokens[0]}'. " +
                     (ConversationConnected?.Invoke() == false && commands.ContainsKey("talk") && tokens[0].ToLowerInvariant() is "create" or "read" or "update" or "delete" or "reate"

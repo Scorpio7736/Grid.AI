@@ -27,8 +27,10 @@ public sealed partial class ChatCommands
         commands.Register(new("memory", "memory <list|scope|save|save-summary|save-outcome|grant|revoke|expiry|correct|forget> ...", "Review durable agent/project memory, provenance, explicit retention and delegated summary grants. User-confirmed context is not verified host evidence.", chat.Memory) { Capability = "chat" });
         commands.Register(new("assist", "assist <advice|analyze|propose|submit|discard> ...", "Scoped AI guidance and reviewed MCP task drafts; never automatic execution.", args => chat.Assist(args)) { Capability = "chat" });
         commands.ConversationConnected = () => chat.active is not null;
+        commands.ConversationParticipant = name => chat.active is {} id && chat.Find(id).IsMeeting && chat.Find(id).Participants.Any(p => p.Kind == ParticipantKind.Program && p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         if (identity is not null) identity.Changed += () => { chat.active = null; chat.followUp = null; chat.fileRequest = null; chat.talkDetails = null; chat.StopScreen(); };
         commands.Register(new("agent", "agent meetings <AGENT> <AGENT> [...] [-inline]", "Open a shared meeting in a new window. Use talk @AGENT message to direct a turn.", args => chat.Meeting(args, commands)) { Capability = "chat" });
+        commands.Register(new("meetings", "meetings <AGENT> <AGENT> [...] [-inline]", "Alias for agent meetings; validates participants before opening a window.", args => chat.Meeting(new[] { "meetings" }.Concat(args).ToArray(), commands)) { Capability = "chat" });
         commands.Register(new("connect", "connect [program-id|name] [-inline]", "Open a dedicated conversation window; default contact is MCP. -inline keeps voice-compatible chat here.", chat.Connect));
         commands.Register(new("talk", "talk <message>", "Conversation, advice, scoped files, screen assistance and reviewed plans/edits. Missing details are requested; intent never grants permission.", chat.Talk));
         commands.Register(new("conversations", "conversations", "List the active identity's stored conversations.", chat.List));
@@ -65,7 +67,7 @@ public sealed partial class ChatCommands
             active = engine.StartMeeting(identity.Reference,names);
             save?.Invoke(CancellationToken.None).GetAwaiter().GetResult();
             return new("Meeting: " + string.Join(", ",participants.Select(p => TerminalTable.Safe(p.Name))) +
-                "\nOne participant replies per turn. Use talk <message> or talk @MAXIS <message>.\nThis transcript is shared. Private files and memories are not automatically included. Freeform replies never execute tasks.");
+                "\nNormally one participant replies per turn. Address MAXIS by name, hey MAXIS or @MAXIS; each of you/everyone requests get a reply from each participant.\nThis transcript is shared. Private files and memories are not automatically included. Freeform replies never execute tasks.");
         }
         catch (Exception e) when (e is ArgumentException or InvalidOperationException or UnauthorizedAccessException) { return new("Meeting error: " + e.Message); }
         catch (Exception e) when (e is IOException or Microsoft.Data.Sqlite.SqliteException) { return new("Meeting save failed; it may remain in memory. Resolve persistence before continuing."); }
@@ -89,6 +91,13 @@ public sealed partial class ChatCommands
     }
     private CommandResult Send(Guid id, string text, MessageOrigin origin)
     {
+        if (Find(id).IsMeeting && GridSimulationEngine.MeetingIntroductionsRequested(text))
+        {
+            var result = Response(engine.Talk(id, Actor, text, origin: origin));
+            save?.Invoke(CancellationToken.None).GetAwaiter().GetResult();
+            return result;
+        }
+        if (identity is not null && Find(id).IsMeeting && GridSimulationEngine.MeetingRoundRequested(text)) return SendMeetingRound(id, text, origin);
         if (inference is null || identity is null) return Response(engine.Talk(id, Actor, text, origin: origin));
         var turn = engine.PrepareGroundedTurn(id, Actor, text, origin);
         var reference = identity.Reference;

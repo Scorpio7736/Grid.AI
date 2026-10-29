@@ -6,7 +6,7 @@ public static class TaskCommands
 {
     public static void Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession identity, Func<CancellationToken, Task>? save)
     {
-        commands.Register(new("mcp", "mcp <request|plans|inspect|brief> ...", "Split explicit requests into specialist proposals and report verified broker results.", args =>
+        commands.Register(new("mcp", "mcp <plan|request|plans|inspect|run|cancel|repeat|brief|authority|capabilities> ...", "Master Control Program: clarify, delegate reviewed work and brief recorded results.", args =>
         {
             string Plans(string? reference = null)
             {
@@ -17,6 +17,35 @@ public static class TaskCommands
             }
             try
             {
+                if (args.Count == 1 && args[0] == "authority") return new(McpCapabilityCatalog.Authority);
+                if (args.Count == 1 && args[0] == "capabilities") return new(TerminalTable.Render(["Agent", "Capability", "Argument", "Purpose"], McpCapabilityCatalog.Entries.Select(e => new[] { e.Agent.ToString(), e.Capability, e.Argument, e.Purpose })));
+                if (args.Count >= 2 && args[0] == "plan") return commands.ExecuteTokens(["talk", "plan " + string.Join(" ", args.Skip(1))]);
+                if (args.Count == 2 && args[0] == "repeat")
+                {
+                    if (save is null) return new("MCP workflow requires a saved world.");
+                    _ = engine.CoordinationBrief(identity.Reference);
+                    var state = engine.TasksFor(identity.Reference);
+                    var id = TaskDisplay.Resolve(args[1], state.Plans.Select(p => p.Id), "plan");
+                    var copy = engine.Coordinate(identity.Reference, state.Plans.Single(p => p.Id == id).Request, Guid.NewGuid().ToString("N"));
+                    save(CancellationToken.None).GetAwaiter().GetResult();
+                    return new("New plan copied from the recorded exact steps. Fresh approval required for every task.\n" + Plans(copy.Id.ToString()));
+                }
+                if (args.Count == 2 && args[0] is "run" or "cancel")
+                {
+                    if (save is null) return new("MCP workflow requires a saved world.");
+                    _ = engine.CoordinationBrief(identity.Reference);
+                    var id = TaskDisplay.Resolve(args[1], engine.TasksFor(identity.Reference).Plans.Select(p => p.Id), "plan");
+                    if (args[0] == "cancel") { engine.CancelCoordination(identity.Reference, id); save(CancellationToken.None).GetAwaiter().GetResult(); return new("Plan cancelled; completed effects are not undone.\n" + Plans(id.ToString())); }
+                    if (!identity.IsMaster || identity.IsAttachment) return new("MCP plan dispatch requires human Master Control in the original host terminal.");
+                    var reference = identity.Reference; var used = 0;
+                    var snapshot = engine.TasksFor(reference);
+                    var reviewed = snapshot.Plans.Single(p => p.Id == id).TaskIds.Select(taskId => snapshot.Records.Single(t => t.Id == taskId)).Where(t => t.Status != Grid.Simulation.Tasks.TaskStatus.Completed).ToArray();
+                    return new("", BrokerOperation: async token => {
+                        if (Interlocked.Exchange(ref used, 1) != 0) return new("Plan dispatch already consumed; no duplicate execution.");
+                        try { return new(await engine.RunCoordinationAsync(reference, id, save, token, reviewed)); }
+                        catch (Exception e) when (Expected(e)) { return Error(e); }
+                    });
+                }
                 if (args.Count == 0 || args.Count == 1 && args[0] is "plans" or "brief") return new(Plans());
                 if (args.Count == 2 && args[0] is "inspect" or "brief") return new(Plans(args[1]));
                 if (args.Count is 2 or 3 && args[0] == "request")
@@ -26,7 +55,7 @@ public static class TaskCommands
                     save(CancellationToken.None).GetAwaiter().GetResult();
                     return new(Plans(plan.Id.ToString()));
                 }
-                return new("Usage: mcp request \"MAXIS: demo hello; JN: demo inventory\" [request-key] | mcp plans | mcp inspect <plan-id> | mcp brief [plan-id]. All subtasks require human approval. Specialist capabilities perform real work; speech requires explicit approval.");
+                return new("Usage: mcp repeat <plan-id> | mcp plan <request> | mcp authority | mcp capabilities | mcp run <plan-id> | mcp cancel <plan-id> | mcp request \"MAXIS: demo hello; JN: demo inventory\" [request-key] | mcp plans | mcp inspect <plan-id> | mcp brief [plan-id]. All subtasks require human approval. Specialist capabilities perform real work; speech requires explicit approval.");
             }
             catch (Exception e) when (Expected(e)) { return Error(e); }
         }) { Capability = "session" });

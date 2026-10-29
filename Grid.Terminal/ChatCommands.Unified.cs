@@ -37,8 +37,11 @@ public sealed partial class ChatCommands
         var id = active!.Value;
         engine.RequireAgentActivity();
         var input = text.Trim();
+        var planAction = Regex.Match(input, @"^(run|cancel|inspect|brief) plan ([a-f0-9-]{8,36})$", RegexOptions.IgnoreCase);
+        if (planAction.Success && identity?.IsMaster == true)
+            return Dispatch("mcp", planAction.Groups[1].Value.ToLowerInvariant(), planAction.Groups[2].Value);
         if (Starts(input, @"^(cancel|never mind|nevermind|cancel that|stop that)[.!]?$"))
-        { followUp = null; CancelFileRequest(); return Explain("Follow-up cancelled. No new action taken; completed changes are not undone."); }
+        { followUp = null; assistanceDraft = null; assistanceRequest++; CancelFileRequest(); return Explain("Follow-up cancelled. No new action taken; completed changes are not undone."); }
         if (Starts(input, @"^creat[.!]?$"))
             return Explain("To draft a file, say: create a file on my desktop called test.md and fill it with 10 random numbers. Review the preview, approve this change, then apply this change. You do not need to create the file manually.");
         if (Starts(input, @"^reate (?:a |the )?file\b"))
@@ -147,6 +150,11 @@ public sealed partial class ChatCommands
 
     private CommandResult ContinueTalk(FollowUp p, string input)
     {
+        if (p.Kind == "task-clarification")
+        {
+            if (Starts(input, @"^(approve|apply|run|execute)\b")) return Ask(p.Kind, p.Request, "Answer the clarification first. Nothing is ready for approval or execution.", target: p.Target);
+            return TalkHints(Assist(["propose", p.Request + " Clarification: " + p.Target + " User answer: " + input], repairFormat: true));
+        }
         if (p.Kind is "target" or "edit-context" or "workspace" or "task-workspace") input = input.Trim().Trim('"', '\'');
         if (p.Kind == "task-workspace")
         {
@@ -200,6 +208,7 @@ public sealed partial class ChatCommands
     }
     private bool IsFollowUp(FollowUp p, string input)
     {
+        if (p.Kind == "task-clarification") return true;
         if (Starts(input, @"^(hello|hi|thanks|thank you)[.!?]?$")) return false;
         if (Starts(input, @"^(select|upload|add) files[.!]?$|^(continue(?: to analy[sz]e)?|analy[sz]e(?: the file uploaded| (?:the|my) (?:file|document)s?)?)[.!]?$"))
             return p.Kind is "files" or "file-confirm" or "edit-files" or "analyze";

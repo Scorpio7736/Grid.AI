@@ -47,6 +47,23 @@ public sealed partial class GridSimulationEngine
             if (origin is not (MessageOrigin.Terminal or MessageOrigin.Microphone)) throw new ArgumentException("Invalid dialogue origin.");
             if (!CommunicationState.ValidContent(text)) throw new ArgumentException("Message must contain 1..4096 characters of valid text.");
             var selection = DialogueResponder(c, human, text);
+            if (c.IsMeeting && MeetingIntroductionsRequested(text))
+            {
+                var agents = c.Participants.Where(p => p.Kind == ParticipantKind.Program).ToArray();
+                if (communications.Conversations.Sum(x => x.Messages.Count) > CommunicationState.MaxMessages - agents.Length - 1)
+                    throw new InvalidOperationException("Not enough message slots for all introductions; nothing stored.");
+                var at = timeProvider.GetUtcNow().ToUniversalTime();
+                var messages = new List<GridMessage> { new(Guid.NewGuid(), c.Messages.Count + 1, human, text, origin, clock.TickCount, at) };
+                foreach (var participant in agents)
+                {
+                    var role = tasks.Agents.Single(a => a.Id == participant.Id).Role;
+                    messages.Add(new(Guid.NewGuid(), c.Messages.Count + messages.Count + 1, Canonical(participant), "I'm " + role + ", " + MeetingRole(role), MessageOrigin.SystemEvent, clock.TickCount, at));
+                }
+                token.ThrowIfCancellationRequested();
+                ReplaceConversation(c with { Messages = Array.AsReadOnly(c.Messages.Concat(messages).ToArray()) });
+                RecordEvent("MeetingIntroductionsStored", conversationId, null, "Registered role introductions stored atomically; no AI inference or task execution.");
+                return messages.AsReadOnly();
+            }
             var other = selection.Recipient;
             if (other.Kind != ParticipantKind.Program) throw new ArgumentException("Dialogue requires a program recipient.");
             other = Canonical(other);

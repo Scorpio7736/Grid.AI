@@ -1,5 +1,7 @@
 # Task assistance and scoped context — 6.3
 
+**6.11 completed — 2026-10-28:** MCP (Master Control Program) now offers custom catalog-based planning, scoped clarification, visible specialist-selection reasons, approved ordered plan execution, cancellation, reusable plans and recorded-result briefings. Reserved human controls remain explicit. **1,012 automated tests and six bundled-model checks passed.** Meeting shorthand (`meetings ...` and `connect meetings ...`) now validates before opening a window and supports `-inline`. [Workflow, authority matrix and terminal test](Project_GRID_MCP_Digital_Helper_Implementation.md). Earlier 6.11-planned statements below are historical; Phase 7 still requires 6.12–6.15.
+
 **6.9 update — 2026-10-27:** File-operation requests use typed host-reviewed changes independently of task proposals. Optional AI drafting returns content only; no target or permission is inferred from model output. Both original and attached conversations support exact approval/apply and recoverable deletion. [Implementation](Project_GRID_Conversational_File_Operations.md).
 
 **6.8 update — 2026-10-27:** Connected natural sentences and `talk` share the same bounded assistance routing. File-picker imports now automatically execute their analysis continuation, including attached windows; no task approvals or actions are inferred. [Completion evidence](Project_GRID_Conversation_Recovery_Implementation.md).

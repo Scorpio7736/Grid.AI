@@ -37,6 +37,98 @@ public sealed class MeetingTests
         public Task<CommandResult> Talk(string input) => Commands.Execute("talk "+input).BrokerOperation!(default);
     }
     [Theory]
+    [InlineData("hey maxis what is your favorite color", "MAXIS")]
+    [InlineData("hello, jn read me something", "JN")]
+    public async Task GreetingBeforeNameAddressesParticipant(string input, string name)
+    {
+        var f = new Fixture(); var id = f.Meeting(); await f.Talk(input);
+        Assert.Equal(name, f.Engine.GetConversation(id).Messages.Last().Sender.Name);
+    }
+    [Fact]
+    public async Task EachParticipantGetsIndependentResponseWithOneStoredUserMessage()
+    {
+        var f = new Fixture(); var id = f.Meeting();
+        await f.Talk("each of you state a random fact");
+        var messages = f.Engine.GetConversation(id).Messages;
+        Assert.Equal(new[] { "Local operator", "MCP", "MAXIS", "JN" }, messages.Select(m => m.Sender.Name));
+        Assert.Contains("respond only as JN", f.Ai.Prompt); Assert.Contains("never write another participant label", f.Ai.Prompt);
+        Assert.Equal(2, f.Saves); Assert.Empty(f.Engine.GetSnapshot().Tasks.Records);
+    }
+    [Fact]
+    public void NaturalAddressDoesNotOverrideValidManagementCommands()
+    {
+        var f = new Fixture(); f.Meeting();
+        f.Commands.Register(new("maxis", "maxis workspaces", "test", _ => new("management")));
+        Assert.Equal(new[] { "talk", "maxis what is your favorite color" }, f.Commands.ParseInput("maxis what is your favorite color"));
+        Assert.Equal("management", f.Commands.Execute("maxis workspaces").Text);
+        Assert.Equal("management", f.Commands.Execute("maxis register demo root project").Text);
+    }
+    [Fact]
+    public void ChangedConversationRejectsWholeRoundWithoutPartialReplies()
+    {
+        var f = new Fixture(); var id = f.Meeting();
+        const string input = "everyone state a fact";
+        var turns = f.Engine.PrepareMeetingRound(id, f.Engine.LocalOperator, input, MessageOrigin.Terminal);
+        f.Engine.EndConversation(id, f.Engine.LocalOperator);
+        Assert.Throws<InvalidOperationException>(() => f.Engine.CompleteMeetingRound(turns, input, turns.Select(_ => new InferenceReply(true, "A fact", "test")).ToArray(), default));
+        Assert.Empty(f.Engine.GetConversation(id).Messages);
+    }
+    [Theory]
+    [InlineData("maxis")]
+    [InlineData("maxis introduce yourself")]
+    [InlineData("MAXIS, introduce yourself")]
+    public async Task PlainNameSelectsActualParticipantAndSuppliesRoster(string input)
+    {
+        var f = new Fixture(); var id = f.Meeting(); await f.Talk(input);
+        Assert.Equal("MAXIS", f.Engine.GetConversation(id).Messages.Last().Sender.Name);
+        Assert.Contains("AUTHORITATIVE PARTICIPANTS", f.Ai.Prompt);
+        Assert.Contains("MCP: Master Control Program", f.Ai.Prompt);
+        Assert.Contains("JN: GRID's file archivist", f.Ai.Prompt);
+        Assert.Contains("respond only as MAXIS", f.Ai.Prompt);
+    }
+    [Fact]
+    public void GroupIntroductionStoresOneUserMessageAndEveryParticipantInOrder()
+    {
+        var f = new Fixture(); var id = f.Meeting();
+        var response = f.Commands.Execute("talk each of you introduce yourselves");
+        Assert.Null(response.BrokerOperation);
+        var messages = f.Engine.GetConversation(id).Messages;
+        Assert.Equal(new[] { "Local operator", "MCP", "MAXIS", "JN" }, messages.Select(m => m.Sender.Name));
+        Assert.Contains("software engineer", response.Text); Assert.Contains("file archivist", response.Text);
+        Assert.Equal(new long[] { 1, 2, 3, 4 }, messages.Select(m => m.Sequence));
+        Assert.Empty(f.Engine.GetSnapshot().Tasks.Records);
+        Assert.Equal("", f.Ai.Prompt);
+    }
+    [Fact]
+    public void NameOfAbsentAgentDoesNotSilentlyRouteToMcp()
+    {
+        var f = new Fixture(); f.Meeting("MCP JN");
+        Assert.Contains("not in this meeting", f.Commands.Execute("talk MAXIS introduce yourself").Text);
+        Assert.Empty(f.Engine.GetConversation(f.Chat.ActiveConversation!.Value).Messages);
+    }
+    [Theory]
+    [InlineData("meetings MCP MAXIS JN -inline")]
+    [InlineData("connect meetings mcp maxis -inline")]
+    public void MeetingAliasesStartInlineWithoutLaunching(string command)
+    {
+        var f = new Fixture(); f.Commands.OpenConversation = _ => throw new Exception("Unexpected window");
+        Assert.Contains("Meeting:", f.Commands.Execute(command).Text);
+        Assert.True(f.Engine.GetConversation(f.Chat.ActiveConversation!.Value).IsMeeting);
+    }
+    [Theory]
+    [InlineData("meetings MCP MAXIS")]
+    [InlineData("connect meetings MCP MAXIS")]
+    public void MeetingAliasesLaunchCanonicalValidatedRequest(string command)
+    {
+        var f = new Fixture(); IReadOnlyList<string>? launched = null;
+        f.Commands.OpenConversation = tokens => { launched = tokens; return new("opened"); };
+        Assert.Equal("opened", f.Commands.Execute(command).Text);
+        Assert.Equal(new[] { "agent", "meetings", "MCP", "MAXIS" }, launched);
+        launched = null;
+        Assert.Contains("error", f.Commands.Execute(command.Replace("MAXIS", "Unknown")).Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Null(launched);
+    }
+    [Theory]
     [InlineData("MCP")]
     [InlineData("MCP mcp")]
     [InlineData("MCP Unknown")]
