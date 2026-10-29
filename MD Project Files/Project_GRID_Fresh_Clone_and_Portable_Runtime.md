@@ -1,5 +1,7 @@
 # Fresh clone and prepared portable runtime
 
+**6.13 completed — 2026-10-29:** Six explicit agent profiles share one pinned Qwen3 4B Q4_K_M snapshot. CPU-only/reduced-memory operation, role routing and the 20,000,000,000-byte base ceiling are implemented. `ai profiles` and `ai storage` expose configuration and base/data/staging/headroom. **14 live role checks passed**; physical low-RAM/second-device certification remains separate. See [profiles, measured evidence and limits](Project_GRID_Agent_Model_Profiles_and_Base_Budget.md). Earlier planned/fixed-model descriptions are historical; 6.14–6.15 still block Phase 7.
+
 **Reported second-device failure — 2026-10-27:** Portable AI remains an unresolved pre-Phase-7 blocker despite same-PC probe passes. Verify the actual copy/transfer destination on a second supported device without installed AI, models, SDK or network; package every active model and extraction dependency under the new base-size budget. [Required plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
 
 **6.6 verification — 2026-10-27:** The standalone app supports `launch.cmd --verify-talk`, an opt-in synthetic bundled-model check for unified conversations, context, plans and edits. All 12 checks passed. No download, saved-world load or desktop capture occurs. [Repeatable verification](Project_GRID_Unified_Talk_Workflow.md).

@@ -7,6 +7,29 @@ namespace Grid.Terminal.Tests;
 
 public sealed class WindowTests
 {
+    private sealed class InvitationInference : ILocalInference
+    {
+        public Task<InferenceReply> GenerateAsync(string prompt, CancellationToken token = default) => Task.FromResult(new InferenceReply(true,
+            "{\"steps\":[{\"agent\":\"VOLT\",\"capability\":\"volt.status\",\"argument\":\"current\"}]}", "test"));
+    }
+    [Fact]
+    public async Task SpecialistCanJoinPlanAndReportInSameAttachedWindow()
+    {
+        await using var f = new Fixture(inference: new InvitationInference(), mcp: true); f.Engine.StartAgents(f.Owner.Reference);
+        await using var child = await f.Open("connect MCP");
+        Assert.Contains("suggests inviting VOLT", (await child.Send("command", "invite VOLT")).Text);
+        Assert.Contains("Invited VOLT", (await child.Send("command", "accept invitation")).Text);
+        Assert.Contains("DRAFT ONLY", (await child.Send("command", "@VOLT plan current resource status")).Text);
+        Assert.Contains("await approval", (await child.Send("command", "submit plan")).Text);
+        var plan = Assert.Single(f.Engine.GetSnapshot().Tasks.Plans); var task = Assert.Single(plan.TaskIds);
+        Assert.Contains("Task updated", (await child.Send("command", "tasks approve " + task)).Text);
+        Assert.Contains("original host", (await child.Send("command", "mcp run " + plan.Id)).Text);
+        await f.Engine.RunCoordinationAsync(f.Owner.Reference, plan.Id, _ => Task.CompletedTask, default);
+        Assert.Contains("Completed", (await child.Send("command", "MCP progress")).Text);
+        await child.Send("command", "remove participant VOLT");
+        Assert.Contains("Removed VOLT", (await child.Send("command", "confirm removal")).Text);
+        Assert.Equal("GRID\n\nCurrent participants: MCP", (await child.Send("command", "participants")).Text);
+    }
     [Fact, Trait("Phase", "6.8")]
     public async Task AttachedDirectChatAndPickerRunAnalysisWithoutContinue()
     {
@@ -87,13 +110,14 @@ public sealed class WindowTests
         public readonly WindowHub Hub;
         public readonly CommandDispatcher Commands;
         public string Endpoint = "";
-        public Fixture(Func<string, int>? launch = null, ILocalInference? inference = null, IScreenContextProvider? screens = null)
+        public Fixture(Func<string, int>? launch = null, ILocalInference? inference = null, IScreenContextProvider? screens = null, bool mcp = false)
         {
             Owner = new(() => "test-owner"); Registry.Add(Owner);
             Engine = new(GridWorldFactory.CreateGenesis(), editAuthorizer: Registry); Owner.Attach(Engine); Owner.Login(); Engine.PrepareChatFixture();
             CommandDispatcher Create(TerminalIdentitySession identity)
             {
-                var commands = DefaultCommands.Create(Engine); ChatCommands.Register(commands, Engine, identity, inference, screenProvider: screens);
+                var commands = DefaultCommands.Create(Engine); ChatCommands.Register(commands, Engine, identity, inference, save: mcp ? _ => Task.CompletedTask : null, screenProvider: screens);
+                if (mcp) TaskCommands.Register(commands, Engine, identity, _ => Task.CompletedTask);
                 IdentityCommands.Register(commands, Engine, identity, interactiveUi: true);
                 ContextCommands.Register(commands, Engine, identity);
                 WorkspaceChangeCommands.Register(commands, Engine, identity, inference);

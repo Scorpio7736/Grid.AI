@@ -6,10 +6,17 @@ public static class LocalAiCommands
 {
     public static void Register(CommandDispatcher commands, TerminalIdentitySession identity, SharedLocalInference service, OllamaLocalBackend backend)
     {
-        commands.Register(new("ai", "ai <status|test>", "Inspect the shared local inference foundation or run a text-only smoke test. Conversations share this service with deterministic fallback.", args =>
+        commands.Register(new("ai", "ai <status|test|profiles|storage>", "Inspect the shared local inference foundation or run a text-only smoke test. Conversations share this service with deterministic fallback.", args =>
         {
             if (identity.IsAttachment) return new("Use the original host terminal for local AI diagnostics.");
-            if (args.Count != 1 || args[0] is not ("status" or "test")) return new("Usage: ai status | ai test");
+            if (args.Count != 1 || args[0] is not ("status" or "test" or "profiles" or "storage")) return new("Usage: ai status | ai test | ai profiles | ai storage");
+            if(args[0]=="profiles") return new(string.Join("\n\n",AgentModelProfiles.All.Select(p=>$"{p.Agent} | {p.Model} | context {p.ContextTokens} | output {p.InitialTokens}/{p.RetryTokens}\n{p.Purpose}\n{p.Fallback}")) + $"\nCPU-only: {AgentModelProfiles.CpuOnly}; reduced memory: {AgentModelProfiles.LowMemory}. One queue, one loaded model, shared weights. Model manifest pinned by SHA256.");
+            if(args[0]=="storage") {
+                var root=GridTransfer.PackageRoot(AppContext.BaseDirectory);
+                if(root is null) return new("Use the portable package for complete base/data/staging accounting; source checkout dependencies are not a release package.");
+                try { return new(PackageBudget.Measure(root).ToString()+$"\nDrive free space: {new DriveInfo(Path.GetPathRoot(root)!).AvailableFreeSpace:N0} bytes. Existing JN managed-data governance is separate from the base ceiling.\nMutable data has no automatic deletion policy. Inspect JN governance and explicit retention commands; no data deleted by this diagnostic."); }
+                catch(Exception e) when(e is IOException or UnauthorizedAccessException) { return new("Storage audit failed: "+e.Message); }
+            }
             var reference = identity.Reference;
             return new("", BrokerOperation: async token =>
             {

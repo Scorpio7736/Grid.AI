@@ -99,8 +99,9 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
         }
         if (!files.Any(f => f.Source.Equals(world, StringComparison.OrdinalIgnoreCase))) throw new IOException("World save is missing.");
         if (files.Select(f => f.Relative).Distinct(StringComparer.OrdinalIgnoreCase).Count() != files.Count) throw new IOException("Transfer file mapping collides.");
+        PackageBudget.RequireBase(new PackageFootprint(files.Where(f=>PackageBudget.Category(f.Relative)=="base").Sum(f=>f.Length) + 65536,0,0,files.Count));
         var drive = new DriveInfo(Path.GetPathRoot(destination)!);
-        if (drive.AvailableFreeSpace < files.Sum(f => f.Length) + 16L * 1024 * 1024) throw new IOException("Insufficient destination space.");
+        if (drive.AvailableFreeSpace < files.Sum(f => f.Length) + PackageBudget.Reserve) throw new IOException("Insufficient destination space.");
         return new(destination, request.Move, app, world, files.ToArray());
     }
     public static string Preview(TransferPlan p) => $"{(p.Move ? "MOVE" : "COPY")} GRID\nApplication: {p.ApplicationRoot}\nWorld: {p.WorldPath}\nDestination: {p.Destination}\n{p.Files.Length} files; {p.Files.Sum(f => f.Length):N0} bytes before final save.\n" +
@@ -135,6 +136,7 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
             var receipt = new TransferReceipt(current with { Files = verified.ToArray() }, Environment.ProcessId, Process.GetCurrentProcess().StartTime.ToUniversalTime().Ticks);
             File.WriteAllText(Path.Combine(stage, "transfer-manifest.json"), JsonSerializer.Serialize(receipt, new JsonSerializerOptions { WriteIndented = true }));
             File.WriteAllText(Path.Combine(stage, "transfer-status.txt"), current.Move ? "Verified destination. Source cleanup pending parent exit. Do not start destination until cleanup completes." : "Copy complete. Original retained.");
+            PackageBudget.RequireBase(PackageBudget.Measure(stage));
             if (!authorized()) throw new UnauthorizedAccessException("Transfer authorization revoked before publication.");
             CheckPath(current.Destination); Directory.Move(stage, current.Destination);
             if (current.Move)

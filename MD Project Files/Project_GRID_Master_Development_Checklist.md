@@ -1,5 +1,9 @@
 # Project GRID — Master Development Checklist
 
+**6.13 completed — 2026-10-29:** Six explicit agent profiles share one pinned Qwen3 4B Q4_K_M snapshot. CPU-only/reduced-memory operation, role routing and the 20,000,000,000-byte base ceiling are implemented. `ai profiles` and `ai storage` expose configuration and base/data/staging/headroom. **14 live role checks passed**; physical low-RAM/second-device certification remains separate. See [profiles, measured evidence and limits](Project_GRID_Agent_Model_Profiles_and_Base_Budget.md). Earlier planned/fixed-model descriptions are historical; 6.14–6.15 still block Phase 7.
+
+**6.12 completed — 2026-10-29:** MCP can recommend/invite registered specialists with human confirmation, show participants, accept direct specialist planning requests and display recorded MCP progress/results in the same window. Membership changes start a fresh saved history segment; earlier transcripts and private context are not automatically shared. Decline, removal, scope changes, restart and attached-window workflows are tested. **1,031 automated tests and six bundled-model checks passed.** See [workflow, privacy boundary and verification](Project_GRID_MCP_Specialist_Invitations_Implementation.md). Earlier statements that invitations are planned are historical; 6.13–6.15 still block Phase 7.
+
 **2026-10-28 meeting round/addressing follow-up:** Explicit `each of you`, `everyone`, `all of you`, and `you all` requests now generate independent replies for every meeting participant, committed together with one user message. Cancellation/scope changes prevent partial round storage; unavailable inference is labeled per participant. `hey/hi/hello MAXIS ...` routes to MAXIS. While a meeting is connected, `maxis what is your favorite color` is chat; recognized management subcommands such as `maxis workspaces` and `maxis register ...` retain command behavior. Group introductions still use registered roles without model inference. Shared prompts prohibit impersonating other participants, distinguish fictional preferences from observed facts, and ask for a source when a reading request has none. No private context, task execution or automatic invitations are granted. Verification: **1,022 regression tests passed** (752 Terminal), plus bundled-model replay of the reported messages. Local-model answers can still be factually wrong; correct routing is not factual verification.
 
 **2026-10-28 meeting identity repair:** Leading participant names now direct replies (`maxis`, `MAXIS, introduce yourself`) without requiring `@`; absent named agents are refused rather than silently routed to MCP. `each of you introduce yourselves` stores one user message followed by every participant’s registered role introduction, atomically and without AI inference. Ordinary meeting AI receives the authoritative participant roster and roles, with shared history only. General discussion still selects one speaker per turn; this does not add automatic invitations or general multi-agent broadcasts. Verification: 1,017 regression tests passed across the four suites (747 Terminal), and the bundled model correctly handled the reported introduction/name sequence in an isolated world. Evidence: `%TEMP%\GridMeetingIdentityProbe\report.txt`.
@@ -1409,20 +1413,24 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.12 MCP specialist invitations in the current chat
 
-**Planned — required before Phase 7.**
+**Completed — 2026-10-29.**
 
-- [ ] Let MCP invite a suitable agent into the current conversation with visible membership and necessary confirmation
-- [ ] Allow direct user instruction to invited agents and unified MCP progress/completion reports
-- [ ] Limit shared history/context and test declined invitations, removal, scope changes and restart
+- [x] Let MCP invite a suitable agent into the current conversation with visible membership and necessary confirmation
+- [x] Allow direct user instruction to invited agents and unified MCP progress/completion reports
+- [x] Limit shared history/context and test declined invitations, removal, scope changes and restart
+
+**Completion verification:** 1,031 Release tests and six isolated bundled-model checks passed. Membership is a confirmed new-history segment in the same window; task approval and original-host dispatch remain separate. See [6.12 implementation and test](Project_GRID_MCP_Specialist_Invitations_Implementation.md).
 
 ## 6.13 Role-specific models and 20 GB base GRID budget
 
-**Planned — required before Phase 7.**
+**Completed — 2026-10-29.**
 
-- [ ] Benchmark and select an offline model profile for every agent; document role fit and fallback
-- [ ] Enforce a 20,000,000,000-byte base ceiling covering code, app, runtimes, models and extraction dependencies
-- [ ] Deduplicate shared assets and separately expose mutable-data growth, staging/headroom and total portable footprint
-- [ ] Verify measured package size, offline quality and CPU/low-memory operation
+- [x] Benchmark and select an offline model profile for every agent; document role fit and fallback
+- [x] Enforce a 20,000,000,000-byte base ceiling covering code, app, runtimes, models and extraction dependencies
+- [x] Deduplicate shared assets and separately expose mutable-data growth, staging/headroom and total portable footprint
+- [x] Verify measured package size, offline quality and CPU/low-memory operation
+
+**Completion verification:** 1,044 regression tests and 14 bundled-model role checks; CPU-only checks require zero GPU allocation. The reduced-memory configuration is tested, not a universal minimum-RAM hardware guarantee. See [profile selection, storage accounting and evidence](Project_GRID_Agent_Model_Profiles_and_Base_Budget.md).
 
 ## 6.14 Complete portable copy/transfer and offline AI repair
 

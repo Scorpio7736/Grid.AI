@@ -20,7 +20,7 @@ public sealed partial class GridSimulationEngine
             if(guard is not null)
             {
                 var conversation=GetConversation(guard.ConversationId);
-                if(!lease.Identity.IsMasterControl || conversation.IsMeeting || conversation.Status!=Grid.Communication.ConversationStatus.Open ||
+                if(!lease.Identity.IsMasterControl || conversation.IsMeeting && !conversation.Participants.Any(p=>tasks.Agents.Any(a=>a.Role==AgentRole.MCP && a.Id==p.Id)) || conversation.Status!=Grid.Communication.ConversationStatus.Open ||
                     !conversation.Participants.Any(p=>Grid.Communication.CommunicationState.SameIdentity(p,LocalOperator)) ||
                     guard.Activity!=runVersion || guard.Context!=contextRevision || guard.Memory!=communications.MemoryRevision)
                     throw new InvalidOperationException("Assistance scope changed; request a new draft.");

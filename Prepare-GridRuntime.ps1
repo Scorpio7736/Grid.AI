@@ -12,8 +12,9 @@ $manifestRelative = 'manifests\registry.ollama.ai\library\qwen3\4b'
 $manifestPath = Join-Path $ModelCache $manifestRelative
 if (!(Test-Path -LiteralPath (Join-Path $OllamaSource 'ollama.exe'))) { throw 'Ollama runtime missing. Supply -OllamaSource with an extracted Windows runtime directory.' }
 if (!(Test-Path -LiteralPath $manifestPath)) { throw 'qwen3:4b missing. Provision its Ollama model cache once, then supply -ModelCache. Inference never downloads models.' }
+if ((Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash -ne '31D9857B5705086D352D4D6DB04E86C5D0F6A2B5D59A4DC7CE5CDB271CCF9141') { throw 'Model manifest differs from the benchmarked Qwen3 4B Q4_K_M snapshot. Supply the tested assets; do not silently substitute a changed model tag.' }
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
-$blobs = @($manifest.config) + @($manifest.layers)
+$blobs = (@($manifest.config) + @($manifest.layers)) | Sort-Object -Property digest -Unique
 foreach ($blob in $blobs) {
     if ($blob.digest -notmatch '^sha256:[0-9a-f]{64}$') { throw 'Invalid model blob digest.' }
     $source = Join-Path $ModelCache ('blobs\' + $blob.digest.Replace(':','-'))
@@ -35,4 +36,6 @@ foreach ($blob in $blobs) {
 Copy-Item -LiteralPath $DotnetSource -Destination (Join-Path $Destination 'dotnet') -Recurse
 if (Test-Path -LiteralPath $NugetCache) { Copy-Item -LiteralPath $NugetCache -Destination (Join-Path $Destination 'nuget') -Recurse }
 @{ model='qwen3:4b'; manifestSha256=(Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash; runtimeVersion=(& (Join-Path $runtimeTarget 'ollama.exe') --version | Out-String).Trim(); preparedUtc=[DateTime]::UtcNow.ToString('O') } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $Destination 'assets.json') -Encoding UTF8
+$preparedBytes = (Get-ChildItem -LiteralPath $Destination -Recurse -File | Measure-Object -Property Length -Sum).Sum
+if ($preparedBytes -gt 20000000000L) { throw 'Prepared runtime exceeds 20 GB; do not ship this directory. Reduce optional SDK/cache assets before packaging.' }
 Write-Output "GRID runtime provisioned inside $Destination. Normal GRID launch now starts and stops its own bundled AI server."

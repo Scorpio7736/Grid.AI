@@ -19,7 +19,7 @@ public sealed partial class ChatCommands
                 foreach (var turn in turns)
                 {
                     if (!Current()) return new("Meeting round cancelled or scope changed; no partial replies stored.");
-                    var pending = turn.Prompt.Length == 0 || inference is null ? Task.FromResult(new InferenceReply(false, "", "Context budget exceeded")) : inference!.GenerateAsync(turn.Prompt, stop.Token);
+                    var pending = turn.Prompt.Length == 0 || inference is null ? Task.FromResult(new InferenceReply(false, "", "Context budget exceeded")) : inference!.ForAgent(engine.ResolveProgram(turn.ResponderId.ToString()).Name).GenerateAsync(turn.Prompt, stop.Token);
                     while (!pending.IsCompleted) { await Task.WhenAny(pending, Task.Delay(50, stop.Token)); if (token.IsCancellationRequested || !Current()) { stop.Cancel(); break; } }
                     replies.Add(await pending);
                     if (token.IsCancellationRequested || !Current()) return new("Meeting round cancelled or scope changed; no partial replies stored.");

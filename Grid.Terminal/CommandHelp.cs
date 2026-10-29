@@ -5,11 +5,11 @@ public static class CommandHelp
     public static IReadOnlyList<string> Options(TerminalCommand c) => BaseOptions(c).Concat(c.Name == "tasks" ? Enum.GetNames<Grid.Simulation.Tasks.AgentRole>().SelectMany(a => new[] { "tasks -" + a, "tasks -completed -" + a, "tasks -list -" + a, "tasks list -" + a, "tasks list -archived -" + a, "tasks approve -all -" + a, "tasks run -all -" + a, "tasks clear -all -" + a }) : Array.Empty<string>()).Concat(WindowCommands.Supports(c.Name) ? new[] { c.Name + " -opninwin" } : Array.Empty<string>()).ToArray();
     private static IReadOnlyList<string> BaseOptions(TerminalCommand c) => c.Name switch {
         "transcript" => ["transcript", "transcript --details", "transcript <conversation-id> --details"],
-        "ai" => ["ai status", "ai test"],
+        "ai" => ["ai status", "ai test", "ai profiles", "ai storage"],
         "grid" => ["grid -start", "grid -pause", "grid -copyto -select", "grid -transferto -select","grid -copyto \"location\"", "grid -transferto \"location\""],
         "connect" => ["connect", "connect <program-id|name>", "connect -inline [program-id|name]"],
         "resume" => ["resume <conversation-id>", "resume -inline <conversation-id>"],
-        "talk" => ["talk <message>", "talk analyze my document", "talk select files", "talk continue", "talk details", "talk look at my screen", "talk capture", "talk cancel", "talk submit plan", "talk discard plan", "talk approve task <id>", "talk run task <id>", "talk edit a file", "talk approve edit <id> [high-risk]", "talk apply edit <id>", "talk rollback edit <id>", "talk project <name>", "talk @MAXIS <message>", "talk @JN <message>"],
+        "talk" => ["talk participants", "talk invite MAXIS", "talk invite someone for code debugging", "talk accept invitation", "talk decline invitation", "talk remove participant MAXIS", "talk confirm removal","talk <message>", "talk analyze my document", "talk select files", "talk continue", "talk details", "talk look at my screen", "talk capture", "talk cancel", "talk submit plan", "talk discard plan", "talk approve task <id>", "talk run task <id>", "talk edit a file", "talk approve edit <id> [high-risk]", "talk apply edit <id>", "talk rollback edit <id>", "talk project <name>", "talk @MAXIS <message>", "talk @JN <message>"],
         "typewriter" => ["typewriter on", "typewriter off"],
         "volt" => ["volt status"],
         "relay" => ["relay inbox", "relay inspect <notification-reference>", "relay deliveries", "relay ack <notification-reference>"],

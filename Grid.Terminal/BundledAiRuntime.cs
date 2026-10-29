@@ -29,6 +29,8 @@ public sealed class BundledAiRuntime : IAsyncDisposable
         { runtime.Status = "Local AI assets missing. Run Prepare-GridRuntime.ps1 in the source repository, or use a complete portable package. No global Ollama fallback."; return runtime; }
         try
         {
+            PackageBudget.VerifyModel(root, hashes: false);
+            if(File.Exists(Path.Combine(root,"..",GridTransfer.Marker))) PackageBudget.RequireBase(PackageBudget.Measure(Path.GetFullPath(Path.Combine(root,".."))));
             var listener = new TcpListener(IPAddress.Loopback,0); listener.Start();
             var port = ((IPEndPoint)listener.LocalEndpoint).Port; listener.Stop();
             runtime.Endpoint = new($"http://127.0.0.1:{port}/");
@@ -41,6 +43,7 @@ public sealed class BundledAiRuntime : IAsyncDisposable
             start.Environment["OLLAMA_MAX_LOADED_MODELS"]="1";
             start.Environment["OLLAMA_CONTEXT_LENGTH"]="4096";
             start.Environment["OLLAMA_KEEP_ALIVE"]="1m";
+            if(AgentModelProfiles.CpuOnly) { start.Environment["CUDA_VISIBLE_DEVICES"]="-1"; start.Environment["ROCR_VISIBLE_DEVICES"]="-1"; start.Environment["GGML_VK_VISIBLE_DEVICES"]="-1"; }
             var temp = Path.Combine(root,"temp");Directory.CreateDirectory(temp);
             start.Environment["TEMP"]=temp;start.Environment["TMP"]=temp;
             var home=Path.Combine(root,"home");Directory.CreateDirectory(home);
@@ -62,7 +65,7 @@ public sealed class BundledAiRuntime : IAsyncDisposable
                 deadline.Token.ThrowIfCancellationRequested();
                 var status=await backend.StatusAsync(deadline.Token);
                 if (status.Contains("Installed: True",StringComparison.Ordinal))
-                { runtime.Ready=true;runtime.Status="Bundled local AI ready: qwen3:4b. Runtime/model files: " + root;return runtime; }
+                { runtime.Ready=true;runtime.Status="Bundled local AI ready: qwen3:4b. CPU-only: " + AgentModelProfiles.CpuOnly + "; reduced memory: " + AgentModelProfiles.LowMemory + ". Runtime/model files: " + root;return runtime; }
                 await Task.Delay(250,deadline.Token);
             }
             throw new IOException("Bundled AI exited before readiness; check bundled libraries and hardware compatibility.");

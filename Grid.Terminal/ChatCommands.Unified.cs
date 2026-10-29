@@ -41,7 +41,10 @@ public sealed partial class ChatCommands
         if (planAction.Success && identity?.IsMaster == true)
             return Dispatch("mcp", planAction.Groups[1].Value.ToLowerInvariant(), planAction.Groups[2].Value);
         if (Starts(input, @"^(cancel|never mind|nevermind|cancel that|stop that)[.!]?$"))
-        { followUp = null; assistanceDraft = null; assistanceRequest++; CancelFileRequest(); return Explain("Follow-up cancelled. No new action taken; completed changes are not undone."); }
+        { invitation = null; followUp = null; assistanceDraft = null; assistanceRequest++; CancelFileRequest(); return Explain("Follow-up cancelled. No new action taken; completed changes are not undone."); }
+        if (InvitationTalk(input, out var invitationReply)) return invitationReply;
+        var progressRequest = Regex.Match(input, @"^@?MCP\s+(progress|plans|brief)(?:\s+([a-f0-9-]{8,36}))?$", RegexOptions.IgnoreCase);
+        if (progressRequest.Success) return progressRequest.Groups[2].Success ? Dispatch("mcp", "brief", progressRequest.Groups[2].Value) : Dispatch("mcp", "brief");
         if (Starts(input, @"^creat[.!]?$"))
             return Explain("To draft a file, say: create a file on my desktop called test.md and fill it with 10 random numbers. Review the preview, approve this change, then apply this change. You do not need to create the file manually.");
         if (Starts(input, @"^reate (?:a |the )?file\b"))
@@ -62,6 +65,13 @@ public sealed partial class ChatCommands
         }
         input = Regex.Replace(input, @"^(?:(?:can|could|would) you\s+|please\s+|I (?:want|need) you to\s+)+", "", RegexOptions.IgnoreCase).Trim();
         // Directed meeting turns retain the established participant/recall routing.
+        var directedPlan = Regex.Match(input, @"^@?(MCP|MAXIS|JN|VOLT|SENTINEL|RELAY)[,:]?\s+(plan|propose)\b(.*)$", RegexOptions.IgnoreCase);
+        if (Find(id).IsMeeting && directedPlan.Success)
+        {
+            var role = directedPlan.Groups[1].Value.ToUpperInvariant();
+            if (!Find(id).Participants.Any(p => p.Kind == ParticipantKind.Program && p.Name.Equals(role, StringComparison.OrdinalIgnoreCase))) return Explain("That agent is not in this meeting. Invite them first.");
+            return TalkHints(Assist(["propose", "User directs " + role + ": " + directedPlan.Groups[2].Value + directedPlan.Groups[3].Value], repairFormat: true));
+        }
         if (input.StartsWith('@')) return Send(id, input, MessageOrigin.Terminal);
         if (identity?.IsMaster != true)
             return identity is not null && Starts(input, @"^(build|test|plan|edit|approve|run|apply|delete|select files|look at .*screen)\b")
@@ -131,7 +141,7 @@ public sealed partial class ChatCommands
         }
         if (Starts(input, @"^(build|test|run tests|plan|propose|check (the )?(resources|firewall|defender)|inspect workspace|notify|inventory)\b"))
         {
-            if (Find(id).IsMeeting) return Send(id, input, MessageOrigin.Terminal);
+            if (Find(id).IsMeeting && !Starts(input, @"^(plan|propose)\b")) return Send(id, input, MessageOrigin.Terminal);
             if (Starts(input, @"^(build|test|run tests)\b"))
             {
                 var workspaces = engine.TasksFor(identity.Reference).Workspaces.Where(w => w.Enabled).Select(w => w.Name).ToArray();

@@ -112,7 +112,7 @@ public sealed partial class ChatCommands
             {
                 var pending = turn.Prompt.Length == 0
                     ? Task.FromResult(new InferenceReply(false, "", "Input exceeds AI context budget."))
-                    : inference.GenerateAsync(turn.Prompt, stop.Token);
+                    : inference.ForAgent(engine.ResolveProgram(turn.ResponderId.ToString()).Name).GenerateAsync(turn.Prompt, stop.Token);
                 while (!pending.IsCompleted)
                 {
                     await Task.WhenAny(pending, Task.Delay(50, stop.Token));

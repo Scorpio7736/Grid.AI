@@ -1,5 +1,7 @@
 # Project GRID — Shared local AI foundation (6.1)
 
+**6.13 completed — 2026-10-29:** Six explicit agent profiles share one pinned Qwen3 4B Q4_K_M snapshot. CPU-only/reduced-memory operation, role routing and the 20,000,000,000-byte base ceiling are implemented. `ai profiles` and `ai storage` expose configuration and base/data/staging/headroom. **14 live role checks passed**; physical low-RAM/second-device certification remains separate. See [profiles, measured evidence and limits](Project_GRID_Agent_Model_Profiles_and_Base_Budget.md). Earlier planned/fixed-model descriptions are historical; 6.14–6.15 still block Phase 7.
+
 **Planned before Phase 7 — 2026-10-27:** Select benchmarked offline model profiles for every agent; shared weights are allowed where suitable. All required models/runtime/code/extractors must fit the 20 GB decimal base package and work from an actual portable destination on another supported device. Current shared Qwen setup does not prove these requirements. [Plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
 
 **6.6 integration — 2026-10-27:** Structured inference now optionally carries a trusted JSON schema through the bounded queue and bundled backend. Proposal schemas constrain output shape; independent capability/argument validation and human review remain mandatory. Structured-mode instructions were corrected after live malformed proposals. [Unified workflow and evidence](Project_GRID_Unified_Talk_Workflow.md).

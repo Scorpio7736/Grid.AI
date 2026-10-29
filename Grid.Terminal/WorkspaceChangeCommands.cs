@@ -80,7 +80,7 @@ public sealed class WorkspaceChangeCommands
             using var stop = CancellationTokenSource.CreateLinkedTokenSource(token); stop.CancelAfter(TimeSpan.FromSeconds(305));
             try
             {
-                var pending = inference.GenerateFileAsync(prompt, stop.Token);
+                var pending = inference.ForAgent("MAXIS").GenerateFileAsync(prompt, stop.Token);
                 while (!pending.IsCompleted && !stop.IsCancellationRequested)
                 { await Task.WhenAny(pending, Task.Delay(40)); if (!Valid()) stop.Cancel(); }
                 var reply = await pending.WaitAsync(stop.Token);
@@ -178,7 +178,7 @@ public sealed class WorkspaceChangeCommands
                     using var stop = CancellationTokenSource.CreateLinkedTokenSource(token); stop.CancelAfter(TimeSpan.FromSeconds(125));
                     try
                     {
-                        var pending = inference.GenerateStructuredAsync(prompt, stop.Token);
+                        var pending = inference.ForAgent("MAXIS").GenerateStructuredAsync(prompt, stop.Token);
                         while (!pending.IsCompleted && !stop.IsCancellationRequested) { await Task.WhenAny(pending, Task.Delay(40)); if (!Valid()) stop.Cancel(); }
                         var reply = await pending.WaitAsync(stop.Token);
                         if (!Valid() || stop.IsCancellationRequested) return new("Editing request cancelled. No draft created.");

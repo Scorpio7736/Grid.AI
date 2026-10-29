@@ -5,6 +5,9 @@ using Grid.Terminal;
 using Grid.Simulation.Resources;
 using Grid.Simulation.Applications;
 
+if (args.SequenceEqual(new[] { "--verify-model-profiles" })) return await ModelProfileVerification.RunAsync();
+if (args.Length == 2 && args[0] == "--audit-package") return PackageBudget.Audit(args[1]);
+if (args.SequenceEqual(new[] { "--verify-invitations" })) return await SpecialistInvitationVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-mcp-workflow" })) return await McpWorkflowVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-durable-memory" })) return await DurableMemoryVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-file-operations" })) return await FileOperationsVerification.RunAsync();
