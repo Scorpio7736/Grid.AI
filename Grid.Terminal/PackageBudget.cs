@@ -44,7 +44,7 @@ public static class PackageBudget
     }
     public static void RequireBase(PackageFootprint size)
     { if (!size.WithinLimit) throw new IOException($"Base package exceeds {Limit:N0} bytes by {-size.BaseHeadroom:N0}. No completed package may be published."); }
-    public static void VerifyModel(string runtime, bool hashes)
+    public static void VerifyModel(string runtime, bool hashes, IReadOnlyDictionary<string,string>? verifiedHashes = null)
     {
         GridTransfer.CheckPath(runtime);
         var manifestPath=Path.Combine(runtime,"models","manifests","registry.ollama.ai","library","qwen3","4b");
@@ -58,7 +58,9 @@ public static class PackageBudget
             if(!System.Text.RegularExpressions.Regex.IsMatch(digest,@"^sha256:[0-9a-f]{64}$")) throw new InvalidDataException("Invalid model digest.");
             var file=Path.Combine(runtime,"models","blobs",digest.Replace(':','-')); GridTransfer.CheckPath(file);
             if(!File.Exists(file)||new FileInfo(file).Length!=blob.GetProperty("size").GetInt64()) throw new InvalidDataException("Missing/wrong-sized shared model blob: "+digest);
-            if(hashes && GridTransfer.Hash(file)!=digest[7..].ToUpperInvariant()) throw new InvalidDataException("Corrupt model blob: "+digest);
+            if(verifiedHashes is not null) {
+                if(!verifiedHashes.TryGetValue(Path.GetFullPath(file),out var verified) || verified!=digest[7..].ToUpperInvariant()) throw new InvalidDataException("Unverified/corrupt model blob: "+digest);
+            } else if(hashes && GridTransfer.Hash(file)!=digest[7..].ToUpperInvariant()) throw new InvalidDataException("Corrupt model blob: "+digest);
         }
     }
     public static int Audit(string root)

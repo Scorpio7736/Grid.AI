@@ -1,5 +1,11 @@
 # Project GRID — Agent Model Profiles and Base Budget (6.13)
 
+**6.16 text-provider implementation — 2026-11-04.** Grid.AI now provides common lifecycle, generation, streaming, timeout, cancellation and capability contracts. Existing Ollama chat uses the new adapter. A pinned optional llama.cpp CPU provider passed live checks using the existing Qwen weights. Current suites total 1,090 passing tests. Actual image-provider lifecycle/resource verification remains open, alongside model registry/profile acceptance and other Phase 7 gates. [Implementation and verification](Project_GRID_Model_Abstraction_Implementation.md).
+
+**Model-handling planning update — 2026-11-04.** The user supplied seven model candidates and model-handling rules. Preserve the implemented Qwen3 4B benchmark as the baseline, then evaluate exact artifacts for Lite/Standard/Performance profiles. The planned installed-model allocation is capped at 75 GB decimal within the 128 GB total Flash/PC target. Hardware discovery thresholds require measured fit and latency acceptance. [Model selection and handling plan](Project_GRID_Model_Selection_and_Handling_Plan.md).
+
+**Planning update — 2026-11-04.** Qwen3 4B and the completed 6.13 role benchmarks remain the reference baseline while the user researches specialist brains. The user’s planned storage target is now 128 GB decimal for both Flash and PC installations. Implement edition-consistent accounting, update reserve and migration of current 20 GB enforcement in 6.27. Registry/license/resource/quality checks precede model promotion. All platform work in 6.16–6.31 gates Phase 7. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
+
 Implemented 2026-10-29. This completes role profiles, shared assets, measured base enforcement and normal/CPU reduced-memory verification. Phase 7 still requires 6.14–6.15, including real second-device acceptance and offline extraction assets.
 
 ## Model selection and role fit

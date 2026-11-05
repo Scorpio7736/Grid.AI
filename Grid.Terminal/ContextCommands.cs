@@ -4,7 +4,7 @@ namespace Grid.Terminal;
 
 public static class ContextCommands
 {
-    public static void Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession identity, Action? save = null)
+    public static void Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession identity, Action? save = null, CancellationToken cancellationToken = default)
     {
         Guid[] selection = [];
         identity.Changed += () => { selection = []; engine.ClearTemporaryContext(identity.SessionId); };
@@ -15,13 +15,13 @@ public static class ContextCommands
             {
                 if (paths.Count == 0) return new("File selection cancelled. Nothing imported.");
                 if (paths.Count > ContextState.MaxFiles) throw new ArgumentException("Select at most 64 files.");
-                var batch = paths.Distinct(StringComparer.OrdinalIgnoreCase).Select(path => LocalContextReader.Read(path, project, agent)).ToArray();
+                var batch = paths.Distinct(StringComparer.OrdinalIgnoreCase).Select(path => LocalContextReader.Read(path, project, agent, cancellationToken)).ToArray();
                 engine.AddContexts(identity.Reference, batch, persistent); changed = true;
                 if (persistent) save!();
                 return new(string.Join("\n", batch.Select(d => $"Imported {d.Id} | {d.Project} | {Path.GetFileName(d.SourcePath)} | SHA256 {d.SourceHash}")) +
                     $"\n{(persistent ? "Persistent context saved with world." : "Temporary context: cleared on identity change/logout or host exit.")} Grant: {agent?.ToString() ?? "owner only"}.");
             }
-            catch (Exception e) when (e is IOException or InvalidDataException or System.Data.Common.DbException or UnauthorizedAccessException or ArgumentException or System.Xml.XmlException or InvalidOperationException)
+            catch (Exception e) when (e is IOException or InvalidDataException or System.Data.Common.DbException or UnauthorizedAccessException or ArgumentException or System.Xml.XmlException or InvalidOperationException or OperationCanceledException)
             { return new("Context error: " + e.Message + (changed ? " In-memory changes remain; resolve the save error before exit/restart." : " Nothing imported.")); }
         }
         commands.Register(new("context", "context <add|list|select|read|revoke|remove> ...", "Import approved local context, inspect captured versions, or revoke/remove sharing.", args =>
@@ -71,7 +71,7 @@ public static class ContextCommands
                         if (persistent && save is null) return new("Persistent context requires a saved world; use temporary in ephemeral sessions.");
                         Guid? agent = args.Count == 5 ? engine.ResolveProgram(args[4]).Id : null;
                         if (agent is { } recipient && !engine.GetSnapshot().Identities.RegisteredAgents.Contains(recipient)) return new("Access denied: grant only to a registered Agent.");
-                        var document = LocalContextReader.Read(args[1], args[3], agent);
+                        var document = LocalContextReader.Read(args[1], args[3], agent, cancellationToken);
                         engine.AddContext(identity.Reference, document, persistent); changed = true;
                         if (persistent) save!();
                         return new($"Imported {document.Id} | {document.Project} | SHA256 {document.SourceHash}\n{(persistent ? "Persistent context saved with world." : "Temporary context: cleared when this session changes identity/logs out or the host exits.")}\nGrant: {(agent is null ? "owner only" : agent.ToString())}. Source will not be reopened automatically; re-import to capture a new version.");
@@ -85,7 +85,7 @@ public static class ContextCommands
                     default: return new(Usage);
                 }
             }
-            catch (Exception e) when (e is IOException or InvalidDataException or System.Data.Common.DbException or UnauthorizedAccessException or ArgumentException or System.Xml.XmlException or InvalidOperationException)
+            catch (Exception e) when (e is IOException or InvalidDataException or System.Data.Common.DbException or UnauthorizedAccessException or ArgumentException or System.Xml.XmlException or InvalidOperationException or OperationCanceledException)
             { return new("Context error: " + e.Message + (changed ? " In-memory changes remain; resolve the save error before exit/restart." : "")); }
         }) { Capability = "session" });
     }

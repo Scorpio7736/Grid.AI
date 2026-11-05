@@ -5,6 +5,13 @@ using Grid.Terminal;
 using Grid.Simulation.Resources;
 using Grid.Simulation.Applications;
 
+if (args.Length == 2 && args[0] == "--extract-document") return DocumentExtraction.RunWorker(args[1]);
+if (args.SequenceEqual(new[] { "--verify-model-providers" })) return await ModelProviderVerification.RunAsync();
+
+if(args.Length==2 && args[0]=="--seal-portable-assets") { PortableAssets.Seal(args[1]); return 0; }
+if(args.Length==2 && args[0]=="--prepare-portable-test") return PortableTransferVerification.Create(args[1]);
+if(args.Length==3 && args[0]=="--relocate-portable-test") return PortableTransferVerification.Relocate(args[1],args[2]);
+if(args.SequenceEqual(new[]{"--verify-portable"})) return await PortableTransferVerification.VerifyAsync();
 if (args.SequenceEqual(new[] { "--verify-model-profiles" })) return await ModelProfileVerification.RunAsync();
 if (args.Length == 2 && args[0] == "--audit-package") return PackageBudget.Audit(args[1]);
 if (args.SequenceEqual(new[] { "--verify-invitations" })) return await SpecialistInvitationVerification.RunAsync();
@@ -41,6 +48,14 @@ try
     if (packageRoot is null && TerminalEnvironment.Ensure() is { } environmentMessage)
         Console.WriteLine(environmentMessage);
     var startupMessages = new List<string>();
+    if(packageRoot is not null && PortableAssets.RequiresManifest(packageRoot) && !File.Exists(Path.Combine(packageRoot,PortableAssets.Manifest))) throw new IOException("Portable asset manifest missing. Restore a complete verified package; existing world preserved.");
+    var portableBoundary = packageRoot is not null && (PortableAssets.RequiresManifest(packageRoot) || File.Exists(Path.Combine(packageRoot,PortableAssets.Manifest))) && PortableDevice.Changed(packageRoot,PortableDevice.Fingerprint());
+    Grid.Core.Generation.HardwareProfile? visitingHardware=null;
+    if(portableBoundary) {
+        startupMessages.Add("Device or package location changed. Saved city retained; machine-bound scopes and pending approvals require review. CPU-only fallback enabled for this visit.");
+        visitingHardware=await new WindowsHardwareDiscovery().DiscoverAsync(shutdown.Token);
+        Environment.SetEnvironmentVariable("GRID_AI_CPU_ONLY","1");
+    }
     var identity = new TerminalIdentitySession(TerminalIdentitySession.WindowsSubject);
     var identities = new TerminalSessionRegistry(); identities.Add(identity);
     GridSimulationEngine engine;
@@ -61,7 +76,9 @@ try
         var info = startup.Saved.Info;
         var converted = store.ArchiveLegacyResidents(shutdown.Token);
         if (converted.ArchivePath is { } archive) startupMessages.Add($"Legacy fictional residents archived to {archive}; production population now follows observed applications.");
-        engine = GridSimulationEngine.Restore(converted.Saved.State, editAuthorizer: identities);
+        var restoredState=portableBoundary ? PortableDevice.Reauthorize(converted.Saved.State) : converted.Saved.State;
+        engine = GridSimulationEngine.Restore(restoredState, editAuthorizer: identities);
+        if(portableBoundary) store.Save(info,engine.GetSnapshot(),shutdown.Token);
         startupMessages.Add($"{(startup.Created ? "Created" : "Loaded")} {info.Name} ({info.Id}) at tick {engine.TickCount}.");
         if (startup.Created)
         {
@@ -84,16 +101,24 @@ try
         catch { engine.Pause(); throw; }
     }
     var pendingStart = options.Start;
-    identity.LoginSucceeded += () => { foreach (var message in startupMessages) Console.WriteLine(message); startupMessages.Clear(); if (pendingStart) { pendingStart = false; StartGrid(identity); } };
+    identity.LoginSucceeded += () => { foreach (var message in startupMessages) Console.WriteLine(message); startupMessages.Clear();
+        if(visitingHardware is {} hardware && packageRoot is not null) {
+            Console.WriteLine("Discovered this device's hardware. Save as another device [s], or use one time [Enter]? Existing city/world is unchanged.");
+            if(!Console.IsInputRedirected && string.Equals(Console.ReadLine()?.Trim(),"s",StringComparison.OrdinalIgnoreCase)) {
+                PortableDevice.Remember(packageRoot,PortableDevice.Fingerprint(),hardware);Console.WriteLine("Device profile saved. Re-register local workspaces/storage scopes explicitly; nothing is retargeted automatically.");
+            } else Console.WriteLine("Using one time. Hardware profile remains session-only; permission revocations remain saved.");
+            visitingHardware=null;
+        }
+        if (pendingStart) { pendingStart = false; StartGrid(identity); } };
     Console.WriteLine("Checking bundled local AI...");
     await using var aiRuntime = await BundledAiRuntime.StartAsync(BundledAiRuntime.FindRoot(AppContext.BaseDirectory), shutdown.Token);
     startupMessages.Add(aiRuntime.Status);
     using var aiBackend = new Grid.Communication.OllamaLocalBackend(endpoint: aiRuntime.Endpoint);
-    await using var localAi = new Grid.Communication.SharedLocalInference(aiBackend, enabled: aiRuntime.Ready && Environment.GetEnvironmentVariable("GRID_AI_DISABLED") != "1");
+    await using var localAi = new Grid.Communication.SharedLocalInference(aiBackend, enabled: aiRuntime.Ready && Environment.GetEnvironmentVariable("GRID_AI_DISABLED") != "1", unavailableReason: aiRuntime.Status);
     CommandDispatcher CreateCommands(TerminalIdentitySession session)
     {
         var dispatcher = DefaultCommands.Create(engine);
-        if (!session.IsAttachment) LocalAiCommands.Register(dispatcher, session, localAi, aiBackend);
+        if (!session.IsAttachment) LocalAiCommands.Register(dispatcher, session, localAi, aiBackend, () => "Startup: "+aiRuntime.Status);
         CityCommand.Register(dispatcher, engine); BehaviorCommand.Register(dispatcher, engine);
         WorkplaceCommands.Register(dispatcher, engine); SocialCommand.Register(dispatcher, engine);
         VoltRelayCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
@@ -103,7 +128,7 @@ try
         TaskCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         var chat = ChatCommands.Register(dispatcher, engine, session, localAi, persistence is null ? null : token => persistence.SaveAsync(token)); ResourcesCommand.Register(dispatcher, engine);
         VoiceCommands.Register(dispatcher, engine, session, chat, save: persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult());
-        ContextCommands.Register(dispatcher, engine, session, persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult());
+        ContextCommands.Register(dispatcher, engine, session, persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult(), shutdown.Token);
         if (store is not null) HistoryCommand.Register(dispatcher, store);
         IdentityCommands.Register(dispatcher, engine, session, interactiveUi: true);
         GridTransfer.Register(dispatcher, engine, !session.IsAttachment, () => StartGrid(session));

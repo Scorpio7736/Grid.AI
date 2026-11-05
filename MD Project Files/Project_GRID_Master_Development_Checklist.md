@@ -1,5 +1,17 @@
 # Project GRID — Master Development Checklist
 
+**Model-handling planning update — 2026-11-04.** Added the supplied seven model candidates, hardware-aware Lite/Standard/Performance eligibility, cold/warm benchmarks, bounded fallback, deterministic delegation, validated artifact generation and offline manifests. Installed models have a 75 GB decimal sub-limit within the shared 128 GB Flash/PC target. All related acceptance remains required before Phase 7. [Model selection and handling plan](Project_GRID_Model_Selection_and_Handling_Plan.md).
+
+**Planning update — 2026-11-04.** Added mandatory sections 6.16–6.30 for all 15 GRID-AI/GRID-Agent components and 6.31 for migration and final acceptance. Phase 7 now requires 6.7–6.31. Specialist model selection is pending the user’s research. The planned storage target is 128 GB decimal for both Flash GRID and PC copies, with flash drives as the primary deployment. Current 20 GB enforcement requires migration in 6.27. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
+
+**2026-10-30 transfer/AI follow-up:** Removed repeated full-content transfer checks while retaining independent destination verification and pinned model/manifest matching. Hashing now reports byte progress; ETA uses measured copy/verification work. AI diagnostics retain startup errors, and bundled startup tolerates slow media. Original-PC AI passed an isolated test; the reported failing instance remains undiagnosed pending its exact error. [Implementation, evidence and limits](Project_GRID_Transfer_Checks_and_AI_Diagnostics.md). Physical second-PC acceptance and 6.15 remain pending.
+
+**Progress-window visibility repair — 2026-10-29:** The launcher previously used a hidden-window startup flag, which could hide the WinForms dashboard even though its ready event fired. It now suppresses only the PowerShell console and requests a normal visible GUI. A real Windows test confirmed `IsWindowVisible=true` for the named dashboard, then closed only that test window. All five progress regression tests passed. Failed window startup now prints an explicit text-fallback notice. Restart GRID for the fix; existing transfers are not hot-patched.
+
+**Transfer progress follow-up — 2026-10-29:** Copy/move previews show an approximate duration range before confirmation. A separate Windows dashboard shows progress, elapsed/remaining time and a bounded live activity feed; validation and move cleanup cannot prematurely show completion. Closing the viewer leaves transfer running; text fallback remains available. See [progress window and verification](Project_GRID_Transfer_Progress_Window.md).
+
+**6.14 repair — 2026-10-29:** Development-build transfers now include bundled runtime/models/.NET and available source; launch paths are destination-relative, assets/hash/budget are verified before publication, and device/location changes require grant/approval review. A synthetic-world second-PC package and [acceptance instructions](Project_GRID_Portable_Transfer_Repair_and_Second_PC_Test.md) are ready. Local verification passed 1,049 regression tests, 14 live profile checks and six MCP workflow checks. Second-PC offline/drive-letter/removable-media acceptance remains pending; PDF extraction stays in 6.15. Phase 7 remains blocked.
+
 **6.13 completed — 2026-10-29:** Six explicit agent profiles share one pinned Qwen3 4B Q4_K_M snapshot. CPU-only/reduced-memory operation, role routing and the 20,000,000,000-byte base ceiling are implemented. `ai profiles` and `ai storage` expose configuration and base/data/staging/headroom. **14 live role checks passed**; physical low-RAM/second-device certification remains separate. See [profiles, measured evidence and limits](Project_GRID_Agent_Model_Profiles_and_Base_Budget.md). Earlier planned/fixed-model descriptions are historical; 6.14–6.15 still block Phase 7.
 
 **6.12 completed — 2026-10-29:** MCP can recommend/invite registered specialists with human confirmation, show participants, accept direct specialist planning requests and display recorded MCP progress/results in the same window. Membership changes start a fresh saved history segment; earlier transcripts and private context are not automatically shared. Decline, removal, scope changes, restart and attached-window workflows are tested. **1,031 automated tests and six bundled-model checks passed.** See [workflow, privacy boundary and verification](Project_GRID_MCP_Specialist_Invitations_Implementation.md). Earlier statements that invitations are planned are historical; 6.13–6.15 still block Phase 7.
@@ -1434,27 +1446,225 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.14 Complete portable copy/transfer and offline AI repair
 
-**Planned — required before Phase 7.**
+**Repair implemented; actual local copy/move and isolated-runtime verification passed. Second-PC acceptance pending user test — required before Phase 7.**
 
-- [ ] Diagnose why the actual copied GRID fails to run AI on another device
-- [ ] Copy/transfer and verify the full required asset/user-state manifest with destination-relative paths
+- [x] Diagnose why the actual copied GRID fails to run AI on another device
+- [x] Copy/transfer and verify the full required asset/user-state manifest with destination-relative paths
 - [ ] Provide bundled runtime/models/extractors and CPU fallback without global AI/.NET/SDK or network dependencies
 - [ ] Verify actual copyto/transferto destinations on a second supported PC or clean VM offline, including restart and changed drive letter
 
+**Remaining acceptance:** user requested a package and instructions for their second PC. Do not check the second-device item based on local relocation alone. PDF/DOCX extraction and bundled parser assets are locally verified in 6.15. The refreshed complete package still requires second-device acceptance. See [repair and second-PC test](Project_GRID_Portable_Transfer_Repair_and_Second_PC_Test.md).
+
+- [x] Transfer UX: approximate pre-confirmation estimate, separate progress window, elapsed/remaining time, bounded live feed and truthful final copy/move status.
+
 ## 6.15 PDF/DOCX import and mandatory Phase 7 acceptance
 
-**Planned — required before Phase 7.**
+**Import implementation locally verified — 2026-11-04. Second-device and final Phase 7 acceptance remain pending.**
 
-- [ ] Implement offline PDF extraction and validate complete DOCX paragraphs/tables; update picker filters and errors
-- [ ] Handle scans/OCR-or-clear-no-text outcomes, provenance, limits, corruption, encryption and cancellation
-- [ ] Bundle extraction assets inside the 20 GB budget and verify them on the second device
-- [ ] Complete and record all 6.7–6.15 automated/live/manual acceptance results before any Phase 7 work
+- [x] Implement offline PDF extraction and validate complete DOCX body paragraphs/tables; update picker filters and errors
+- [x] Handle scans through clear no-text/retry outcomes, page/paragraph provenance, limits, corruption, encryption and bounded/cancellable parsing
+- [x] Bundle PdfPig 0.1.16 assemblies and license with build/publish output and verify standalone PDF/DOCX extraction locally
+- [ ] Verify the refreshed complete package and extraction on the second device, with actual-free-space checks and the planned 128 GB migration tracked in 6.27
+- [ ] Complete and record all 6.7–6.31 automated/live/manual acceptance results before any Phase 7 work
+
+**Completion evidence — 2026-11-04.** 1,073 regression tests passed across current suites, including 15 new document cases. Standalone PDF/DOCX checks passed with isolated host paths. Scan-only PDFs require offline OCR/export, DOCX scope is the main body, and second-device acceptance remains open. [Implementation, bounds and test steps](Project_GRID_Offline_Document_Import_Implementation.md).
 
 ---
 
+## 6.16 GRID-AI / GRID-Agent — Model abstraction layer
+
+**Text-provider foundation implemented and verified — 2026-11-04. Image-provider lifecycle acceptance remains open before Phase 7.**
+
+- [x] Define provider-independent loading, unloading, switching, generation, streaming, cancellation, timeout and concurrency contracts.
+- [x] Adapt the current Ollama provider and exercise a second compatible local provider through the same API.
+- [x] Verify provider contract tests, cancellation during streaming, serialized resource ownership and unchanged GRID chat entry points.
+
+- [x] Implement text/image capability contracts and rejection checks, with measured text-provider load/unload resource release
+- [ ] Complete actual image-provider loading/unloading and measure resource release after image runtime/model selection and provisioning in 6.17A
+
+**Completion evidence — 2026-11-04.** 1,090 regression tests passed across current suites. Live Ollama and llama.cpp checks passed through the common API, including streaming, cancellation and resource release. Normal chat/context/task drafting passed. [Implementation, assets, evidence and limits](Project_GRID_Model_Abstraction_Implementation.md).
+
+## 6.17 GRID-AI / GRID-Agent — Model registry and lifecycle
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-AI.
+
+- [ ] Version manifests with hashes, model/runtime compatibility, license metadata, quantization, resource needs and rollback references.
+- [ ] Track candidate specialist models awaiting user selection and share identical weights across agent profiles.
+- [ ] Verify corrupt/missing assets, failed updates, rollback, multiple compatible models and measured storage accounting.
+
+- [ ] Register the supplied Qwen3 4B/8B, Qwen2.5-Coder 3B/7B, Qwen3-Coder 30B-A3B, SDXL and FLUX.2 Klein candidates with exact revisions, licenses, quantizations, tokenizers/templates and runtime compatibility.
+- [ ] Detect available RAM/VRAM, backends, OS/architecture, disk and engines, select an eligible Lite/Standard/Performance profile, and persist a force-Lite override.
+
+## 6.17A Model selection and handling acceptance
+
+**Planned — 2026-11-04. Required before Phase 7.** This consolidated checklist tracks the supplied model plan across implementation sections 6.16–6.31. Check each item only after its linked implementation and recorded acceptance pass.
+
+- [ ] Evaluate and register Qwen3 4B and Qwen3 8B for text/document content and delegation, retaining Qwen3 4B as the reference baseline
+- [ ] Evaluate Qwen2.5-Coder 3B and 7B for coding, and benchmark Qwen3-Coder 30B-A3B as an optional Performance coordinator upgrade
+- [ ] Evaluate SDXL and FLUX.2 Klein 4B with their complete image dependencies, exact revisions, licenses and measured device fit
+- [ ] Detect total/available RAM, total/free VRAM, GPU vendor, supported backend/runtime, OS/architecture and free disk, then validate installed assets and tokenizer/chat templates
+- [ ] Implement Lite/Standard/Performance eligibility and a persistent force-Lite override, with no-GPU 16 GB and 32 GB RAM / 8 GB VRAM acceptance cases
+- [ ] Require a successful memory/latency benchmark before enabling FLUX.2 Klein on a 32 GB RAM / 12 GB VRAM device
+- [ ] Record cold/warm text and image benchmarks, first-token latency, throughput, peak memory, schema/tool selection, completion, image validity and dimensions (6.19)
+- [ ] Route each authorized task to the smallest installed candidate that passes its acceptance criteria, rechecking available resources before loading (6.26)
+- [ ] Default to one heavyweight inference, queue Lite jobs, preserve UI responsiveness and verify repeated load/unload memory reclamation (6.16, 6.26)
+- [ ] Unload failed or over-budget models, use bounded lower-tier retries and return structured UNAVAILABLE with constraints and available offline alternatives (6.25)
+- [ ] Enforce trusted delegation policy for child types, tools, paths, data scopes, depth, active jobs, token/time limits, cancellation and loop detection (6.22–6.24)
+- [ ] Reject malformed proposals and unauthorized/destructive actions, including model-supplied requiresApproval=false and prompt-injection attempts
+- [ ] Record parent/child task IDs, goals, tool calls, evidence, validation outcomes, status and usage/latency in the delegation ledger
+- [ ] Generate Office/PDF files through scoped local generators, stage and validate output, provide visual QA and obtain required overwrite approval (6.23)
+- [ ] Verify generated documents open correctly, images have valid content/dimensions and code modifications pass relevant tests before reporting verified completion
+- [ ] Enforce the 75,000,000,000-byte installed-model sub-limit within the 128,000,000,000-byte total for both Flash GRID and PC copies (6.27)
+- [ ] Account for weights, encoders, VAE, tokenizers, adapters, retained versions and caches, with shared-file accounting, free-space checks and staging reserve
+- [ ] Package a complete checksummed dependency/license manifest and implement explicit atomic optional installs with rollback, offline operation and disabled telemetry/automatic updates/cloud fallback
+- [ ] Complete representative network-blocked jobs for every selected model and record outbound-connection checks
+- [ ] Test missing checkpoints, corrupt weights, out-of-memory, unsupported backends, cancelled requests and failed installs, including nearly-full destinations
+- [ ] Review all model/profile evidence and outstanding limitations at the final Phase 7 gate (6.30–6.31)
+
+[Detailed model selections, handling rules and acceptance scenarios](Project_GRID_Model_Selection_and_Handling_Plan.md).
+
+## 6.18 GRID-AI / GRID-Agent — Persona and prompt management
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-Agent.
+
+- [ ] Version agent identities, personalities, tone, system prompts, templates and instruction hierarchy.
+- [ ] Give GRID-AI generic system-instruction and prompt-version fields, with agent-specific content assembled by GRID-Agent.
+- [ ] Verify stable identities, serious/helpful tone, prompt rollback, request scoping and isolation between agents.
+
+## 6.19 GRID-AI / GRID-Agent — Observability and evaluation foundation
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to Both APIs and GRID7736.
+
+- [ ] Define structured request/tool traces, model/prompt versions, error categories, latency, throughput, CPU/GPU and memory metrics.
+- [ ] Create versioned benchmark datasets and record the existing Qwen3 4B baseline and measurable release thresholds.
+- [ ] Verify redaction, bounded retention, diagnostic usefulness and repeatable evaluations without exposing private content.
+
+- [ ] Benchmark cold and warm text/image jobs per candidate and device, including first-token latency, tokens/s, peak memory, schema/tool selection, completion, image dimensions and image validity.
+
+## 6.20 GRID-AI / GRID-Agent — RAG pipeline
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-AI retrieval with GRID-Agent scope ownership.
+
+- [ ] Plan document ingestion, chunking, local embeddings, hybrid keyword/vector search, reranking, citations and source freshness.
+- [ ] Start with SQLite-backed storage and a packaged vector-search capability selected through compatibility and licensing checks.
+- [ ] Verify source identity/version/provenance on every chunk, authorized collection filters, revocation, stale indexes and offline PDF/DOCX integration from 6.15.
+
+## 6.21 GRID-AI / GRID-Agent — Persistent memory
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-Agent ownership with generic GRID-AI services.
+
+- [ ] Define short-term context, long-term memory, summarization, retention, correction and deletion per agent/project.
+- [ ] Migrate existing conversations, pinned memories, automatic recall and explicitly retained document summaries with their grants and provenance.
+- [ ] Verify restart/copy recall, expiry, corrections, isolation, deletion semantics and revoked-source handling.
+
+## 6.22 GRID-AI / GRID-Agent — Identity and authorization
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to Both APIs with GRID7736 authoritative host checks.
+
+- [ ] Authenticate callers and enforce request quotas, capability grants, least privilege and auditable scope changes.
+- [ ] Carry user, agent, project, conversation and world/session identity through trusted request context.
+- [ ] Verify denied calls, forgery, stale sessions and scope revocation together with 6.23–6.24 before enabling migrated action routes.
+
+## 6.23 GRID-AI / GRID-Agent — Controlled tool gateway
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-Agent routing and GRID7736 execution.
+
+- [ ] Define typed file read/write, command and simulation requests with path validation, execution isolation and approval requirements.
+- [ ] Route execution through the existing GRID task broker and approved file-change services, using recorded receipts for results.
+- [ ] Verify exact approval binding, concurrent changes, restart/retry behavior, denied paths and enforcement together with 6.22 and 6.24.
+
+- [ ] Enforce delegation allowlists, scoped paths/data, depth/cycle limits, per-profile job limits, budgets/cancellation and a parent/child evidence ledger through trusted .NET policy.
+- [ ] Add scoped deterministic Office/PDF generators and image-output validation with staging, format/template checks, visual QA and required overwrite approval.
+
+## 6.24 GRID-AI / GRID-Agent — Layered guardrails
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to Both APIs and execution adapters.
+
+- [ ] Validate inputs and structured outputs, filter sensitive data, isolate runtime requests and verify tool results.
+- [ ] Treat retrieved documents and tool outputs as untrusted content and enforce access in code at each boundary.
+- [ ] Run adversarial injection, malformed-response, unauthorized retrieval and tool-escalation tests jointly with 6.22–6.23.
+
+- [ ] Validate delegation proposals against strict schemas and trusted policy, including requiresApproval=false, hostile retrieved content and worker-response attempts to expand authority.
+
+## 6.25 GRID-AI / GRID-Agent — Resilience and recovery
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-AI and GRID-Agent.
+
+- [ ] Add bounded retries, circuit breakers, cancellation, crash recovery, graceful degradation and deterministic fallbacks.
+- [ ] Define safe retry classes, duplicate-action prevention and recovery of model/runtime failures with actionable diagnostics.
+- [ ] Verify disconnects, timeouts, runtime exits and interrupted writes while preserving recorded outcomes and pending approvals.
+
+- [ ] Return structured UNAVAILABLE with constraints and available offline alternatives, and test bounded lower-tier fallback after unloading failed or over-budget candidates.
+
+## 6.26 GRID-AI / GRID-Agent — Performance optimization
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-AI with scope-aware GRID-Agent requests.
+
+- [ ] Plan exact caching, scoped semantic caching, context optimization and request scheduling.
+- [ ] Include model/prompt/source versions, authorized scope, revocation and expiry in cache policies, and monitor CPU/GPU and memory budgets.
+- [ ] Benchmark supported hardware and prove isolation, stale-cache invalidation and compliance with recorded latency/resource thresholds.
+
+- [ ] Choose the smallest installed model passing task acceptance within the eligible profile, recheck memory per request, default to one heavyweight inference, and prioritize Lite UI responsiveness.
+
+## 6.27 GRID-AI / GRID-Agent — Offline and portable deployment
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to All three layers.
+
+- [ ] Package required dependencies, models and retrieval assets with reproducible builds and integrity inventories.
+- [ ] Migrate the current 20 GB base enforcement to the shared 128,000,000,000-byte managed-installation target for Flash GRID and PC, with category budgets, actual-free-space checks and update reserve.
+- [ ] Verify copied/transferred packages on another supported PC offline, including changed drive letters, CPU fallback, updates and rollback.
+- [ ] Test the 128 GB target on both Flash and PC modes, nearly-full destinations, reserve/staging requirements and migration of existing 20 GB configuration.
+
+- [ ] Enforce a 75,000,000,000-byte installed-model sub-limit inside the 128,000,000,000-byte Flash/PC target, counting complete model dependencies and caches with free-space/reserve checks.
+- [ ] Package all selected runtime/image dependencies in one checksummed and licensed manifest, use atomic optional installs/rollback, and disable implicit downloads, telemetry, auto-updates and cloud fallback.
+
+## 6.28 GRID-AI / GRID-Agent — Training data pipeline
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-AI development tooling.
+
+- [ ] Build versioned dataset creation, validation, deduplication, labeling, license and privacy review.
+- [ ] Define train/validation/test splits and contamination checks with explicit permission for using conversation or document data.
+- [ ] Verify reproducible dataset manifests, provenance, exclusion/removal procedures and held-out evaluation integrity.
+
+## 6.29 GRID-AI / GRID-Agent — Model fine-tuning
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-AI development tooling.
+
+- [ ] Plan LoRA/QLoRA workflows, recorded configurations/seeds, checkpoints, adapters, export and runtime compatibility.
+- [ ] Select supported local training dependencies and hardware requirements, with separate development storage accounting.
+- [ ] Demonstrate a repeatable permitted-data training run, adapter loading/export, baseline comparisons and rollback before Phase 7.
+
+## 6.30 GRID-AI / GRID-Agent — Continuous quality and release management
+
+**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to All three layers.
+
+- [ ] Run functional, adversarial, regression, performance and compatibility suites over versioned models/prompts/adapters.
+- [ ] Define promotion criteria, known-good release bundles, rollback and migration compatibility checks.
+- [ ] Record candidate-versus-baseline evidence and reject failed candidates while preserving saved GRID data.
+
+- [ ] Run all model-handling acceptance scenarios, including no-GPU Lite, 8 GB Standard eligibility, benchmark-gated 12 GB FLUX discovery, offline jobs, load/unload cycles, validated documents/code and injected failures.
+
+## 6.31 GRID-AI / GRID-Agent integration and final Phase 7 gate
+
+**Planned — 2026-11-04. Required before Phase 7.**
+
+- [ ] Define solution references and stable interfaces for GRID-AI, GRID-Agent and existing GRID7736 services
+- [ ] Migrate existing agents, conversations, memory, permissions and task workflows with one authoritative owner per state field
+- [ ] Preserve IDs, grants, history, approvals and saved worlds with tested backup, schema migration and rollback
+- [ ] Verify normal terminal, attached-window and meeting workflows through the migrated APIs
+- [ ] Resolve the reported local AI failure and complete 6.14–6.15 acceptance with failing-instance and second-device evidence
+- [ ] Complete all 15 platform components and all 12 production-readiness checks in the linked specification
+- [ ] Record measurable release evidence and obtain user review before beginning Phase 7
+
+[Detailed specification, model-selection status, contracts and acceptance](Project_GRID_AI_and_Agent_Platform_Plan.md).
+
+---
+
+- [ ] Review model/profile benchmark evidence and the complete model-handling acceptance checklist alongside the existing production-readiness checks.
+
 # Phase 7 — The City
 
-**Entry gate:** Do not begin Phase 7 until mandatory sections 6.7–6.15 are implemented and their acceptance evidence is reviewed. In particular, the actual copied/transferred GRID must run AI offline on a second supported device.
+**Entry gate updated 2026-11-04.** Complete mandatory sections 6.7–6.31 and review their acceptance evidence before Phase 7. This includes the full GRID-AI/GRID-Agent roadmap, migration, repeatable fine-tuning/evaluation, and actual copied/transferred GRID running AI offline on a second supported device. Specialist candidates are documented and await exact-artifact selection and measured evaluation.
 
 ## 7.1 Godot foundation
 

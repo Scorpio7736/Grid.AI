@@ -1,0 +1,51 @@
+{
+  "Passed": true,
+  "Checks": [
+    {
+      "Provider": "Ollama",
+      "Passed": true,
+      "Reply": "{\u0022status\u0022: \u0022ready\u0022}",
+      "Complete": true,
+      "FinishReason": "stop",
+      "Stream": "{\u0022status\u0022: \u0022ready\u0022}",
+      "StreamFinished": true,
+      "Cancelled": true,
+      "NextComplete": true,
+      "Allocation": {
+        "Loaded": true,
+        "AllocatedBytes": 3180247121,
+        "GpuBytes": 3180247121,
+        "Evidence": "Ollama allocation report, not exclusive process utilization."
+      },
+      "Released": {
+        "Loaded": false,
+        "AllocatedBytes": 0,
+        "GpuBytes": 0,
+        "Evidence": "Ollama api/ps has no matching loaded model."
+      }
+    },
+    {
+      "Provider": "llama.cpp CPU",
+      "Passed": true,
+      "Reply": "{\u0022status\u0022: \u0022ready\u0022}",
+      "Complete": true,
+      "FinishReason": "stop",
+      "Stream": "{\u0022status\u0022: \u0022ready\u0022}",
+      "StreamFinished": true,
+      "Cancelled": true,
+      "NextComplete": true,
+      "Allocation": {
+        "Loaded": true,
+        "AllocatedBytes": 6750261248,
+        "GpuBytes": 0,
+        "Evidence": "Owned CPU llama-server working set, not model allocation."
+      },
+      "Released": {
+        "Loaded": false,
+        "AllocatedBytes": 0,
+        "GpuBytes": 0,
+        "Evidence": "Owned llama-server process has exited."
+      }
+    }
+  ]
+}

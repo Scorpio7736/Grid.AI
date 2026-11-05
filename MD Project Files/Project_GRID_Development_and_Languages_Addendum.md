@@ -1,5 +1,9 @@
 # Project GRID — Development Roadmap & Language Architecture
 
+**6.16 text-provider implementation — 2026-11-04.** Grid.AI now provides common lifecycle, generation, streaming, timeout, cancellation and capability contracts. Existing Ollama chat uses the new adapter. A pinned optional llama.cpp CPU provider passed live checks using the existing Qwen weights. Current suites total 1,090 passing tests. Actual image-provider lifecycle/resource verification remains open, alongside model registry/profile acceptance and other Phase 7 gates. [Implementation and verification](Project_GRID_Model_Abstraction_Implementation.md).
+
+**Planning update — 2026-11-04.** Plan C#/.NET Grid.AI and Grid.Agent project boundaries with versioned provider and application capability interfaces. Existing GRID7736 services migrate incrementally through tested adapters and schema/rollback contracts. Sections 6.16–6.31, including provisioned offline training and evaluation, precede Phase 7. Specialist model selection and training/vector dependencies await evaluation. Both Flash and PC storage targets are 128 GB decimal. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
+
 ## Offline voice - 4.4 Windows MVP completed (2026-10-21)
 
 The original interactive host supports `voice devices/microphone/language/listen/review/edit/send/cancel/mute/speak/profile`. Hold Space to record (20-second maximum), release to transcribe with an installed offline Windows recognizer, review/correct, then explicitly send. Typed and microphone messages use the same dialogue service; speech never executes terminal commands. Playback starts muted and occurs only on explicit request. Saved registered-Agent profiles select Windows voice/rate/volume. Escape interrupts; identity/conversation changes prevent stale sends. Raw audio stays in transient memory and is not saved. Missing hardware or language/voice assets leave typed chat available.

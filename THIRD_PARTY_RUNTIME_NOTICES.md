@@ -1,5 +1,9 @@
 # Bundled runtime notices
 
+- Optional llama.cpp CPU provider verification uses release `b12110`. The official Windows CPU archive SHA256 is `98901E327C252875ACCAF2D1BF364E10E868843B0B63468BAAD1AA945CDC5DA2`. Retain `runtime/llamacpp/b12110/LICENSE` and `LICENSE-LLVM-OpenMP` when packaging this runtime. A copy of the upstream license also ships at `app/licenses/llama.cpp-LICENSE`. [Pinned upstream source](https://github.com/ggml-org/llama.cpp/tree/b12110).
+
+- PdfPig 0.1.16 supplies offline PDF text extraction. Its managed assemblies ship with the terminal and are included in portable hash/size inventories. The upstream license, including bundled-component notices, ships at `app/licenses/PdfPig-LICENSE`. Source revision `a7bb35662bbbf405efddad50aedc9bcdcf515afc` is recorded by the NuGet package. [Upstream source and license](https://github.com/UglyToad/PdfPig/tree/a7bb35662bbbf405efddad50aedc9bcdcf515afc).
+
 Portable GRID contains third-party components; it is not dependency-free source code.
 
 - .NET runtime: self-contained publish includes the Microsoft runtime and its supplied notices/licenses.

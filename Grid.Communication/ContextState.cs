@@ -22,7 +22,7 @@ public sealed record ContextState(IReadOnlyList<ContextDocument> Documents)
                 string.IsNullOrWhiteSpace(d.SourcePath) || d.SourcePath.Length > 4096 || d.SourcePath.Any(char.IsControl) ||
                 d.SourceHash is null || d.SourceHash.Length != 64 || d.SourceHash.Any(c => !Uri.IsHexDigit(c)) ||
                 d.SourceBytes is < 0 or > MaxSourceBytes || d.SourceModifiedUtc.Offset != TimeSpan.Zero || d.CapturedUtc.Offset != TimeSpan.Zero ||
-                d.Format is not ("utf8" or "docx-body") || d.Text is null || d.Text.Length > MaxTextCharacters ||
+                d.Format is not ("utf8" or "docx-body" or "pdf-pages") || d.Text is null || d.Text.Length > MaxTextCharacters ||
                 d.Text.Any(c => char.IsControl(c) && c is not ('\n' or '\r' or '\t')) || d.GrantedAgentId == Guid.Empty)
                 throw new InvalidDataException("Invalid captured context document.");
             total += d.Text.Length;

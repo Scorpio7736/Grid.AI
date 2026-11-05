@@ -1,5 +1,5 @@
+using Grid.AI;
 using System.Diagnostics;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Channels;
 
@@ -37,15 +37,17 @@ public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
     private readonly IInferenceBackend backend;
     private readonly TimeSpan deadline;
     private readonly bool enabled;
+    private readonly string? unavailableReason;
     private int pending;
     private int active;
     public int Pending => Volatile.Read(ref pending);
     public bool Enabled => enabled;
     public bool Active => Volatile.Read(ref active) != 0;
-    public SharedLocalInference(IInferenceBackend backend, bool enabled = true, int capacity = 8, TimeSpan? deadline = null)
+    public SharedLocalInference(IInferenceBackend backend, bool enabled = true, int capacity = 8, TimeSpan? deadline = null, string? unavailableReason = null)
     {
         if (capacity is < 1 or > 64) throw new ArgumentOutOfRangeException(nameof(capacity));
         this.backend = backend; this.enabled = enabled; this.deadline = deadline ?? TimeSpan.FromSeconds(120);
+        this.unavailableReason=unavailableReason;
         queue = Channel.CreateBounded<Request>(new BoundedChannelOptions(capacity) { SingleReader = true, FullMode = BoundedChannelFullMode.Wait });
         worker = RunAsync();
     }
@@ -65,7 +67,7 @@ public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
     private async Task<InferenceReply> Enqueue(string prompt,bool structured,CancellationToken token,string? schema=null, bool fileDraft=false,string agent="MCP")
     {
         if (string.IsNullOrWhiteSpace(prompt) || prompt.Length > (fileDraft ? 32768 : 8192)) throw new ArgumentException("Prompt must contain 1..8192 characters.");
-        if (!enabled) return new(false, "", "Local AI disabled; deterministic GRID remains available.");
+        if (!enabled) return new(false, "", unavailableReason ?? "Local AI disabled; deterministic GRID remains available.");
         if (shutdown.IsCancellationRequested) return new(false, "", "Local AI stopped.");
         var stop = CancellationTokenSource.CreateLinkedTokenSource(token, shutdown.Token); stop.CancelAfter(fileDraft ? TimeSpan.FromSeconds(300) : deadline);
         var requestToken = stop.Token;
@@ -117,6 +119,7 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
     public const string Model = "qwen3:4b";
     public const string Endpoint = "http://127.0.0.1:11435/";
     private readonly HttpClient client;
+    private readonly OllamaModelProvider provider;
     private readonly bool lowMemoryMode, cpuOnlyMode;
     public OllamaLocalBackend(HttpMessageHandler? handler = null, Uri? endpoint = null, bool? lowMemory = null, bool? cpuOnly = null)
     {
@@ -125,6 +128,7 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
         endpoint ??= new Uri(Endpoint);
         if (endpoint.Scheme != "http" || endpoint.Host != "127.0.0.1" || endpoint.AbsolutePath != "/" || !string.IsNullOrEmpty(endpoint.UserInfo) || !string.IsNullOrEmpty(endpoint.Query))
             throw new ArgumentException("Local AI requires an IPv4 loopback HTTP endpoint.");
+        provider = new OllamaModelProvider(endpoint, handler);
         client = new(handler ?? new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false })
         { BaseAddress = endpoint, Timeout = TimeSpan.FromSeconds(120) };
     }
@@ -141,7 +145,6 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
             return JsonDocument.Parse(bytes.ToArray());
         }
     }
-    private Task<JsonDocument> Post(string path, object body, CancellationToken token) => JsonAsync(new(HttpMethod.Post,path) { Content = JsonContent.Create(body) },token);
     public Task<string> GenerateProfileAsync(string agent,string prompt,bool structured,string? schema,bool fileDraft,CancellationToken token)
         => GenerateCore(prompt,structured,token,schema,fileDraft,AgentModelProfiles.Get(agent));
     public Task<string> GenerateAsync(string prompt,CancellationToken token) => GenerateCore(prompt,false,token);
@@ -153,9 +156,6 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
         profile ??= AgentModelProfiles.Get("MCP");
         var lean = lowMemoryMode;
         if (lean && fileDraft && prompt.Length > 12000) throw Rejected("context", "File input exceeds reduced-memory context. Split the request.");
-        using var model = await Post("api/show", new { model = Model }, token);
-        if (model.RootElement.TryGetProperty("remote_model", out _) || model.RootElement.TryGetProperty("remote_host", out _))
-            throw new InvalidDataException("Cloud-backed models are not supported.");
         // This installed Qwen template unconditionally opens <think>, even when think=false.
         // Supply its fixed role framing with a completed empty thinking block; never expose reasoning.
         // Neutralize special-token delimiters in caller data before embedding it in model framing.
@@ -166,18 +166,19 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
         for (var attempt=0;attempt<2;attempt++)
         {
             token.ThrowIfCancellationRequested();
-            using var result = await Post("api/generate", new { model = Model, prompt = framed, raw = true, stream = false, think = false, keep_alive = "1m", format = schema is null ? (object)(structured ? "json" : "") : JsonSerializer.Deserialize<JsonElement>(schema),
-                options = new { num_ctx = fileDraft ? (lean ? 8192 : 16384) : profile.ContextTokens, num_predict = fileDraft ? (lean ? (attempt == 0 ? 2048 : 4096) : (attempt == 0 ? 4096 : 8192)) : (attempt==0 ? profile.InitialTokens : profile.RetryTokens), temperature = 0, num_gpu = cpuOnlyMode ? 0 : -1 } },token);
-            var root=result.RootElement;
-            if (!root.TryGetProperty("done",out var done) || done.ValueKind!=JsonValueKind.True ||
-                !root.TryGetProperty("response",out var text) || text.ValueKind!=JsonValueKind.String)
-                throw Rejected("incomplete","Incomplete local AI response.");
-            if(root.TryGetProperty("done_reason",out var reason) && reason.ValueKind==JsonValueKind.String && reason.GetString()=="length")
+            var request = new ModelRequest(framed,
+                ContextTokens: fileDraft ? (lean ? 8192 : 16384) : profile.ContextTokens,
+                MaxOutputTokens: fileDraft ? (lean ? (attempt == 0 ? 2048 : 4096) : (attempt == 0 ? 4096 : 8192)) : (attempt == 0 ? profile.InitialTokens : profile.RetryTokens),
+                Json: structured, JsonSchema: schema, CpuOnly: cpuOnlyMode)
+                { Timeout = TimeSpan.FromSeconds(fileDraft ? 300 : 120) };
+            var result = await provider.GenerateAsync(new LocalModel(Model), request, token);
+            if (result.FinishReason == "length")
             {
-                if(attempt==0) continue;
-                throw Rejected("length","Local AI response reached its output limit.");
+                if (attempt == 0) continue;
+                throw Rejected("length", "Local AI response reached its output limit.");
             }
-            var final=text.GetString()!;
+            if (!result.Complete) throw Rejected("incomplete", "Incomplete local AI response.");
+            var final = result.Text;
             var end=final.LastIndexOf("</think>",StringComparison.OrdinalIgnoreCase);
             if(end>=0) final=final[(end+8)..];
             if(final.Contains("<think>",StringComparison.OrdinalIgnoreCase)) throw Rejected("thinking","Incomplete thinking block.");
@@ -204,7 +205,7 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
             return $"Endpoint: {client.BaseAddress} | Ollama {version.RootElement.GetProperty("version").GetString()}\nModel: {Model} | Installed: {installed}\n{allocation}";
         }
         catch (Exception e) when (e is HttpRequestException or IOException or InvalidDataException or JsonException or OperationCanceledException or InvalidOperationException or KeyNotFoundException or FormatException or OverflowException)
-        { return "Local AI unavailable: " + e.GetType().Name + ". Check bundled runtime setup; deterministic GRID remains available."; }
+        { return "Local AI unavailable at " + client.BaseAddress + ": " + e.GetType().Name + ": " + e.Message + ". Check bundled runtime setup; deterministic GRID remains available."; }
     }
-    public void Dispose() => client.Dispose();
+    public void Dispose() { client.Dispose(); provider.DisposeAsync().GetAwaiter().GetResult(); }
 }

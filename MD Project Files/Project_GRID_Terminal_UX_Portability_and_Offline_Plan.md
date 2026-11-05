@@ -1,5 +1,7 @@
 # Project GRID - Terminal UX, Portability and Offline Operation
 
+**Planning update — 2026-11-04.** Flash drives are the primary planned deployment, with installers and local-only PC copies supported. Both Flash GRID and PC copies target 128 GB decimal of managed installation storage. Preserve edition-specific rendering plans while introducing common capacity/free-space/reserve accounting and configuration migration in 6.27. The full GRID-AI/GRID-Agent integration and second-device acceptance must pass before Phase 7. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
+
 **6.7 completed — 2026-10-27:** The supplied banner, five-second login reveal, skip/static modes and new palette are implemented and console/test-verified. This supersedes earlier login Enter gating and red-error colors. Portability repair and other 6.8–6.15 requirements remain planned. [Evidence](Project_GRID_Login_Animation_and_Colors.md).
 
 **Superseding planned requirements — 2026-10-27:** Before Phase 7, replace the login Enter gate with a five-second ASCII animation; use yellow terminal messages including errors, white user text and light-blue prompts/labels. Prove actual copy/transfer AI operation offline on another device and include PDF/DOCX assets. [Scope and acceptance](Project_GRID_Pre_Phase_7_Readiness_Plan.md).

@@ -4,7 +4,7 @@ namespace Grid.Terminal;
 
 public static class LocalAiCommands
 {
-    public static void Register(CommandDispatcher commands, TerminalIdentitySession identity, SharedLocalInference service, OllamaLocalBackend backend)
+    public static void Register(CommandDispatcher commands, TerminalIdentitySession identity, SharedLocalInference service, OllamaLocalBackend backend, Func<string>? runtimeStatus = null)
     {
         commands.Register(new("ai", "ai <status|test|profiles|storage>", "Inspect the shared local inference foundation or run a text-only smoke test. Conversations share this service with deterministic fallback.", args =>
         {
@@ -30,6 +30,7 @@ public static class LocalAiCommands
                     if (token.IsCancellationRequested || !identity.IsMaster || identity.Reference != reference) { stop.Cancel(); break; }
                 }
                 var text = await operation;
+                if(runtimeStatus is not null) text=runtimeStatus()+"\n"+text;
                 if (!identity.IsMaster || identity.Reference != reference) return new("AI diagnostic session revoked; output discarded.");
                 var after = Sample();
                 var cpu = before.Cpu is { } b && after.Cpu is { } a && a >= b ? $"{(a-b).TotalMilliseconds:N0} CPU ms over {timer.ElapsedMilliseconds:N0} wall ms" : "unavailable";

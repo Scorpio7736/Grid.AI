@@ -1,5 +1,7 @@
 # Project GRID - User-Supplied Context Implementation
 
+**6.15 import implementation — 2026-11-04.** Offline PDF text extraction and DOCX body paragraph/table import are locally verified. The bundled parser uses bounded worker processes, page/paragraph provenance and explicit empty/scanned/encrypted/corrupt-file outcomes. 1,073 regression tests passed across current suites, with standalone PDF/DOCX deployment checks. Second-device acceptance and the final 6.7–6.31 gate remain pending. [Implementation, scope and verification](Project_GRID_Offline_Document_Import_Implementation.md).
+
 **6.10 completed — 2026-10-28:** Approved document summaries and recorded task outcomes persist with provenance, explicit recipient/project grants, expiry, correction and revocation. Temporary raw uploads stay temporary. Schema v24; **989 automated tests and six bundled-model checks passed**, including copied-database recall and in-flight revocation/expiry. [Commands, retention policy, migration and test](Project_GRID_Durable_Memory_and_Delegated_Context.md). Earlier private-only or 6.10-planned statements are historical; 6.11–6.15 remain required before Phase 7.
 
 **Planned format/workflow repair — 2026-10-27:** PDF is currently unsupported; DOCX has limited extraction. 6.15 must add offline PDF support and validate full DOCX import, provenance, limits, picker filters and portable assets. 6.8 repairs post-import follow-up loops; 6.10 adds explicit durable retention/context handoff. [Pre-Phase-7 plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).

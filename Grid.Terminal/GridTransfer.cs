@@ -4,13 +4,17 @@ using System.Text.Json;
 namespace Grid.Terminal;
 
 public sealed record TransferRequest(string Destination, bool Move);
-public sealed record TransferFile(string Source, string Relative, long Length, string Hash = "");
+public sealed record TransferFile(string Source, string Relative, long Length, string Hash = "", bool DeleteSource = true);
 public sealed record TransferPlan(string Destination, bool Move, string ApplicationRoot, string WorldPath, TransferFile[] Files);
 public sealed record TransferReceipt(TransferPlan Plan, int ParentId, long ParentStarted);
 
 /// <summary>Transfers a stopped, saved installation. Source cleanup is deferred until the parent exits.</summary>
-public sealed class GridTransfer(string applicationRoot, string worldPath)
+public sealed class GridTransfer
 {
+    private readonly string applicationRoot,worldPath;
+    private readonly bool skipRuntimeValidation;
+    public GridTransfer(string applicationRoot,string worldPath) : this(applicationRoot,worldPath,false) { }
+    internal GridTransfer(string applicationRoot,string worldPath,bool skipRuntimeValidation) { this.applicationRoot=applicationRoot;this.worldPath=worldPath;this.skipRuntimeValidation=skipRuntimeValidation; }
     public const string Marker = "grid-package.json";
     public static void Register(CommandDispatcher commands, Grid.Simulation.GridSimulationEngine? engine = null, bool allowTransfer = true, Action? startAgents = null)
     {
@@ -44,9 +48,12 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
     public static bool Within(string path, string root) => path.Equals(root, StringComparison.OrdinalIgnoreCase) || path.StartsWith(root.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
     public static void CheckPath(string path)
     {
-        for (var current = Path.GetFullPath(path); current is not null; current = Path.GetDirectoryName(current))
-            if ((File.Exists(current) || Directory.Exists(current)) && File.GetAttributes(current).HasFlag(FileAttributes.ReparsePoint))
-                throw new IOException("Symbolic links/junctions are not supported: " + current);
+        for (var current = Path.GetFullPath(path); current is not null; current = Path.GetDirectoryName(current)) {
+            // One metadata lookup per ancestor, rather than File.Exists + Directory.Exists + attributes.
+            try { if(File.GetAttributes(current).HasFlag(FileAttributes.ReparsePoint)) throw new IOException("Symbolic links/junctions are not supported: " + current); }
+            catch(FileNotFoundException) { }
+            catch(DirectoryNotFoundException) { }
+        }
     }
     public static string ResolveDestination(string requested)
     {
@@ -68,25 +75,41 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
             throw new IOException("Destination overlaps the application or world source.");
         if (!Directory.Exists(Path.GetDirectoryName(destination))) throw new IOException("Destination parent folder must exist.");
         var files = new List<TransferFile>();
-        void Add(string source, string relative)
+        void Add(string source, string relative, bool deleteSource = true)
         {
             CheckPath(source);
             if (source.EndsWith(".lock", StringComparison.OrdinalIgnoreCase)) return;
-            files.Add(new(source, relative, new FileInfo(source).Length));
+            files.Add(new(source, relative, new FileInfo(source).Length, DeleteSource:deleteSource));
         }
-        void Tree(string folder, string relative)
+        void Tree(string folder, string relative, bool deleteSource = true)
         {
             CheckPath(folder);
-            foreach (var file in Directory.GetFiles(folder)) Add(file, Path.Combine(relative, Path.GetFileName(file)));
-            foreach (var child in Directory.GetDirectories(folder)) Tree(child, Path.Combine(relative, Path.GetFileName(child)));
+            foreach (var file in Directory.GetFiles(folder)) Add(file, Path.Combine(relative, Path.GetFileName(file)), deleteSource);
+            foreach (var child in Directory.GetDirectories(folder)) Tree(child, Path.Combine(relative, Path.GetFileName(child)), deleteSource);
         }
         Tree(app, "app");
+        if(!skipRuntimeValidation && sourceRoot==app) {
+            var runtime=BundledAiRuntime.FindRoot(app) ?? throw new IOException("Bundled runtime not found. Prepare GRID runtime assets before copying; no incomplete portable copy created.");
+            if(!Directory.Exists(runtime)) throw new IOException("Bundled runtime missing. Run Prepare-GridRuntime.ps1 before copying.");
+            PortableAssets.ValidateRuntime(runtime,false);
+            foreach(var entry in Directory.GetDirectories(runtime).Where(p=>Path.GetFileName(p) is not "temp" and not "home")) Tree(entry,Path.Combine("runtime",Path.GetFileName(entry)),false);
+            foreach(var file in Directory.GetFiles(runtime).Where(p=>Path.GetFileName(p)!="ai-runtime.log")) Add(file,Path.Combine("runtime",Path.GetFileName(file)),false);
+            if(PortableAssets.SourceRoot(app) is {} repository) {
+                foreach(var file in PortableAssets.SourceFiles(repository)) Add(file,Path.Combine("source",Path.GetRelativePath(repository,file)),false);
+                foreach(var name in new[]{"Test-GridPortable.ps1","THIRD_PARTY_RUNTIME_NOTICES.md"}) if(File.Exists(Path.Combine(repository,name))) Add(Path.Combine(repository,name),name,false);
+            }
+        }
         // Transfer package-owned models/config/assets/logs too; data is inventoried below as a complete package directory.
         if (sourceRoot != app)
         {
             foreach (var folder in Directory.GetDirectories(sourceRoot).Where(p => !p.Equals(app, StringComparison.OrdinalIgnoreCase)))
-                Tree(folder, Path.GetFileName(folder));
-            foreach (var file in Directory.GetFiles(sourceRoot).Where(p => Path.GetFileName(p) is not Marker and not "launch.cmd" && !Path.GetFileName(p).StartsWith("transfer-"))) Add(file, Path.GetFileName(file));
+                {
+                    if(Path.GetFileName(folder)=="runtime") {
+                        foreach(var child in Directory.GetDirectories(folder).Where(p=>Path.GetFileName(p) is not "temp" and not "home")) Tree(child,Path.Combine("runtime",Path.GetFileName(child)));
+                        foreach(var file in Directory.GetFiles(folder).Where(p=>Path.GetFileName(p)!="ai-runtime.log")) Add(file,Path.Combine("runtime",Path.GetFileName(file)));
+                    } else Tree(folder,Path.GetFileName(folder));
+                }
+            foreach (var file in Directory.GetFiles(sourceRoot).Where(p => Path.GetFileName(p) is not Marker and not "launch.cmd" and not PortableAssets.Manifest && !Path.GetFileName(p).StartsWith("transfer-"))) Add(file, Path.GetFileName(file));
             if (!world.Equals(Path.Combine(sourceRoot, "data", "world.db"), StringComparison.OrdinalIgnoreCase)) throw new IOException("Package transfer requires its own data/world.db; custom external worlds must be transferred from an installed session.");
         }
         else
@@ -100,17 +123,28 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
         if (!files.Any(f => f.Source.Equals(world, StringComparison.OrdinalIgnoreCase))) throw new IOException("World save is missing.");
         if (files.Select(f => f.Relative).Distinct(StringComparer.OrdinalIgnoreCase).Count() != files.Count) throw new IOException("Transfer file mapping collides.");
         PackageBudget.RequireBase(new PackageFootprint(files.Where(f=>PackageBudget.Category(f.Relative)=="base").Sum(f=>f.Length) + 65536,0,0,files.Count));
+        if(sourceRoot!=app) {
+            // Preflight checks structure/lengths only. Compare the original manifest hashes during copying.
+            if(!skipRuntimeValidation) PortableAssets.Validate(sourceRoot,false);
+            var manifest=Path.Combine(sourceRoot,PortableAssets.Manifest);
+            if(File.Exists(manifest)) {
+                var expected=JsonSerializer.Deserialize<PortableAsset[]>(File.ReadAllText(manifest))!
+                    .ToDictionary(e=>Path.GetFullPath(Path.Combine(sourceRoot,e.Path)),e=>e.Sha256,StringComparer.OrdinalIgnoreCase);
+                for(var i=0;i<files.Count;i++) if(expected.TryGetValue(files[i].Source,out var hash)) files[i]=files[i] with { Hash=hash };
+            }
+        }
         var drive = new DriveInfo(Path.GetPathRoot(destination)!);
         if (drive.AvailableFreeSpace < files.Sum(f => f.Length) + PackageBudget.Reserve) throw new IOException("Insufficient destination space.");
         return new(destination, request.Move, app, world, files.ToArray());
     }
     public static string Preview(TransferPlan p) => $"{(p.Move ? "MOVE" : "COPY")} GRID\nApplication: {p.ApplicationRoot}\nWorld: {p.WorldPath}\nDestination: {p.Destination}\n{p.Files.Length} files; {p.Files.Sum(f => f.Length):N0} bytes before final save.\n" +
-        "Scope: application and bundled files, selected save/backups/archives; existing package folders if present.\nUnrelated host files, source repository, other installed worlds and user PATH launcher are excluded.\nBoth commands save and close this terminal. Destination uses launch.cmd, requires the installed .NET runtime if not bundled, and requires login.\n" +
-        (p.Move ? "Move cleanup runs after exit; consult transfer-status.txt at the destination. Existing GRID-managed PATH launcher is retargeted only if it points to this installation.\n" : "Original files remain. The copy is an independent saved world.\n") + "Continue? [y/N]";
+        "Scope: application and bundled files, selected save/backups/archives; existing package folders if present.\nBundled runtime/models, available source snapshot and selected user state are included; unrelated host files and other worlds are excluded. Shared repository runtime/source are copied but never deleted by a development-build move.\nBoth commands save and close this terminal. Destination uses launch.cmd with destination-local .NET/AI assets and requires login. Offline PDF/DOCX text extraction is bundled; scanned PDFs require an external offline OCR/export step.\n" +
+        (p.Move ? "Move cleanup runs after exit; consult transfer-status.txt at the destination. Existing GRID-managed PATH launcher is retargeted only if it points to this installation.\n" : "Original files remain. The copy is an independent saved world.\n") + TransferDashboard.Estimate(p) + "\nA separate progress window opens after confirmation.";
 
-    public string Execute(TransferPlan confirmed, Func<bool> authorized, Action<string>? launchCleanup = null)
+    public string Execute(TransferPlan confirmed, Func<bool> authorized, Action<string>? launchCleanup = null, Action<string>? progress = null, Action<TransferUpdate>? observe = null)
     {
         if (!authorized()) throw new UnauthorizedAccessException("Transfer authorization expired or was revoked.");
+        observe?.Invoke(new("Rechecking inventory",0,confirmed.Files.Sum(f=>f.Length),0,confirmed.Files.Length,"Checking source files and required assets."));
         var current = Prepare(new(confirmed.Destination, confirmed.Move));
         if (!current.Files.Select(f => (f.Source, f.Relative)).SequenceEqual(confirmed.Files.Select(f => (f.Source, f.Relative))))
             throw new IOException("File inventory changed since confirmation; retry after reviewing the new scope.");
@@ -119,31 +153,57 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
         try
         {
             var verified = new List<TransferFile>();
+            long doneBytes=0,checkedBytes=0;var totalBytes=current.Files.Sum(f=>f.Length);
+            void Update(string phase,string detail) => observe?.Invoke(new(phase,doneBytes,totalBytes,verified.Count,current.Files.Length,detail,VerifiedBytes:checkedBytes));
+            progress?.Invoke($"Copying and verifying {current.Files.Length:N0} files. Source is retained until verification completes.");
+            var buffer=new byte[1024*1024];
             foreach (var file in current.Files)
             {
                 CheckPath(file.Source);
                 var target = Path.Combine(stage, file.Relative); Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-                File.Copy(file.Source, target, false);
-                var hash = Hash(target);
-                if (hash != Hash(file.Source)) throw new IOException("Source changed during transfer: " + file.Source);
+                Update("Copying and hashing",file.Relative);
+                string hash;
+                // Keep the source read lease through verification; hash the exact bytes copied, once.
+                using(var source=File.OpenRead(file.Source)) {
+                    using var sourceHash=IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+                    using(var copy=new FileStream(target,FileMode.CreateNew,FileAccess.Write,FileShare.None)) {
+                        int read;while((read=source.Read(buffer))>0) { sourceHash.AppendData(buffer,0,read);copy.Write(buffer,0,read); doneBytes+=read;Update("Copying and hashing",file.Relative); }
+                    }
+                    hash=Convert.ToHexString(sourceHash.GetHashAndReset());
+                    if(file.Hash.Length>0 && file.Hash!=hash) throw new IOException("Source does not match its portable manifest: "+file.Relative);
+                    using var destination=File.OpenRead(target);
+                    using var destinationHash=IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+                    int count;while((count=destination.Read(buffer))>0) { destinationHash.AppendData(buffer,0,count);checkedBytes+=count;Update("Copying and hashing","Verifying SHA256: "+file.Relative); }
+                    if(hash!=Convert.ToHexString(destinationHash.GetHashAndReset())) throw new IOException("Destination verification failed: "+file.Relative);
+                }
                 verified.Add(file with { Hash = hash, Length = new FileInfo(target).Length });
+                if(verified.Count % 256 == 0 || verified.Count==current.Files.Length) progress?.Invoke($"Copied and hash-checked {verified.Count:N0} / {current.Files.Length:N0} files.");
             }
+            Update("Validating save","Loading copied database; preserving world identity.");
             // Validate the copied save through the real loader before publishing a launchable package.
             using (var store = new Grid.Persistence.WorldStore(Path.Combine(stage, "data", "world.db"))) store.Load();
             File.Delete(Path.Combine(stage, "data", "world.db.lock"));
-            File.WriteAllText(Path.Combine(stage, Marker), "{\"version\":1}");
-            File.WriteAllText(Path.Combine(stage, "launch.cmd"), "@echo off\r\nsetlocal DisableDelayedExpansion\r\n\"%~dp0app\\Grid.Terminal.exe\" %*\r\nexit /b %errorlevel%\r\n");
+            File.WriteAllText(Path.Combine(stage, Marker), skipRuntimeValidation ? "{\"version\":1}" : "{\"version\":2,\"runtime\":\"runtime\",\"platform\":\"win-x64\"}");
+            File.WriteAllText(Path.Combine(stage, "launch.cmd"), PortableAssets.Launcher);
+            Update("Validating assets","Checking portable inventory against hashes already verified during copying.");
+            if(!skipRuntimeValidation) {
+                var assets=verified.Concat(new[]{Marker,"launch.cmd"}.Select(name=>new TransferFile("",name,new FileInfo(Path.Combine(stage,name)).Length,Hash(Path.Combine(stage,name))))).ToArray();
+                PortableAssets.WriteManifest(stage,assets);
+                PortableAssets.ValidateTransferred(stage,assets,name=>Update("Validating assets",name));
+            }
             var receipt = new TransferReceipt(current with { Files = verified.ToArray() }, Environment.ProcessId, Process.GetCurrentProcess().StartTime.ToUniversalTime().Ticks);
             File.WriteAllText(Path.Combine(stage, "transfer-manifest.json"), JsonSerializer.Serialize(receipt, new JsonSerializerOptions { WriteIndented = true }));
             File.WriteAllText(Path.Combine(stage, "transfer-status.txt"), current.Move ? "Verified destination. Source cleanup pending parent exit. Do not start destination until cleanup completes." : "Copy complete. Original retained.");
             PackageBudget.RequireBase(PackageBudget.Measure(stage));
             if (!authorized()) throw new UnauthorizedAccessException("Transfer authorization revoked before publication.");
+            Update("Publishing","Final authorization and destination publication.");
             CheckPath(current.Destination); Directory.Move(stage, current.Destination);
             if (current.Move)
             {
                 try { (launchCleanup ?? LaunchCleanup)(current.Destination); }
                 catch (Exception e) { File.WriteAllText(Path.Combine(current.Destination, "transfer-status.txt"), "Move incomplete: source retained; cleanup helper could not start. " + e.Message); throw; }
             }
+            observe?.Invoke(new(current.Move ? "Cleanup pending":"Copy complete",totalBytes,totalBytes,verified.Count,current.Files.Length,current.Move ? "Waiting for original host exit and verified source cleanup.":"Destination verified; original retained.",Finished:!current.Move,CleanupPending:current.Move));
             return current.Move ? "Destination verified; move cleanup pending after this process exits. See " + Path.Combine(current.Destination, "transfer-status.txt") : "Copy complete: " + current.Destination;
         }
         catch
@@ -156,6 +216,8 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
     private static void LaunchCleanup(string destination)
     {
         var start = new ProcessStartInfo(Path.Combine(destination, "app", "Grid.Terminal.exe")) { UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden };
+        start.Environment["DOTNET_ROOT"]=Path.Combine(destination,"runtime","dotnet");
+        start.Environment["DOTNET_ROOT_X64"]=Path.Combine(destination,"runtime","dotnet");
         start.ArgumentList.Add("--finish-move");
         using var process = Process.Start(start) ?? throw new IOException("Cannot start move cleanup helper.");
     }
@@ -194,7 +256,7 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
                 var target = Path.GetFullPath(Path.Combine(plan.Destination, file.Relative));
                 var sourceAllowed = Within(file.Source, PackageRoot(plan.ApplicationRoot) ?? plan.ApplicationRoot) ||
                     file.Source.Equals(plan.WorldPath, StringComparison.OrdinalIgnoreCase) || file.Source.StartsWith(plan.WorldPath + ".", StringComparison.OrdinalIgnoreCase) || file.Source.StartsWith(plan.WorldPath + "-", StringComparison.OrdinalIgnoreCase);
-                if (!Within(target, plan.Destination) || Within(file.Source, plan.Destination) || !sourceAllowed)
+                if (!Within(target, plan.Destination) || Within(file.Source, plan.Destination) || file.DeleteSource && !sourceAllowed)
                     throw new IOException("Unsafe source/destination manifest boundary.");
                 CheckPath(file.Source); CheckPath(target);
                 // Acquire every file before deleting any: another active process/writer aborts cleanup.
@@ -203,7 +265,7 @@ public sealed class GridTransfer(string applicationRoot, string worldPath)
                 if (Convert.ToHexString(SHA256.HashData(source)) != file.Hash || Convert.ToHexString(SHA256.HashData(copy)) != file.Hash)
                     throw new IOException("Source or destination changed; cleanup refused: " + file.Source);
             }
-            foreach (var file in plan.Files) { CheckPath(file.Source); File.Delete(file.Source); }
+            foreach (var file in plan.Files.Where(f=>f.DeleteSource)) { CheckPath(file.Source); File.Delete(file.Source); }
         }
         finally { foreach (var handle in handles) handle.Dispose(); }
     }

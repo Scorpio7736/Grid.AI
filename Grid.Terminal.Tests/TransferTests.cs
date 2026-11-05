@@ -23,7 +23,7 @@ public sealed class TransferTests : IDisposable
     public void CopyIncludesSelectedWorldJnReports()
     {
         var artifacts=world+".jn-artifacts"; Directory.CreateDirectory(artifacts); File.WriteAllText(Path.Combine(artifacts,"report.json"),"{}");
-        var transfer=new GridTransfer(app,world); var destination=Path.Combine(root,"with-jn"); transfer.Execute(transfer.Prepare(new(destination,false)),()=>true);
+        var transfer=new GridTransfer(app,world,skipRuntimeValidation:true); var destination=Path.Combine(root,"with-jn"); transfer.Execute(transfer.Prepare(new(destination,false)),()=>true);
         Assert.Equal("{}",File.ReadAllText(Path.Combine(destination,"data","world.db.jn-artifacts","report.json")));
     }
     [Fact]
@@ -31,14 +31,14 @@ public sealed class TransferTests : IDisposable
     {
         var artifacts = world + ".maxis-artifacts"; Directory.CreateDirectory(artifacts);
         File.WriteAllText(Path.Combine(artifacts,"report.txt"),"saved MAXIS report");
-        var transfer = new GridTransfer(app,world); var destination = Path.Combine(root,"with-maxis");
+        var transfer = new GridTransfer(app,world,skipRuntimeValidation:true); var destination = Path.Combine(root,"with-maxis");
         transfer.Execute(transfer.Prepare(new(destination,false)),()=>true);
         Assert.Equal("saved MAXIS report",File.ReadAllText(Path.Combine(destination,"data","world.db.maxis-artifacts","report.txt")));
     }
     [Fact]
     public void CopyPreservesSourceAndCreatesVerifiedLoadablePackage()
     {
-        var transfer = new GridTransfer(app, world); var destination = Path.Combine(root, "copy with spaces");
+        var transfer = new GridTransfer(app, world,skipRuntimeValidation:true); var destination = Path.Combine(root, "copy with spaces");
         var plan = transfer.Prepare(new(destination, false));
         Assert.Contains("COPY GRID", GridTransfer.Preview(plan));
         Assert.Contains("Copy complete", transfer.Execute(plan, () => true));
@@ -52,7 +52,7 @@ public sealed class TransferTests : IDisposable
     [Fact]
     public void DestinationValidationRejectsExistingNestedAndRelativePaths()
     {
-        var transfer = new GridTransfer(app, world);
+        var transfer = new GridTransfer(app, world,skipRuntimeValidation:true);
         foreach (var path in new[] { app, root, Path.Combine(app, "nested"), "relative-folder", Path.Combine(root, "source data", "nested") })
             Assert.Throws<IOException>(() => transfer.Prepare(new(path, true)));
         Assert.True(File.Exists(world));
@@ -60,7 +60,7 @@ public sealed class TransferTests : IDisposable
     [Fact]
     public void RevocationAndInventoryChangesNeverDeleteSource()
     {
-        var transfer = new GridTransfer(app, world); var destination = Path.Combine(root, "denied"); var plan = transfer.Prepare(new(destination, true));
+        var transfer = new GridTransfer(app, world,skipRuntimeValidation:true); var destination = Path.Combine(root, "denied"); var plan = transfer.Prepare(new(destination, true));
         Assert.Throws<UnauthorizedAccessException>(() => transfer.Execute(plan, () => false)); Assert.False(Directory.Exists(destination));
         File.WriteAllText(Path.Combine(app, "new.txt"), "changed");
         Assert.Throws<IOException>(() => transfer.Execute(plan, () => true)); Assert.True(File.Exists(world));
@@ -68,7 +68,7 @@ public sealed class TransferTests : IDisposable
     [Fact]
     public void MoveCleansOnlyVerifiedInventoryAndRetainsUnrelatedFiles()
     {
-        var transfer = new GridTransfer(app, world); var destination = Path.Combine(root, "move");
+        var transfer = new GridTransfer(app, world,skipRuntimeValidation:true); var destination = Path.Combine(root, "move");
         var unrelated = Path.Combine(root, "source data", "unrelated.txt"); File.WriteAllText(unrelated, "keep");
         var launched = false;
         transfer.Execute(transfer.Prepare(new(destination, true)), () => true, _ => launched = true);
@@ -81,7 +81,7 @@ public sealed class TransferTests : IDisposable
     [Fact]
     public void ChangedDestinationOrActiveSourceLeaseAbortsMoveCleanup()
     {
-        var transfer = new GridTransfer(app, world); var destination = Path.Combine(root, "move");
+        var transfer = new GridTransfer(app, world,skipRuntimeValidation:true); var destination = Path.Combine(root, "move");
         transfer.Execute(transfer.Prepare(new(destination, true)), () => true, _ => { });
         var receipt = System.Text.Json.JsonSerializer.Deserialize<TransferReceipt>(File.ReadAllText(Path.Combine(destination, "transfer-manifest.json")))!;
         using (var active = new WorldStore(world)) Assert.Throws<IOException>(() => GridTransfer.Cleanup(receipt.Plan));
@@ -143,7 +143,7 @@ public sealed class TransferTests : IDisposable
     public async Task HostCancellationAndRedirectedInputDoNotTransfer()
     {
         var commands = DefaultCommands.Create(engine); GridTransfer.Register(commands);
-        var transfer = new GridTransfer(app, world); var destination = Path.Combine(root, "cancelled");
+        var transfer = new GridTransfer(app, world,skipRuntimeValidation:true); var destination = Path.Combine(root, "cancelled");
         var output = new StringWriter();
         using var store = new WorldStore(world); var saved = store.Load();
         var persistence = new WorldPersistenceSession(store, saved.Info, engine);
@@ -164,7 +164,7 @@ public sealed class TransferTests : IDisposable
         using var store = new WorldStore(world); var saved = store.Load();
         var persistence = new WorldPersistenceSession(store, saved.Info, engine);
         var exit = await new TerminalHost(engine, commands, new StringReader($"step\ngrid -copyto \"{destination}\"\ny\n"), output,
-            showPrompt: false, persistence: persistence, interactiveConfirmation: true, transfer: new GridTransfer(app, world)).RunAsync();
+            showPrompt: false, persistence: persistence, interactiveConfirmation: true, transfer: new GridTransfer(app, world,skipRuntimeValidation:true)).RunAsync();
         Assert.Equal(0, exit); Assert.Contains("Copy complete", output.ToString());
         using var copy = new WorldStore(Path.Combine(destination, "data", "world.db"));
         Assert.Equal(engine.TickCount, copy.Load().State.TickCount);
@@ -177,7 +177,7 @@ public sealed class TransferTests : IDisposable
             var target = Path.Combine(app, Path.GetRelativePath(AppContext.BaseDirectory, file));
             Directory.CreateDirectory(Path.GetDirectoryName(target)!); File.Copy(file, target);
         }
-        var destination = Path.Combine(root, "helper move"); var transfer = new GridTransfer(app, world);
+        var destination = Path.Combine(root, "helper move"); var transfer = new GridTransfer(app, world,skipRuntimeValidation:true);
         transfer.Execute(transfer.Prepare(new(destination, true)), () => true, _ => { });
         var manifest = Path.Combine(destination, "transfer-manifest.json");
         var receipt = System.Text.Json.JsonSerializer.Deserialize<TransferReceipt>(File.ReadAllText(manifest))!;
@@ -231,7 +231,7 @@ public sealed class TransferTests : IDisposable
         using var store = new WorldStore(world); var saved = store.Load();
         var persistence = new WorldPersistenceSession(store, saved.Info, engine);
         await new TerminalHost(engine, commands, new StringReader("grid -copyto -select\nn\nexit\n"), output,
-            showPrompt: false, persistence: persistence, interactiveConfirmation: true, transfer: new GridTransfer(app, world),
+            showPrompt: false, persistence: persistence, interactiveConfirmation: true, transfer: new GridTransfer(app, world,skipRuntimeValidation:true),
             transferPicker: _ => Task.FromResult<string?>(select ? root : null)).RunAsync();
         Assert.Contains("Transfer cancelled", output.ToString());
         if (select) Assert.Contains(Path.Combine(root, "GRID7736"), output.ToString());
@@ -246,12 +246,12 @@ public sealed class TransferTests : IDisposable
         using var store = new WorldStore(world); var saved = store.Load();
         await new TerminalHost(engine, commands, new StringReader("grid -copyto -select\ny\n"), output,
             showPrompt: false, persistence: new WorldPersistenceSession(store, saved.Info, engine), interactiveConfirmation: true,
-            transfer: new GridTransfer(app, world), transferPicker: _ => Task.FromResult<string?>(selected)).RunAsync();
+            transfer: new GridTransfer(app, world,skipRuntimeValidation:true), transferPicker: _ => Task.FromResult<string?>(selected)).RunAsync();
         Assert.Contains("Copy complete", output.ToString());
         Assert.Equal("unrelated", File.ReadAllText(Path.Combine(selected,"keep.txt")));
         using var copied = new WorldStore(Path.Combine(selected, "GRID7736", "data", "world.db"));
         Assert.Equal(engine.GetSnapshot().WorldId, copied.Load().State.WorldId);
-        Assert.Throws<IOException>(() => new GridTransfer(app, world).Prepare(new(Path.Combine(selected,"GRID7736"),false)));
+        Assert.Throws<IOException>(() => new GridTransfer(app, world,skipRuntimeValidation:true).Prepare(new(Path.Combine(selected,"GRID7736"),false)));
     }
     [Fact]
     public async Task UnavailableSelectedMediaRetainsSource()
@@ -260,7 +260,7 @@ public sealed class TransferTests : IDisposable
         using var store = new WorldStore(world); var saved = store.Load();
         await new TerminalHost(engine, commands, new StringReader("grid -transferto -select\nexit\n"), output,
             showPrompt: false, persistence: new WorldPersistenceSession(store, saved.Info, engine), interactiveConfirmation: true,
-            transfer: new GridTransfer(app, world), transferPicker: _ => Task.FromResult<string?>(Path.Combine(root,"removed-media"))).RunAsync();
+            transfer: new GridTransfer(app, world,skipRuntimeValidation:true), transferPicker: _ => Task.FromResult<string?>(Path.Combine(root,"removed-media"))).RunAsync();
         Assert.Contains("Transfer refused", output.ToString()); Assert.True(File.Exists(world));
     }
 
@@ -275,12 +275,12 @@ public sealed class TransferTests : IDisposable
         Task<string?> Pick(CancellationToken token) { calls++; identity.Logout(); return Task.FromResult<string?>(root); }
         await new TerminalHost(engine, commands, new StringReader("grid -copyto -select\nexit\n"), output,
             showPrompt: false, persistence: persistence, interactiveConfirmation: true,
-            transfer: new GridTransfer(app, world), transferPicker: Pick).RunAsync();
+            transfer: new GridTransfer(app, world,skipRuntimeValidation:true), transferPicker: Pick).RunAsync();
         Assert.Equal(1, calls); Assert.Contains("session changed", output.ToString());
         Assert.False(Directory.Exists(Path.Combine(root, "GRID7736")));
         identity.Login(); output.GetStringBuilder().Clear();
         await new TerminalHost(engine, commands, new StringReader("grid -copyto -select\nexit\n"), output,
-            showPrompt: false, persistence: persistence, transfer: new GridTransfer(app, world), transferPicker: Pick).RunAsync();
+            showPrompt: false, persistence: persistence, transfer: new GridTransfer(app, world,skipRuntimeValidation:true), transferPicker: Pick).RunAsync();
         Assert.Equal(1, calls); Assert.Contains("interactive confirmation", output.ToString());
     }
 }

@@ -313,8 +313,11 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
         {
             if (exitCode == 0)
             {
-                try { await output.WriteLineAsync(transfer!.Execute(transferPlan, () => commands.IsAllowed("grid"))); }
-                catch (Exception e) { await output.WriteLineAsync("Transfer incomplete/refused: " + e.Message); exitCode = 1; }
+                using var dashboard=TransferDashboard.Open(transferPlan);
+                if(dashboard?.Opened==true) await output.WriteLineAsync("Transfer progress is open in a separate window. Closing that window does not cancel the transfer.");
+                else await output.WriteLineAsync("The progress window could not open; transfer progress will appear here.");
+                try { await output.WriteLineAsync(transfer!.Execute(transferPlan, () => commands.IsAllowed("grid"), progress: dashboard is null ? message => output.WriteLineAsync(message).GetAwaiter().GetResult() : null, observe: dashboard is null ? null : dashboard.Report)); }
+                catch (Exception e) { dashboard?.Report(new("Transfer failed",0,transferPlan.Files.Sum(f=>f.Length),0,transferPlan.Files.Length,e.Message,Finished:true,Failed:true)); await output.WriteLineAsync("Transfer incomplete/refused: " + e.Message); exitCode = 1; }
             }
             else await output.WriteLineAsync("Transfer aborted because shutdown/save failed. Source retained.");
         }

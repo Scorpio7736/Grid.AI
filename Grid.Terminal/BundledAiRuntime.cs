@@ -11,6 +11,7 @@ public sealed class BundledAiRuntime : IAsyncDisposable
     public Uri Endpoint { get; private set; } = new("http://127.0.0.1:1/");
     public bool Ready { get; private set; }
     public string Status { get; private set; } = "Local AI not started.";
+    public string? LogPath { get; private set; }
     public static string? FindRoot(string start)
     {
         var packaged = Path.GetFullPath(Path.Combine(start, "..", "runtime"));
@@ -49,7 +50,7 @@ public sealed class BundledAiRuntime : IAsyncDisposable
             var home=Path.Combine(root,"home");Directory.CreateDirectory(home);
             start.Environment["HOME"]=home;start.Environment["USERPROFILE"]=home;
             start.Environment["LOCALAPPDATA"]=Path.Combine(home,"AppData","Local");
-            var log=Path.Combine(root,"ai-runtime.log");var logGate=new object();
+            var log=Path.Combine(root,"ai-runtime.log");runtime.LogPath=log;var logGate=new object();
             runtime.process=Process.Start(start) ?? throw new IOException("Bundled AI process did not start.");
             void Log(object sender, DataReceivedEventArgs args)
             {
@@ -58,12 +59,15 @@ public sealed class BundledAiRuntime : IAsyncDisposable
             }
             runtime.process.OutputDataReceived+=Log;runtime.process.ErrorDataReceived+=Log;
             runtime.process.BeginOutputReadLine();runtime.process.BeginErrorReadLine();
-            using var deadline=CancellationTokenSource.CreateLinkedTokenSource(token);deadline.CancelAfter(TimeSpan.FromSeconds(30));
+            // Removable drives and first-time GPU discovery can exceed the former 30-second limit.
+            using var deadline=CancellationTokenSource.CreateLinkedTokenSource(token);deadline.CancelAfter(TimeSpan.FromMinutes(2));
             using var backend=new OllamaLocalBackend(endpoint:runtime.Endpoint);
+            var lastStatus="Waiting for the bundled server.";
             while (!runtime.process.HasExited)
             {
-                deadline.Token.ThrowIfCancellationRequested();
+                if(deadline.IsCancellationRequested) throw new IOException("Bundled AI startup timed out after two minutes. Last check: "+lastStatus);
                 var status=await backend.StatusAsync(deadline.Token);
+                lastStatus=status;
                 if (status.Contains("Installed: True",StringComparison.Ordinal))
                 { runtime.Ready=true;runtime.Status="Bundled local AI ready: qwen3:4b. CPU-only: " + AgentModelProfiles.CpuOnly + "; reduced memory: " + AgentModelProfiles.LowMemory + ". Runtime/model files: " + root;return runtime; }
                 await Task.Delay(250,deadline.Token);
@@ -72,7 +76,7 @@ public sealed class BundledAiRuntime : IAsyncDisposable
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception or OperationCanceledException or SocketException)
         {
-            await runtime.DisposeAsync();runtime.Status="Bundled local AI unavailable: " + e.Message;
+            await runtime.DisposeAsync();runtime.Status="Bundled local AI unavailable: " + e.Message + (runtime.LogPath is {} log ? "\nRuntime log: "+log : "");
             token.ThrowIfCancellationRequested();return runtime;
         }
     }

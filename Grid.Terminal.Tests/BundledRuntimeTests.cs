@@ -6,6 +6,18 @@ namespace Grid.Terminal.Tests;
 
 public sealed class BundledRuntimeTests
 {
+    [Fact]
+    public async Task DisabledChatAndDiagnosticsRetainStartupFailure()
+    {
+        using var backend=new OllamaLocalBackend();
+        const string reason="Bundled local AI unavailable: missing asset. Runtime log: test-log";
+        await using var service=new SharedLocalInference(backend,enabled:false,unavailableReason:reason);
+        Assert.Equal(reason,(await service.GenerateAsync("hello")).Reason);
+        var engine=new GridSimulationEngine(GridWorldFactory.CreateGenesis());var identity=new TerminalIdentitySession(()=>"test");identity.Attach(engine);identity.Login();
+        var commands=DefaultCommands.Create(engine);LocalAiCommands.Register(commands,identity,service,backend,()=>reason);commands.UseIdentity(identity);
+        var result=await commands.Execute("ai test").BrokerOperation!(default);
+        Assert.Contains(reason,result.Text);
+    }
     [Theory]
     [InlineData("https://127.0.0.1:1234/")]
     [InlineData("http://example.com/")]
