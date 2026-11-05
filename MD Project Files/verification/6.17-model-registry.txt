@@ -1,0 +1,9 @@
+{"UniqueAssetBytes":2497295812,"UniqueFiles":7,"Versions":1}
+OS: Microsoft Windows 10.0.26300; architecture: X64
+RAM total: 33,795,002,368 bytes; available: 13,351,854,080 bytes
+Runtime-volume free space: 159,450,398,720 bytes
+GPU: NVIDIA GeForce RTX 5060 Ti; total VRAM: 8,546,942,976 bytes; free VRAM: 6,336,544,768 bytes (driver snapshot; adapters are not pooled).
+NVIDIA driver detected; CUDA/runtime compatibility still needs model-specific verification.
+Bundled engine files: Ollama=True; llama.cpp CPU=True. File presence is not a version/hash or backend test.
+Profile promotion: pending device-specific runtime/model acceptance. Hardware alone does not enable Standard/Performance or image models. Use ai test for the current baseline.
+Pinned baseline inventory verified; registry and saved world unchanged.

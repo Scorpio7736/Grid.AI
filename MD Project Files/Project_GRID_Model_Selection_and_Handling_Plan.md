@@ -1,5 +1,7 @@
 # GRID model selection and handling
 
+**6.17 registry foundation — 2026-11-04.** Versioned model manifests, checksum verification, retained-revision rollback, shared-asset accounting, candidate tracking, persistent force-Lite and device diagnostics are implemented. 1,109 solution tests and live baseline inventory verification passed. Exact specialist artifacts, device benchmarks and automatic profile promotion remain pending. Running chat remains on the pinned Qwen3 baseline. [Implementation and commands](Project_GRID_Model_Registry_Implementation.md).
+
 **6.16 text-provider implementation — 2026-11-04.** Grid.AI now provides common lifecycle, generation, streaming, timeout, cancellation and capability contracts. Existing Ollama chat uses the new adapter. A pinned optional llama.cpp CPU provider passed live checks using the existing Qwen weights. Current suites total 1,090 passing tests. Actual image-provider lifecycle/resource verification remains open, alongside model registry/profile acceptance and other Phase 7 gates. [Implementation and verification](Project_GRID_Model_Abstraction_Implementation.md).
 
 **Version 1.0 — 2026-11-04. Planned requirements supplied by the user.** Implementation and device acceptance belong to mandatory pre-Phase-7 sections 6.16–6.31. The completed 6.13 Qwen3 4B implementation supplies the reference baseline. The candidates below require exact artifact selection, license review and measured acceptance before promotion.

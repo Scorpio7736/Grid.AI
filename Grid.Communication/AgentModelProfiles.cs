@@ -18,6 +18,7 @@ public static class AgentModelProfiles
     });
     public static AgentModelProfile Get(string agent) => All.SingleOrDefault(p => p.Agent.Equals(agent, StringComparison.OrdinalIgnoreCase))
         ?? throw new ArgumentException("Unknown local agent profile.", nameof(agent));
-    public static bool LowMemory => Environment.GetEnvironmentVariable("GRID_AI_LOW_MEMORY") == "1" || GC.GetGCMemoryInfo().TotalAvailableMemoryBytes is > 0 and < 8_000_000_000;
+    public static bool ForceLite { get; set; }
+    public static bool LowMemory => ForceLite || Environment.GetEnvironmentVariable("GRID_AI_LOW_MEMORY") == "1" || GC.GetGCMemoryInfo().TotalAvailableMemoryBytes is > 0 and < 8_000_000_000;
     public static bool CpuOnly => LowMemory || Environment.GetEnvironmentVariable("GRID_AI_CPU_ONLY") == "1";
 }

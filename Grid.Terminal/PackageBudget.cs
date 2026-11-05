@@ -19,6 +19,7 @@ public static class PackageBudget
         var path = relative.Replace('\\','/').ToLowerInvariant();
         var first = path.Split('/')[0];
         if (first is "staging" or "old-versions" || first.Contains(".staging-")) return "staging";
+        if (path is "runtime/model-registry.json" or "runtime/model-registry.lock" || path.StartsWith("runtime/model-registry.json.tmp-")) return "mutable";
         if (path.StartsWith("data/") || path.StartsWith("runtime/temp/") || path.StartsWith("runtime/home/") || path == "runtime/ai-runtime.log") return "mutable";
         return "base"; // Unknown assets, source, extraction libraries and nested archives count toward the ceiling.
     }

@@ -1,5 +1,7 @@
 # Project GRID - Chat workflow and agent handoff
 
+**6.17 registry foundation — 2026-11-04.** Versioned model manifests, checksum verification, retained-revision rollback, shared-asset accounting, candidate tracking, persistent force-Lite and device diagnostics are implemented. 1,109 solution tests and live baseline inventory verification passed. Exact specialist artifacts, device benchmarks and automatic profile promotion remain pending. Running chat remains on the pinned Qwen3 baseline. [Implementation and commands](../Project_GRID_Model_Registry_Implementation.md).
+
 **6.16 text-provider implementation — 2026-11-04.** Grid.AI contracts and Ollama/llama.cpp text adapters are locally verified with 1,090 current-suite tests and live lifecycle/streaming/cancellation checks. Preserve the existing host approval and conversation boundaries. Image-provider memory-release acceptance is still open. [Implementation and test commands](../Project_GRID_Model_Abstraction_Implementation.md).
 
 **6.15 import implementation — 2026-11-04.** PDF/DOCX import and bundled parser deployment are locally verified with 1,073 current-suite regression passes. Preserve PDF page provenance, DOCX body scope, bounded worker isolation and explicit scan-only/no-text failures. Physical second-device and final Phase 7 gates remain open. [Implementation and verification](../Project_GRID_Offline_Document_Import_Implementation.md).

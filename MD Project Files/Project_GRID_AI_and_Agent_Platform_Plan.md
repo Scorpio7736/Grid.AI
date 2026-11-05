@@ -75,12 +75,15 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 
 ### 6.17 Model registry and lifecycle
 
-- [ ] Version manifests with hashes, model/runtime compatibility, license metadata, quantization, resource needs and rollback references.
-- [ ] Track candidate specialist models awaiting user selection and share identical weights across agent profiles.
-- [ ] Verify corrupt/missing assets, failed updates, rollback, multiple compatible models and measured storage accounting.
+- [x] Version manifests with hashes, model/runtime compatibility, license metadata, quantization, resource needs and rollback references.
+- [x] Track candidate specialist models awaiting user selection and share identical weights across agent profiles.
+- [x] Verify corrupt/missing assets, failed updates, rollback, multiple compatible models and measured storage accounting.
 
 - [ ] Register the supplied Qwen3 4B/8B, Qwen2.5-Coder 3B/7B, Qwen3-Coder 30B-A3B, SDXL and FLUX.2 Klein candidates with exact revisions, licenses, quantizations, tokenizers/templates and runtime compatibility.
-- [ ] Detect available RAM/VRAM, backends, OS/architecture, disk and engines, select an eligible Lite/Standard/Performance profile, and persist a force-Lite override.
+- [x] Implement registry profile eligibility contracts and persistent force-Lite (restart required), plus OS/RAM/disk/engine-file and optional NVIDIA VRAM diagnostics
+- [ ] Complete supported GPU/backend discovery and device-benchmarked automatic Lite/Standard/Performance profile integration; unsupported readings remain unknown
+
+**Completion evidence — 2026-11-04.** 1,109 solution tests passed, including 19 registry/device tests. Real pinned baseline verification passed for 7 files / 2,497,295,812 bytes. Candidate metadata is not installation or benchmark acceptance; runtime chat remains on the pinned baseline. [Implementation, commands, recovery and remaining gates](Project_GRID_Model_Registry_Implementation.md).
 
 ### 6.18 Persona and prompt management
 

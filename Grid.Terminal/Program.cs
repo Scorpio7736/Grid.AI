@@ -7,6 +7,17 @@ using Grid.Simulation.Applications;
 
 if (args.Length == 2 && args[0] == "--extract-document") return DocumentExtraction.RunWorker(args[1]);
 if (args.SequenceEqual(new[] { "--verify-model-providers" })) return await ModelProviderVerification.RunAsync();
+if (args.SequenceEqual(new[] { "--verify-model-registry" }))
+{
+    var root = BundledAiRuntime.FindRoot(AppContext.BaseDirectory) ?? throw new IOException("No bundled runtime.");
+    var manifest = ModelRegistryCommands.Baseline(root);
+    var state = new Grid.AI.ModelRegistryState(1, [new(manifest, null)], new() { [manifest.Id] = manifest.Revision }, false);
+    var report = await new Grid.AI.ModelRegistry(root).VerifyAsync(state);
+    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(report));
+    Console.WriteLine(await ModelDeviceDiscovery.DescribeAsync(root, default));
+    Console.WriteLine("Pinned baseline inventory verified; registry and saved world unchanged.");
+    return 0;
+}
 
 if(args.Length==2 && args[0]=="--seal-portable-assets") { PortableAssets.Seal(args[1]); return 0; }
 if(args.Length==2 && args[0]=="--prepare-portable-test") return PortableTransferVerification.Create(args[1]);
@@ -111,6 +122,7 @@ try
         }
         if (pendingStart) { pendingStart = false; StartGrid(identity); } };
     Console.WriteLine("Checking bundled local AI...");
+    startupMessages.Add(ModelRegistryCommands.LoadOverride(BundledAiRuntime.FindRoot(AppContext.BaseDirectory)));
     await using var aiRuntime = await BundledAiRuntime.StartAsync(BundledAiRuntime.FindRoot(AppContext.BaseDirectory), shutdown.Token);
     startupMessages.Add(aiRuntime.Status);
     using var aiBackend = new Grid.Communication.OllamaLocalBackend(endpoint: aiRuntime.Endpoint);

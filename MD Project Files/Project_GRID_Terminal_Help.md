@@ -1,5 +1,7 @@
 # GRID7736 - Terminal Help
 
+**6.17 registry foundation — 2026-11-04.** Versioned model manifests, checksum verification, retained-revision rollback, shared-asset accounting, candidate tracking, persistent force-Lite and device diagnostics are implemented. 1,109 solution tests and live baseline inventory verification passed. Exact specialist artifacts, device benchmarks and automatic profile promotion remain pending. Running chat remains on the pinned Qwen3 baseline. [Implementation and commands](Project_GRID_Model_Registry_Implementation.md).
+
 **6.15 import implementation — 2026-11-04.** Offline PDF text extraction and DOCX body paragraph/table import are locally verified. The bundled parser uses bounded worker processes, page/paragraph provenance and explicit empty/scanned/encrypted/corrupt-file outcomes. 1,073 regression tests passed across current suites, with standalone PDF/DOCX deployment checks. Second-device acceptance and the final 6.7–6.31 gate remain pending. [Implementation, scope and verification](Project_GRID_Offline_Document_Import_Implementation.md).
 
 **2026-10-30 transfer/AI follow-up:** Removed repeated full-content transfer checks while retaining independent destination verification and pinned model/manifest matching. Hashing now reports byte progress; ETA uses measured copy/verification work. AI diagnostics retain startup errors, and bundled startup tolerates slow media. Original-PC AI passed an isolated test; the reported failing instance remains undiagnosed pending its exact error. [Implementation, evidence and limits](Project_GRID_Transfer_Checks_and_AI_Diagnostics.md). Physical second-PC acceptance and 6.15 remain pending.
@@ -953,3 +955,17 @@ Start GRID and connect to an agent as Master Control. Use `memory scope <project
 `mcp plan <request>` drafts custom work; answer clarification with `talk <answer>`. `talk submit plan` creates tasks awaiting human approval. After inspecting and approving each task, `mcp run <plan-id>` runs the selected plan and briefs results. `mcp cancel <plan-id>` cancels outstanding work; `mcp repeat <plan-id>` creates a new plan needing fresh approvals. Use `mcp authority` and `mcp capabilities` for scope.
 
 Start meetings with `meetings MCP MAXIS JN`, `agent meetings MCP MAXIS JN`, or `connect meetings MCP MAXIS JN`. Add `-inline` to stay here; otherwise a window opens after validation. Disconnect first if already connected.
+
+## Model registry commands (6.17 foundation)
+
+Master Control, original host terminal:
+
+- `ai registry list` — stored revisions and pending candidates.
+- `ai registry device` — memory/disk/GPU discovery, with unknowns explicit.
+- `ai registry register-baseline` — verify and register the existing pinned model.
+- `ai registry verify` — hash all referenced active/retained assets and measure shared storage.
+- `ai registry import "absolute-manifest.json"` — validate and register already provisioned assets.
+- `ai registry rollback <id>` — verify and restore the previous metadata revision.
+- `ai registry force-lite on` / `off` — persist the setting; restart GRID to apply it.
+
+Example: `ai registry register-baseline`, then `ai registry verify`. Registry changes do not switch the running chat model.
