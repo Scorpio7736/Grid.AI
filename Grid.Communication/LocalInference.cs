@@ -8,6 +8,7 @@ namespace Grid.Communication;
 public sealed record InferenceReply(bool Available, string Text, string Reason, long ElapsedMilliseconds = 0)
 {
     public bool ResponseRejected { get; init; }
+    public Guid? RequestId { get; init; }
 }
 public interface ILocalInference
 {
@@ -30,7 +31,7 @@ public interface IInferenceBackend
 /// <summary>One bounded FIFO worker per host, shared by future agent consumers. Never invokes tools.</summary>
 public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
 {
-    private sealed record Request(string Prompt, bool Structured, CancellationTokenSource Stop, TaskCompletionSource<InferenceReply> Result, string? Schema, bool FileDraft, string Agent);
+    private sealed record Request(string Prompt, bool Structured, CancellationTokenSource Stop, TaskCompletionSource<InferenceReply> Result, string? Schema, bool FileDraft, string Agent, Guid Id, long QueuedAt, CancellationToken CallerToken);
     private readonly Channel<Request> queue;
     private readonly CancellationTokenSource shutdown = new();
     private readonly Task worker;
@@ -40,6 +41,7 @@ public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
     private readonly string? unavailableReason;
     private int pending;
     private int active;
+    public InferenceDiagnostics Diagnostics { get; } = new();
     public int Pending => Volatile.Read(ref pending);
     public bool Enabled => enabled;
     public bool Active => Volatile.Read(ref active) != 0;
@@ -67,16 +69,23 @@ public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
     private async Task<InferenceReply> Enqueue(string prompt,bool structured,CancellationToken token,string? schema=null, bool fileDraft=false,string agent="MCP")
     {
         if (string.IsNullOrWhiteSpace(prompt) || prompt.Length > (fileDraft ? 32768 : 8192)) throw new ArgumentException("Prompt must contain 1..8192 characters.");
-        if (!enabled) return new(false, "", unavailableReason ?? "Local AI disabled; deterministic GRID remains available.");
-        if (shutdown.IsCancellationRequested) return new(false, "", "Local AI stopped.");
+        var id = Guid.NewGuid(); var queuedAt = Stopwatch.GetTimestamp();
+        var kind = fileDraft ? InferenceKind.FileDraft : structured ? InferenceKind.Structured : InferenceKind.Chat;
+        InferenceReply Immediate(InferenceOutcome outcome, string message)
+        {
+            using var trace = Diagnostics.Begin(id, agent, kind, queuedAt); trace.Complete(outcome);
+            return new(false, "", message) { RequestId = id };
+        }
+        if (!enabled) return Immediate(InferenceOutcome.Disabled, unavailableReason ?? "Local AI disabled; deterministic GRID remains available.");
+        if (shutdown.IsCancellationRequested) return Immediate(InferenceOutcome.Stopped, "Local AI stopped.");
         var stop = CancellationTokenSource.CreateLinkedTokenSource(token, shutdown.Token); stop.CancelAfter(fileDraft ? TimeSpan.FromSeconds(300) : deadline);
         var requestToken = stop.Token;
         var completion = new TaskCompletionSource<InferenceReply>(TaskCreationOptions.RunContinuationsAsynchronously);
         Interlocked.Increment(ref pending);
-        if (!queue.Writer.TryWrite(new(prompt, structured, stop, completion, schema, fileDraft, agent)))
-        { Interlocked.Decrement(ref pending); stop.Dispose(); return new(false, "", "Local AI queue full or stopped; try later."); }
+        if (!queue.Writer.TryWrite(new(prompt, structured, stop, completion, schema, fileDraft, agent, id, queuedAt, token)))
+        { Interlocked.Decrement(ref pending); stop.Dispose(); return Immediate(InferenceOutcome.Busy, "Local AI queue full or stopped; try later."); }
         try { return await completion.Task.WaitAsync(requestToken); }
-        catch (OperationCanceledException) { return new(false, "", "Local AI cancelled or timed out; deterministic GRID remains available."); }
+        catch (OperationCanceledException) { return new(false, "", "Local AI cancelled or timed out; deterministic GRID remains available.") { RequestId = id }; }
     }
     private async Task RunAsync()
     {
@@ -84,13 +93,16 @@ public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
         {
             Interlocked.Decrement(ref pending);
             var timer = Stopwatch.StartNew();
+            var span = Diagnostics.Begin(request.Id, request.Agent, request.FileDraft ? InferenceKind.FileDraft : request.Structured ? InferenceKind.Structured : InferenceKind.Chat, request.QueuedAt);
+            InferenceReply reply;
             try
             {
                 request.Stop.Token.ThrowIfCancellationRequested(); Interlocked.Exchange(ref active, 1);
                 var text = await backend.GenerateProfileAsync(request.Agent, request.Prompt, request.Structured, request.Schema, request.FileDraft, request.Stop.Token);
                 request.Stop.Token.ThrowIfCancellationRequested();
                 if (string.IsNullOrWhiteSpace(text) || text.Length > (request.FileDraft ? 131072 : 8192)) throw new InvalidDataException("Empty or excessive model output.");
-                request.Result.TrySetResult(new(true, text, "Local model output; unverified, no action executed.", timer.ElapsedMilliseconds));
+                span.Complete(InferenceOutcome.Success);
+                reply = new(true, text, "Local model output; unverified, no action executed.", timer.ElapsedMilliseconds);
             }
             catch (InvalidDataException e)
             {
@@ -102,11 +114,20 @@ public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
                     "thinking" => "The model did not finish its final answer. Retry the request.",
                     _ => "The model response failed validation. Retry the request; check ai status if it persists."
                 };
-                request.Result.TrySetResult(new(false,"",reason,timer.ElapsedMilliseconds) { ResponseRejected = true });
+                span.Complete((e.Data["GRID_FAILURE"] as string) switch {
+                    "length" => InferenceOutcome.OutputLimit, "incomplete" => InferenceOutcome.Incomplete,
+                    "context" => InferenceOutcome.ContextLimit, _ => InferenceOutcome.InvalidOutput });
+                reply = new(false,"",reason,timer.ElapsedMilliseconds) { ResponseRejected = true };
             }
             catch (Exception e)
-            { request.Result.TrySetResult(new(false, "", "Local AI unavailable (" + e.GetType().Name + "); deterministic GRID remains available.", timer.ElapsedMilliseconds)); }
-            finally { Interlocked.Exchange(ref active, 0); request.Stop.Dispose(); }
+            {
+                span.Complete(e is OperationCanceledException
+                    ? request.CallerToken.IsCancellationRequested ? InferenceOutcome.Cancelled : shutdown.IsCancellationRequested ? InferenceOutcome.Stopped : InferenceOutcome.Timeout
+                    : e is HttpRequestException or IOException ? InferenceOutcome.Transport : InferenceOutcome.Unavailable);
+                reply = new(false, "", "Local AI unavailable (" + e.GetType().Name + "); deterministic GRID remains available.", timer.ElapsedMilliseconds);
+            }
+            finally { span.Dispose(); Interlocked.Exchange(ref active, 0); request.Stop.Dispose(); }
+            request.Result.TrySetResult(reply with { RequestId = request.Id });
         }
     }
     public async ValueTask DisposeAsync()
@@ -159,6 +180,7 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
         var lean = lowMemoryMode;
         if (lean && fileDraft && prompt.Length > 12000) throw Rejected("context", "File input exceeds reduced-memory context. Split the request.");
         var persona = Personas.Assemble(profile.Agent, structured);
+        InferenceSpan.Current?.ConfigureBaseline(persona.Version);
         // Retry only an explicitly truncated response, once, within the existing queue deadline.
         // Never return a truncated answer or submit a partial JSON proposal.
         for (var attempt=0;attempt<2;attempt++)
@@ -169,7 +191,9 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
                 MaxOutputTokens: fileDraft ? (lean ? (attempt == 0 ? 2048 : 4096) : (attempt == 0 ? 4096 : 8192)) : (attempt == 0 ? profile.InitialTokens : profile.RetryTokens),
                 Json: structured, JsonSchema: schema, CpuOnly: cpuOnlyMode)
                 { Timeout = TimeSpan.FromSeconds(fileDraft ? 300 : 120), SystemInstruction = persona.SystemInstruction, PromptVersion = persona.Version, PromptTemplate = persona.Template };
+            InferenceSpan.Current?.Attempt();
             var result = await provider.GenerateAsync(new LocalModel(Model), request, token);
+            InferenceSpan.Current?.Metrics(result);
             if (result.FinishReason == "length")
             {
                 if (attempt == 0) continue;

@@ -97,11 +97,14 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 
 ### 6.19 Observability and evaluation foundation
 
-- [ ] Define structured request/tool traces, model/prompt versions, error categories, latency, throughput, CPU/GPU and memory metrics.
-- [ ] Create versioned benchmark datasets and record the existing Qwen3 4B baseline and measurable release thresholds.
-- [ ] Verify redaction, bounded retention, diagnostic usefulness and repeatable evaluations without exposing private content.
+- [x] Define structured request/tool traces, model/prompt versions, error categories, latency, throughput, CPU/GPU and memory metrics.
+- [x] Create versioned benchmark datasets and record the existing Qwen3 4B baseline and measurable release thresholds.
+- [x] Verify redaction, bounded retention, diagnostic usefulness and repeatable evaluations without exposing private content.
 
 - [ ] Benchmark cold and warm text/image jobs per candidate and device, including first-token latency, tokens/s, peak memory, schema/tool selection, completion, image dimensions and image validity.
+
+
+**Completion evidence — 2026-11-05.** 1,151 current-suite tests passed. Content-free bounded diagnostics, separate task audit projections, model/persona metadata, typed failure categories and retry counters are implemented. Version-2 Qwen3 baseline benchmarks passed in automatic/CPU modes with explicit latency/allocation thresholds and labeled resource sampling. Image candidates and exclusive GPU utilization remain pending. [Commands, evidence and limits](Project_GRID_Observability_and_Evaluation.md).
 
 ### 6.20 RAG pipeline
 

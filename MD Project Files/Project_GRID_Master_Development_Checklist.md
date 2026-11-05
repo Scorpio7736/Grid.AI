@@ -1546,13 +1546,16 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.19 GRID-AI / GRID-Agent — Observability and evaluation foundation
 
-**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to Both APIs and GRID7736.
+**Text observability/evaluation foundation implemented — 2026-11-05. Specialist and image benchmarks remain open.** Ownership belongs to Both APIs and GRID7736.
 
-- [ ] Define structured request/tool traces, model/prompt versions, error categories, latency, throughput, CPU/GPU and memory metrics.
-- [ ] Create versioned benchmark datasets and record the existing Qwen3 4B baseline and measurable release thresholds.
-- [ ] Verify redaction, bounded retention, diagnostic usefulness and repeatable evaluations without exposing private content.
+- [x] Define structured request/tool traces, model/prompt versions, error categories, latency, throughput, CPU/GPU and memory metrics.
+- [x] Create versioned benchmark datasets and record the existing Qwen3 4B baseline and measurable release thresholds.
+- [x] Verify redaction, bounded retention, diagnostic usefulness and repeatable evaluations without exposing private content.
 
 - [ ] Benchmark cold and warm text/image jobs per candidate and device, including first-token latency, tokens/s, peak memory, schema/tool selection, completion, image dimensions and image validity.
+
+
+**Completion evidence — 2026-11-05.** 1,151 current-suite tests passed. Content-free bounded diagnostics, separate task audit projections, model/persona metadata, typed failure categories and retry counters are implemented. Version-2 Qwen3 baseline benchmarks passed in automatic/CPU modes with explicit latency/allocation thresholds and labeled resource sampling. Image candidates and exclusive GPU utilization remain pending. [Commands, evidence and limits](Project_GRID_Observability_and_Evaluation.md).
 
 ## 6.20 GRID-AI / GRID-Agent — RAG pipeline
 

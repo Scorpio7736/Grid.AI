@@ -4,14 +4,15 @@ namespace Grid.Terminal;
 
 public static class LocalAiCommands
 {
-    public static void Register(CommandDispatcher commands, TerminalIdentitySession identity, SharedLocalInference service, OllamaLocalBackend backend, Func<string>? runtimeStatus = null)
+    public static void Register(CommandDispatcher commands, TerminalIdentitySession identity, SharedLocalInference service, OllamaLocalBackend backend, Func<string>? runtimeStatus = null, Func<Grid.Simulation.Tasks.TaskState>? tasks = null)
     {
-        commands.Register(new("ai", "ai <status|test|profiles|personas|storage|registry>", "Inspect the shared local inference foundation or run a text-only smoke test. Conversations share this service with deterministic fallback.", args =>
+        commands.Register(new("ai", "ai <status|test|diagnostics|profiles|personas|storage|registry>", "Inspect the shared local inference foundation or run a text-only smoke test. Conversations share this service with deterministic fallback.", args =>
         {
             if (identity.IsAttachment) return new("Use the original host terminal for local AI diagnostics.");
+            if (args.Count > 0 && args[0] == "diagnostics") return AiDiagnosticsCommand.Execute(args, identity, service, tasks);
             if (args.Count > 0 && args[0] == "personas") return PersonaSettings.Execute(args, identity, service, backend);
             if (args.Count > 0 && args[0] == "registry") return ModelRegistryCommands.Execute(args, identity);
-            if (args.Count != 1 || args[0] is not ("status" or "test" or "profiles" or "storage")) return new("Usage: ai status | ai test | ai profiles | ai personas | ai storage | " + ModelRegistryCommands.Usage);
+            if (args.Count != 1 || args[0] is not ("status" or "test" or "profiles" or "storage")) return new("Usage: ai status | ai test | ai diagnostics | ai profiles | ai personas | ai storage | " + ModelRegistryCommands.Usage);
             if(args[0]=="profiles") return new(string.Join("\n\n",AgentModelProfiles.All.Select(p=>$"{p.Agent} | {p.Model} | context {p.ContextTokens} | output {p.InitialTokens}/{p.RetryTokens}\n{p.Purpose}\n{p.Fallback}")) + $"\nCPU-only: {AgentModelProfiles.CpuOnly}; reduced memory: {AgentModelProfiles.LowMemory}. One queue, one loaded model, shared weights. Model manifest pinned by SHA256.");
             if(args[0]=="storage") {
                 var root=GridTransfer.PackageRoot(AppContext.BaseDirectory);

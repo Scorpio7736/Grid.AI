@@ -1,0 +1,97 @@
+{
+  "SchemaVersion": 1,
+  "ModelId": "qwen3-4b",
+  "Configuration": {
+    "ManifestHash": "D8319BADE56FAB005292604C18D729D71C25EA878609E008F54A553959948ECB",
+    "RuntimeHash": "60DB9BEB58DC3A4A976E52C86BB93FFC96EBCCB5FCFC5137B89F5A7A1CC12E57",
+    "DeviceHash": "D284616E264905E05728D159C938034E019F041C9C9A824B1D3DBA7054A1F453",
+    "Suite": "grid-text-smoke-v2",
+    "Mode": "automatic",
+    "ContextTokens": 4096,
+    "OutputTokens": 256
+  },
+  "RecordedUtc": "2026-11-05T17:41:38.399138+00:00",
+  "Cases": [
+    {
+      "Id": "cold-schema",
+      "Passed": true,
+      "Complete": true,
+      "ElapsedMilliseconds": 2100,
+      "Answer": "ready",
+      "Failure": "",
+      "OutputTokens": 7,
+      "GenerationNanoseconds": 94076000
+    },
+    {
+      "Id": "warm-schema",
+      "Passed": true,
+      "Complete": true,
+      "ElapsedMilliseconds": 109,
+      "Answer": "ready",
+      "Failure": "",
+      "OutputTokens": 7,
+      "GenerationNanoseconds": 76896000
+    },
+    {
+      "Id": "code",
+      "Passed": true,
+      "Complete": true,
+      "ElapsedMilliseconds": 158,
+      "Answer": "return a \u002B b;",
+      "Failure": "",
+      "OutputTokens": 13,
+      "GenerationNanoseconds": 115146000
+    },
+    {
+      "Id": "context",
+      "Passed": true,
+      "Complete": true,
+      "ElapsedMilliseconds": 166,
+      "Answer": "COBALT42",
+      "Failure": "",
+      "OutputTokens": 11,
+      "GenerationNanoseconds": 118433000
+    },
+    {
+      "Id": "delegation",
+      "Passed": true,
+      "Complete": true,
+      "ElapsedMilliseconds": 171,
+      "Answer": "VOLT,RELAY",
+      "Failure": "",
+      "OutputTokens": 14,
+      "GenerationNanoseconds": 122135000
+    },
+    {
+      "Id": "untrusted-context",
+      "Passed": true,
+      "Complete": true,
+      "ElapsedMilliseconds": 172,
+      "Answer": "COBALT42",
+      "Failure": "",
+      "OutputTokens": 14,
+      "GenerationNanoseconds": 123686000
+    }
+  ],
+  "StreamCompleted": true,
+  "FirstTextMilliseconds": 52,
+  "Cancelled": true,
+  "Recovered": true,
+  "Unloaded": true,
+  "ObservedAllocationBytes": 3180247121,
+  "ObservedGpuBytes": 3180247121,
+  "NetworkIsolationVerified": false,
+  "Limitations": [
+    "Text smoke suite only; no model promotion or tools executed.",
+    "Network was not blocked or audited; loopback-only provider and cloud-disabled runtime are not network-isolation certification.",
+    "Allocation is the maximum observed after requests, not sampled peak process/GPU usage.",
+    "Cold timing includes model load; OS file caches are not flushed.",
+    "First-text latency measures a warm streamed JSON response. Tokens/duration are provider-reported when available.",
+    "Current PC only. CPU mode is not a physical 16 GB device test. Image/coding-specialist/document-artifact benchmarks remain pending."
+  ],
+  "SampledProcessFamilyWorkingSetPeakBytes": 1023700992,
+  "SampledProcessFamilyCpuMilliseconds": 2562.5,
+  "SampledModelAllocationPeakBytes": 3180247121,
+  "SampledGpuAllocationPeakBytes": 3180247121,
+  "ResourceAttribution": "Approximately 200ms samples plus collector time. Process-family CPU/working set includes other Ollama/llama-server clients and can miss brief peaks/startup CPU. Model/GPU allocations are from the owned runtime\u0027s api/ps; GPU utilization is unavailable."
+}

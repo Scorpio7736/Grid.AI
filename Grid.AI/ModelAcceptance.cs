@@ -11,13 +11,20 @@ public sealed record AcceptanceCase(string Id, bool Passed, bool Complete, long 
 public sealed record ModelAcceptanceReport(int SchemaVersion, string ModelId, AcceptanceConfiguration Configuration,
     DateTimeOffset RecordedUtc, AcceptanceCase[] Cases, bool StreamCompleted, long? FirstTextMilliseconds,
     bool Cancelled, bool Recovered, bool Unloaded, long? ObservedAllocationBytes, long? ObservedGpuBytes,
-    bool NetworkIsolationVerified, string[] Limitations);
+    bool NetworkIsolationVerified, string[] Limitations)
+{
+    public long? SampledProcessFamilyWorkingSetPeakBytes { get; init; }
+    public double? SampledProcessFamilyCpuMilliseconds { get; init; }
+    public long? SampledModelAllocationPeakBytes { get; init; }
+    public long? SampledGpuAllocationPeakBytes { get; init; }
+    public string ResourceAttribution { get; init; } = "Not sampled";
+}
 public sealed record AcceptanceDecision(bool Passed, string Reason);
 
 /// <summary>Scoped smoke-test evidence. Passing never grants tools or enables an untested model.</summary>
 public static class ModelAcceptance
 {
-    public const string TextSuite = "grid-text-smoke-v1";
+    public const string TextSuite = "grid-text-smoke-v2";
     public static IReadOnlyList<string> RequiredCases { get; } = Array.AsReadOnly(new[]
         { "cold-schema", "warm-schema", "code", "context", "delegation", "untrusted-context" });
 
@@ -43,11 +50,12 @@ public static class ModelAcceptance
         if (report.Cases is null || report.Cases.Length != RequiredCases.Count ||
             !report.Cases.Select(c => c?.Id).Order().SequenceEqual(RequiredCases.Order()))
             return new(false, "Required evaluation cases are missing or duplicated.");
-        if (report.Cases.Any(c => !c.Passed || !c.Complete || c.ElapsedMilliseconds is < 0 or > 120_000))
-            return new(false, "A correctness, completion or 120-second smoke-test deadline failed.");
-        if (!report.StreamCompleted || report.FirstTextMilliseconds is null or < 0 or > 120_000 ||
-            !report.Cancelled || !report.Recovered || !report.Unloaded || report.ObservedAllocationBytes is null or <= 0 ||
-            report.ObservedGpuBytes is null or < 0 || expected.Mode == "cpu" && report.ObservedGpuBytes != 0)
+        if (report.Cases.Any(c => !c.Passed || !c.Complete || c.ElapsedMilliseconds < 0 || c.ElapsedMilliseconds > (c.Id == "cold-schema" ? TextBenchmarkSuite.Baseline.ColdLimitMilliseconds : TextBenchmarkSuite.Baseline.WarmLimitMilliseconds)))
+            return new(false, "A correctness, completion or versioned latency threshold failed.");
+        if (!report.StreamCompleted || report.FirstTextMilliseconds is null or < 0 || report.FirstTextMilliseconds > TextBenchmarkSuite.Baseline.FirstTextLimitMilliseconds ||
+            !report.Cancelled || !report.Recovered || !report.Unloaded || report.ObservedAllocationBytes is null or <= 0 || report.ObservedAllocationBytes > TextBenchmarkSuite.Baseline.AllocationLimitBytes ||
+            report.SampledModelAllocationPeakBytes > TextBenchmarkSuite.Baseline.AllocationLimitBytes ||
+            report.ObservedGpuBytes is null or < 0 || expected.Mode == "cpu" && (report.ObservedGpuBytes != 0 || report.SampledGpuAllocationPeakBytes > 0))
             return new(false, "Streaming, cancellation, recovery, allocation or unload acceptance is incomplete.");
         if (requireNetworkIsolation && !report.NetworkIsolationVerified)
             return new(false, "A network-blocked acceptance run has not been recorded.");

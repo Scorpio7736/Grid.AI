@@ -136,7 +136,7 @@ try
     CommandDispatcher CreateCommands(TerminalIdentitySession session)
     {
         var dispatcher = DefaultCommands.Create(engine);
-        if (!session.IsAttachment) LocalAiCommands.Register(dispatcher, session, localAi, aiBackend, () => "Startup: "+aiRuntime.Status);
+        if (!session.IsAttachment) LocalAiCommands.Register(dispatcher, session, localAi, aiBackend, () => "Startup: "+aiRuntime.Status, () => engine.TasksFor(session.Reference));
         CityCommand.Register(dispatcher, engine); BehaviorCommand.Register(dispatcher, engine);
         WorkplaceCommands.Register(dispatcher, engine); SocialCommand.Register(dispatcher, engine);
         VoltRelayCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));

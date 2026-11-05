@@ -1,5 +1,7 @@
 # Model selection and handling acceptance — 6.17A baseline
 
+**6.19 text observability foundation — 2026-11-05.** `ai diagnostics` exposes bounded content-free request records and a separate saved-task projection. The version-2 text benchmark has explicit latency/allocation thresholds and sampled CPU/memory/GPU-allocation evidence. 1,151 current-suite tests and both live baseline modes passed. Specialist/image, physical-device and network-blocked acceptance remain open. [Implementation and limits](Project_GRID_Observability_and_Evaluation.md).
+
 **Baseline evaluation implemented — 2026-11-04. The complete 6.17A gate remains open.** The user confirmed that specialist models have not yet been selected or downloaded. This work evaluates the installed Qwen3 4B reference model and provides scoped, reproducible evidence. It does not select or provision additional models.
 
 ## Implemented evaluation

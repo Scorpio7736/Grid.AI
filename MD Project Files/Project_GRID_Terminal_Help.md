@@ -1,5 +1,7 @@
 # GRID7736 - Terminal Help
 
+**6.19 text observability foundation — 2026-11-05.** `ai diagnostics` exposes bounded content-free request records and a separate saved-task projection. The version-2 text benchmark has explicit latency/allocation thresholds and sampled CPU/memory/GPU-allocation evidence. 1,151 current-suite tests and both live baseline modes passed. Specialist/image, physical-device and network-blocked acceptance remain open. [Implementation and limits](Project_GRID_Observability_and_Evaluation.md).
+
 **6.18 persona management completed — 2026-11-05.** Grid.Agent owns six versioned personas and prompt assembly; Grid.AI provides generic system/version/template fields. `ai personas` supports per-agent selection and rollback with portable settings. 1,139 regression tests, 10 live persona checks and normal assistance verification passed. Host permissions, memory scopes and approval rules are unchanged. [Details and test commands](Project_GRID_Persona_and_Prompt_Management.md).
 
 **6.17A baseline evaluation — 2026-11-04.** Qwen3 4B passed automatic/CPU text smoke and lifecycle checks. Versioned evidence is tied to exact model/runtime/device/test settings; `ai registry acceptance` shows recorded results. 1,126 regression tests passed. Specialist models are not yet selected/downloaded; broad model, image, device, network-blocked and later-milestone acceptance remains open. [Results and remaining gates](Project_GRID_Model_Acceptance_Baseline.md).
@@ -982,3 +984,11 @@ Example: `ai registry register-baseline`, then `ai registry verify`. Registry ch
 - `ai personas <agent> rollback` — restore the previous selection.
 
 Example: `ai personas MAXIS v1`, then `ai personas MAXIS rollback`. Master Control on the original host only; wait for inference to finish. Selections are saved and apply to new requests. No permissions change.
+
+## Inference diagnostics (6.19)
+
+- `ai diagnostics` — latest 20 content-free request records.
+- `ai diagnostics details` — structured versions, timings, outcomes and separate task records.
+- `ai diagnostics clear` — clear the in-memory inference buffer; preserve task audit history.
+
+Example: run `ai test`, then `ai diagnostics`. Master Control on the original host only. Retention is 256 records / 24 hours, pruned on read/write, with no automatic disk log.
