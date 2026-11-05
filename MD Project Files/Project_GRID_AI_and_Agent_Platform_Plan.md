@@ -108,9 +108,12 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 
 ### 6.20 RAG pipeline
 
-- [ ] Plan document ingestion, chunking, local embeddings, hybrid keyword/vector search, reranking, citations and source freshness.
-- [ ] Start with SQLite-backed storage and a packaged vector-search capability selected through compatibility and licensing checks.
-- [ ] Verify source identity/version/provenance on every chunk, authorized collection filters, revocation, stale indexes and offline PDF/DOCX integration from 6.15.
+- [x] Implement bounded captured-document ingestion/chunking, lexical feature embeddings, hybrid keyword/vector ranking, citations and explicit snapshot freshness.
+- [x] Start with SQLite-backed derived storage and a packaged managed exact vector scan using the existing licensed SQLite dependency stack.
+- [x] Verify source identity/version/provenance on every chunk, authorized collection filters, revocation, stale-index replacement and offline PDF/DOCX integration from 6.15.
+- [ ] Select/provision/evaluate learned local semantic embeddings against this lexical baseline; no embedding model has been selected or downloaded.
+
+**Completion evidence — 2026-11-05.** The lexical foundation passed 1,165 current-suite tests and a live bundled-model deep-document answer/revocation check. `context search` and scoped assistance retrieve captured excerpts with versioned citations. Disposable SQLite indexes rebuild from current grants and saved captures; original files are not reopened. Learned semantic relevance and physical second-device acceptance remain pending. [Implementation, evidence and limits](Project_GRID_Retrieval_Implementation.md).
 
 ### 6.21 Persistent memory
 

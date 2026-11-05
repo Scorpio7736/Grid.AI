@@ -76,6 +76,21 @@ public sealed partial class ChatCommands
         if (identity?.IsMaster != true)
             return identity is not null && Starts(input, @"^(build|test|plan|edit|approve|run|apply|delete|select files|look at .*screen)\b")
                 ? Explain("Access denied. Operational assistance requires human Master Control.") : Send(id, input, MessageOrigin.Terminal);
+        var fileSearch = LocalFileSearch.Parse(input);
+        if (fileSearch is not null)
+        {
+            if (Find(id).IsMeeting) return Explain("Use a one-to-one conversation to search your local folders.");
+            if (fileSearch.Location.Length == 0)
+                return Explain("Where should I look? For example: find " + fileSearch.Query + " on my desktop, or find " + fileSearch.Query + " in my documents. I search names only; I won't open or change the files.");
+            var scope = Pending("file-search", input);
+            var root = LocalFileSearch.Root(fileSearch.Location);
+            var found = LocalFileSearch.Search(root, fileSearch.Query);
+            if (!Current(scope)) return Explain("The session changed during search. Please repeat your request.");
+            return Explain((found.Paths.Count == 0 ? "I found no matching names" : "I found these matching paths") +
+                " under " + TerminalTable.Safe(root) + ":\n" + string.Join("\n", found.Paths.Select(TerminalTable.Safe)) +
+                (found.Incomplete ? "\nSome folders were skipped or a search limit was reached; this is not a complete inventory." : "") +
+                "\nI searched file and folder names only. No contents were opened, shared with the model or changed.");
+        }
         if (LooksLikePath(input)) return ConfirmFile(Pending("files", "Analyze the selected file."), input);
         if (input.Equals("details", StringComparison.OrdinalIgnoreCase))
         {
@@ -130,13 +145,13 @@ public sealed partial class ChatCommands
             if (workspaces.Length == 0) return Explain("Register a MAXIS workspace before editing. No files changed.");
             return Ask("workspace", input, "Which registered workspace? Reply talk <name>.\n" + string.Join(", ", workspaces));
         }
-        if (Starts(input, @"^(analyze|summari[sz]e|select files|upload files|add files|review (the |my )?(files?|documents?)|read (the |my )?(files?|documents?))\b"))
+        if (Starts(input, @"^(analyze|summari[sz]e|select files|upload files|add files|find and explain|find and summarize|look up and explain|search (?:my |the |these |uploaded |captured )*(?:files|documents|context)|(?:find|explain|tell me about)\b.*\b(?:in|from) (?:my |the |these |uploaded |captured )*(?:files?|documents?|context)|review (the |my )?(files?|documents?)|read (the |my )?(files?|documents?))\b"))
         {
             if (Find(id).IsMeeting) return Explain("Use a one-to-one conversation for private file analysis; meeting grants are not inferred.");
             var c = Find(id); var agent = c.Participants.Single(p => p.Kind == ParticipantKind.Program);
             if (Starts(input, @"^(select|upload|add) files\b")) return SelectFiles(Pending("files", "Analyze the selected files."));
             if (!engine.ContextFor(agent.Id, identity.SessionId).Any(d => d.Project.Equals(c.ProjectScope, StringComparison.OrdinalIgnoreCase)))
-                return Ask("files", input, $"Choose temporary files to share with {agent.Name} in project {c.ProjectScope}. For example: select files. You can cancel or ask something else.");
+                return Ask("files", input, $"I don't have any documents shared with {agent.Name} in this project yet. Say select files to choose what I should read, or give me a file path. I'll keep your question while you choose. You can cancel or ask something else.");
             return Analysis(input);
         }
         if (Starts(input, @"^(build|test|run tests|plan|propose|check (the )?(resources|firewall|defender)|inspect workspace|notify|inventory)\b"))
@@ -285,7 +300,7 @@ public sealed partial class ChatCommands
                 return result with { Text = result.Text + "\nYour analysis request is retained. Say continue to retry, or ask something else." };
             followUp = null;
             talkDetails = (scope, result.Text);
-            return ConversationPresentation.AgentReply(Contacts(Find(scope.Conversation)), result.Text.Substring(body.Start, body.Length), "Use talk details for sources. File analysis is not added to conversation memory.");
+            return ConversationPresentation.AgentReply(Contacts(Find(scope.Conversation)), result.Text.Substring(body.Start, body.Length), "Say details to see sources. File analysis is not added to conversation memory.");
         });
     }
     private static CommandResult TalkHints(CommandResult result) => After(result, r => r with { Text = r.Text

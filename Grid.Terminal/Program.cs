@@ -9,6 +9,7 @@ if (args.Length == 2 && args[0] == "--extract-document") return DocumentExtracti
 if (args.SequenceEqual(new[] { "--verify-model-providers" })) return await ModelProviderVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--evaluate-model-baseline" })) return await ModelAcceptanceVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-personas" })) return await PersonaVerification.RunAsync();
+if (args.SequenceEqual(new[] { "--verify-retrieval" })) return await RetrievalVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-model-registry" }))
 {
     var root = BundledAiRuntime.FindRoot(AppContext.BaseDirectory) ?? throw new IOException("No bundled runtime.");

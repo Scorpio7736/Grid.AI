@@ -1,5 +1,19 @@
 # GRID7736 - Terminal Help
 
+**Local file discovery follow-up — 2026-11-05.** Connected Master Control conversations recognize `hey mcp can you find the stl file on my desktop` and `find UWGB in my documents` as local name searches, not uploaded-context analysis. `search my files for any STL file` asks for a location; repeat with Desktop, Documents or Downloads. Lookup lists observed paths without opening file contents, importing context, invoking the model or changing files. Private searches are refused in meetings. Limits: 2 seconds of checked traversal time, 10,000 entries, depth 8 and 50 results; hidden/system/reparse-point folders and inaccessible entries are skipped with an incomplete-result notice. An individual filesystem call can still wait on the OS. This is bounded local discovery, not unrestricted whole-PC search or STL content analysis. Windows Desktop/Documents locations are resolved through special-folder settings. Downloads currently uses the profile Downloads path; custom redirects there remain unsupported.
+
+
+**Conversational retrieval follow-up — 2026-11-05.** In a connected conversation, type `find and explain INDIGO`, `find INDIGO in my uploaded documents` directly; `assist analyze` and `talk` are optional. Missing grants prompt for files in plain language and retain the question through selection. Analysis shows an agent reply, with `details` available for citations. Existing file/task review and approval boundaries remain unchanged. Routing supports these documented intents; arbitrary requests are not guaranteed to become executable operations.
+
+
+## Captured-document search (6.20)
+
+- `context search "project" "query"`
+  - Searches authorized captured excerpts with source/version/line citations. Does not reopen originals. Lexical token vectors are not learned semantic embeddings.
+  - Example: `context search "general" "release verification code"`
+
+[Retrieval limits and verification](Project_GRID_Retrieval_Implementation.md).
+
 **6.19 text observability foundation — 2026-11-05.** `ai diagnostics` exposes bounded content-free request records and a separate saved-task projection. The version-2 text benchmark has explicit latency/allocation thresholds and sampled CPU/memory/GPU-allocation evidence. 1,151 current-suite tests and both live baseline modes passed. Specialist/image, physical-device and network-blocked acceptance remain open. [Implementation and limits](Project_GRID_Observability_and_Evaluation.md).
 
 **6.18 persona management completed — 2026-11-05.** Grid.Agent owns six versioned personas and prompt assembly; Grid.AI provides generic system/version/template fields. `ai personas` supports per-agent selection and rollback with portable settings. 1,139 regression tests, 10 live persona checks and normal assistance verification passed. Host permissions, memory scopes and approval rules are unchanged. [Details and test commands](Project_GRID_Persona_and_Prompt_Management.md).

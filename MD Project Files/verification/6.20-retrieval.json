@@ -1,0 +1,12 @@
+{
+  "Passed": true,
+  "DeepRetrieval": true,
+  "AnswerContainedExpectedMarker": true,
+  "Revocation": true,
+  "Citations": [
+    "synthetic-deep-document.txt | source c01163e2c5d844688b2fbc3fd683e8fe:D60C48BA5AD4:D60C48BA5AD4:5720-6042:9DFE614B6342 | lines 115-121 | utf8 | captured 2026-11-05T23:06:10.1871375\u002B00:00",
+    "synthetic-deep-document.txt | source c01163e2c5d844688b2fbc3fd683e8fe:D60C48BA5AD4:D60C48BA5AD4:0-600:B4CBFC72F207 | lines 1-13 | utf8 | captured 2026-11-05T23:06:10.1871375\u002B00:00"
+  ],
+  "Reply": "AI analyze \u2014 suggestions, no actions executed.\n\nThe release verification code is COBALT42.\n\nCaptured sources: synthetic-deep-document.txt | source c01163e2c5d844688b2fbc3fd683e8fe:D60C48BA5AD4:D60C48BA5AD4:5720-6042:9DFE614B6342 | lines 115-121 | utf8 | captured 2026-11-05T23:06:10.1871375\u002B00:00; synthetic-deep-document.txt | source c01163e2c5d844688b2fbc3fd683e8fe:D60C48BA5AD4:D60C48BA5AD4:0-600:B4CBFC72F207 | lines 1-13 | utf8 | captured 2026-11-05T23:06:10.1871375\u002B00:00\nCaptured excerpts may be incomplete; source files are not reopened. Response is not added to conversation memory.",
+  "Limits": "Synthetic fixtures, disposable world, lexical feature vectors. No claim of semantic embedding quality or original-file freshness."
+}

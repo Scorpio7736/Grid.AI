@@ -1559,11 +1559,18 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.20 GRID-AI / GRID-Agent — RAG pipeline
 
-**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-AI retrieval with GRID-Agent scope ownership.
+**Lexical RAG foundation implemented — 2026-11-05. Learned semantic embeddings remain pending. Required before Phase 7.** Ownership belongs to GRID-AI retrieval with GRID-Agent scope ownership.
 
-- [ ] Plan document ingestion, chunking, local embeddings, hybrid keyword/vector search, reranking, citations and source freshness.
-- [ ] Start with SQLite-backed storage and a packaged vector-search capability selected through compatibility and licensing checks.
-- [ ] Verify source identity/version/provenance on every chunk, authorized collection filters, revocation, stale indexes and offline PDF/DOCX integration from 6.15.
+- [x] Implement bounded captured-document ingestion/chunking, lexical feature embeddings, hybrid keyword/vector ranking, citations and explicit snapshot freshness.
+- [x] Start with SQLite-backed derived storage and a packaged managed exact vector scan using the existing licensed SQLite dependency stack.
+- [x] Verify source identity/version/provenance on every chunk, authorized collection filters, revocation, stale-index replacement and offline PDF/DOCX integration from 6.15.
+- [ ] Select/provision/evaluate learned local semantic embeddings against this lexical baseline; no embedding model has been selected or downloaded.
+
+**Completion evidence — 2026-11-05.** The lexical foundation passed 1,165 current-suite tests and a live bundled-model deep-document answer/revocation check. `context search` and scoped assistance retrieve captured excerpts with versioned citations. Disposable SQLite indexes rebuild from current grants and saved captures; original files are not reopened. Learned semantic relevance and physical second-device acceptance remain pending. [Implementation, evidence and limits](Project_GRID_Retrieval_Implementation.md).
+
+- [x] Conversational retrieval follow-up: route natural find/explain/document-search requests through scoped analysis, retain questions while selecting files, and keep sources behind `details`. Existing action approval boundaries remain unchanged. Verification: 901 terminal tests passed, including six added natural-language cases; all 48 unified-conversation tests also passed after verifying direct input without `talk`.
+
+- [x] Separate local file/folder discovery from captured-document retrieval. Support conversational Desktop/Documents/Downloads name searches, missing-location clarification, bounded traversal and no automatic content import. Verification: 906 terminal tests passed in a separate output directory because the running GRID process locked the normal executable. Rebuild the normal application after closing that instance.
 
 ## 6.21 GRID-AI / GRID-Agent — Persistent memory
 

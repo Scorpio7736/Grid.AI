@@ -1,5 +1,7 @@
 # Offline PDF and DOCX import — 6.15
 
+**6.20 lexical retrieval foundation — 2026-11-05.** Scoped captured-document search and assistance now use SQLite-backed chunks, BM25/token-feature vectors, reranking and versioned citations. 1,165 current-suite tests and a live deep-document answer/revocation check passed. Learned semantic embeddings remain pending; original files are not reopened and Phase 7 is not cleared. [Implementation and limits](Project_GRID_Retrieval_Implementation.md).
+
 **Implemented and locally verified — 2026-11-04.** PDF text extraction, DOCX body paragraphs/tables, picker support, bounded parsing and import diagnostics are implemented. Second-device acceptance and the final 6.7–6.31 readiness gate are pending.
 
 ## Import workflow

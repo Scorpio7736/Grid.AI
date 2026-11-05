@@ -76,6 +76,49 @@ public sealed class UnifiedTalkTests : IDisposable
         Assert.Empty(engine.GetSnapshot().Tasks.Records); Assert.Empty(engine.GetConversation(chat.ActiveConversation!.Value).Messages);
     }
     [Fact]
+    public async Task BroadFileSearchAsksLocationWithoutModelOrImport()
+    {
+        commands.Execute("connect MCP -inline");
+        var result = commands.Execute("search my files for any STL file");
+        Assert.Contains("Where should I look?", result.Text);
+        Assert.Equal(0, ai.Calls);
+        Assert.Empty(engine.ContextFor(null, owner.SessionId));
+        await Task.CompletedTask;
+    }
+    [Theory]
+    [InlineData("find and explain INDIGO")]
+    [InlineData("Could you please find and explain INDIGO?")]
+    [InlineData("explain INDIGO from the uploaded document")]
+    public async Task NaturalDocumentQuestionsRetainRequestThroughSelection(string request)
+    {
+        var question = await Talk(request);
+        Assert.Contains("select files", question.Text);
+        Assert.Contains("I'll keep your question", question.Text);
+        Assert.Equal(0, ai.Calls);
+        var picker = await Talk("select files");
+        Assert.NotNull(picker.ContextPicker);
+        var imported = picker.ContextPicker!([Source("INDIGO means the release is ready.")]);
+        var result = imported.BrokerOperation is { } operation ? await operation(default) : imported;
+        Assert.Contains("INDIGO", ai.Prompt);
+        Assert.Contains("release is ready", ai.Prompt);
+        Assert.Contains("Say details", result.Text);
+        Assert.DoesNotContain("AI analyze", result.Text);
+        Assert.Empty(engine.GetSnapshot().Tasks.Records);
+    }
+
+    [Fact]
+    public async Task NaturalDocumentQuestionUsesExistingGrantWithoutTerminalSyntax()
+    {
+        commands.Execute("connect MCP -inline");
+        commands.ExecuteTokens(["context", "add", Source("INDIGO is the release name."), "temporary", "general", "MCP"]);
+        var dispatched = commands.Execute("find and explain INDIGO");
+        var result = dispatched.BrokerOperation is { } operation ? await operation(default) : dispatched;
+        Assert.Contains("INDIGO is the release name", ai.Prompt);
+        Assert.Contains("Say details", result.Text);
+        Assert.DoesNotContain("AI analyze", result.Text);
+        Assert.Empty(engine.GetSnapshot().Tasks.Records);
+    }
+    [Fact]
     public async Task CancelledPickerNeverGrantsAndCannotBeReused()
     {
         var picker = await PickAnalysis();
