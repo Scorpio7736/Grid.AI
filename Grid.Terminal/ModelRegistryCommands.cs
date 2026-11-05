@@ -6,14 +6,14 @@ namespace Grid.Terminal;
 
 public static class ModelRegistryCommands
 {
-    public const string Usage = "ai registry [list|device|verify|register-baseline|import <absolute-manifest.json>|rollback <id>|force-lite <on|off>]";
+    public const string Usage = "ai registry [list|device|verify|acceptance|register-baseline|import <absolute-manifest.json>|rollback <id>|force-lite <on|off>]";
     public static CommandResult Execute(IReadOnlyList<string> args, TerminalIdentitySession identity)
     {
         if (!identity.IsMaster || identity.IsAttachment) return new("Use the original host terminal as Master Control for the model registry.");
         var root = BundledAiRuntime.FindRoot(AppContext.BaseDirectory);
         if (root is null) return new("No bundled runtime root. Provision a complete GRID package first.");
         var operation = args.Count == 1 ? "list" : args[1];
-        if (!(args.Count <= 2 && operation is "list" or "device" or "verify" or "register-baseline") &&
+        if (!(args.Count <= 2 && operation is "list" or "device" or "verify" or "acceptance" or "register-baseline") &&
             !(args.Count == 3 && (operation is "rollback" or "import" || operation == "force-lite" && args[2] is "on" or "off")))
             return new(Usage);
         var reference = identity.Reference;
@@ -39,6 +39,8 @@ public static class ModelRegistryCommands
         token.ThrowIfCancellationRequested();
         switch (operation)
         {
+            case "acceptance":
+                return ModelAcceptanceVerification.Describe(root);
             case "device":
                 return await ModelDeviceDiscovery.DescribeAsync(root, token);
             case "import":

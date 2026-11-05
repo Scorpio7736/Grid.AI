@@ -1,5 +1,7 @@
 # GRID7736 - Terminal Help
 
+**6.17A baseline evaluation — 2026-11-04.** Qwen3 4B passed automatic/CPU text smoke and lifecycle checks. Versioned evidence is tied to exact model/runtime/device/test settings; `ai registry acceptance` shows recorded results. 1,126 regression tests passed. Specialist models are not yet selected/downloaded; broad model, image, device, network-blocked and later-milestone acceptance remains open. [Results and remaining gates](Project_GRID_Model_Acceptance_Baseline.md).
+
 **6.17 registry foundation — 2026-11-04.** Versioned model manifests, checksum verification, retained-revision rollback, shared-asset accounting, candidate tracking, persistent force-Lite and device diagnostics are implemented. 1,109 solution tests and live baseline inventory verification passed. Exact specialist artifacts, device benchmarks and automatic profile promotion remain pending. Running chat remains on the pinned Qwen3 baseline. [Implementation and commands](Project_GRID_Model_Registry_Implementation.md).
 
 **6.15 import implementation — 2026-11-04.** Offline PDF text extraction and DOCX body paragraph/table import are locally verified. The bundled parser uses bounded worker processes, page/paragraph provenance and explicit empty/scanned/encrypted/corrupt-file outcomes. 1,073 regression tests passed across current suites, with standalone PDF/DOCX deployment checks. Second-device acceptance and the final 6.7–6.31 gate remain pending. [Implementation, scope and verification](Project_GRID_Offline_Document_Import_Implementation.md).

@@ -1,5 +1,7 @@
 # Model registry and lifecycle — 6.17
 
+**6.17A baseline evaluation — 2026-11-04.** Qwen3 4B passed automatic/CPU text smoke and lifecycle checks. Versioned evidence is tied to exact model/runtime/device/test settings; `ai registry acceptance` shows recorded results. 1,126 regression tests passed. Specialist models are not yet selected/downloaded; broad model, image, device, network-blocked and later-milestone acceptance remains open. [Results and remaining gates](Project_GRID_Model_Acceptance_Baseline.md).
+
 **Registry foundation implemented and verified — 2026-11-04.** Exact specialist artifacts, device-specific benchmarks and automatic profile promotion remain open. This section does not declare all of 6.17 or 6.17A complete.
 
 ## Implemented ownership and persistence

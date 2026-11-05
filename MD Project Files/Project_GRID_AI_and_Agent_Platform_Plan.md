@@ -1,5 +1,7 @@
 # GRID-AI and GRID-Agent development specification
 
+**6.17A baseline evaluation — 2026-11-04.** Qwen3 4B passed automatic/CPU text smoke and lifecycle checks. Versioned evidence is tied to exact model/runtime/device/test settings; `ai registry acceptance` shows recorded results. 1,126 regression tests passed. Specialist models are not yet selected/downloaded; broad model, image, device, network-blocked and later-milestone acceptance remains open. [Results and remaining gates](Project_GRID_Model_Acceptance_Baseline.md).
+
 **Model-handling planning update — 2026-11-04.** Added the supplied seven model candidates, hardware-aware Lite/Standard/Performance eligibility, cold/warm benchmarks, bounded fallback, deterministic delegation, validated artifact generation and offline manifests. Installed models have a 75 GB decimal sub-limit within the shared 128 GB Flash/PC target. All related acceptance remains required before Phase 7. [Model selection and handling plan](Project_GRID_Model_Selection_and_Handling_Plan.md).
 
 **Planning addition — 2026-11-04.** The supplied 15-step roadmap is approved as planned work before Project GRID Phase 7. Existing milestone completion evidence retains its original scope. The user has supplied model candidates and handling requirements. Exact artifacts and measured promotion remain pending.

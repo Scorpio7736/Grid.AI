@@ -186,4 +186,16 @@ public sealed class ModelProviderTests
         complete = false;
         await Assert.ThrowsAsync<InvalidDataException>(async () => { await foreach (var _ in provider.StreamAsync(new("test"), new("prompt"), default)) { } });
     }
+
+    [Theory]
+    [InlineData("10", "1000000000", 10L, 1000000000L)]
+    [InlineData("null", "null", null, null)]
+    [InlineData("\"unknown\"", "-1", null, null)]
+    public async Task OllamaKeepsTokenMetricsUnknownUnlessValid(string count, string duration, long? tokens, long? nanoseconds)
+    {
+        await using var provider = new OllamaModelProvider(new("http://127.0.0.1:1/"), new Handler((request, _) => Task.FromResult(Json(
+            request.RequestUri!.AbsolutePath == "/api/show" ? "{}" : $"{{\"response\":\"hello\",\"done\":true,\"eval_count\":{count},\"eval_duration\":{duration}}}"))));
+        var result = await provider.GenerateAsync(new("test"), new("prompt"), default);
+        Assert.Equal(tokens, result.OutputTokens); Assert.Equal(nanoseconds, result.GenerationNanoseconds);
+    }
 }

@@ -26,7 +26,11 @@ public sealed record ModelRequest(string Prompt, int ContextTokens = 4096, int M
         }
     }
 }
-public sealed record ModelResult(string Text, bool Complete, string FinishReason, byte[]? Image = null, string? ImageMediaType = null);
+public sealed record ModelResult(string Text, bool Complete, string FinishReason, byte[]? Image = null, string? ImageMediaType = null)
+{
+    public long? OutputTokens { get; init; }
+    public long? GenerationNanoseconds { get; init; }
+}
 public sealed record ModelChunk(string Text, bool Finished, string FinishReason = "");
 public sealed record ModelResources(bool Loaded, long? AllocatedBytes, long? GpuBytes, string Evidence);
 

@@ -1,5 +1,7 @@
 # Project GRID - Chat workflow and agent handoff
 
+**6.17A baseline evaluation — 2026-11-04.** Qwen3 4B passed automatic/CPU text smoke and lifecycle checks. Versioned evidence is tied to exact model/runtime/device/test settings; `ai registry acceptance` shows recorded results. 1,126 regression tests passed. Specialist models are not yet selected/downloaded; broad model, image, device, network-blocked and later-milestone acceptance remains open. [Results and remaining gates](../Project_GRID_Model_Acceptance_Baseline.md).
+
 **6.17 registry foundation — 2026-11-04.** Versioned model manifests, checksum verification, retained-revision rollback, shared-asset accounting, candidate tracking, persistent force-Lite and device diagnostics are implemented. 1,109 solution tests and live baseline inventory verification passed. Exact specialist artifacts, device benchmarks and automatic profile promotion remain pending. Running chat remains on the pinned Qwen3 baseline. [Implementation and commands](../Project_GRID_Model_Registry_Implementation.md).
 
 **6.16 text-provider implementation — 2026-11-04.** Grid.AI contracts and Ollama/llama.cpp text adapters are locally verified with 1,090 current-suite tests and live lifecycle/streaming/cancellation checks. Preserve the existing host approval and conversation boundaries. Image-provider memory-release acceptance is still open. [Implementation and test commands](../Project_GRID_Model_Abstraction_Implementation.md).

@@ -1500,7 +1500,15 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.17A Model selection and handling acceptance
 
-**Planned — 2026-11-04. Required before Phase 7.** This consolidated checklist tracks the supplied model plan across implementation sections 6.16–6.31. Check each item only after its linked implementation and recorded acceptance pass.
+**Baseline evaluation implemented — 2026-11-04; consolidated acceptance remains open before Phase 7.** This consolidated checklist tracks the supplied model plan across implementation sections 6.16–6.31. Check each item only after its linked implementation and recorded acceptance pass.
+
+**Implemented baseline evidence (does not complete the consolidated gates below):**
+
+- [x] Run the installed Qwen3 4B text smoke suite in automatic and CPU-only modes, with streaming/cancellation/recovery/unload checks
+- [x] Bind evidence to model/runtime/device/test settings; reject changed, stale or incomplete evidence and keep network isolation explicit
+- [x] Expose recorded results through `ai registry acceptance`; preserve reports as mutable portable data
+
+**Completion evidence:** 1,126 solution tests passed. Both baseline modes passed six live fixtures and lifecycle checks. The user confirmed specialist models are not selected/downloaded. No additional models were downloaded and no tasks executed. [Baseline results, commands and remaining gates](Project_GRID_Model_Acceptance_Baseline.md).
 
 - [ ] Evaluate and register Qwen3 4B and Qwen3 8B for text/document content and delegation, retaining Qwen3 4B as the reference baseline
 - [ ] Evaluate Qwen2.5-Coder 3B and 7B for coding, and benchmark Qwen3-Coder 30B-A3B as an optional Performance coordinator upgrade

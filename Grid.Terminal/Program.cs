@@ -7,6 +7,7 @@ using Grid.Simulation.Applications;
 
 if (args.Length == 2 && args[0] == "--extract-document") return DocumentExtraction.RunWorker(args[1]);
 if (args.SequenceEqual(new[] { "--verify-model-providers" })) return await ModelProviderVerification.RunAsync();
+if (args.SequenceEqual(new[] { "--evaluate-model-baseline" })) return await ModelAcceptanceVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-model-registry" }))
 {
     var root = BundledAiRuntime.FindRoot(AppContext.BaseDirectory) ?? throw new IOException("No bundled runtime.");
