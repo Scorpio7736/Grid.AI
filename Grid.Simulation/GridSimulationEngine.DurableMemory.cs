@@ -1,3 +1,4 @@
+using Grid.Agent;
 using System.Security.Cryptography;
 using System.Text;
 using Grid.Communication;
@@ -7,7 +8,7 @@ namespace Grid.Simulation;
 public sealed partial class GridSimulationEngine
 {
     private static bool MemoryVisible(ConversationMemory memory, Guid agent, string project, DateTimeOffset now) =>
-        !memory.Forgotten && !memory.IsStale(now) && (memory.AgentId == agent && memory.Project == project || memory.Grants.Any(g => !g.Revoked && g.AgentId == agent && g.Project == project));
+        MemoryPolicy.Visible(memory, agent, project, now);
     private void InvalidateMemoryHistory(ConversationMemory memory)
     {
         ExcludeOldMemoryHistory(memory.AgentId, memory.Project);

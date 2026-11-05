@@ -117,9 +117,11 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 
 ### 6.21 Persistent memory
 
-- [ ] Define short-term context, long-term memory, summarization, retention, correction and deletion per agent/project.
-- [ ] Migrate existing conversations, pinned memories, automatic recall and explicitly retained document summaries with their grants and provenance.
-- [ ] Verify restart/copy recall, expiry, corrections, isolation, deletion semantics and revoked-source handling.
+- [x] Define short-term context, long-term memory, summarization, retention, correction and deletion per agent/project.
+- [x] Migrate existing conversations, pinned memories, automatic recall and explicitly retained document summaries with their grants and provenance.
+- [x] Verify restart/copy recall, expiry, corrections, isolation, deletion semantics and revoked-source handling.
+
+**Completion evidence — 2026-11-05.** Grid.Agent owns persistent memory records, visibility/relevance and conversation-scope policy; Grid.AI supplies generic lexical recall/extractive-summary helpers. Existing host authorization, saved conversation envelopes, JSON shape, grants/provenance and schema v24 are preserved. 1,180 tests and six bundled-model copied-database checks passed. No temporary raw document was retained and revoked/unshared recipients could not recall its approved summary. [Implementation, compatibility and limits](Project_GRID_Agent_Memory_Migration.md).
 
 ### 6.22 Identity and authorization
 

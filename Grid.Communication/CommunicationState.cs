@@ -1,3 +1,4 @@
+using Grid.Agent;
 namespace Grid.Communication;
 
 public enum ParticipantKind { Human, Program }
@@ -51,7 +52,7 @@ public sealed record CommunicationState(IReadOnlyList<Conversation> Conversation
                 previous = m.Tick;
             }
         }
-        ConversationMemory.Validate(state);
+        ConversationMemoryValidation.Validate(state);
     }
 }
 

@@ -1,3 +1,5 @@
+using Grid.AI;
+using Grid.Agent;
 using Grid.Communication;
 using Grid.Simulation.Editing;
 namespace Grid.Simulation;
@@ -94,8 +96,8 @@ public sealed partial class GridSimulationEngine
         return c.Messages.Where(m => m.Sequence > c.RecallAfterSequence && !sources.Contains(m.Id) && !stale.Any(label => m.Content.Contains(label,StringComparison.Ordinal)));
     }
     private IEnumerable<Conversation> RecallConversations(Conversation current) => communications.Conversations.Where(c =>
-        c.ProjectScope == current.ProjectScope && c.IsMeeting == current.IsMeeting &&
-        c.Participants.Select(p => (p.Kind,p.Id)).ToHashSet().SetEquals(current.Participants.Select(p => (p.Kind,p.Id))));
+        MemoryPolicy.SameRecallScope(c.ProjectScope, c.IsMeeting, c.Participants.Select(p => ((int)p.Kind, p.Id)),
+            current.ProjectScope, current.IsMeeting, current.Participants.Select(p => ((int)p.Kind, p.Id))));
 
     public IReadOnlyList<(Guid ConversationId, GridMessage Message)> ReviewConversationRecall(EditSessionReference session, Guid conversationId)
     {
@@ -121,33 +123,18 @@ public sealed partial class GridSimulationEngine
             RecordEvent("ConversationRecallForgotten",c.Id,null,"Prior matching-scope conversation recall disabled; transcripts and explicit memories retained.");
         }
     }
-    private static string RecallExcerpt(GridMessage message,string input)
-    {
-        var text = HistoryText(message);
-        var words = System.Text.RegularExpressions.Regex.Matches(input,@"[\p{L}\p{N}]+").Select(m => m.Value).Where(w => w.Length > 4);
-        var match = words.Select(w => text.IndexOf(w,StringComparison.OrdinalIgnoreCase)).Where(i => i >= 0).DefaultIfEmpty(0).Min();
-        var start = Math.Max(0,match - 50);
-        return (start > 0 ? "[excerpt] " : "") + Clip(text[start..],240);
-    }
+    private static string RecallExcerpt(GridMessage message, string input) => RecallText.Excerpt(HistoryText(message), input);
     private IEnumerable<(Guid ConversationId, GridMessage Message)> RelevantConversationRecall(Conversation current,string input)
     {
-        var words = System.Text.RegularExpressions.Regex.Matches(input.ToLowerInvariant(), @"[\p{L}\p{N}]+").Select(m => m.Value)
-            .Where(w => w.Length > 3 && !new[] { "what","that","this","with","have","does","about","your","please","remember","recall","discuss","discussed","conversation","previous","earlier" }.Contains(w)).ToHashSet();
-        var broad = System.Text.RegularExpressions.Regex.IsMatch(input,@"(?i)\b(remember|recall|discussed|previous|earlier|last time)\b");
+        var words = RecallText.Terms(input, history: true);
+        var broad = RecallText.BroadHistoryRequest(input);
         return RecallConversations(current).Where(c => c.Id != current.Id)
-            .SelectMany(c => RecallHistory(c).Select(m => (ConversationId:c.Id,Message:m, Score:words.Count(w => (m.Sender.Name + " " + HistoryText(m)).Contains(w,StringComparison.OrdinalIgnoreCase)))))
+            .SelectMany(c => RecallHistory(c).Select(m => (ConversationId:c.Id,Message:m, Score:RecallText.Score(m.Sender.Name + " " + HistoryText(m), words))))
             .Where(x => broad || x.Score > 0)
             .OrderByDescending(x => x.Score).ThenByDescending(x => x.Message.Sender.Kind == ParticipantKind.Human)
             .ThenByDescending(x => x.Message.CreatedAtUtc).ThenByDescending(x => x.Message.Sequence)
             .Take(3).Select(x => (x.ConversationId,x.Message));
     }
-    private IEnumerable<ConversationMemory> RelevantMemories(Guid agent, string project, string input)
-    {
-        var words = System.Text.RegularExpressions.Regex.Matches(input.ToLowerInvariant(), @"[\p{L}\p{N}]+").Select(m => m.Value).Where(w => w.Length > 3 && !new[] { "what","that","this","with","have","does","about","your","please" }.Contains(w)).ToHashSet();
-        var recall = words.Contains("remember") || words.Contains("recall");
-        return communications.Memories.Where(m => MemoryVisible(m, agent, project, timeProvider.GetUtcNow()))
-            .Select(m => (Memory:m, Score:words.Count(w => (m.Key + " " + m.Content).Contains(w,StringComparison.OrdinalIgnoreCase))))
-            .Where(x => recall || x.Score > 0 || x.Memory.Kind == MemoryKind.Preference)
-            .OrderByDescending(x => x.Score).ThenByDescending(x => x.Memory.UpdatedAtUtc).ThenBy(x => x.Memory.Key,StringComparer.Ordinal).Take(3).Select(x => x.Memory);
-    }
+    private IEnumerable<ConversationMemory> RelevantMemories(Guid agent, string project, string input) =>
+        MemoryPolicy.Relevant(communications.Memories, agent, project, input, timeProvider.GetUtcNow());
 }

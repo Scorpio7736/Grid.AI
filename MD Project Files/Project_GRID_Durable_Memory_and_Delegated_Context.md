@@ -1,5 +1,7 @@
 # 6.10 Durable memory and delegated context
 
+**6.21 agent memory migration — 2026-11-05.** Memory records, grants and recall policy now belong to Grid.Agent, with generic lexical/extractive helpers in Grid.AI. Existing conversation storage, schema v24, permissions, correction/expiry and source revocation remain compatible. 1,180 tests and six live copied-database memory checks passed. No new model or memory database is required. [Implementation and verification](Project_GRID_Agent_Memory_Migration.md).
+
 Implemented 2026-10-28. Schema v24. Phase 7 remains blocked by 6.11–6.15.
 
 ## What is retained

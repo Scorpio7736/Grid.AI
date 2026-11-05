@@ -1,5 +1,7 @@
 # Project GRID — Development Roadmap & Language Architecture
 
+**6.21 agent memory migration — 2026-11-05.** Memory records, grants and recall policy now belong to Grid.Agent, with generic lexical/extractive helpers in Grid.AI. Existing conversation storage, schema v24, permissions, correction/expiry and source revocation remain compatible. 1,180 tests and six live copied-database memory checks passed. No new model or memory database is required. [Implementation and verification](Project_GRID_Agent_Memory_Migration.md).
+
 **6.20 lexical retrieval foundation — 2026-11-05.** Scoped captured-document search and assistance now use SQLite-backed chunks, BM25/token-feature vectors, reranking and versioned citations. 1,165 current-suite tests and a live deep-document answer/revocation check passed. Learned semantic embeddings remain pending; original files are not reopened and Phase 7 is not cleared. [Implementation and limits](Project_GRID_Retrieval_Implementation.md).
 
 **6.18 persona management completed — 2026-11-05.** Grid.Agent owns six versioned personas and prompt assembly; Grid.AI provides generic system/version/template fields. `ai personas` supports per-agent selection and rollback with portable settings. 1,139 regression tests, 10 live persona checks and normal assistance verification passed. Host permissions, memory scopes and approval rules are unchanged. [Details and test commands](Project_GRID_Persona_and_Prompt_Management.md).

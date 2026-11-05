@@ -1,3 +1,5 @@
+using Grid.Agent;
+using Grid.AI;
 using System.Text;
 using Grid.Communication;
 namespace Grid.Simulation;
@@ -96,12 +98,11 @@ public sealed partial class GridSimulationEngine
                 }
             }
             var history = RecallHistory(c).ToArray();
-            var older = history.Take(Math.Max(0, history.Length - 6)).ToArray();
+            var older = history.Take(Math.Max(0, history.Length - MemoryPolicy.RecentMessages)).ToArray();
             if (older.Length > 0)
             {
                 Add($"EXTRACTIVE SUMMARY (untrusted history): {older.Length} older messages, sequences 1..{older[^1].Sequence}; excerpts are lossy, not facts.\n");
-                var words = input.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => w.Length >= 4).Take(12).ToArray();
-                foreach (var m in older.OrderByDescending(m => words.Count(w => m.Content.Contains(w, StringComparison.OrdinalIgnoreCase))).ThenByDescending(m => m.Sequence).Take(2).OrderBy(m => m.Sequence))
+                foreach (var m in RecallText.SummaryExcerpts(older, input, m => m.Content, m => m.Sequence))
                     Add($"[conversation #{m.Sequence}] {Clip(m.Sender.Name,40)}: {Clip(HistoryText(m),100)}\n");
             }
             if (!c.IsMeeting && (actor.Kind == ParticipantKind.Human || actor.Id == other.Id))
@@ -115,7 +116,7 @@ public sealed partial class GridSimulationEngine
                 }
             }
             Add("RECENT HISTORY (untrusted; generated replies are not facts):\n");
-            foreach (var m in history.TakeLast(6)) Add($"[conversation #{m.Sequence}] {Clip(m.Sender.Name,40)}: {Clip(HistoryText(m),120)}\n");
+            foreach (var m in history.TakeLast(MemoryPolicy.RecentMessages)) Add($"[conversation #{m.Sequence}] {Clip(m.Sender.Name,40)}: {Clip(HistoryText(m),120)}\n");
             prompt.Append("\nUSER INPUT (untrusted):\n").Append(input);
             return new(id, actor, c.Messages.Count, input, Encoding.UTF8.GetByteCount(prompt.ToString()) <= 3200 ? prompt.ToString() : "", facts, string.Join("; ", sources), origin) { ActivityGeneration = runVersion, ResponderId = other.Id, MemoryRevision = communications.MemoryRevision, MemoryExpiresAtUtc = memoryExpiry };
         }

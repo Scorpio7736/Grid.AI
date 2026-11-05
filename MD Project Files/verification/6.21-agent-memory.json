@@ -1,0 +1,49 @@
+{
+  "RunUtc": "2026-11-05T23:26:23.2868772+00:00",
+  "Passed": true,
+  "Scope": "Synthetic world, context and copied SQLite database. No user files or saved world accessed. Model samples are not universal guarantees.",
+  "Checks": [
+    {
+      "Name": "Bundled local runtime",
+      "Category": "6.10 durable memory",
+      "Passed": true,
+      "Detail": "Synthetic world only",
+      "Observed": "Bundled local AI ready: qwen3:4b. CPU-only: False; reduced memory: False. Runtime/model files: C:\\Users\\jack\\source\\repos\\Scorpio7736\\Grid7736\\.grid-runtime"
+    },
+    {
+      "Name": "Explicit approved summary and grant",
+      "Category": "6.10 durable memory",
+      "Passed": true,
+      "Detail": "Synthetic world only",
+      "Observed": "Saved durable approved summary: release. Raw temporary file remains temporary. Source revocation/removal invalidates this summary and its grants."
+    },
+    {
+      "Name": "Copied database keeps summary not temporary body",
+      "Category": "6.10 durable memory",
+      "Passed": true,
+      "Detail": "Synthetic world only",
+      "Observed": "Copied isolated SQLite database; provenance retained."
+    },
+    {
+      "Name": "Delegated recall with bundled model after reload",
+      "Category": "6.10 durable memory",
+      "Passed": true,
+      "Detail": "Synthetic world only",
+      "Observed": "You: What is the approved release codename? Reply with the codename or UNKNOWN.\n\nMAXIS: Pinecone610."
+    },
+    {
+      "Name": "Unshared agent cannot recall summary",
+      "Category": "6.10 durable memory",
+      "Passed": true,
+      "Detail": "Synthetic world only",
+      "Observed": "You: What is the approved release codename? Reply with the codename or UNKNOWN.\n\nJN: I don\u0027t have the approved release codename in available context. UNKNOWN"
+    },
+    {
+      "Name": "Revoked recipient excludes prior derived recall",
+      "Category": "6.10 durable memory",
+      "Passed": true,
+      "Detail": "Synthetic world only",
+      "Observed": "You: What is the approved release codename? Reply with the codename or UNKNOWN.\n\nMAXIS: UNKNOWN. I don\u0027t have verified release codename information in current system state."
+    }
+  ]
+}
