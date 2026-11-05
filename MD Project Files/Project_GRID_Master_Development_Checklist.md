@@ -1536,11 +1536,13 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.18 GRID-AI / GRID-Agent — Persona and prompt management
 
-**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-Agent.
+**Implemented and locally verified — 2026-11-05.** Ownership belongs to GRID-Agent.
 
-- [ ] Version agent identities, personalities, tone, system prompts, templates and instruction hierarchy.
-- [ ] Give GRID-AI generic system-instruction and prompt-version fields, with agent-specific content assembled by GRID-Agent.
-- [ ] Verify stable identities, serious/helpful tone, prompt rollback, request scoping and isolation between agents.
+- [x] Version agent identities, personalities, tone, system prompts, templates and instruction hierarchy.
+- [x] Give GRID-AI generic system-instruction and prompt-version fields, with agent-specific content assembled by GRID-Agent.
+- [x] Verify stable identities, serious/helpful tone, prompt rollback, request scoping and isolation between agents.
+
+**Completion evidence — 2026-11-05.** Grid.Agent owns versioned persona assembly and rollback; Grid.AI carries generic system/version/template fields. 1,139 regression tests and 10 live persona checks passed. Normal chat/context/task drafting passed. Host authorization remains authoritative. [Implementation, controls, evidence and limitations](Project_GRID_Persona_and_Prompt_Management.md).
 
 ## 6.19 GRID-AI / GRID-Agent — Observability and evaluation foundation
 

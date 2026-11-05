@@ -1,5 +1,7 @@
 # Project GRID — Agent Model Profiles and Base Budget (6.13)
 
+**6.18 persona management completed — 2026-11-05.** Grid.Agent owns six versioned personas and prompt assembly; Grid.AI provides generic system/version/template fields. `ai personas` supports per-agent selection and rollback with portable settings. 1,139 regression tests, 10 live persona checks and normal assistance verification passed. Host permissions, memory scopes and approval rules are unchanged. [Details and test commands](Project_GRID_Persona_and_Prompt_Management.md).
+
 **6.17A baseline evaluation — 2026-11-04.** Qwen3 4B passed automatic/CPU text smoke and lifecycle checks. Versioned evidence is tied to exact model/runtime/device/test settings; `ai registry acceptance` shows recorded results. 1,126 regression tests passed. Specialist models are not yet selected/downloaded; broad model, image, device, network-blocked and later-milestone acceptance remains open. [Results and remaining gates](Project_GRID_Model_Acceptance_Baseline.md).
 
 **6.17 registry foundation — 2026-11-04.** Versioned model manifests, checksum verification, retained-revision rollback, shared-asset accounting, candidate tracking, persistent force-Lite and device diagnostics are implemented. 1,109 solution tests and live baseline inventory verification passed. Exact specialist artifacts, device benchmarks and automatic profile promotion remain pending. Running chat remains on the pinned Qwen3 baseline. [Implementation and commands](Project_GRID_Model_Registry_Implementation.md).

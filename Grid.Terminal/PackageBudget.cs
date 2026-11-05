@@ -21,6 +21,7 @@ public static class PackageBudget
         if (first is "staging" or "old-versions" || first.Contains(".staging-")) return "staging";
         if (path is "runtime/model-registry.json" or "runtime/model-registry.lock" || path.StartsWith("runtime/model-registry.json.tmp-")) return "mutable";
         if (path.StartsWith("runtime/model-evaluations/")) return "mutable";
+        if (path == "runtime/agent-personas.json" || path.StartsWith("runtime/agent-personas.json.tmp-")) return "mutable";
         if (path.StartsWith("data/") || path.StartsWith("runtime/temp/") || path.StartsWith("runtime/home/") || path == "runtime/ai-runtime.log") return "mutable";
         return "base"; // Unknown assets, source, extraction libraries and nested archives count toward the ceiling.
     }

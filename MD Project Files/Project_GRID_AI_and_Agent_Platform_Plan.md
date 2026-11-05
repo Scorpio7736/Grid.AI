@@ -89,9 +89,11 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 
 ### 6.18 Persona and prompt management
 
-- [ ] Version agent identities, personalities, tone, system prompts, templates and instruction hierarchy.
-- [ ] Give GRID-AI generic system-instruction and prompt-version fields, with agent-specific content assembled by GRID-Agent.
-- [ ] Verify stable identities, serious/helpful tone, prompt rollback, request scoping and isolation between agents.
+- [x] Version agent identities, personalities, tone, system prompts, templates and instruction hierarchy.
+- [x] Give GRID-AI generic system-instruction and prompt-version fields, with agent-specific content assembled by GRID-Agent.
+- [x] Verify stable identities, serious/helpful tone, prompt rollback, request scoping and isolation between agents.
+
+**Completion evidence — 2026-11-05.** Grid.Agent owns versioned persona assembly and rollback; Grid.AI carries generic system/version/template fields. 1,139 regression tests and 10 live persona checks passed. Normal chat/context/task drafting passed. Host authorization remains authoritative. [Implementation, controls, evidence and limitations](Project_GRID_Persona_and_Prompt_Management.md).
 
 ### 6.19 Observability and evaluation foundation
 

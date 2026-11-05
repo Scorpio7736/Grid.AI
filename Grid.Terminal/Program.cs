@@ -8,6 +8,7 @@ using Grid.Simulation.Applications;
 if (args.Length == 2 && args[0] == "--extract-document") return DocumentExtraction.RunWorker(args[1]);
 if (args.SequenceEqual(new[] { "--verify-model-providers" })) return await ModelProviderVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--evaluate-model-baseline" })) return await ModelAcceptanceVerification.RunAsync();
+if (args.SequenceEqual(new[] { "--verify-personas" })) return await PersonaVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-model-registry" }))
 {
     var root = BundledAiRuntime.FindRoot(AppContext.BaseDirectory) ?? throw new IOException("No bundled runtime.");
@@ -126,7 +127,11 @@ try
     startupMessages.Add(ModelRegistryCommands.LoadOverride(BundledAiRuntime.FindRoot(AppContext.BaseDirectory)));
     await using var aiRuntime = await BundledAiRuntime.StartAsync(BundledAiRuntime.FindRoot(AppContext.BaseDirectory), shutdown.Token);
     startupMessages.Add(aiRuntime.Status);
-    using var aiBackend = new Grid.Communication.OllamaLocalBackend(endpoint: aiRuntime.Endpoint);
+    var personas = new Grid.Agent.AgentPersonas();
+    try { if (BundledAiRuntime.FindRoot(AppContext.BaseDirectory) is { } personaRoot) personas = PersonaSettings.Read(personaRoot); }
+    catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or ArgumentException)
+    { startupMessages.Add("Persona settings unreadable; using bundled v2 defaults. Original settings retained: " + e.Message); }
+    using var aiBackend = new Grid.Communication.OllamaLocalBackend(endpoint: aiRuntime.Endpoint, personas: personas);
     await using var localAi = new Grid.Communication.SharedLocalInference(aiBackend, enabled: aiRuntime.Ready && Environment.GetEnvironmentVariable("GRID_AI_DISABLED") != "1", unavailableReason: aiRuntime.Status);
     CommandDispatcher CreateCommands(TerminalIdentitySession session)
     {

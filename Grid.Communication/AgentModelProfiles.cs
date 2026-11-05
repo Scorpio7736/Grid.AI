@@ -9,12 +9,12 @@ public sealed record AgentModelProfile(string Agent, string Purpose, int Context
 public static class AgentModelProfiles
 {
     public static IReadOnlyList<AgentModelProfile> All { get; } = Array.AsReadOnly(new[] {
-        new AgentModelProfile("MCP", "Coordinate complete, explicit plans; separate proposals, approvals and recorded results."),
-        new AgentModelProfile("MAXIS", "Software engineering: correct code, debugging and testable changes; never claim unrun tests passed."),
-        new AgentModelProfile("JN", "Document and storage reasoning: preserve provenance; distinguish duplicate candidates from verified duplicates."),
-        new AgentModelProfile("SENTINEL", "Security analysis: explain evidence and uncertainty; do not invent threats or run remediation."),
-        new AgentModelProfile("VOLT", "Resource reasoning: distinguish capacity, utilization and headroom; unknown measurements stay unknown. Used percent = 100 minus available/headroom percent; free percent is not used percent."),
-        new AgentModelProfile("RELAY", "Communication: concise faithful summaries; distinguish drafted messages from delivered messages.", 4096, 512, 1024)
+        new AgentModelProfile("MCP", Grid.Agent.AgentPersonas.Purpose("MCP")),
+        new AgentModelProfile("MAXIS", Grid.Agent.AgentPersonas.Purpose("MAXIS")),
+        new AgentModelProfile("JN", Grid.Agent.AgentPersonas.Purpose("JN")),
+        new AgentModelProfile("SENTINEL", Grid.Agent.AgentPersonas.Purpose("SENTINEL")),
+        new AgentModelProfile("VOLT", Grid.Agent.AgentPersonas.Purpose("VOLT")),
+        new AgentModelProfile("RELAY", Grid.Agent.AgentPersonas.Purpose("RELAY"), 4096, 512, 1024)
     });
     public static AgentModelProfile Get(string agent) => All.SingleOrDefault(p => p.Agent.Equals(agent, StringComparison.OrdinalIgnoreCase))
         ?? throw new ArgumentException("Unknown local agent profile.", nameof(agent));

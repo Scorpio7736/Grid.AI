@@ -8,11 +8,15 @@ public sealed record ModelRequest(string Prompt, int ContextTokens = 4096, int M
     ModelOutputKind Kind = ModelOutputKind.Text, int Width = 512, int Height = 512)
 {
     public TimeSpan Timeout { get; init; } = TimeSpan.FromSeconds(120);
+    public string? SystemInstruction { get; init; }
+    public string? PromptVersion { get; init; }
+    public string PromptTemplate { get; init; } = "raw";
     public void Validate(ModelCapabilities capabilities)
     {
         if (string.IsNullOrWhiteSpace(Prompt) || Prompt.Length > 65536 || ContextTokens is < 256 or > 131072 ||
             MaxOutputTokens is < 1 or > 8192 || Timeout <= TimeSpan.Zero || Timeout > TimeSpan.FromMinutes(5))
             throw new ArgumentException("Invalid model request or resource budget.");
+        _ = ModelPrompt.Render(this);
         if (Kind == ModelOutputKind.Image && (!capabilities.Images || Width is < 64 or > 4096 || Height is < 64 or > 4096))
             throw new NotSupportedException("This provider cannot satisfy the requested image capability/dimensions.");
         if (Kind == ModelOutputKind.Text && !capabilities.Text) throw new NotSupportedException("Text generation is unavailable.");

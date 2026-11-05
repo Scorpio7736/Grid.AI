@@ -104,7 +104,7 @@ public sealed class LlamaCppModelProvider(string executable) : ILocalModelProvid
     }
     private static object Body(ModelRequest request, bool stream) => new
     {
-        prompt = request.Prompt, n_predict = request.MaxOutputTokens, temperature = 0, stream, cache_prompt = false,
+        prompt = ModelPrompt.Render(request), n_predict = request.MaxOutputTokens, temperature = 0, stream, cache_prompt = false,
         json_schema = request.JsonSchema is not null ? JsonSerializer.Deserialize<JsonElement>(request.JsonSchema)
             : request.Json ? JsonSerializer.Deserialize<JsonElement>("{\"type\":\"object\"}") : (JsonElement?)null
     };
@@ -117,7 +117,7 @@ public sealed class LlamaCppModelProvider(string executable) : ILocalModelProvid
     }
     private static async Task CheckContextAsync(LocalHttp transport, ModelRequest request, CancellationToken token)
     {
-        using var counted = await transport.JsonAsync(HttpMethod.Post, "tokenize", new { content = request.Prompt, add_special = true }, token);
+        using var counted = await transport.JsonAsync(HttpMethod.Post, "tokenize", new { content = ModelPrompt.Render(request), add_special = true }, token);
         if (counted.RootElement.GetProperty("tokens").GetArrayLength() + request.MaxOutputTokens > request.ContextTokens)
             throw new InvalidDataException("Prompt plus output budget exceeds requested context; split the input.");
     }

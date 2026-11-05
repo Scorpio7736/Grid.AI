@@ -1,5 +1,7 @@
 # GRID7736 - Terminal Help
 
+**6.18 persona management completed — 2026-11-05.** Grid.Agent owns six versioned personas and prompt assembly; Grid.AI provides generic system/version/template fields. `ai personas` supports per-agent selection and rollback with portable settings. 1,139 regression tests, 10 live persona checks and normal assistance verification passed. Host permissions, memory scopes and approval rules are unchanged. [Details and test commands](Project_GRID_Persona_and_Prompt_Management.md).
+
 **6.17A baseline evaluation — 2026-11-04.** Qwen3 4B passed automatic/CPU text smoke and lifecycle checks. Versioned evidence is tied to exact model/runtime/device/test settings; `ai registry acceptance` shows recorded results. 1,126 regression tests passed. Specialist models are not yet selected/downloaded; broad model, image, device, network-blocked and later-milestone acceptance remains open. [Results and remaining gates](Project_GRID_Model_Acceptance_Baseline.md).
 
 **6.17 registry foundation — 2026-11-04.** Versioned model manifests, checksum verification, retained-revision rollback, shared-asset accounting, candidate tracking, persistent force-Lite and device diagnostics are implemented. 1,109 solution tests and live baseline inventory verification passed. Exact specialist artifacts, device benchmarks and automatic profile promotion remain pending. Running chat remains on the pinned Qwen3 baseline. [Implementation and commands](Project_GRID_Model_Registry_Implementation.md).
@@ -971,3 +973,12 @@ Master Control, original host terminal:
 - `ai registry force-lite on` / `off` — persist the setting; restart GRID to apply it.
 
 Example: `ai registry register-baseline`, then `ai registry verify`. Registry changes do not switch the running chat model.
+
+## Versioned agent personas (6.18)
+
+- `ai personas` — list current bundled identities and versions.
+- `ai personas <agent> v1` — select the compatibility prompt.
+- `ai personas <agent> v2` — select the explicit identity/hierarchy prompt (default).
+- `ai personas <agent> rollback` — restore the previous selection.
+
+Example: `ai personas MAXIS v1`, then `ai personas MAXIS rollback`. Master Control on the original host only; wait for inference to finish. Selections are saved and apply to new requests. No permissions change.

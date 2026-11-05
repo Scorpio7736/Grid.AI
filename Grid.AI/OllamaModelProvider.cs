@@ -43,7 +43,7 @@ public sealed class OllamaModelProvider : ILocalModelProvider
     }
     private static object Body(LocalModel model, ModelRequest request, bool stream) => new
     {
-        model = model.Id, prompt = request.Prompt, raw = true, stream, think = false, keep_alive = "1m",
+        model = model.Id, prompt = ModelPrompt.Render(request), raw = true, stream, think = false, keep_alive = "1m",
         format = request.JsonSchema is null ? (object)(request.Json ? "json" : "") : JsonSerializer.Deserialize<JsonElement>(request.JsonSchema),
         options = new { num_ctx = request.ContextTokens, num_predict = request.MaxOutputTokens, temperature = 0, num_gpu = request.CpuOnly ? 0 : -1 }
     };

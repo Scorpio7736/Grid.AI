@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="Grid.Agent/Grid.Agent.csproj" />
   <Project Path="Grid.AI/Grid.AI.csproj" />
   <Project Path="Grid.Communication/Grid.Communication.csproj" />
   <Folder Name="/MD Project Files/" />
