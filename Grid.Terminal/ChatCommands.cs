@@ -110,16 +110,17 @@ public sealed partial class ChatCommands
             using var stop = CancellationTokenSource.CreateLinkedTokenSource(token);
             try
             {
+                using var authorization = AuthorizeInference(id, turn.ResponderId, "ai.chat", Current);
                 var pending = turn.Prompt.Length == 0
                     ? Task.FromResult(new InferenceReply(false, "", "Input exceeds AI context budget."))
                     : inference.ForAgent(engine.ResolveProgram(turn.ResponderId.ToString()).Name).GenerateAsync(turn.Prompt, stop.Token);
                 while (!pending.IsCompleted)
                 {
                     await Task.WhenAny(pending, Task.Delay(50, stop.Token));
-                    if (token.IsCancellationRequested || !Current()) { stop.Cancel(); break; }
+                    if (token.IsCancellationRequested || !Current() || !authorization.IsCurrent) { stop.Cancel(); break; }
                 }
                 var reply = await pending;
-                if (token.IsCancellationRequested || !Current()) return new("Conversation cancelled or session revoked; nothing stored.");
+                if (token.IsCancellationRequested || !Current() || !authorization.IsCurrent) return new("Conversation cancelled or session revoked; nothing stored.");
                 var result = identity.Execute("chat", () =>
                 {
                     if (!Current()) return new("Conversation stopped or session revoked; nothing stored.");
@@ -134,7 +135,8 @@ public sealed partial class ChatCommands
             catch (OperationCanceledException) { return new("Conversation cancelled; no incomplete turn stored."); }
             catch (Exception e) when (e is ArgumentException or InvalidOperationException or KeyNotFoundException)
             { return new("Conversation could not complete: " + e.Message); }
-            catch (Exception e) when (e is IOException or Microsoft.Data.Sqlite.SqliteException or UnauthorizedAccessException) { return new("Conversation save failed; the completed turn may remain in memory. Resolve persistence before continuing."); }
+            catch (UnauthorizedAccessException) { return new("Conversation authorization expired or was denied; nothing stored."); }
+            catch (Exception e) when (e is IOException or Microsoft.Data.Sqlite.SqliteException) { return new("Conversation save failed; the completed turn may remain in memory. Resolve persistence before continuing."); }
         });
     }
     private CommandResult List(IReadOnlyList<string> args) => args.Count != 0 ? new("Usage: conversations") :

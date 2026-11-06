@@ -125,9 +125,12 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 
 ### 6.22 Identity and authorization
 
-- [ ] Authenticate callers and enforce request quotas, capability grants, least privilege and auditable scope changes.
-- [ ] Carry user, agent, project, conversation and world/session identity through trusted request context.
-- [ ] Verify denied calls, forgery, stale sessions and scope revocation together with 6.23–6.24 before enabling migrated action routes.
+- [x] Establish authenticated host admission, bounded per-owner quotas, least-privilege inference capabilities and content-free audit for ordinary chat and assistance routes.
+- [x] Carry user, caller, agent, project, conversation and world/session identity through host-built trusted request context.
+- [ ] Migrate remaining meeting-round, screen, file-draft and diagnostic inference routes to shared request quotas; existing host guards remain active.
+- [ ] Verify denied calls, forgery, stale sessions and scope revocation jointly with 6.23–6.24 before enabling migrated action routes.
+
+**Foundation verification — 2026-11-05.** 915 terminal tests passed. Grid.AI scope data is not a credential; Grid.Agent admission requires live host validation, limits two concurrent/60 starts per minute per world owner and keeps bounded content-free audit. Host reply guards and existing action approvals remain authoritative. Additional route migration and joint action gates remain open. [Implementation and limits](Project_GRID_Request_Authorization.md).
 
 ### 6.23 Controlled tool gateway
 

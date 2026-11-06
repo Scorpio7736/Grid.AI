@@ -1,5 +1,7 @@
 # Project GRID — Session Context and Authorization Contract
 
+**6.22 inference authorization foundation — 2026-11-05.** Host-built identity/scope contracts, live validation, bounded per-owner admission quotas and content-free audit now protect ordinary chat and assistance. 915 terminal tests passed. Additional inference routes and joint 6.23–6.24 action verification remain open; no new action authority is enabled. [Implementation and limits](Project_GRID_Request_Authorization.md).
+
 **6.10 completed — 2026-10-28:** Approved document summaries and recorded task outcomes persist with provenance, explicit recipient/project grants, expiry, correction and revocation. Temporary raw uploads stay temporary. Schema v24; **989 automated tests and six bundled-model checks passed**, including copied-database recall and in-flight revocation/expiry. [Commands, retention policy, migration and test](Project_GRID_Durable_Memory_and_Delegated_Context.md). Earlier private-only or 6.10-planned statements are historical; 6.11–6.15 remain required before Phase 7.
 
 ## New UI, portable-package and offline requirements - 2026-10-20

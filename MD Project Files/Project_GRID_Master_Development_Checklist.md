@@ -1584,11 +1584,14 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.22 GRID-AI / GRID-Agent — Identity and authorization
 
-**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to Both APIs with GRID7736 authoritative host checks.
+**Inference authorization foundation implemented — 2026-11-05. Joint 6.23–6.24 acceptance remains open.** Ownership belongs to Both APIs with GRID7736 authoritative host checks.
 
-- [ ] Authenticate callers and enforce request quotas, capability grants, least privilege and auditable scope changes.
-- [ ] Carry user, agent, project, conversation and world/session identity through trusted request context.
-- [ ] Verify denied calls, forgery, stale sessions and scope revocation together with 6.23–6.24 before enabling migrated action routes.
+- [x] Establish authenticated host admission, bounded per-owner quotas, least-privilege inference capabilities and content-free audit for ordinary chat and assistance routes.
+- [x] Carry user, caller, agent, project, conversation and world/session identity through host-built trusted request context.
+- [ ] Migrate remaining meeting-round, screen, file-draft and diagnostic inference routes to shared request quotas; existing host guards remain active.
+- [ ] Verify denied calls, forgery, stale sessions and scope revocation jointly with 6.23–6.24 before enabling migrated action routes.
+
+**Foundation verification — 2026-11-05.** 915 terminal tests passed. Grid.AI scope data is not a credential; Grid.Agent admission requires live host validation, limits two concurrent/60 starts per minute per world owner and keeps bounded content-free audit. Host reply guards and existing action approvals remain authoritative. Additional route migration and joint action gates remain open. [Implementation and limits](Project_GRID_Request_Authorization.md).
 
 ## 6.23 GRID-AI / GRID-Agent — Controlled tool gateway
 

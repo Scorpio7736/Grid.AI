@@ -75,10 +75,11 @@ public sealed partial class ChatCommands
                 using var stop=CancellationTokenSource.CreateLinkedTokenSource(token);
                 try
                 {
+                    using var authorization = AuthorizeInference(id, agent.Id, mode == "propose" ? "ai.propose" : "ai.analyze", Current);
                     var pending=mode=="propose" ? inference.ForAgent(mode == "propose" ? "MCP" : agent.Name).GenerateStructuredAsync(prompt.ToString(),ProposalSchema,stop.Token) : inference.ForAgent(mode == "propose" ? "MCP" : agent.Name).GenerateAsync(prompt.ToString(),stop.Token);
-                    while(!pending.IsCompleted) { await Task.WhenAny(pending,Task.Delay(50,stop.Token)); if(token.IsCancellationRequested||!Current()) {stop.Cancel();break;} }
+                    while(!pending.IsCompleted) { await Task.WhenAny(pending,Task.Delay(50,stop.Token)); if(token.IsCancellationRequested||!Current()||!authorization.IsCurrent) {stop.Cancel();break;} }
                     var reply=await pending;
-                    if(token.IsCancellationRequested||!Current()) return new("Assistance cancelled or scope changed; nothing created.");
+                    if(token.IsCancellationRequested||!Current()||!authorization.IsCurrent) return new("Assistance cancelled or scope changed; nothing created.");
                     if(!reply.Available) return new((reply.ResponseRejected ? "AI response rejected; " : "Local AI unavailable; ") + "no proposal or action created. " + reply.Reason + " Use context read or explicit task commands.");
                     if(mode=="propose")
                     {
