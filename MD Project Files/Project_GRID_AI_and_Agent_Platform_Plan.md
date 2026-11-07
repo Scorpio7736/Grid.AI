@@ -127,19 +127,23 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 
 - [x] Establish authenticated host admission, bounded per-owner quotas, least-privilege inference capabilities and content-free audit for ordinary chat and assistance routes.
 - [x] Carry user, caller, agent, project, conversation and world/session identity through host-built trusted request context.
-- [ ] Migrate remaining meeting-round, screen, file-draft and diagnostic inference routes to shared request quotas; existing host guards remain active.
+- [x] Migrate meeting-round, screen, file-draft and diagnostic inference routes to the shared authorization gate and request quotas.
 - [ ] Verify denied calls, forgery, stale sessions and scope revocation jointly with 6.23–6.24 before enabling migrated action routes.
 
-**Foundation verification — 2026-11-05.** 915 terminal tests passed. Grid.AI scope data is not a credential; Grid.Agent admission requires live host validation, limits two concurrent/60 starts per minute per world owner and keeps bounded content-free audit. Host reply guards and existing action approvals remain authoritative. Additional route migration and joint action gates remain open. [Implementation and limits](Project_GRID_Request_Authorization.md).
+**Initial foundation verification — 2026-11-05.** 915 terminal tests passed. Grid.AI scope data is not a credential; Grid.Agent admission requires live host validation, limits two concurrent/60 starts per minute per world owner and keeps bounded content-free audit. Host reply guards and existing action approvals remain authoritative. At that checkpoint, additional route migration and joint action gates remained open. The route completion evidence follows below. [Implementation and limits](Project_GRID_Request_Authorization.md).
+
+**Route completion verification — 2026-11-05.** All terminal inference routes now share per-owner admission limits. Meeting, screen, file-draft and diagnostic calls validate live host scope and discard revoked results. Master Control can inspect the latest admission records with `ai authorization`. Current suites total 1,191 passing tests, including cross-route quota enforcement and diagnostic replay/logout checks. The joint action gate below remains scheduled with 6.23–6.24. [Details and test commands](Project_GRID_Request_Authorization.md).
 
 ### 6.23 Controlled tool gateway
 
-- [ ] Define typed file read/write, command and simulation requests with path validation, execution isolation and approval requirements.
-- [ ] Route execution through the existing GRID task broker and approved file-change services, using recorded receipts for results.
+- [x] Define typed file read/write, command and simulation requests with path validation, execution isolation and approval requirements.
+- [x] Route execution through the existing GRID task broker and approved file-change services, using recorded receipts for results.
 - [ ] Verify exact approval binding, concurrent changes, restart/retry behavior, denied paths and enforcement together with 6.22 and 6.24.
 
-- [ ] Enforce delegation allowlists, scoped paths/data, depth/cycle limits, per-profile job limits, budgets/cancellation and a parent/child evidence ledger through trusted .NET policy.
-- [ ] Add scoped deterministic Office/PDF generators and image-output validation with staging, format/template checks, visual QA and required overwrite approval.
+- [x] Enforce delegation allowlists, scoped paths/data, depth/cycle limits, per-profile job limits, budgets/cancellation and a parent/child evidence ledger through trusted .NET policy.
+- [x] Add scoped deterministic Office/PDF generators and image-output validation with staging, format/template checks, visual QA and required overwrite approval.
+
+**6.23 implementation verification — 2026-11-07.** Typed tool requests use the existing host task/file services. MCP delegation has a one-level allowlist, eight-child maximum, one active job and a ten-minute dispatch budget. `mcp ledger` exposes saved child-task evidence. Reviewed DOCX/PDF report generation and strict PNG validation use hash-bound previews, guarded apply and durable rollback. All 1,202 solution tests passed. Native Word/PDF samples were rendered and visually checked. Joint 6.22–6.24 acceptance remains open for 6.24. [Supported formats, limits and tests](Project_GRID_Controlled_Tool_Gateway.md).
 
 ### 6.24 Layered guardrails
 
@@ -206,6 +210,19 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 - [ ] Run all 12 acceptance checks below, record evidence and have the user review the release gate before starting Phase 7.
 
 - [ ] Review model/profile benchmark evidence and the complete model-handling acceptance checklist alongside the existing production-readiness checks.
+
+
+### Conversation-first acceptance — clarified 2026-11-07
+
+Required before Phase 7. Connected agent chats and meetings interpret ordinary language for supported work. Users can request file operations, context retrieval, memory changes, task planning, delegation, progress, cancellation and results without terminal syntax or task IDs. The agent asks focused questions for missing information, explains the proposed work, obtains required approval in ordinary language and reports verified outcomes.
+
+- [ ] Remove terminal-command dispatch and reserved command-name collisions from connected chats and meetings. Sentences beginning with agent names or words such as `create`, `tasks` and `context` must reach the conversation interpreter.
+- [ ] Keep administrative and diagnostic commands available in the main terminal, with an explicit way to leave a conversation and return there.
+- [ ] Resolve conversational references such as “approve that”, “cancel it” and “ask MAXIS to do it” against the current reviewed operation. Ask for clarification when multiple targets are possible. Bind approval to the exact operation, scope and content through the host gateway.
+- [ ] Support named-agent and group requests in meetings, preserve shared context and private grants, and route work to the appropriate specialist with recorded results.
+- [ ] Demonstrate end-to-end supported tasks entirely through ordinary language in inline chat, attached chat and meetings. Cover clarification, approval, revision, cancellation, failure and completion without requiring command syntax or IDs.
+
+Current implementation supports selected conversational intents and retains explicit command routing. Full acceptance above remains planned. Unsupported requests receive an explanation of available capabilities. Completion claims must come from execution receipts.
 
 ## Production-readiness acceptance
 

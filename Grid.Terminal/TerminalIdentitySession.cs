@@ -75,7 +75,7 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
     public event Action? Changed;
     public event Action? LoginSucceeded;
     public void Attach(GridSimulationEngine value) { lock (gate) engine = value; }
-    private GridSimulationEngine Engine => engine ?? throw new InvalidOperationException("Identity session is not attached.");
+    internal GridSimulationEngine Engine => engine ?? throw new InvalidOperationException("Identity session is not attached.");
     public static string? WindowsSubject() => OperatingSystem.IsWindows() ? WindowsIdentity.GetCurrent().User?.Value : null;
     private bool OwnerMatches()
     {

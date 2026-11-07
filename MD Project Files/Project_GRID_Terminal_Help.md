@@ -1,5 +1,12 @@
 # GRID7736 - Terminal Help
 
+## AI request authorization
+
+- `ai authorization`
+  - Master Control can view the latest 20 admission records and the shared limits of two concurrent requests and 60 starts per minute per world owner.
+  - Example `ai authorization`
+
+
 **Local file discovery follow-up — 2026-11-05.** Connected Master Control conversations recognize `hey mcp can you find the stl file on my desktop` and `find UWGB in my documents` as local name searches, not uploaded-context analysis. `search my files for any STL file` asks for a location; repeat with Desktop, Documents or Downloads. Lookup lists observed paths without opening file contents, importing context, invoking the model or changing files. Private searches are refused in meetings. Limits: 2 seconds of checked traversal time, 10,000 entries, depth 8 and 50 results; hidden/system/reparse-point folders and inaccessible entries are skipped with an incomplete-result notice. An individual filesystem call can still wait on the OS. This is bounded local discovery, not unrestricted whole-PC search or STL content analysis. Windows Desktop/Documents locations are resolved through special-folder settings. Downloads currently uses the profile Downloads path; custom redirects there remain unsupported.
 
 
@@ -1006,3 +1013,37 @@ Example: `ai personas MAXIS v1`, then `ai personas MAXIS rollback`. Master Contr
 - `ai diagnostics clear` — clear the in-memory inference buffer; preserve task audit history.
 
 Example: run `ai test`, then `ai diagnostics`. Master Control on the original host only. Retention is 256 records / 24 hours, pruned on read/write, with no automatic disk log.
+## Controlled tool gateway additions — 6.23
+
+`changes`
+
+- `changes generate <scope> <file.docx|file.pdf> "title" "body"`
+  - Stage a plain ASCII report of at most eight pages with native and HTML previews. Review both before approving.
+- `changes image <destination-scope> <file.png> <source-scope> <source.png>`
+  - Validate and stage an existing plain RGB/RGBA PNG, up to 2048 by 2048 pixels and 1 MiB.
+- `changes preview <change-id>`
+  - Show hashes and the generated candidate/preview paths.
+- `changes approve <change-id> high-risk`
+  - Approve the exact reviewed generated file, including an overwrite when shown in the preview.
+- `changes apply <change-id>`
+  - Apply with destination checks and durable recovery evidence.
+
+Example
+
+```text
+changes generate @desktop grid-report.pdf "GRID report" "Reviewed report content."
+```
+
+`mcp`
+
+- `mcp ledger <plan-id>`
+  - Show saved child-task status, attempts, timestamps and request/result fingerprints.
+
+Example
+
+```text
+mcp plans
+mcp ledger <plan-id-shown-by-plans>
+```
+
+Full format limits and recovery behavior are documented in the [controlled tool gateway reference](Project_GRID_Controlled_Tool_Gateway.md).

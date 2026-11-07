@@ -42,6 +42,46 @@ public sealed class WorkspaceChangeTests : IDisposable
         TaskCommands.Register(commands, engine, owner, _ => { saves++; return Task.CompletedTask; });
         WorkspaceChangeCommands.Register(commands, engine, owner, ai); commands.UseIdentity(owner);
     }
+    [Theory]
+    [InlineData("docx")]
+    [InlineData("pdf")]
+    public void GeneratedArtifactsRequireApprovalAndRecoverAfterRestart(string extension)
+    {
+        var path = Path.Combine(Root, "report." + extension);
+        File.WriteAllBytes(path, [1, 2, 3]);
+        var staged = commands.ExecuteTokens(["changes", "generate", "demo", "report." + extension, "GRID report", "Reviewed report body."]);
+        Assert.NotNull(staged.FileChange);
+        var id = staged.FileChange!.Id;
+        Assert.Equal(new byte[] { 1, 2, 3 }, File.ReadAllBytes(path));
+        Assert.Contains("Approval required", Run("changes apply " + id).Text);
+        Assert.Contains("Approved exact", Run("changes approve " + id + " high-risk").Text);
+        Assert.Contains("Applied", Run("changes apply " + id).Text);
+        Assert.True(File.ReadAllBytes(path).Length > 100);
+        var restoredCommands = DefaultCommands.Create(engine);
+        WorkspaceChangeCommands.Register(restoredCommands, engine, owner, ai);
+        restoredCommands.UseIdentity(owner);
+        Assert.Contains("Recovery loaded", restoredCommands.Execute("changes recover demo " + id).Text);
+        Assert.Contains("Rolled back", restoredCommands.Execute("changes rollback " + id).Text);
+        Assert.Equal(new byte[] { 1, 2, 3 }, File.ReadAllBytes(path));
+    }
+
+    [Fact]
+    public void ArtifactApprovalRejectsTamperedPreviewAndConcurrentTargetChanges()
+    {
+        var staged = commands.ExecuteTokens(["changes", "generate", "demo", "report.docx", "Report", "Text"]);
+        var id = staged.FileChange!.Id;
+        var preview = Path.Combine(Artifacts, "workspace-edits", "preview-" + id.ToString("N"), "preview.html");
+        File.AppendAllText(preview, "changed");
+        Assert.Contains("preview changed", Run("changes approve " + id + " high-risk").Text);
+        Assert.False(File.Exists(Path.Combine(Root, "report.docx")));
+        var second = commands.ExecuteTokens(["changes", "generate", "demo", "other.pdf", "Report", "Text"]);
+        var next = second.FileChange!.Id;
+        Run("changes approve " + next + " high-risk");
+        File.WriteAllText(Path.Combine(Root, "other.pdf"), "newer");
+        Assert.Contains("changed since preview", Run("changes apply " + next).Text);
+        Assert.Equal("newer", File.ReadAllText(Path.Combine(Root, "other.pdf")));
+    }
+
     private Guid Context(string content = "Updated text\n", bool grant = false, string project = "demo")
     {
         var id = Guid.NewGuid();

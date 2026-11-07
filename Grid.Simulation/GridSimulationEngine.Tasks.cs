@@ -162,7 +162,7 @@ public sealed partial class GridSimulationEngine
         lock (gate)
         {
             RequireAgentActivity(); activity = runVersion;
-            if (taskExecuting) throw new InvalidOperationException("The broker is already running a task.");
+            if (taskExecuting) throw new InvalidOperationException("The broker permits " + Grid.Agent.ToolDelegationPolicy.MaximumActiveJobs + " active job across the current profiles.");
             task = tasks.Records.FirstOrDefault(t => !t.Archived && t.Status == Status.Queued && (expected == null || t.Id == expected.Id)) ?? throw new InvalidOperationException("No approved queued tasks.");
             if (expected is not null && !SameTask(task, expected)) throw new InvalidOperationException("Selected task changed; review a new batch.");
             var agent = tasks.Agents.Single(a => a.Id == task.AgentId); role = agent.Role; actor = lease.Identity;

@@ -1,3 +1,4 @@
+using Grid.Agent;
 using Grid.Simulation.Editing;
 using Grid.Simulation.Tasks;
 using Status = Grid.Simulation.Tasks.TaskStatus;
@@ -35,6 +36,7 @@ public sealed partial class GridSimulationEngine
                 return previous;
             }
             var steps = CoordinationRequest.Parse(request);
+            ToolDelegationPolicy.Validate("MCP", steps.Select(step => step.Role.ToString()).ToArray());
             if (tasks.Plans.Count >= 64 || tasks.Records.Count + steps.Count > 256) throw new InvalidOperationException("Plan/task capacity reached; nothing delegated.");
             var planId = Guid.NewGuid(); var utc = timeProvider.GetUtcNow().ToUniversalTime(); var children = new List<TaskRecord>();
             foreach (var step in steps)

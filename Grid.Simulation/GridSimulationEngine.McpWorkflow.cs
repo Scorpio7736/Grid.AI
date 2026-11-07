@@ -1,3 +1,4 @@
+using Grid.Agent;
 using Grid.Simulation.Editing;
 using Grid.Simulation.Tasks;
 using Status = Grid.Simulation.Tasks.TaskStatus;
@@ -37,6 +38,8 @@ public sealed partial class GridSimulationEngine
                 throw new InvalidOperationException("Review and approve every remaining plan task first. Denied/cancelled/failed work blocks dispatch; retry eligible failures with fresh approval. Nothing dispatched.");
             RecordEvent("CoordinationDispatchRequested", plan.Id, "MCP", "Human delegated ordered dispatch of exactly the approved plan tasks; no new approval granted.");
         }
+        using var budget = CancellationTokenSource.CreateLinkedTokenSource(token);
+        budget.CancelAfter(ToolDelegationPolicy.PlanDeadline);
         var note = "All selected tasks completed with recorded results.";
         foreach (var task in selected)
         {
@@ -44,8 +47,8 @@ public sealed partial class GridSimulationEngine
             {
                 using (var lease = TaskLease(session, true))
                 lock (gate) { if (activity != runVersion) throw new OperationCanceledException("GRID activity changed."); }
-                token.ThrowIfCancellationRequested();
-                var outcome = await RunNextTaskAsync(session, save, token, task);
+                budget.Token.ThrowIfCancellationRequested();
+                var outcome = await RunNextTaskAsync(session, save, budget.Token, task);
                 if (!outcome.StartsWith("Completed:", StringComparison.Ordinal)) { note = "Plan stopped after an unsuccessful attempt; remaining tasks were not dispatched."; break; }
             }
             catch (Exception e) when (e is OperationCanceledException or UnauthorizedAccessException or InvalidOperationException or IOException or System.Data.Common.DbException)

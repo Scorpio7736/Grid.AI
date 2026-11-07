@@ -1,31 +1,51 @@
 # Project GRID — Request identity and authorization (6.22)
 
-**Inference authorization foundation implemented — 2026-11-05. Joint action-route acceptance remains open with 6.23–6.24.** This introduces trusted in-process request scope for ordinary grounded chat and assistance analysis/advice/proposals. It does not create a network API or grant model-generated actions permission to execute.
+**Inference-route coverage completed — 2026-11-05.** The shared host authorization gate covers ordinary chat, meeting rounds, advice, document analysis, reviewed proposals, screen assistance, AI file drafts and AI status/test requests. Joint action-route acceptance remains scheduled with 6.23–6.24.
 
-## Implemented ownership
+## Ownership and trusted scope
 
-Grid.AI defines `TrustedRequestContext`: world, world owner, active caller, recipient, session/generation, conversation, project and capability. This data record is not a credential. Only trusted host code constructs the context from the authenticated TerminalIdentitySession and current engine/conversation. Prompt text, documents, model replies and recalled messages never populate it.
+Grid.AI defines TrustedRequestContext with world, world owner, active caller, recipient, session/generation, conversation, project and capability. Trusted host code derives these fields from the live terminal identity and engine state. Authentication comes from the host validation callback. The record carries scope information through the request lifecycle.
 
-Grid.Agent provides `RequestAuthority`, which accepts only `ai.chat`, `ai.analyze` and `ai.propose`. Admission requires the host validation callback; results require a still-current disposable lease. The authority and validator are in-process trusted host components, not a sandbox against malicious .NET code in the same process. A future network boundary must authenticate independently and cannot accept a caller-supplied validation callback or self-asserted scope as authority.
+Grid.Agent RequestAuthority admits the capabilities `ai.chat`, `ai.analyze`, `ai.propose`, `ai.screen`, `ai.file-draft` and `ai.diagnostic`. Each lease requires current host authorization before work and before accepting its result. RequestAuthority and its validation callback belong to the trusted in-process host. Any future network API will require an independently authenticated boundary.
 
-GRID7736 validates the live session/generation, chat capability, world identity, current conversation/project, actor and recipient membership, and request lifecycle. Analysis/planning additionally require human Master Control and a registered agent. Ordinary read-only conversations with existing residents retain their previous behavior. Existing host checks still enforce context/memory revision, activity generation, expiry and one-shot request consumption. Revoked replies are cancelled/discarded and cannot append conversation results or create proposals.
+GRID7736 checks the live identity, session generation, world and attached engine, conversation/project membership and request lifecycle. Screen assistance, analysis, planning, file drafting and diagnostics require Master Control. Conversation-bound specialist work checks agent registration. Ordinary resident chat uses the existing conversation membership rules. Existing lifecycle guards cover relevant context/memory revisions, agent activity, expiry and single-use operations.
+
+Standalone diagnostic and file-draft requests have an empty conversation ID. Diagnostics use the diagnostics scope and an empty agent ID. File drafting records the MAXIS resident ID when available and the selected workspace alias when it is a valid project label. Direct directory destinations use the file-draft scope. The existing file-destination service validates the selected target and exact file state when preparing/staging the draft.
 
 ## Quotas and audit
 
-Each engine shares one authority across its terminal sessions. Budgets are keyed by world/owner, preventing attached windows or a new session from bypassing the same budget. Limits are two concurrent admitted requests and 60 starts in a rolling minute. Capacity is released when a lease is disposed; rate counts remain until expiry. Idle expired buckets are removed, with at most 128 tracked owners. Existing inference queue/prompt/time/output limits remain in force. The rate counts logical host requests; an existing bounded schema-repair retry belongs to the same request.
+One RequestAuthority instance is shared by all routes and terminal sessions attached to an engine. Budgets are keyed by world and owner. Limits are two concurrent requests and 60 starts per rolling minute. Meeting rounds count each participant inference separately. Screen requests acquire capacity before capture. Each status/test diagnostic is single-use. Draft and proposal requests retain their existing bounded retry behavior within one logical request.
 
-A bounded 128-entry in-memory audit records timestamps, world/user/agent/session IDs, generation, conversation ID, known capability and allowed/denied/quota/revoked/released outcome. It does not record prompts, answers, project names, file paths, credentials or arbitrary capability text. Records are exposed through the authority's read-only snapshot for trusted host diagnostics/tests; there is no new terminal audit command or durable audit export yet. Existing host identity/scope event history continues unchanged. These audit buffers and quotas reset on host restart.
+Disposing a lease releases concurrent capacity. Rate counts expire after one minute. Idle expired buckets are removed and at most 128 owner budgets are tracked. Existing queue, prompt, time and output limits also apply. Restarting the host resets this in-memory accounting.
 
-## Current coverage and remaining gate
-
-This milestone integrates ordinary one-recipient grounded chat plus advice, document analysis and reviewed task proposals. Dedicated meeting-round inference, screen assistance, file drafting and diagnostic model calls retain their existing host guards and queue limits; they are not claimed to use this new per-owner quota yet. Migration of additional routes and joint denied-call, injection, exact-approval and tool-escalation verification belong to 6.23–6.24. Filesystem/command/simulation actions are not enabled through RequestAuthority. Existing task/file-change approval flows remain authoritative.
+The 128-entry audit stores timestamps, world/user/agent/session IDs, generation, conversation ID, recognized capability and admission/revocation/release outcome. Scope history also remains available through the existing host identity events. Master Control can run `ai authorization` in the original terminal to see the latest 20 admission records and current configured limits. Project names, message bodies, file paths and credentials are excluded from this audit. Durable audit export remains future work.
 
 ## Verification
 
-915 terminal tests passed, including five new gate tests for rejected self-asserted/unsupported scope, revocation and disposed leases, concurrency shared across sessions, rate-window recovery/world isolation, bounded content-free audit and missing/invalid scope. Existing logout, stale-generation, source/memory revocation, attachments, reply cancellation and scoped-assistance regressions also passed. Tests used a separate output folder so the user's running terminal was not stopped. The initial test pass exposed a restriction on legacy resident chat; that was corrected without weakening Master Control requirements for operational assistance.
+Current suites total **1,191 passing tests**, comprising Core 14, Simulation 157, Persistence 99 and Terminal 921. Six added route tests exercise shared quota exhaustion through ordinary chat followed by meeting, screen, file-draft or diagnostic requests, diagnostic replay rejection and logout during active diagnostic inference. They verify refusal before model invocation, screen capture or file creation. Existing scope-forgery, stale-session, revocation, meeting, attachment, file-edit, context and approval tests also pass.
 
-Run `dotnet test Grid.Terminal.Tests --no-restore -p:OutputPath=bin/AuthorizationVerification/` for the regression suite. The existing `--verify-assistance` diagnostic exercises normal chat, advice, captured-context analysis and typed reviewed-task proposals in a disposable world. The live bundled-model check passed all four workflows on 2026-11-05: greeting, CSS advice, captured Cobalt42 analysis and a single VOLT status proposal. No task was executed or user world opened.
+The full suite first ran with UseAppHost disabled to avoid a previously observed executable lock. That setting omitted the document worker executable and caused 20 PDF/DOCX tests to fail. A normal build restored the required worker and all suites passed. The final terminal rerun includes the additional logout and engine-binding checks.
 
-## User-visible behavior
+## Implementation history
 
-Normal conversations continue unchanged. If too many requests are active or sent in one minute, GRID asks the caller to wait. Logging out, switching identity, pausing agents or revoking relevant context still prevents an in-flight reply from committing. No new login, elevation or permission confirmation is introduced.
+The initial foundation passed 915 terminal tests and live bundled-model checks for greeting, CSS advice, captured Cobalt42 analysis and a VOLT status proposal. Its five new gate tests covered admission denial, revocation, disposed leases, concurrency across sessions, rate expiry, world isolation and bounded audit. This follow-up connects the remaining routes to that gate and exposes its audit through the terminal.
+
+## Remaining joint gate
+
+6.22 inference integration is complete. The checklist retains joint denied-call, forgery, stale-session and scope-revocation verification with 6.23–6.24 as a prerequisite for migrated action routes. Existing approved task and file-change services continue to enforce their execution checks. Those later milestones cover typed tools, exact approval binding, adversarial input and tool escalation.
+
+## Manual check
+
+Restart the rebuilt terminal and run the following commands.
+
+```text
+ai test
+ai authorization
+grid -start
+connect MCP -inline
+hello MCP
+disconnect
+ai authorization
+```
+
+The audit should show diagnostic and chat admission/release records. When quota is exhausted, GRID asks the caller to wait. Logging out during a running request cancels or discards its output.

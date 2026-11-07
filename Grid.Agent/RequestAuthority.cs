@@ -13,13 +13,18 @@ public sealed class RequestAuthority(TimeProvider? clock = null)
     public IReadOnlyList<RequestAudit> Audit { get { lock(gate) return audit.ToArray(); } }
     private void Record(TrustedRequestContext scope, string outcome)
     {
-        lock(gate) { audit.Enqueue(new(time.GetUtcNow(), scope.WorldId, scope.UserId, scope.AgentId, scope.SessionId, scope.Generation, scope.ConversationId, scope.Capability is "ai.chat" or "ai.analyze" or "ai.propose" ? scope.Capability : "unknown", outcome)); while(audit.Count > 128) audit.Dequeue(); }
+        lock(gate) { audit.Enqueue(new(time.GetUtcNow(), scope.WorldId, scope.UserId, scope.AgentId, scope.SessionId, scope.Generation, scope.ConversationId, KnownCapability(scope.Capability) ? scope.Capability : "unknown", outcome)); while(audit.Count > 128) audit.Dequeue(); }
     }
+    private static bool KnownCapability(string capability) => capability is
+        "ai.chat" or "ai.analyze" or "ai.propose" or "ai.screen" or "ai.file-draft" or "ai.diagnostic";
+
     public Lease Acquire(TrustedRequestContext scope, Func<bool> hostAllows)
     {
-        if (scope.WorldId == Guid.Empty || scope.UserId == Guid.Empty || scope.CallerId == Guid.Empty || scope.AgentId == Guid.Empty ||
-            scope.SessionId == Guid.Empty || scope.ConversationId == Guid.Empty || scope.Generation < 0 || !ConversationMemory.ValidLabel(scope.Project) ||
-            scope.Capability is not ("ai.chat" or "ai.analyze" or "ai.propose") || !hostAllows())
+        if (scope.WorldId == Guid.Empty || scope.UserId == Guid.Empty || scope.CallerId == Guid.Empty ||
+            (scope.AgentId == Guid.Empty && scope.Capability is not ("ai.diagnostic" or "ai.file-draft")) ||
+            scope.SessionId == Guid.Empty ||
+            (scope.ConversationId == Guid.Empty && scope.Capability is not ("ai.diagnostic" or "ai.file-draft")) || scope.Generation < 0 || !ConversationMemory.ValidLabel(scope.Project) ||
+            !KnownCapability(scope.Capability) || !hostAllows())
         { Record(scope, "denied"); throw new UnauthorizedAccessException("Request identity, capability or scope is no longer authorized."); }
         var key = (scope.WorldId, scope.UserId);
         lock(gate)

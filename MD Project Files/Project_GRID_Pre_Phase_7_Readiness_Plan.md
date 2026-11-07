@@ -1,5 +1,9 @@
 # Project GRID — Required Work Before Phase 7
 
+**6.23 implementation verification — 2026-11-07.** Typed tool requests use the existing host task/file services. MCP delegation has a one-level allowlist, eight-child maximum, one active job and a ten-minute dispatch budget. `mcp ledger` exposes saved child-task evidence. Reviewed DOCX/PDF report generation and strict PNG validation use hash-bound previews, guarded apply and durable rollback. All 1,202 solution tests passed. Native Word/PDF samples were rendered and visually checked. Joint 6.22–6.24 acceptance remains open for 6.24. [Supported formats, limits and tests](Project_GRID_Controlled_Tool_Gateway.md).
+
+**6.22 inference-route completion — 2026-11-05.** Meeting rounds, screen assistance, AI file drafts and diagnostics now share the existing chat/assistance authorization gate and per-owner quotas. `ai authorization` shows recent admission records for Master Control. Current suites total 1,191 passing tests. Joint action-route acceptance remains scheduled with 6.23–6.24. [Implementation and verification](Project_GRID_Request_Authorization.md).
+
 **6.22 inference authorization foundation — 2026-11-05.** Host-built identity/scope contracts, live validation, bounded per-owner admission quotas and content-free audit now protect ordinary chat and assistance. 915 terminal tests passed. Additional inference routes and joint 6.23–6.24 action verification remain open; no new action authority is enabled. [Implementation and limits](Project_GRID_Request_Authorization.md).
 
 **6.21 agent memory migration — 2026-11-05.** Memory records, grants and recall policy now belong to Grid.Agent, with generic lexical/extractive helpers in Grid.AI. Existing conversation storage, schema v24, permissions, correction/expiry and source revocation remain compatible. 1,180 tests and six live copied-database memory checks passed. No new model or memory database is required. [Implementation and verification](Project_GRID_Agent_Memory_Migration.md).
@@ -96,7 +100,7 @@ Acceptance: timed interactive startup reaches the prompt without Enter; skip and
 
 ## 6.8 Conversational intent and follow-up repair
 
-Make connected chat accept ordinary user sentences as well as the existing `talk` prefix. Preserve explicit commands without misrouting a pasted path or normal sentence as a command. Retain quoted text, including HTML IDs, rather than losing quote characters during chat parsing.
+Make connected chat accept ordinary user sentences as well as the existing `talk` prefix. The 2026-11-07 conversation-first acceptance requirement supersedes the earlier plan to preserve explicit command dispatch inside chats. Keep administrative commands in the main terminal and interpret connected-chat and meeting input as conversation. Retain quoted text, including HTML IDs, rather than losing quote characters during chat parsing.
 
 Resolve follow-ups using the pending goal and the user's meaning. `continue`, `continue to analyze`, `analyze`, and `analyze the file uploaded` should resume the same pending analysis when unambiguous. Provide a natural way to cancel, replace the request, go back or change the target. Do not trap an unrelated question in a modal loop. Show one concrete example instead of repetitive instructions that resemble commands to copy literally.
 
@@ -181,3 +185,16 @@ Phase 7 is blocked until 6.7–6.31 are complete and documented. Replay the exac
 7. Complete migration and all 12 production-readiness checks in 6.31, including joint authorization/tool/guardrail tests, repeatable fine-tuning and second-PC offline acceptance. Review the evidence before Phase 7.
 
 Existing Phase 8 packaging, installation, storage and device-handling headings remain useful for later hardening. Any portion required for this pre-Phase-7 acceptance is brought forward here and cannot be postponed to Phase 8.
+
+
+### Conversation-first acceptance — clarified 2026-11-07
+
+Required before Phase 7. Connected agent chats and meetings interpret ordinary language for supported work. Users can request file operations, context retrieval, memory changes, task planning, delegation, progress, cancellation and results without terminal syntax or task IDs. The agent asks focused questions for missing information, explains the proposed work, obtains required approval in ordinary language and reports verified outcomes.
+
+- [ ] Remove terminal-command dispatch and reserved command-name collisions from connected chats and meetings. Sentences beginning with agent names or words such as `create`, `tasks` and `context` must reach the conversation interpreter.
+- [ ] Keep administrative and diagnostic commands available in the main terminal, with an explicit way to leave a conversation and return there.
+- [ ] Resolve conversational references such as “approve that”, “cancel it” and “ask MAXIS to do it” against the current reviewed operation. Ask for clarification when multiple targets are possible. Bind approval to the exact operation, scope and content through the host gateway.
+- [ ] Support named-agent and group requests in meetings, preserve shared context and private grants, and route work to the appropriate specialist with recorded results.
+- [ ] Demonstrate end-to-end supported tasks entirely through ordinary language in inline chat, attached chat and meetings. Cover clarification, approval, revision, cancellation, failure and completion without requiring command syntax or IDs.
+
+Current implementation supports selected conversational intents and retains explicit command routing. Full acceptance above remains planned. Unsupported requests receive an explanation of available capabilities. Completion claims must come from execution receipts.

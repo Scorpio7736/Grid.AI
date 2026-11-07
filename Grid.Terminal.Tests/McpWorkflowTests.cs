@@ -33,6 +33,26 @@ public sealed class McpWorkflowTests
     private void Approve(CoordinationPlan plan) { foreach (var id in plan.TaskIds) engine.ApproveTask(owner.Reference, id); }
 
     [Fact]
+    public async Task ToolLedgerBindsParentRequestAndRecordedOutcomeAcrossRestore()
+    {
+        var plan = Plan("VOLT: status current");
+        var before = Assert.Single(engine.ToolReceipts(owner.Reference, plan.Id));
+        Assert.Equal(plan.Id, before.ParentPlanId);
+        Assert.Null(before.ResultHash);
+        Approve(plan);
+        await Run("mcp run " + plan.Id);
+        var after = Assert.Single(engine.ToolReceipts(owner.Reference, plan.Id));
+        Assert.Equal(before.RequestHash, after.RequestHash);
+        Assert.Equal("Completed", after.State);
+        Assert.NotNull(after.ResultHash);
+        Assert.NotNull(after.StartedUtc);
+        Assert.NotNull(after.FinishedUtc);
+        var restored = GridSimulationEngine.Restore(engine.GetSnapshot(), editAuthorizer: registry);
+        owner.Attach(restored);
+        Assert.Equal(after, Assert.Single(restored.ToolReceipts(owner.Reference, plan.Id)));
+    }
+
+    [Fact]
     public async Task CustomRequestDraftAssignsSpecialistsAndExecutesOnlyApprovedPlanWithEvidence()
     {
         var draft = await Run("mcp plan Review my machine resources and leave a local notification.");

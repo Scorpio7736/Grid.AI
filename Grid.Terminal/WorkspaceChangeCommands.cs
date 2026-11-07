@@ -1,3 +1,4 @@
+using Grid.Agent;
 using System.Text;
 using System.Text.Json;
 using Grid.Communication;
@@ -9,7 +10,12 @@ namespace Grid.Terminal;
 public sealed class WorkspaceChangeCommands
 {
     private sealed record Draft(string Alias, WorkspaceFileChange File, EditSessionReference Session, long Activity, long ContextRevision, Guid ContextId, string SourceHash)
-    { public bool Approved { get; set; } }
+    {
+        public bool Approved { get; set; }
+        public string? ArtifactPath { get; init; }
+        public string? PreviewPath { get; init; }
+        public string? PreviewHash { get; init; }
+    }
     private readonly Dictionary<Guid, Draft> drafts = new();
     private readonly GridSimulationEngine engine;
     private readonly TerminalIdentitySession identity;
@@ -24,11 +30,45 @@ public sealed class WorkspaceChangeCommands
     public static void Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession identity, ILocalInference? inference = null)
     {
         var handler = new WorkspaceChangeCommands(engine, identity, inference, commands.Execute);
-        commands.Register(new("changes", "changes <create|read|update|delete|recover|stage|suggest|list|preview|approve|apply|rollback|discard|verify> ...",
+        commands.Register(new("changes", "changes <generate|image|create|read|update|delete|recover|stage|suggest|list|preview|approve|apply|rollback|discard|verify> ...",
             "Review and explicitly approve single-file workspace edits, with backups and guarded rollback. All file access executes on the original host.", handler.Execute)
         { Capability = "world.admin" });
     }
-    private const string Usage = "Usage: changes draft-create|draft-update <workspace> <relative-file> <instructions> | changes create|update <workspace> <relative-file> <content> | changes read|delete <workspace> <relative-file> | changes recover <workspace> <change-id> | changes stage <workspace> <relative-file> <context-id|name> | changes suggest <workspace> <relative-file> <context-id|name> <request> | changes list | changes preview <id> | changes approve <id> [high-risk] | changes apply <id> | changes rollback <id> | changes discard <id> | changes verify <id> <build|test>. Context project must match workspace alias. Verify creates a task awaiting separate approval.";
+    private CommandResult StageGenerated(string alias, string relative, GeneratedArtifact artifact)
+    {
+        if (drafts.Count >= 16) return new("Draft capacity reached. Discard a draft first.");
+        return engine.WithFileDestination(identity.Reference, alias, (workspace, artifacts) =>
+        {
+            var change = WorkspaceFileChange.StageArtifact(workspace.Root, relative, artifact.Bytes);
+            var folder = DevelopmentPolicy.CheckedPath(artifacts, "preview-" + change.Id.ToString("N"));
+            Directory.CreateDirectory(folder);
+            var output = DevelopmentPolicy.CheckedPath(folder, "candidate" + Path.GetExtension(relative));
+            var preview = DevelopmentPolicy.CheckedPath(folder, "preview.html");
+            using (var file = new FileStream(output, FileMode.CreateNew, FileAccess.Write)) file.Write(artifact.Bytes);
+            var html = Encoding.UTF8.GetBytes(artifact.PreviewHtml);
+            using (var file = new FileStream(preview, FileMode.CreateNew, FileAccess.Write)) file.Write(html);
+            drafts.Add(change.Id, new(alias, change, identity.Reference, engine.ActivityGeneration, engine.ContextRevision,
+                Guid.Empty, "validated artifact template v1") { ArtifactPath = output, PreviewPath = preview,
+                PreviewHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(html)) });
+            return new CommandResult(change.Preview() + "\nReview the native output: " + output + "\nLayout preview: " + preview +
+                "\nAfter visual review: changes approve " + change.Id + " high-risk\nThen: changes apply " + change.Id,
+                FileChange: Receipt(change));
+        });
+    }
+
+    private static void VerifyGeneratedPreview(Draft draft)
+    {
+        if (draft.ArtifactPath is null) return;
+        var output = WorkspaceFileChange.ReadArtifact(DevelopmentPolicy.CheckedPath(draft.ArtifactPath))
+            ?? throw new IOException("Staged artifact is missing.");
+        var preview = WorkspaceFileChange.ReadArtifact(DevelopmentPolicy.CheckedPath(draft.PreviewPath!))
+            ?? throw new IOException("Layout preview is missing.");
+        if (Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(output)) != draft.File.AfterHash ||
+            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(preview)) != draft.PreviewHash)
+            throw new IOException("Staged output or preview changed. Generate a fresh draft for review.");
+    }
+
+    private const string Usage = "Usage: changes generate <scope> <file.docx|file.pdf> <title> <body> | changes image <destination-scope> <file.png> <source-scope> <source.png> | changes draft-create|draft-update <workspace> <relative-file> <instructions> | changes create|update <workspace> <relative-file> <content> | changes read|delete <workspace> <relative-file> | changes recover <workspace> <change-id> | changes stage <workspace> <relative-file> <context-id|name> | changes suggest <workspace> <relative-file> <context-id|name> <request> | changes list | changes preview <id> | changes approve <id> [high-risk] | changes apply <id> | changes rollback <id> | changes discard <id> | changes verify <id> <build|test>. Context project must match workspace alias. Verify creates a task awaiting separate approval.";
     private ContextDocument Context(string alias, string value, bool forModel)
     {
         var agent = forModel ? engine.ResolveProgram("MAXIS").Id : (Guid?)null;
@@ -80,11 +120,12 @@ public sealed class WorkspaceChangeCommands
             using var stop = CancellationTokenSource.CreateLinkedTokenSource(token); stop.CancelAfter(TimeSpan.FromSeconds(305));
             try
             {
+                using var authorization = TerminalRequestAuthorization.AcquireStandalone(identity, "ai.file-draft", Valid, alias);
                 var pending = inference.ForAgent("MAXIS").GenerateFileAsync(prompt, stop.Token);
                 while (!pending.IsCompleted && !stop.IsCancellationRequested)
-                { await Task.WhenAny(pending, Task.Delay(40)); if (!Valid()) stop.Cancel(); }
+                { await Task.WhenAny(pending, Task.Delay(40)); if (!Valid() || !authorization.IsCurrent) stop.Cancel(); }
                 var reply = await pending.WaitAsync(stop.Token);
-                if (!Valid() || stop.IsCancellationRequested) return new("File draft cancelled. Nothing changed.");
+                if (!Valid() || !authorization.IsCurrent || stop.IsCancellationRequested) return new("File draft cancelled. Nothing changed.");
                 if (!reply.Available) return new("Local AI unavailable/rejected. No file draft created: " + TerminalTable.Safe(reply.Reason));
                 using var json = JsonDocument.Parse(reply.Text);
                 if (json.RootElement.ValueKind != JsonValueKind.Object) throw new ArgumentException("Expected a content object.");
@@ -95,7 +136,7 @@ public sealed class WorkspaceChangeCommands
                 {
                     if (!Valid()) return new("File draft expired.");
                     if (drafts.Count >= 16) return new("Draft capacity reached.");
-                    var file = WorkspaceFileChange.StageOperation(workspace.Root, relative, operation, fields[0].Value.GetString());
+                    var file = engine.StageFileTool(session, new FileToolRequest(alias, relative, Enum.Parse<FileToolOperation>(operation.ToString()), fields[0].Value.GetString()));
                     if (file.BeforeHash != beforeHash) throw new IOException("Target changed during generation. Request a fresh draft.");
                     drafts.Add(file.Id, new(alias, file, session, activity, revision, Guid.Empty, "explicit user drafting request"));
                     return new(file.Preview(), FileChange: Receipt(file));
@@ -111,9 +152,21 @@ public sealed class WorkspaceChangeCommands
         try
         {
             if (!identity.IsAuthenticated || !identity.IsMaster) return new("Access denied. Human Master Control required.");
+            if (args.Count == 5 && args[0] == "generate")
+                return StageGenerated(args[1], args[2], GeneratedDocuments.Create(Path.GetExtension(args[2]).ToLowerInvariant(), args[3], args[4]));
+            if (args.Count == 5 && args[0] == "image")
+            {
+                if (!args[2].EndsWith(".png", StringComparison.OrdinalIgnoreCase) || !args[4].EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                    throw new ArgumentException("Image staging requires PNG source and destination paths.");
+                var bytes = engine.WithFileDestination(identity.Reference, args[3], (source, _) =>
+                    WorkspaceFileChange.ReadArtifact(WorkspaceFileChange.Target(source.Root, args[4], generated: true)))
+                    ?? throw new IOException("Source PNG is missing.");
+                return StageGenerated(args[1], args[2], GeneratedImageValidation.ValidatePng(bytes));
+            }
             if (args.Count == 3 && args[0] == "redraft" && Guid.TryParse(args[1], out var reviseId) && drafts.TryGetValue(reviseId, out var previous))
             {
                 Current(previous);
+                if (previous.File.Generated) return new("Use changes generate to prepare a new artifact preview.");
                 if (previous.File.Applied || previous.File.RolledBack) return new("Start an update request for an already applied file.");
                 previous.Approved = false;
                 var generated = GenerateFile(previous.Alias, previous.File.Relative, args[2], previous.File.Operation, previous.File.After);
@@ -142,12 +195,12 @@ public sealed class WorkspaceChangeCommands
                 {
                     if (args[0] == "read")
                     {
-                        var bytes = WorkspaceFileChange.Read(WorkspaceFileChange.Target(workspace.Root, args[2])) ?? throw new IOException("Read target does not exist.");
-                        return new CommandResult("Captured file: " + args[1] + "/" + WorkspaceFileChange.Display(args[2]) + "\nAbsolute path: " + WorkspaceFileChange.Display(Path.GetFullPath(Path.Combine(workspace.Root, args[2]))) + "\n" + WorkspaceFileChange.Display(WorkspaceFileChange.Decode(bytes)));
+                        var read = engine.ReadFileTool(identity.Reference, new FileToolRequest(args[1], args[2], FileToolOperation.Read));
+                        return new CommandResult("Captured file: " + args[1] + "/" + WorkspaceFileChange.Display(args[2]) + "\nAbsolute path: " + WorkspaceFileChange.Display(Path.GetFullPath(Path.Combine(workspace.Root, args[2]))) + "\n" + WorkspaceFileChange.Display(read.Content));
                     }
                     if (drafts.Count >= 16) return new CommandResult("Draft capacity reached. Discard an unapplied draft first.");
                     var operation = Enum.Parse<WorkspaceFileOperation>(args[0], true);
-                    var file = WorkspaceFileChange.StageOperation(workspace.Root, args[2], operation, args.Count == 4 ? args[3] : null);
+                    var file = engine.StageFileTool(identity.Reference, new FileToolRequest(args[1], args[2], Enum.Parse<FileToolOperation>(operation.ToString()), args.Count == 4 ? args[3] : null));
                     drafts.Add(file.Id, new(args[1], file, identity.Reference, engine.ActivityGeneration, engine.ContextRevision, Guid.Empty, "explicit user content"));
                     return new CommandResult(file.Preview() + "\nApprove: changes approve " + file.Id + (file.HighRisk ? " high-risk" : "") + "\nThen: changes apply " + file.Id, FileChange: Receipt(file));
                 });
@@ -178,10 +231,11 @@ public sealed class WorkspaceChangeCommands
                     using var stop = CancellationTokenSource.CreateLinkedTokenSource(token); stop.CancelAfter(TimeSpan.FromSeconds(125));
                     try
                     {
+                        using var authorization = TerminalRequestAuthorization.AcquireStandalone(identity, "ai.file-draft", Valid, alias);
                         var pending = inference.ForAgent("MAXIS").GenerateStructuredAsync(prompt, stop.Token);
-                        while (!pending.IsCompleted && !stop.IsCancellationRequested) { await Task.WhenAny(pending, Task.Delay(40)); if (!Valid()) stop.Cancel(); }
+                        while (!pending.IsCompleted && !stop.IsCancellationRequested) { await Task.WhenAny(pending, Task.Delay(40)); if (!Valid() || !authorization.IsCurrent) stop.Cancel(); }
                         var reply = await pending.WaitAsync(stop.Token);
-                        if (!Valid() || stop.IsCancellationRequested) return new("Editing request cancelled. No draft created.");
+                        if (!Valid() || !authorization.IsCurrent || stop.IsCancellationRequested) return new("Editing request cancelled. No draft created.");
                         if (!reply.Available) return new("AI edit unavailable/rejected: " + TerminalTable.Safe(reply.Reason) + ". No changes.");
                         using var json = JsonDocument.Parse(reply.Text);
                         if (json.RootElement.ValueKind != JsonValueKind.Object) throw new ArgumentException("Expected an object.");
@@ -200,7 +254,13 @@ public sealed class WorkspaceChangeCommands
                 if (draft.File.Applied) return new("Applied changes retain recovery records. Use rollback; backups remain on disk.");
                 drafts.Remove(key); return new("Draft discarded; workspace unchanged.");
             }
-            if (args[0] == "preview" && args.Count == 2) return new(draft.File.Applied ? Result(draft) : draft.File.Preview() + "\nAttempt evidence: " + (draft.File.Evidence ?? "not attempted"), FileChange: Receipt(draft.File, draft.Approved ? "Approved" : null));
+            if (args[0] == "preview" && args.Count == 2)
+            {
+                var preview = draft.File.Applied ? Result(draft) : draft.File.Preview() + "\nAttempt evidence: " + (draft.File.Evidence ?? "not attempted");
+                if (draft.ArtifactPath is not null)
+                    preview += "\nReview the native output: " + draft.ArtifactPath + "\nLayout preview: " + draft.PreviewPath;
+                return new(preview, FileChange: Receipt(draft.File, draft.Approved ? "Approved" : null));
+            }
             if (args[0] == "verify" && args.Count == 3 && args[2] is "build" or "test")
             {
                 if (GridSimulationEngine.IsFileDestination(draft.Alias)) return new("This is a file-only destination; build/test requires a registered project workspace.");
@@ -214,14 +274,14 @@ public sealed class WorkspaceChangeCommands
                 switch (args[0])
                 {
                     case "approve" when args.Count is 2 or 3:
-                        Current(draft); draft.File.VerifyUnchanged();
+                        Current(draft); VerifyGeneratedPreview(draft); draft.File.VerifyUnchanged();
                         if (draft.File.Applied || draft.File.Evidence is not null) return new CommandResult("Already attempted; cannot approve again.");
-                        if (draft.File.HighRisk && (args.Count != 3 || args[2] != "high-risk")) return new("Deletion or code/configuration is HIGH risk. Review the complete preview, then use changes approve " + key + " high-risk.");
+                        if (draft.File.HighRisk && (args.Count != 3 || args[2] != "high-risk")) return new("This operation is HIGH risk and requires explicit acknowledgement. Review the complete preview and any generated artifact, then use changes approve " + key + " high-risk.");
                         if (!draft.File.HighRisk && args.Count != 2) return new(Usage);
                         draft.Approved = true;
                         return new("Approved exact operation and before/after hashes. Nothing written. Run changes apply " + key + ".", FileChange: Receipt(draft.File, "Approved"));
                     case "apply" when args.Count == 2:
-                        Current(draft);
+                        Current(draft); VerifyGeneratedPreview(draft);
                         if (!draft.Approved) return new("Approval required. Use changes preview then changes approve.");
                         draft.Approved = false; draft.File.Apply(artifacts, $"Human Master Control approval; session {draft.Session.SessionId}; generation {draft.Session.Generation}; context {draft.ContextId}; captured source hash {draft.SourceHash}; context revision {draft.ContextRevision}; risk acknowledgement {(draft.File.HighRisk ? "high-risk" : "text/document")}"); return new(Result(draft), FileChange: Receipt(draft.File));
                     case "rollback" when args.Count == 2:

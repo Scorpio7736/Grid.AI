@@ -1,3 +1,4 @@
+using Grid.Agent;
 using Grid.Simulation;
 using Grid.Simulation.Tasks;
 namespace Grid.Terminal;
@@ -6,7 +7,7 @@ public static class TaskCommands
 {
     public static void Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession identity, Func<CancellationToken, Task>? save)
     {
-        commands.Register(new("mcp", "mcp <plan|request|plans|inspect|run|cancel|repeat|brief|authority|capabilities> ...", "Master Control Program: clarify, delegate reviewed work and brief recorded results.", args =>
+        commands.Register(new("mcp", "mcp <plan|request|plans|inspect|run|cancel|repeat|brief|ledger|authority|capabilities> ...", "Master Control Program: clarify, delegate reviewed work and brief recorded results.", args =>
         {
             string Plans(string? reference = null)
             {
@@ -17,6 +18,13 @@ public static class TaskCommands
             }
             try
             {
+                if (args.Count == 2 && args[0] == "ledger")
+                {
+                    var state = engine.TasksFor(identity.Reference);
+                    var id = TaskDisplay.Resolve(args[1], state.Plans.Select(p => p.Id), "plan");
+                    return new(System.Text.Json.JsonSerializer.Serialize(engine.ToolReceipts(identity.Reference, id),
+                        new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+                }
                 if (args.Count == 1 && args[0] == "authority") return new(McpCapabilityCatalog.Authority);
                 if (args.Count == 1 && args[0] == "capabilities") return new(TerminalTable.Render(["Agent", "Capability", "Argument", "Purpose"], McpCapabilityCatalog.Entries.Select(e => new[] { e.Agent.ToString(), e.Capability, e.Argument, e.Purpose })));
                 if (args.Count >= 2 && args[0] == "plan") return commands.ExecuteTokens(["talk", "plan " + string.Join(" ", args.Skip(1))]);
@@ -97,7 +105,7 @@ public static class TaskCommands
                 }
                 if (args.Count is 4 or 5 && args[0] == "propose")
                 {
-                    var task = engine.ProposeTask(identity.Reference, engine.ResolveProgram(args[1]).Id, args[2], args[3], args.Count == 5 ? args[4] : Guid.NewGuid().ToString("N"));
+                    var task = engine.ProposeTool(identity.Reference, new TaskToolRequest(engine.ResolveProgram(args[1]).Id, args[2], args[3], args.Count == 5 ? args[4] : Guid.NewGuid().ToString("N")));
                     save(CancellationToken.None).GetAwaiter().GetResult();
                     return new(TaskDisplay.Inspect(engine.TasksFor(identity.Reference), task));
                 }

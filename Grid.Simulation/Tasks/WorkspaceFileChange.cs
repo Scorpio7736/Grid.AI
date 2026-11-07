@@ -14,11 +14,12 @@ public sealed class WorkspaceFileChange
     private readonly byte[] candidate;
     public Guid Id { get; private set; } = Guid.NewGuid();
     public WorkspaceFileOperation Operation { get; private set; }
+    public bool Generated { get; private set; }
     public bool DeletesFile => Operation == WorkspaceFileOperation.Delete;
     public string Root { get; }
     public string Relative { get; }
-    public string Before => original is null ? "" : Decode(original);
-    public string After => Decode(candidate);
+    public string Before => original is null ? "" : Generated ? $"Binary artifact ({original.Length} bytes)" : Decode(original);
+    public string After => Generated ? $"Validated generated artifact ({candidate.Length} bytes). Review the staged preview before approval." : Decode(candidate);
     public string BeforeHash => original is null ? "ABSENT" : Hash(original);
     public string AfterHash => DeletesFile ? "ABSENT" : Hash(candidate);
     public bool CreatesFile => original is null;
@@ -45,24 +46,41 @@ public sealed class WorkspaceFileChange
             System.Text.RegularExpressions.Regex.IsMatch(p, @"^(CON|PRN|AUX|NUL|COM[0-9¹²³]|LPT[0-9¹²³])(?:\.|$)", System.Text.RegularExpressions.RegexOptions.IgnoreCase)))
             throw new ArgumentException("Reserved, generated or ambiguous paths cannot be edited.");
     }
-    public static string Target(string root, string relative)
+    public static string Target(string root, string relative, bool generated = false)
     {
         if (!DevelopmentPolicy.Relative(relative)) throw new ArgumentException("Use a workspace-relative file path.");
         ValidateParts(relative);
         var allowed = new[] { ".md", ".txt", ".cs", ".csproj", ".sln", ".slnx", ".props", ".targets", ".json", ".xml", ".yml", ".yaml", ".html", ".css", ".js", ".ts", ".tsx", ".jsx", ".py", ".sql" };
-        if (!allowed.Contains(Path.GetExtension(relative).ToLowerInvariant())) throw new ArgumentException("Unsupported editable text extension.");
+        if (!(generated ? new[] { ".docx", ".pdf", ".png" } : allowed).Contains(Path.GetExtension(relative).ToLowerInvariant())) throw new ArgumentException("Unsupported editable text extension.");
         var path = DevelopmentPolicy.CheckedPath(root, relative, fileDestination: true);
         if (!Directory.Exists(Path.GetDirectoryName(path))) throw new IOException("Parent directory must already exist.");
         if (Directory.Exists(path)) throw new IOException("Target is a directory.");
         return path;
     }
-    public static byte[]? Read(string path)
+    public static byte[]? Read(string path) => ReadBytes(path, false);
+    public static byte[]? ReadArtifact(string path) => ReadBytes(path, true);
+    private byte[]? ReadCurrent(string path) => ReadBytes(path, Generated);
+    private static byte[]? ReadBytes(string path, bool binary)
     {
         if (!File.Exists(path)) return null;
         using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-        if (file.Length > MaximumBytes) throw new IOException("Editable files are limited to 64 KiB.");
-        var bytes = new byte[(int)file.Length]; file.ReadExactly(bytes); Decode(bytes); return bytes;
+        var maximum = binary ? 1024 * 1024 : MaximumBytes;
+        if (file.Length > maximum) throw new IOException("File exceeds the bounded read limit.");
+        var bytes = new byte[(int)file.Length];
+        file.ReadExactly(bytes);
+        if (!binary) Decode(bytes);
+        return bytes;
     }
+
+    public static WorkspaceFileChange StageArtifact(string root, string relative, byte[] validatedContent)
+    {
+        if (validatedContent.Length is < 1 or > 1024 * 1024)
+            throw new ArgumentException("Artifacts require 1 byte through 1 MiB.");
+        var before = ReadArtifact(Target(root, relative, generated: true));
+        if (before is not null && before.SequenceEqual(validatedContent)) throw new ArgumentException("No change to stage.");
+        return new(root, relative, before, validatedContent.ToArray()) { Generated = true };
+    }
+
     public static string Decode(byte[] bytes)
     {
         var offset = bytes.AsSpan().StartsWith(new byte[] { 239, 187, 191 }) ? 3 : 0;
@@ -109,13 +127,14 @@ public sealed class WorkspaceFileChange
         if (record.GetProperty("Id").GetGuid() != id || !string.Equals(Path.GetFullPath(record.GetProperty("Root").GetString()!), Path.GetFullPath(root), StringComparison.OrdinalIgnoreCase))
             throw new IOException("Recovery record does not belong to this workspace/change.");
         var relative = record.GetProperty("Relative").GetString()!;
-        _ = Target(root, relative);
+        var generated = record.TryGetProperty("Generated", out var artifact) && artifact.GetBoolean();
+        _ = Target(root, relative, generated);
         var beforeHash = record.GetProperty("BeforeHash").GetString();
         var afterHash = record.GetProperty("AfterHash").GetString();
-        var before = beforeHash == "ABSENT" ? null : Read(DevelopmentPolicy.CheckedPath(folder, "original.bak")) ?? throw new IOException("Recovery original missing.");
-        var candidate = Read(DevelopmentPolicy.CheckedPath(folder, "candidate.bak")) ?? throw new IOException("Recovery candidate missing.");
+        var before = beforeHash == "ABSENT" ? null : ReadBytes(DevelopmentPolicy.CheckedPath(folder, "original.bak"), generated) ?? throw new IOException("Recovery original missing.");
+        var candidate = ReadBytes(DevelopmentPolicy.CheckedPath(folder, "candidate.bak"), generated) ?? throw new IOException("Recovery candidate missing.");
         var operation = afterHash == "ABSENT" ? WorkspaceFileOperation.Delete : before is null ? WorkspaceFileOperation.Create : WorkspaceFileOperation.Update;
-        var change = new WorkspaceFileChange(root, relative, before, candidate) { Id = id, Operation = operation, Evidence = folder,
+        var change = new WorkspaceFileChange(root, relative, before, candidate) { Id = id, Operation = operation, Evidence = folder, Generated = generated,
             ApprovalEvidence = record.TryGetProperty("ApprovalEvidence", out var approval) ? approval.GetString() : null };
         if (change.BeforeHash != beforeHash || change.AfterHash != afterHash || operation == WorkspaceFileOperation.Delete && (before is null || candidate.Length != 0))
             throw new IOException("Recovery backup hash mismatch. Nothing restored.");
@@ -124,7 +143,7 @@ public sealed class WorkspaceFileChange
         else if (phase == "Applied") change.Applied = true;
         else if (phase == "Prepared")
         {
-            var current = Read(Target(root, relative));
+            var current = ReadBytes(Target(root, relative, generated), generated);
             if ((current is null ? "ABSENT" : Hash(current)) != afterHash)
                 throw new IOException("Prepared change is not in its expected applied state; inspect retained evidence manually. No automatic retry.");
             change.Applied = true;
@@ -135,7 +154,7 @@ public sealed class WorkspaceFileChange
     }
     public void VerifyUnchanged()
     {
-        var current = Read(Target(Root, Relative));
+        var current = ReadCurrent(Target(Root, Relative, Generated));
         if (BeforeHash != (current is null ? "ABSENT" : Hash(current))) throw new IOException("Target changed since preview. Stage and approve a fresh draft.");
     }
     private static string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
@@ -158,6 +177,7 @@ public sealed class WorkspaceFileChange
                 BeforeHash,
                 AfterHash,
                 CreatesFile,
+                Generated,
                 Operation = Operation.ToString(),
                 ApprovalEvidence,
                 Phase = phase,
@@ -173,7 +193,7 @@ public sealed class WorkspaceFileChange
         if (Applied || RolledBack || Evidence is not null) throw new InvalidOperationException("This draft was already attempted. Stage again instead of replaying.");
         VerifyUnchanged();
         ApprovalEvidence = approvalEvidence;
-        var target = Target(Root, Relative);
+        var target = Target(Root, Relative, Generated);
         var folder = DevelopmentPolicy.CheckedPath(artifactsRoot, Id.ToString("N"));
         if (Directory.Exists(folder) || File.Exists(folder)) throw new IOException("Recovery directory already exists; refusing to overwrite evidence.");
         Directory.CreateDirectory(folder);
@@ -198,8 +218,8 @@ public sealed class WorkspaceFileChange
     public void Rollback()
     {
         if (!Applied || RolledBack) throw new InvalidOperationException("Only an applied, not-yet-undone change can be rolled back.");
-        var target = Target(Root, Relative);
-        var current = Read(target);
+        var target = Target(Root, Relative, Generated);
+        var current = ReadCurrent(target);
         if ((current is null ? "ABSENT" : Hash(current)) != AfterHash) throw new IOException("Target changed after apply. Rollback refused to preserve newer work.");
         var temporary = DevelopmentPolicy.CheckedPath(Root, Relative + "." + Id.ToString("N") + ".grid-tmp", fileDestination: true);
         try
@@ -207,7 +227,7 @@ public sealed class WorkspaceFileChange
             if (DeletesFile)
             {
                 Durable(temporary, original!);
-                if (Read(Target(Root, Relative)) is not null) throw new IOException("Target reappeared; rollback refused.");
+                if (ReadCurrent(Target(Root, Relative, Generated)) is not null) throw new IOException("Target reappeared; rollback refused.");
                 File.Move(temporary, target, false);
             }
             else if (original is null)
@@ -218,7 +238,7 @@ public sealed class WorkspaceFileChange
             else
             {
                 Durable(temporary, original);
-                var checkedCurrent = Read(Target(Root, Relative));
+                var checkedCurrent = ReadCurrent(Target(Root, Relative, Generated));
                 if (checkedCurrent is null || Hash(checkedCurrent) != AfterHash) throw new IOException("Target changed during rollback.");
                 File.Replace(temporary, target, null);
             }
@@ -228,7 +248,7 @@ public sealed class WorkspaceFileChange
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
     public static string Display(string text) => string.Concat(text.Select(c => (char.IsControl(c) && c is not ('\r' or '\n' or '\t')) || char.GetUnicodeCategory(c) == System.Globalization.UnicodeCategory.Format ? "\\u" + ((int)c).ToString("X4") : c.ToString()));
-    public string Preview() => $"Change {Id}\n{(DeletesFile ? "DELETE (1 file; recoverable from durable original.bak)" : CreatesFile ? "CREATE" : "REPLACE")} {Root} / {Relative}\nAbsolute path: {Display(Path.GetFullPath(Path.Combine(Root, Relative)))}\nRisk: {(HighRisk ? "HIGH - code/configuration can affect execution" : "text/document")}\nBefore SHA256: {BeforeHash}\nAfter SHA256: {AfterHash}\n--- BEFORE (complete)\n" +
+    public string Preview() => $"Change {Id}\n{(DeletesFile ? "DELETE (1 file; recoverable from durable original.bak)" : CreatesFile ? "CREATE" : "REPLACE")} {Root} / {Relative}\nAbsolute path: {Display(Path.GetFullPath(Path.Combine(Root, Relative)))}\nRisk: {(Generated ? "generated artifact; visual review required" : HighRisk ? "HIGH - code/configuration can affect execution" : "text/document")}\nBefore SHA256: {BeforeHash}\nAfter SHA256: {AfterHash}\n--- BEFORE (complete)\n" +
         string.Join("\n", Display(Before).Replace("\r\n", "\n").Split('\n').Select(l => "- " + l)) +
         "\n+++ AFTER (complete)\n" + string.Join("\n", Display(After).Replace("\r\n", "\n").Split('\n').Select(l => "+ " + l)) +
         "\nNo change applied. Review all content before approval.";
