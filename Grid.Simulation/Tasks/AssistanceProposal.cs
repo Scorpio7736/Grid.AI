@@ -21,10 +21,12 @@ public sealed record AssistanceProposal(IReadOnlyList<DelegationStep> Steps)
         foreach(var item in array.EnumerateArray())
         {
             Fields(item,"agent","capability","argument");
+            if (item.EnumerateObject().Any(field => field.Value.ValueKind != JsonValueKind.String))
+                throw new ArgumentException("Proposal fields must be strings.");
             var roleText=item.GetProperty("agent").GetString(); var capability=item.GetProperty("capability").GetString(); var argument=item.GetProperty("argument").GetString();
             if(!Enum.TryParse<AgentRole>(roleText,true,out var role) || !Enum.IsDefined(role) || role==AgentRole.MCP || int.TryParse(roleText,out _) ||
                 capability is null || argument is null || argument.Contains(';') || !capability.StartsWith(role.ToString().ToLowerInvariant()+".",StringComparison.Ordinal) || !TaskCapabilities.Valid(role,capability,argument))
-                throw new ArgumentException("Unsupported agent, capability or argument: " + JsonSerializer.Serialize(new { agent=roleText, capability, argument }) + "; no tasks created.");
+                throw new ArgumentException("Unsupported agent, capability or argument. No tasks created.");
             steps.Add(new(role,capability,argument));
         }
         var result=new AssistanceProposal(Array.AsReadOnly(steps.ToArray()));

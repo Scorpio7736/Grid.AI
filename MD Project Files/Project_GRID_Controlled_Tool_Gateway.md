@@ -1,5 +1,7 @@
 # GRID controlled tool gateway — 6.23
 
+**6.24 completed — 2026-11-12.** Shared inference now withholds recognizable credential material and invalid control-character output. Strict proposal parsing rejects worker approval/scope expansion and uses content-free rejection messages. Format-repair retries recheck live authorization. All 1,225 solution tests passed, including twelve new cases and the joint 6.22–6.23 authorization/tool suites. Credential detection is pattern-based with documented false-positive and coverage limits. [Implementation and evidence](Project_GRID_Layered_Guardrails.md).
+
 ## Implemented on 2026-11-07
 
 Grid.Agent defines typed task, file-operation and receipt contracts. Grid.Simulation validates live identity and destination scope before passing requests to its existing task broker and file-change services. Capability-specific command and simulation adapters retain their execution isolation, argument allowlists, approval binding and cancellation behavior.
@@ -49,3 +51,22 @@ Grid.Terminal.exe --verify-generated-artifacts
 ```
 
 The broader joint 6.22–6.24 adversarial/action acceptance gate remains assigned to 6.24. Phase 7 readiness also retains the other documented deployment and model acceptance gates.
+
+## Gateway acceptance follow-up — 2026-11-12
+
+Eleven new regression cases exercise the gateway contracts and generated-output path directly. The full solution passed 1,213 tests, comprising Core 14, Simulation 157, Persistence 99 and Terminal 943.
+
+| Acceptance area | Recorded coverage |
+| --- | --- |
+| Exact request and approval binding | TypedGatewayRetryRequiresFreshApprovalAfterFailedSave checks identical-request deduplication, changed-request refusal and fresh approval after a failed durable save |
+| Forgery and stale identity | TypedFileGatewayRejectsForgedAndExpiredSessions and TypedGatewayRejectsUnknownCapabilitiesAndForgedSessions |
+| Denied paths | TypedFileGatewayRejectsDeniedPaths covers traversal, protected folders and alternate data streams |
+| Artifact revocation | GeneratedArtifactApprovalExpiresWithAuthority covers workspace revocation, pause, logout and identity switch |
+| Candidate integrity | GeneratedCandidateTamperingAfterApprovalPreventsApply rejects changed candidate bytes after approval |
+| Concurrent destination changes | ArtifactApprovalRejectsTamperedPreviewAndConcurrentTargetChanges and existing workspace-edit regression cases |
+| Restart and evidence | GeneratedArtifactsRequireApprovalAndRecoverAfterRestart and ToolLedgerBindsParentRequestAndRecordedOutcomeAcrossRestore |
+| Model output and authority | Existing AssistanceTests, McpWorkflowTests, TaskBrokerTests and AuthorizationRouteTests run in the same full-suite verification |
+
+The first retry-test run exposed two incorrect test expectations about existing exception behavior. The assertions now require IOException for repeated save failure and InvalidOperationException for an unapproved retry. The final full run passed. Production gateway behavior passed the additional checks without a runtime code change.
+
+This completes gateway-specific acceptance. Section 6.24 retains broader layered-guardrail implementation and adversarial acceptance. Section 6.31 retains the conversation-only requirement for chats and meetings. Report and PNG bounds documented above continue to define the implemented generator scope.

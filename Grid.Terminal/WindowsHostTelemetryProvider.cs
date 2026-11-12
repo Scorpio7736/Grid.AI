@@ -8,6 +8,12 @@ namespace Grid.Terminal;
 /// <summary>Read-only Windows counters. Does not enumerate application processes or inspect network payloads.</summary>
 public sealed class WindowsHostTelemetryProvider : IHostTelemetryProvider
 {
+    public static long? AvailablePhysicalMemory()
+    {
+        if (!OperatingSystem.IsWindows()) return null;
+        var memory = new MemoryStatus { Length = (uint)Marshal.SizeOf<MemoryStatus>() };
+        return GlobalMemoryStatusEx(ref memory) ? checked((long)memory.AvailablePhysical) : null;
+    }
     private (ulong Idle, ulong Kernel, ulong User, long Stamp)? previousCpu;
     private readonly Dictionary<string, (long Received, long Sent, long Stamp)> previousNetwork = new();
     private readonly SemaphoreSlim sampling = new(1, 1);

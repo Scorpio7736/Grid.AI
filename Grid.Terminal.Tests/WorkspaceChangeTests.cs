@@ -82,6 +82,68 @@ public sealed class WorkspaceChangeTests : IDisposable
         Assert.Equal("newer", File.ReadAllText(Path.Combine(Root, "other.pdf")));
     }
 
+    [Theory]
+    [InlineData("workspace")]
+    [InlineData("pause")]
+    [InlineData("logout")]
+    [InlineData("switch")]
+    public void GeneratedArtifactApprovalExpiresWithAuthority(string change)
+    {
+        var staged = commands.ExecuteTokens(["changes", "generate", "demo", "report.pdf", "Report", "Text"]);
+        var id = staged.FileChange!.Id;
+        Assert.Contains("Approved exact", Run("changes approve " + id + " high-risk").Text);
+        switch (change)
+        {
+            case "workspace": engine.RevokeDevelopmentWorkspace(owner.Reference, "demo"); break;
+            case "pause": engine.Pause(); break;
+            case "logout": owner.Logout(); break;
+            case "switch": owner.Switch("MAXIS"); break;
+        }
+        Assert.DoesNotContain("Applied demo", Run("changes apply " + id).Text);
+        Assert.False(File.Exists(Path.Combine(Root, "report.pdf")));
+    }
+
+    [Fact]
+    public void GeneratedCandidateTamperingAfterApprovalPreventsApply()
+    {
+        var staged = commands.ExecuteTokens(["changes", "generate", "demo", "report.pdf", "Report", "Text"]);
+        var id = staged.FileChange!.Id;
+        Run("changes approve " + id + " high-risk");
+        var candidate = Path.Combine(Artifacts, "workspace-edits", "preview-" + id.ToString("N"), "candidate.pdf");
+        File.AppendAllText(candidate, "tampered");
+        Assert.Contains("preview changed", Run("changes apply " + id).Text);
+        Assert.False(File.Exists(Path.Combine(Root, "report.pdf")));
+    }
+
+    [Theory]
+    [InlineData("../escape.md")]
+    [InlineData(".git/config.md")]
+    [InlineData("notes.md:stream")]
+    public void TypedFileGatewayRejectsDeniedPaths(string path)
+    {
+        Assert.Throws<ArgumentException>(() => engine.ReadFileTool(owner.Reference,
+            new Grid.Agent.FileToolRequest("demo", path, Grid.Agent.FileToolOperation.Read)));
+        Assert.Throws<ArgumentException>(() => engine.StageFileTool(owner.Reference,
+            new Grid.Agent.FileToolRequest("demo", path, Grid.Agent.FileToolOperation.Create, "content")));
+    }
+
+    [Fact]
+    public void TypedFileGatewayRejectsForgedAndExpiredSessions()
+    {
+        File.WriteAllText(Path.Combine(Root, "notes.md"), "private content");
+        var read = new Grid.Agent.FileToolRequest("demo", "notes.md", Grid.Agent.FileToolOperation.Read);
+        var write = new Grid.Agent.FileToolRequest("demo", "notes.md", Grid.Agent.FileToolOperation.Update, "replacement");
+        var expired = owner.Reference;
+        var forged = expired with { SessionId = Guid.NewGuid() };
+        Assert.Throws<UnauthorizedAccessException>(() => engine.ReadFileTool(forged, read));
+        Assert.Throws<UnauthorizedAccessException>(() => engine.StageFileTool(forged, write));
+        owner.Logout();
+        owner.Login();
+        Assert.Throws<UnauthorizedAccessException>(() => engine.ReadFileTool(expired, read));
+        Assert.Throws<UnauthorizedAccessException>(() => engine.StageFileTool(expired, write));
+        Assert.Equal("private content", File.ReadAllText(Path.Combine(Root, "notes.md")));
+    }
+
     private Guid Context(string content = "Updated text\n", bool grant = false, string project = "demo")
     {
         var id = Guid.NewGuid();

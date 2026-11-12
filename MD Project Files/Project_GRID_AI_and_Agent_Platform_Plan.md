@@ -128,7 +128,7 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 - [x] Establish authenticated host admission, bounded per-owner quotas, least-privilege inference capabilities and content-free audit for ordinary chat and assistance routes.
 - [x] Carry user, caller, agent, project, conversation and world/session identity through host-built trusted request context.
 - [x] Migrate meeting-round, screen, file-draft and diagnostic inference routes to the shared authorization gate and request quotas.
-- [ ] Verify denied calls, forgery, stale sessions and scope revocation jointly with 6.23–6.24 before enabling migrated action routes.
+- [x] Verify denied calls, forgery, stale sessions and scope revocation jointly with 6.23–6.24. Current host-route acceptance passed on 2026-11-12, with evidence in the layered guardrails reference.
 
 **Initial foundation verification — 2026-11-05.** 915 terminal tests passed. Grid.AI scope data is not a credential; Grid.Agent admission requires live host validation, limits two concurrent/60 starts per minute per world owner and keeps bounded content-free audit. Host reply guards and existing action approvals remain authoritative. At that checkpoint, additional route migration and joint action gates remained open. The route completion evidence follows below. [Implementation and limits](Project_GRID_Request_Authorization.md).
 
@@ -138,28 +138,35 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 
 - [x] Define typed file read/write, command and simulation requests with path validation, execution isolation and approval requirements.
 - [x] Route execution through the existing GRID task broker and approved file-change services, using recorded receipts for results.
-- [ ] Verify exact approval binding, concurrent changes, restart/retry behavior, denied paths and enforcement together with 6.22 and 6.24.
+- [x] Verify exact approval binding, concurrent changes, restart/retry behavior, denied paths and current authorization/guardrail enforcement through the gateway. Broader 6.24 acceptance remains tracked in its own section.
 
 - [x] Enforce delegation allowlists, scoped paths/data, depth/cycle limits, per-profile job limits, budgets/cancellation and a parent/child evidence ledger through trusted .NET policy.
 - [x] Add scoped deterministic Office/PDF generators and image-output validation with staging, format/template checks, visual QA and required overwrite approval.
 
 **6.23 implementation verification — 2026-11-07.** Typed tool requests use the existing host task/file services. MCP delegation has a one-level allowlist, eight-child maximum, one active job and a ten-minute dispatch budget. `mcp ledger` exposes saved child-task evidence. Reviewed DOCX/PDF report generation and strict PNG validation use hash-bound previews, guarded apply and durable rollback. All 1,202 solution tests passed. Native Word/PDF samples were rendered and visually checked. Joint 6.22–6.24 acceptance remains open for 6.24. [Supported formats, limits and tests](Project_GRID_Controlled_Tool_Gateway.md).
 
+**6.23 gateway acceptance completed — 2026-11-12.** Eleven added regression cases cover typed task/file gateway forgery, stale sessions, denied paths, request-key binding, failed-save retry approval, generated-output tampering and revoked artifact approval. All 1,213 solution tests passed (14 Core, 157 Simulation, 99 Persistence, 943 Terminal), including existing concurrent-edit, persistence/recovery, malformed-proposal and authorization tests. Gateway acceptance is complete for the implemented formats and host routes. Broader layered-guardrail work remains under 6.24, and conversation-only acceptance remains under 6.31. [Evidence and limits](Project_GRID_Controlled_Tool_Gateway.md).
+
 ### 6.24 Layered guardrails
 
-- [ ] Validate inputs and structured outputs, filter sensitive data, isolate runtime requests and verify tool results.
-- [ ] Treat retrieved documents and tool outputs as untrusted content and enforce access in code at each boundary.
-- [ ] Run adversarial injection, malformed-response, unauthorized retrieval and tool-escalation tests jointly with 6.22–6.23.
+- [x] Validate inputs and structured outputs, filter sensitive data, isolate runtime requests and verify tool results.
+- [x] Treat retrieved documents and tool outputs as untrusted content and enforce access in code at each boundary.
+- [x] Run adversarial injection, malformed-response, unauthorized retrieval and tool-escalation tests jointly with 6.22–6.23.
 
-- [ ] Validate delegation proposals against strict schemas and trusted policy, including requiresApproval=false, hostile retrieved content and worker-response attempts to expand authority.
+- [x] Validate delegation proposals against strict schemas and trusted policy, including requiresApproval=false, hostile retrieved content and worker-response attempts to expand authority.
+
+**6.24 completed — 2026-11-12.** Shared inference now withholds recognizable credential material and invalid control-character output. Strict proposal parsing rejects worker approval/scope expansion and uses content-free rejection messages. Format-repair retries recheck live authorization. All 1,225 solution tests passed, including twelve new cases and the joint 6.22–6.23 authorization/tool suites. Credential detection is pattern-based with documented false-positive and coverage limits. [Implementation and evidence](Project_GRID_Layered_Guardrails.md).
 
 ### 6.25 Resilience and recovery
 
-- [ ] Add bounded retries, circuit breakers, cancellation, crash recovery, graceful degradation and deterministic fallbacks.
-- [ ] Define safe retry classes, duplicate-action prevention and recovery of model/runtime failures with actionable diagnostics.
-- [ ] Verify disconnects, timeouts, runtime exits and interrupted writes while preserving recorded outcomes and pending approvals.
+- [x] Add bounded retries, circuit breakers, cancellation, crash recovery, graceful degradation and deterministic fallbacks.
+- [x] Define safe retry classes, duplicate-action prevention and recovery of model/runtime failures with actionable diagnostics.
+- [x] Verify disconnects, timeouts, runtime exits and interrupted writes while preserving recorded outcomes and pending approvals.
 
-- [ ] Return structured UNAVAILABLE with constraints and available offline alternatives, and test bounded lower-tier fallback after unloading failed or over-budget candidates.
+- [x] Return structured unavailable results with constraints and offline alternatives. Verify one CPU/Lite baseline fallback after unloading a failed GPU allocation.
+- [ ] Verify fallback to eligible smaller specialist checkpoints and physical over-budget model recovery after candidates are installed.
+
+**6.25 baseline recovery implemented — 2026-11-12.** The shared queue now uses a three-failure, thirty-second runtime cooldown and structured unavailable replies. Ollama server failures can trigger one verified-unload CPU/Lite attempt with the installed baseline inside the request deadline. All 1,230 tests passed, including five new recovery cases and existing interrupted-write/task/file recovery suites. Smaller specialist-model and physical resource-exhaustion acceptance remain pending installed candidates. [Recovery rules and evidence](Project_GRID_Resilience_and_Recovery.md).
 
 ### 6.26 Performance optimization
 

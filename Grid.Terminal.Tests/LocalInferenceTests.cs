@@ -9,6 +9,165 @@ namespace Grid.Terminal.Tests;
 [Trait("Phase", "6.5")]
 public sealed class LocalInferenceTests
 {
+    [Fact]
+    public async Task PhysicalMemoryIsRecheckedBeforeEveryBackendRequest()
+    {
+        long free = 8_000_000_000;
+        var contexts = new List<int>();
+        using var backend = new OllamaLocalBackend(new Handler(async (request, token) =>
+        {
+            if (request.RequestUri!.AbsolutePath == "/api/show") return Json("{}");
+            using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(token));
+            contexts.Add(body.RootElement.GetProperty("options").GetProperty("num_ctx").GetInt32());
+            return Json("{\"done\":true,\"response\":\"ready\"}");
+        }), lowMemory: false, cpuOnly: false, availableMemory: () => free);
+        await using var service = new SharedLocalInference(backend);
+        Assert.True((await service.GenerateFileAsync("report")).Available);
+        free = 3_000_000_000;
+        Assert.True((await service.GenerateFileAsync("report")).Available);
+        free = 500_000_000;
+        var blocked = await service.GenerateFileAsync("report");
+        Assert.False(blocked.Available);
+        Assert.Contains("RAM", blocked.Reason);
+        Assert.Equal(new[] { 16384, 8192 }, contexts);
+    }
+    private sealed class RecoveryClock : TimeProvider
+    {
+        public DateTimeOffset Now = new(2026, 11, 12, 0, 0, 0, TimeSpan.Zero);
+        public override DateTimeOffset GetUtcNow() => Now;
+    }
+
+    [Fact]
+    public async Task RuntimeFailuresOpenCooldownThenAllowOneSerializedRecovery()
+    {
+        var clock = new RecoveryClock();
+        var calls = 0;
+        var failing = true;
+        await using var service = new SharedLocalInference(new Backend((_, _) =>
+        {
+            calls++;
+            if (failing) throw new HttpRequestException("synthetic runtime exit");
+            return Task.FromResult("recovered");
+        }), clock: clock);
+        for (var i = 0; i < 3; i++) Assert.False((await service.GenerateAsync("hello")).Available);
+        var blocked = await service.GenerateAsync("hello");
+        Assert.Equal("CircuitOpen", blocked.Unavailable!.Code);
+        Assert.NotEmpty(blocked.Unavailable.OfflineAlternatives);
+        Assert.Equal(3, calls);
+        clock.Now = clock.Now.AddSeconds(31);
+        failing = false;
+        Assert.True((await service.GenerateAsync("hello")).Available);
+        Assert.Equal(4, calls);
+        Assert.True((await service.GenerateAsync("another")).Available);
+    }
+
+    [Fact]
+    public async Task RejectedContentAndCallerCancellationDoNotOpenRuntimeCircuit()
+    {
+        var calls = 0;
+        await using var service = new SharedLocalInference(new Backend((_, _) =>
+        {
+            calls++;
+            return Task.FromResult(calls <= 3 ? "" : "ready");
+        }));
+        for (var i = 0; i < 3; i++) Assert.True((await service.GenerateAsync("hello")).ResponseRejected);
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+        for (var i = 0; i < 3; i++) await service.GenerateAsync("cancel", cancelled.Token);
+        Assert.True((await service.GenerateAsync("hello")).Available);
+        Assert.Equal(4, calls);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ServerFailureUnloadsBeforeSingleCpuFallback(bool failFallback)
+    {
+        var events = new List<string>();
+        using var backend = new OllamaLocalBackend(new Handler(async (request, token) =>
+        {
+            if (request.RequestUri!.AbsolutePath == "/api/show") return Json("{}");
+            if (request.RequestUri.AbsolutePath == "/api/ps")
+            {
+                events.Add("verify-unloaded");
+                return Json("{\"models\":[]}");
+            }
+            using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(token));
+            if (!body.RootElement.TryGetProperty("options", out var options))
+            {
+                Assert.Equal(0, body.RootElement.GetProperty("keep_alive").GetInt32());
+                events.Add("unload");
+                return Json("{}");
+            }
+            var cpu = options.GetProperty("num_gpu").GetInt32() == 0;
+            events.Add(cpu ? "cpu" : "gpu");
+            if (!cpu || failFallback) return new HttpResponseMessage(HttpStatusCode.InternalServerError);
+            Assert.True(options.GetProperty("num_ctx").GetInt32() <= 4096);
+            return Json("{\"done\":true,\"response\":\"ready\"}");
+        }), lowMemory: false, cpuOnly: false);
+        await using var service = new SharedLocalInference(backend);
+        var result = await service.GenerateAsync("hello");
+        Assert.Equal(!failFallback, result.Available);
+        Assert.Equal(new[] { "gpu", "unload", "verify-unloaded", "cpu" }, events);
+        if (failFallback) Assert.NotNull(result.Unavailable);
+    }
+
+    [Fact]
+    public async Task FailedUnloadPreventsFallbackAllocation()
+    {
+        var attempts = 0;
+        using var backend = new OllamaLocalBackend(new Handler((request, _) =>
+        {
+            if (request.RequestUri!.AbsolutePath == "/api/show") return Task.FromResult(Json("{}"));
+            attempts++;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        }), lowMemory: false, cpuOnly: false);
+        await using var service = new SharedLocalInference(backend);
+        Assert.False((await service.GenerateAsync("hello")).Available);
+        Assert.Equal(2, attempts);
+    }
+
+    [Theory]
+    [InlineData("api_key=exampleCredential123")]
+    [InlineData("Authorization: Bearer exampleCredential123")]
+    [InlineData("-----BEGIN PRIVATE KEY-----\nexample\n-----END PRIVATE KEY-----")]
+    [InlineData("{\"password\":\"exampleCredential123\"}")]
+    [InlineData("{\\\"client_secret\\\":\\\"exampleCredential123\\\"}")]
+    public async Task CredentialsAreWithheldBeforeBackendAndOnOutput(string secret)
+    {
+        var calls = 0;
+        var response = secret;
+        await using var inference = new SharedLocalInference(new Backend((_, _) =>
+        {
+            calls++;
+            return Task.FromResult(response);
+        }));
+        var input = await inference.GenerateAsync("Read this captured text: " + secret);
+        Assert.False(input.Available);
+        Assert.True(input.ResponseRejected);
+        Assert.Empty(input.Text);
+        Assert.Equal(0, calls);
+        var output = await inference.GenerateFileAsync("Create a report");
+        Assert.False(output.Available);
+        Assert.True(output.ResponseRejected);
+        Assert.Empty(output.Text);
+        Assert.DoesNotContain("exampleCredential123", output.Reason);
+        response = "A normal answer about password requirements.";
+        Assert.True((await inference.GenerateAsync("Explain password requirements")).Available);
+    }
+
+    [Theory]
+    [InlineData("answer\u001b[31m")]
+    [InlineData("answer\0hidden")]
+    public async Task TerminalControlOutputIsRejected(string output)
+    {
+        await using var inference = new SharedLocalInference(new Backend((_, _) => Task.FromResult(output)));
+        var result = await inference.GenerateAsync("hello");
+        Assert.False(result.Available);
+        Assert.True(result.ResponseRejected);
+        Assert.Empty(result.Text);
+    }
+
     private sealed class Backend(Func<string,CancellationToken,Task<string>> action) : IInferenceBackend
     { public Task<string> GenerateAsync(string prompt,CancellationToken token)=>action(prompt,token); }
     private sealed class Handler(Func<HttpRequestMessage,CancellationToken,Task<HttpResponseMessage>> action) : HttpMessageHandler

@@ -1,5 +1,7 @@
 # Project GRID — Request identity and authorization (6.22)
 
+**6.24 completed — 2026-11-12.** Shared inference now withholds recognizable credential material and invalid control-character output. Strict proposal parsing rejects worker approval/scope expansion and uses content-free rejection messages. Format-repair retries recheck live authorization. All 1,225 solution tests passed, including twelve new cases and the joint 6.22–6.23 authorization/tool suites. Credential detection is pattern-based with documented false-positive and coverage limits. [Implementation and evidence](Project_GRID_Layered_Guardrails.md).
+
 **Inference-route coverage completed — 2026-11-05.** The shared host authorization gate covers ordinary chat, meeting rounds, advice, document analysis, reviewed proposals, screen assistance, AI file drafts and AI status/test requests. Joint action-route acceptance remains scheduled with 6.23–6.24.
 
 ## Ownership and trusted scope

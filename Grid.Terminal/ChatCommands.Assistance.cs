@@ -76,7 +76,11 @@ public sealed partial class ChatCommands
                 try
                 {
                     using var authorization = AuthorizeInference(id, agent.Id, mode == "propose" ? "ai.propose" : "ai.analyze", Current);
-                    var pending=mode=="propose" ? inference.ForAgent(mode == "propose" ? "MCP" : agent.Name).GenerateStructuredAsync(prompt.ToString(),ProposalSchema,stop.Token) : inference.ForAgent(mode == "propose" ? "MCP" : agent.Name).GenerateAsync(prompt.ToString(),stop.Token);
+                    var client = inference.ForAgent(mode == "propose" ? "MCP" : agent.Name);
+                    if (mode != "propose")
+                        client = client.WithCacheScope(new Grid.AI.InferenceCacheScope(authorization.Context, guard.Activity, guard.Context, guard.Memory),
+                            () => Current() && authorization.IsCurrent);
+                    var pending=mode=="propose" ? client.GenerateStructuredAsync(prompt.ToString(),ProposalSchema,stop.Token) : client.GenerateAsync(prompt.ToString(),stop.Token);
                     while(!pending.IsCompleted) { await Task.WhenAny(pending,Task.Delay(50,stop.Token)); if(token.IsCancellationRequested||!Current()||!authorization.IsCurrent) {stop.Cancel();break;} }
                     var reply=await pending;
                     if(token.IsCancellationRequested||!Current()||!authorization.IsCurrent) return new("Assistance cancelled or scope changed; nothing created.");
@@ -102,9 +106,9 @@ public sealed partial class ChatCommands
                             // Retry the original request once; never execute or repair model text as commands.
                             if(!Current()) return new("Assistance expired; nothing created.");
                             var retry=inference.ForAgent(mode == "propose" ? "MCP" : agent.Name).GenerateStructuredAsync(prompt.ToString()+"\nThe previous JSON was invalid. Retry once. Root has ONLY steps. Each step has ONLY agent, capability, argument. No explanation, approvals, content or other fields. Use only the exact catalog above.",ProposalSchema,stop.Token);
-                            while(!retry.IsCompleted) { await Task.WhenAny(retry,Task.Delay(50,stop.Token)); if(token.IsCancellationRequested||!Current()) {stop.Cancel();break;} }
+                            while(!retry.IsCompleted) { await Task.WhenAny(retry,Task.Delay(50,stop.Token)); if(token.IsCancellationRequested||!Current()||!authorization.IsCurrent) {stop.Cancel();break;} }
                             var corrected=await retry;
-                            if(token.IsCancellationRequested||!Current()) return new("Assistance cancelled or scope changed; nothing created.");
+                            if(token.IsCancellationRequested||!Current()||!authorization.IsCurrent) return new("Assistance cancelled or scope changed; nothing created.");
                             if(!corrected.Available) return new("AI proposal retry unavailable/rejected; no action created. "+corrected.Reason);
                             proposal=AssistanceProposal.Parse(corrected.Text);
                         }

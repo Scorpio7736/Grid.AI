@@ -30,6 +30,40 @@ public sealed class TaskBrokerTests
         var child = owner.CreateAttachment(); registry.Add(child); child.Switch(engine.ResolveProgram(role).Id.ToString()); return child;
     }
     [Fact]
+    public async Task TypedGatewayRetryRequiresFreshApprovalAfterFailedSave()
+    {
+        Initialize();
+        var request = new Grid.Agent.TaskToolRequest(engine.ResolveProgram("MAXIS").Id, "maxis.demo", "gateway probe", "gateway-retry");
+        var task = engine.ProposeTool(owner.Reference, request);
+        Assert.Equal(task.Id, engine.ProposeTool(owner.Reference, request).Id);
+        Assert.Throws<ArgumentException>(() => engine.ProposeTool(owner.Reference, request with { Argument = "different" }));
+        engine.ApproveTask(owner.Reference, task.Id);
+        await Assert.ThrowsAsync<IOException>(() => engine.RunNextTaskAsync(owner.Reference,
+            _ => Task.FromException(new IOException("test save failure")), default));
+        Assert.Equal(Status.Failed, Record(task.Id).Status);
+        engine.RetryTask(owner.Reference, task.Id);
+        Assert.Equal(Status.AwaitingApproval, Record(task.Id).Status);
+        Assert.Null(Record(task.Id).ApprovedBy);
+        var attempts = Record(task.Id).Attempts;
+        await Assert.ThrowsAsync<InvalidOperationException>(() => engine.RunNextTaskAsync(owner.Reference, Save, default));
+        Assert.Equal(attempts, Record(task.Id).Attempts);
+        engine.ApproveTask(owner.Reference, task.Id);
+        await engine.RunNextTaskAsync(owner.Reference, Save, default);
+        Assert.Equal(Status.Completed, Record(task.Id).Status);
+    }
+
+    [Fact]
+    public void TypedGatewayRejectsUnknownCapabilitiesAndForgedSessions()
+    {
+        Initialize();
+        var request = new Grid.Agent.TaskToolRequest(engine.ResolveProgram("MAXIS").Id, "shell", "execute arbitrary command", "forged-tool");
+        Assert.Throws<ArgumentException>(() => engine.ProposeTool(owner.Reference, request));
+        var forged = owner.Reference with { SessionId = Guid.NewGuid() };
+        Assert.Throws<UnauthorizedAccessException>(() => engine.ProposeTool(forged, request with { Capability = "maxis.demo" }));
+        Assert.Empty(engine.GetSnapshot().Tasks.Records);
+    }
+
+    [Fact]
     public async Task HostDispatchesBrokerOperationAndReturnsToCommandLoop()
     {
         Initialize(); var task = Proposal(); engine.ApproveTask(owner.Reference, task.Id);

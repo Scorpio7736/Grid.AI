@@ -10,6 +10,7 @@ if (args.SequenceEqual(new[] { "--verify-model-providers" })) return await Model
 if (args.SequenceEqual(new[] { "--evaluate-model-baseline" })) return await ModelAcceptanceVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-personas" })) return await PersonaVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-generated-artifacts" })) return ArtifactVerification.Run();
+if (args.SequenceEqual(new[] { "--verify-inference-cache" })) return await InferenceCacheVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-retrieval" })) return await RetrievalVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-model-registry" }))
 {
@@ -133,7 +134,7 @@ try
     try { if (BundledAiRuntime.FindRoot(AppContext.BaseDirectory) is { } personaRoot) personas = PersonaSettings.Read(personaRoot); }
     catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or ArgumentException)
     { startupMessages.Add("Persona settings unreadable; using bundled v2 defaults. Original settings retained: " + e.Message); }
-    using var aiBackend = new Grid.Communication.OllamaLocalBackend(endpoint: aiRuntime.Endpoint, personas: personas);
+    using var aiBackend = new Grid.Communication.OllamaLocalBackend(endpoint: aiRuntime.Endpoint, personas: personas, availableMemory: WindowsHostTelemetryProvider.AvailablePhysicalMemory);
     await using var localAi = new Grid.Communication.SharedLocalInference(aiBackend, enabled: aiRuntime.Ready && Environment.GetEnvironmentVariable("GRID_AI_DISABLED") != "1", unavailableReason: aiRuntime.Status);
     CommandDispatcher CreateCommands(TerminalIdentitySession session)
     {

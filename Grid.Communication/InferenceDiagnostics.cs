@@ -3,7 +3,7 @@ using Grid.AI;
 
 namespace Grid.Communication;
 
-public enum InferenceOutcome { Success, Disabled, Busy, Cancelled, Timeout, Stopped, OutputLimit, Incomplete, ContextLimit, InvalidOutput, Transport, Unavailable }
+public enum InferenceOutcome { Success, Disabled, Busy, Cancelled, Timeout, Stopped, OutputLimit, Incomplete, ContextLimit, InvalidOutput, Transport, Unavailable, CacheHit }
 public enum InferenceKind { Chat, Structured, FileDraft }
 public sealed record InferenceTrace(Guid Id, DateTimeOffset RecordedUtc, string Agent, InferenceKind Kind,
     string? Model, string? ModelRevision, string? PromptVersion, InferenceOutcome Outcome,
