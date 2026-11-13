@@ -1,6 +1,6 @@
 # Project GRID — Master Development Checklist
 
-**Experience/integration planning update — 2026-11-13.** Added planned requirements 8.10–8.17 and the GRID Experience release gate for unified desktop UX, conversation-first actions, local device capabilities, guided onboarding, skills, optional connectors, scheduled assistance, transparency and personalization. Existing implementation evidence and the 6.31 pre-Phase-7 gate are unchanged. See [the Phase 8 experience workstream](#openjarvis-inspired-local-assistant-experience--planned-2026-11-13).
+**Terminal-first experience planning correction — 2026-11-13.** Moved the new assistant capabilities to the end of Phase 7 as 7.7–7.14, prioritizing natural-language terminal tasks, local device capabilities, setup, skills, optional connectors, scheduled workflows and permission transparency. A new GUI (7.14) is deferred/optional and cannot block core acceptance. The existing 6.31 pre-Phase-7 gate remains unchanged.
 
 **Model-handling planning update — 2026-11-04.** Added the supplied seven model candidates, hardware-aware Lite/Standard/Performance eligibility, cold/warm benchmarks, bounded fallback, deterministic delegation, validated artifact generation and offline manifests. Installed models have a 75 GB decimal sub-limit within the shared 128 GB Flash/PC target. All related acceptance remains required before Phase 7. [Model selection and handling plan](Project_GRID_Model_Selection_and_Handling_Plan.md).
 
@@ -1805,6 +1805,93 @@ Current implementation supports selected conversational intents and retains expl
 
 ---
 
+## Terminal-first local AI and device integration — planned 2026-11-13
+
+**Priority and sequencing:** Complete the existing 6.31 prerequisites first. At the end of Phase 7, focus on useful AI through the **existing GRID terminal**: natural-language tool use, local device capabilities, reliable model setup, skills, optional connectors, scheduled jobs, and transparent permissions. Reuse the existing host/agent/AI architecture. A new general-purpose GUI is optional future polish, **not a prerequisite for core assistant functionality, the terminal workflows, or core acceptance**. Existing Phase 7 Godot city work is separate and retains its own scope. Validate cross-platform/offline release integration in Phase 8. Do not silently introduce cloud runtime dependencies. Design inspiration: [OpenJarvis](https://github.com/open-jarvis/OpenJarvis), not a code dependency.
+
+**Reuse, not replacement:** `Grid.AI` model/provider/hardware profile work (6.16–6.17A); `Grid.Agent` scoped memory/personas/delegation; 6.22–6.24 trusted authorization and tool gateway; 2.7.2 local app inventory; 6.3A screen assistance; 6.9 file operations; 6.20 retrieval; 6.27 and 8.6–8.9 offline/portable deployment. Existing partial implementations do not satisfy all new acceptance criteria.
+
+## 7.7 Conversation-first intent and action routing
+
+- [ ] Add versioned, typed intent-to-capability planning for ordinary user language, clarification, multi-step execution and safe follow-up context.
+- [ ] Generalize current specific file/search/task utterances without giving the model arbitrary shell, filesystem or OS authority.
+- [ ] Preview the proposed action plan, affected resources, source provenance, agent assignment and required approvals before execution; preserve edit conflict and hash-bound review rules.
+- [ ] Expose what GRID can do, what needs a grant, what is unsupported and why a requested operation was denied.
+- [ ] Permit scoped cancellation, retries and durable resumption only for explicitly approved, idempotent operations; never silently replay stale approvals.
+- [ ] Test ambiguous requests, prompt injection, forged plans, revoked scopes, path escapes, partial execution and conversational recovery.
+
+## 7.8 Device integration and capability broker
+
+- [ ] Define an OS-facing, versioned capability catalog with typed inputs/results, policy labels, resource limits, provenance and audit records; reuse the trusted 6.23 gateway.
+- [ ] Distinguish read-only discovery (installed programs, processes, windows, approved paths and resource status) from potentially state-changing actions.
+- [ ] Implement narrowly scoped, consented application launch/focus and approved file/folder operations; add window inspection and screen context only with explicit selection and active grants.
+- [ ] Evaluate optional clipboard, notifications and other Windows integrations individually; default to no access and never infer permission from app discovery.
+- [ ] Recheck original-host, user identity, grant, target, path and request version at execution time; keep passwords, elevated operations and private contexts protected.
+- [ ] Provide clear degradation on inaccessible apps, OS restrictions, changed devices, read-only media and unsupported operations; test each on real Windows hosts.
+
+## 7.9 Guided onboarding and hardware-aware setup
+
+- [ ] Offer a terminal-based first-run setup flow for permanent PC GRID versus Flash GRID, local identity/recovery, storage location and optional capabilities.
+- [ ] Discover CPU, available RAM/VRAM, storage and existing managed runtime dependencies; show supported Lite/Standard/Performance choices with measured confidence and resource estimates.
+- [ ] Select only verified compatible local models, provision missing assets through an explicit install action, and allow an offline pre-provisioned path; never silently download or use a cloud provider.
+- [ ] Explain requested Windows permissions and connectivity separately, with skip, revoke and later-edit controls; default to minimum grants.
+- [ ] Provide one-command local AI, voice, storage, screen and capability health diagnostics with actionable repair messages and rollback.
+- [ ] Test clean-user first runs, low-end hardware, unavailable GPU, limited space, drive-letter changes, second PC and network-blocked installation/runtime paths.
+
+## 7.10 Reusable skills and integration system
+
+- [ ] Define a versioned skill manifest and typed invocation contract compatible with existing GRID-Agent tool scopes, model capabilities and host authorization.
+- [ ] Implement a terminal-accessible local skills catalog for discovery, enable/disable, per-skill configuration, dependency checks and clear capability descriptions.
+- [ ] Support explicit import/install of locally bundled or user-selected community skills with origin/version/hash/license metadata and review of required permissions; never auto-trust third-party content.
+- [ ] Sandbox untrusted skill execution; constrain filesystem/network/process access, runtime and resources, and protect against instructions in retrieved skill/tool content.
+- [ ] Keep skills offline-operational after provisioning where their declared capabilities permit; label network-dependent integrations as optional and unavailable offline.
+- [ ] Validate install/update/revoke/uninstall, incompatible versions, malicious manifests, access denial, rollback and portability between devices.
+
+## 7.11 App and service connections
+
+- [ ] Provide discoverable terminal connection-management commands for supported local app adapters and opt-in external services such as calendar, email, tasks and browser data.
+- [ ] Define connector-specific scopes, account isolation, credential storage, consent/refresh/revocation and reliable disclosure of what is shared with agents.
+- [ ] Prioritize locally available data/interfaces; treat remote services as opt-in and never as dependencies for GRID's mandatory offline runtime.
+- [ ] Keep reading, drafting and committing external changes separate; require confirmation for sending, deleting, scheduling or other consequential writes.
+- [ ] Surface sync status, staleness, offline state and source citations rather than presenting cached content as live.
+- [ ] Verify revoked credentials, cross-agent privacy, disconnected networks, data deletion and connector failure recovery.
+
+## 7.12 Scheduled and persistent assistant workflows
+
+- [ ] Add human-configured one-time, recurring and conditional jobs using a durable local scheduler; persist ownership, scope, schedule, last run, results and cancellation state.
+- [ ] Define explicit enable/disable, quiet hours, notifications and expiration; never start proactive monitoring based only on a conversation suggestion.
+- [ ] Revalidate permissions, availability, resources and deadlines before each run; gate consequential writes/actions with contemporaneous approval.
+- [ ] Provide a terminal inbox of completed jobs, exceptions, pending approvals and verified agent activity with retry controls and traceable receipts.
+- [ ] Distinguish ongoing host services from simulated city ticks; prevent automatic offline catch-up, duplicate execution, infinite loops and unbounded agent spending.
+- [ ] Test restart, power loss, late wake, disconnected devices, canceled schedules and offline-only execution.
+
+## 7.13 Trust, personalization and usability acceptance
+
+- [ ] Provide one human-readable terminal activity view (optional future GUI dashboard) for active agents, chosen models, tool calls, resource use, task progress, approvals, cancellations and durable audit history.
+- [ ] Provide personal preference/persona settings and scoped memory review, correction, expiry, forget and export controls; preserve existing cross-agent isolation.
+- [ ] Introduce permission profiles for common workflows with individual grant review and immediate revocation; do not implement unrestricted global auto-approval.
+- [ ] Offer optional, user-enabled contextual suggestions tied to explicit local goals, without covert background surveillance or compulsive notifications.
+- [ ] Evaluate first-task completion, setup friction, time to actionable response, error recovery, accessibility and discoverability with representative users of the terminal-first experience.
+- [ ] Run Windows terminal interaction, multi-device portability, memory/scope isolation, security and offline acceptance tests across supported hardware profiles.
+- [ ] Update the user guide, onboarding, permission explanations, safe uninstall/export and troubleshooting documentation before claiming release readiness.
+
+**Experience release gate:** A new user on a supported Windows PC can install or launch a prepared GRID edition, set up a local model and grants, request a realistic multi-step file or application task conversationally, review/approve it, observe grounded agent progress, recover from a failure, and revoke access — using the GUI, with no required cloud service. Repeat essential workflows from a verified offline Flash GRID package on a second supported machine. Preserve simulation integrity, capability scoping and auditable Master Control authority throughout.
+
+---
+
+## 7.14 Optional unified desktop GUI — deferred UX enhancement
+
+- [ ] When prioritized after core acceptance, define an optional user-facing shell for conversations, agent selection/meetings, task approvals, local files, activity, settings and city access; preserve the advanced terminal as a first-class option.
+- [ ] Integrate the Phase 7 Godot city as an optional navigable representation of actual agents, applications and verified activity, not a separate synthetic source of truth.
+- [ ] Provide persistent conversation and task navigation, search, readable citations/source boundaries, progress/cancellation indicators, and recovery of interrupted sessions.
+- [ ] Support accessible keyboard navigation, screen readers, reduced motion, high DPI, responsive/resizable layouts and a consistent visual theme.
+- [ ] Distinguish inferred AI suggestions, verified host observations, pending proposals, approved actions and completed results in every view.
+- [ ] If/when a GUI ships, verify GUI and terminal show the same underlying state; **terminal completion remains sufficient for core AI acceptance**.
+
+**Core terminal experience acceptance (7.7–7.13):** On a supported Windows PC, an authenticated user can configure local AI and grants, ask MCP for a multi-step device/file task in ordinary conversation, inspect a typed plan, approve consequential actions, view verified results, recover or cancel safely, and revoke access — **entirely through the existing GRID terminal** with no required cloud service. Test a prepared portable offline package on a second supported computer. Section 7.14's new GUI must not block this gate.
+
+---
+
 # Phase 8 — Integration
 
 ## 8.1 Windows lifecycle
@@ -1915,89 +2002,6 @@ Current implementation supports selected conversational intents and retains expl
 - [ ] Persist an additional profile for save; keep one-time profile session-only; preserve existing profiles and saved city/world
 - [ ] Revalidate machine-bound paths/credentials/scopes without carrying task approvals or granting OS privileges; verify restart, repeat visit, partial discovery and offline behavior
 
-## OpenJarvis-inspired local assistant experience — planned 2026-11-13
-
-**Scope and scheduling:** Extend GRID's existing city, agents, terminal, permissions, and local AI into an easy-to-use device-integrated assistant. These are **new requirements, not completed implementations**. Retain Phase 7's Godot world work and 6.31 integration gate; implement the shared capability/UX contracts alongside Phase 7 design, then validate the complete experience in Phase 8. Do not make the unresolved 6.31 pre-Phase-7 acceptance dependent on these newly introduced Phase 8 features. Do not conflate a polished interface with authorization to access the host. Reference inspiration: [OpenJarvis](https://github.com/open-jarvis/OpenJarvis); no external runtime dependency or code adoption is implied.
-
-**Existing foundations to reuse, not rebuild:** `Grid.AI` model providers, registry and hardware profiles (6.16–6.17A); `Grid.Agent` personas, scoped memory and delegation (6.18–6.23); SENTINEL/Master Control security (5.4, 6.22–6.24); local application inventory (2.7.2); file discovery, approved document operations, screen OCR and conversations (6.3A, 6.9, 6.20, 6.23); portability and offline packaging (6.27, 8.6–8.9). These currently provide partial capabilities, not the complete workflows below.
-
-## 8.10 Unified desktop assistant experience
-
-- [ ] Define a single user-facing shell for conversations, agent selection/meetings, task approvals, local files, activity, settings and city access; preserve the advanced terminal as a first-class option.
-- [ ] Integrate the Phase 7 Godot city as an optional navigable representation of actual agents, applications and verified activity, not a separate synthetic source of truth.
-- [ ] Provide persistent conversation and task navigation, search, readable citations/source boundaries, progress/cancellation indicators, and recovery of interrupted sessions.
-- [ ] Support accessible keyboard navigation, screen readers, reduced motion, high DPI, responsive/resizable layouts and a consistent visual theme.
-- [ ] Distinguish inferred AI suggestions, verified host observations, pending proposals, approved actions and completed results in every view.
-- [ ] Verify primary workflows end-to-end without needing a terminal command; ensure terminal and GUI show the same underlying state.
-
-## 8.11 Conversation-first intent and action routing
-
-- [ ] Add versioned, typed intent-to-capability planning for ordinary user language, clarification, multi-step execution and safe follow-up context.
-- [ ] Generalize current specific file/search/task utterances without giving the model arbitrary shell, filesystem or OS authority.
-- [ ] Preview the proposed action plan, affected resources, source provenance, agent assignment and required approvals before execution; preserve edit conflict and hash-bound review rules.
-- [ ] Expose what GRID can do, what needs a grant, what is unsupported and why a requested operation was denied.
-- [ ] Permit scoped cancellation, retries and durable resumption only for explicitly approved, idempotent operations; never silently replay stale approvals.
-- [ ] Test ambiguous requests, prompt injection, forged plans, revoked scopes, path escapes, partial execution and conversational recovery.
-
-## 8.12 Device integration and capability broker
-
-- [ ] Define an OS-facing, versioned capability catalog with typed inputs/results, policy labels, resource limits, provenance and audit records; reuse the trusted 6.23 gateway.
-- [ ] Distinguish read-only discovery (installed programs, processes, windows, approved paths and resource status) from potentially state-changing actions.
-- [ ] Implement narrowly scoped, consented application launch/focus and approved file/folder operations; add window inspection and screen context only with explicit selection and active grants.
-- [ ] Evaluate optional clipboard, notifications and other Windows integrations individually; default to no access and never infer permission from app discovery.
-- [ ] Recheck original-host, user identity, grant, target, path and request version at execution time; keep passwords, elevated operations and private contexts protected.
-- [ ] Provide clear degradation on inaccessible apps, OS restrictions, changed devices, read-only media and unsupported operations; test each on real Windows hosts.
-
-## 8.13 Guided onboarding and hardware-aware setup
-
-- [ ] Offer a first-run wizard for permanent PC GRID versus Flash GRID, local identity/recovery, storage location and optional capabilities.
-- [ ] Discover CPU, available RAM/VRAM, storage and existing managed runtime dependencies; show supported Lite/Standard/Performance choices with measured confidence and resource estimates.
-- [ ] Select only verified compatible local models, provision missing assets through an explicit install action, and allow an offline pre-provisioned path; never silently download or use a cloud provider.
-- [ ] Explain requested Windows permissions and connectivity separately, with skip, revoke and later-edit controls; default to minimum grants.
-- [ ] Provide one-click local AI, voice, storage, screen and capability health diagnostics with actionable repair messages and rollback.
-- [ ] Test clean-user first runs, low-end hardware, unavailable GPU, limited space, drive-letter changes, second PC and network-blocked installation/runtime paths.
-
-## 8.14 Reusable skills and integration system
-
-- [ ] Define a versioned skill manifest and typed invocation contract compatible with existing GRID-Agent tool scopes, model capabilities and host authorization.
-- [ ] Implement a local skills catalog for discovery, enable/disable, per-skill configuration, dependency checks and clear capability descriptions.
-- [ ] Support explicit import/install of locally bundled or user-selected community skills with origin/version/hash/license metadata and review of required permissions; never auto-trust third-party content.
-- [ ] Sandbox untrusted skill execution; constrain filesystem/network/process access, runtime and resources, and protect against instructions in retrieved skill/tool content.
-- [ ] Keep skills offline-operational after provisioning where their declared capabilities permit; label network-dependent integrations as optional and unavailable offline.
-- [ ] Validate install/update/revoke/uninstall, incompatible versions, malicious manifests, access denial, rollback and portability between devices.
-
-## 8.15 App and service connections
-
-- [ ] Provide a discoverable connections screen for supported local app adapters and opt-in external services such as calendar, email, tasks and browser data.
-- [ ] Define connector-specific scopes, account isolation, credential storage, consent/refresh/revocation and reliable disclosure of what is shared with agents.
-- [ ] Prioritize locally available data/interfaces; treat remote services as opt-in and never as dependencies for GRID's mandatory offline runtime.
-- [ ] Keep reading, drafting and committing external changes separate; require confirmation for sending, deleting, scheduling or other consequential writes.
-- [ ] Surface sync status, staleness, offline state and source citations rather than presenting cached content as live.
-- [ ] Verify revoked credentials, cross-agent privacy, disconnected networks, data deletion and connector failure recovery.
-
-## 8.16 Scheduled and persistent assistant workflows
-
-- [ ] Add human-configured one-time, recurring and conditional jobs using a durable local scheduler; persist ownership, scope, schedule, last run, results and cancellation state.
-- [ ] Define explicit enable/disable, quiet hours, notifications and expiration; never start proactive monitoring based only on a conversation suggestion.
-- [ ] Revalidate permissions, availability, resources and deadlines before each run; gate consequential writes/actions with contemporaneous approval.
-- [ ] Provide an inbox of completed jobs, exceptions, pending approvals and verified agent activity with retry controls and traceable receipts.
-- [ ] Distinguish ongoing host services from simulated city ticks; prevent automatic offline catch-up, duplicate execution, infinite loops and unbounded agent spending.
-- [ ] Test restart, power loss, late wake, disconnected devices, canceled schedules and offline-only execution.
-
-## 8.17 Trust, personalization and usability acceptance
-
-- [ ] Provide one human-readable activity dashboard for active agents, chosen models, tool calls, resource use, task progress, approvals, cancellations and durable audit history.
-- [ ] Provide personal preference/persona settings and scoped memory review, correction, expiry, forget and export controls; preserve existing cross-agent isolation.
-- [ ] Introduce permission profiles for common workflows with individual grant review and immediate revocation; do not implement unrestricted global auto-approval.
-- [ ] Offer optional, user-enabled contextual suggestions tied to explicit local goals, without covert background surveillance or compulsive notifications.
-- [ ] Evaluate first-task completion, setup friction, time to actionable response, error recovery, accessibility and discoverability with representative nontechnical users.
-- [ ] Run Windows GUI/terminal parity, multi-device portability, memory/scope isolation, security and offline acceptance tests across supported hardware profiles.
-- [ ] Update the user guide, onboarding, permission explanations, safe uninstall/export and troubleshooting documentation before claiming release readiness.
-
-**Experience release gate:** A new user on a supported Windows PC can install or launch a prepared GRID edition, set up a local model and grants, request a realistic multi-step file or application task conversationally, review/approve it, observe grounded agent progress, recover from a failure, and revoke access — using the GUI, with no required cloud service. Repeat essential workflows from a verified offline Flash GRID package on a second supported machine. Preserve simulation integrity, capability scoping and auditable Master Control authority throughout.
-
----
-
 # Release Gates
 
 | Release | Required result |
@@ -2007,7 +2011,7 @@ Current implementation supports selected conversational intents and retains expl
 | **GRID Operator** | MCP delegates authorized PC tasks to specialist agents and reports verified results |
 | **GRID Assistant** *(proposed additional release gate)* | Grounded advice, supplied context, approved editing and task assistance |
 | **GRID City** | Interactive Godot 3D viewer displaying actual authoritative simulation state |
-| **GRID Experience** *(new planned release gate)* | Unified, accessible, offline-capable desktop assistant with reviewed device actions, skills, guided setup, scheduled workflows and auditable permissions (8.10–8.17) |
+| **GRID Terminal Assistant** *(new planned release gate)* | Existing terminal supports offline, approved natural-language device actions, guided setup, skills, optional connectors, scheduled workflows and auditable permissions (7.7–7.13); GUI (7.14) is optional and non-blocking |
 
 # Completed Genesis Steps
 
