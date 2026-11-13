@@ -1,0 +1,238 @@
+{
+  "schema": 1,
+  "passed": true,
+  "scope": "tiny synthetic CPU LoRA acceptance",
+  "baseline_loss": {
+    "train": 5.593395471572876,
+    "validation": 5.601608037948608,
+    "test": 5.5930256843566895
+  },
+  "candidate_loss": {
+    "train": 4.94978404045105,
+    "validation": 5.248856067657471,
+    "test": 5.262340545654297
+  },
+  "rollback_max_error": 0.0,
+  "repeat_max_error": 0.0,
+  "reload_max_error": 0.0,
+  "resume_max_error": 0.0,
+  "merge_max_error": 2.2351741790771484e-07,
+  "repeat_adapter_hash_equal": true,
+  "base_intact": true,
+  "python_socket_connections_blocked": true,
+  "network_attempts": 0,
+  "dependency_lock_sha256": "DF762BAF4B91449B4EDEDFA51AD7F445E8D2A10F21D46B3E3AB0EFE2F2BD0BB0",
+  "environment_bytes": 895260025,
+  "run_bytes": 385118,
+  "worker_sha256": "3456A5872F8DFE96F08A0179A3CF18FCA81DA0F5F24E0922687EEE8036D912E4",
+  "wheelhouse_bytes": 178544193,
+  "development_bytes_before_report": 1075367377,
+  "peak_working_set_bytes": 353312768,
+  "elapsed_seconds": 8.391,
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "packages": [
+    {
+      "Name": "torch",
+      "Version": "2.15.0+cpu",
+      "License": "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND ISC AND MIT AND Zlib"
+    },
+    {
+      "Name": "transformers",
+      "Version": "5.23.0",
+      "License": "Apache 2.0 License"
+    },
+    {
+      "Name": "peft",
+      "Version": "0.21.3",
+      "License": "Apache"
+    },
+    {
+      "Name": "accelerate",
+      "Version": "1.15.0",
+      "License": "Apache"
+    },
+    {
+      "Name": "safetensors",
+      "Version": "0.8.0",
+      "License": "See bundled distribution metadata"
+    },
+    {
+      "Name": "python",
+      "Version": "3.12.14",
+      "License": "PSF-2.0"
+    }
+  ],
+  "base_manifest_sha256": "655A4015297822C72D4C83321A5059507CEB683EC6CD0A89733D80E3049CCF20",
+  "job_manifest_sha256": "8F01EB957A756757A7307358638C6BE632D5187898CAAFAC29009F328D80435D",
+  "artifacts": [
+    {
+      "path": "base\\byte-tokenizer.json",
+      "bytes": 87,
+      "sha256": "D0DAD25847ED90A0F949C438BA59E508760F8CCCC2A118F28209E6BB2D2DDFDB"
+    },
+    {
+      "path": "base\\config.json",
+      "bytes": 850,
+      "sha256": "03FCFD8812C4CFA6E194473B7E7B7B93FD13DBF717CE9734EE53B045672418A1"
+    },
+    {
+      "path": "base\\generation_config.json",
+      "bytes": 233,
+      "sha256": "ADBC65BE485958A47E747C8BA9421A88F2A5C620A20A01914F9692A1E06DEE9D"
+    },
+    {
+      "path": "base\\model.safetensors",
+      "bytes": 101960,
+      "sha256": "43F8DAF3C54B6C3389E9368A44543CFDC085BE55C29BCF24A7CC05E21D092AD6"
+    },
+    {
+      "path": "base-manifest.json",
+      "bytes": 769,
+      "sha256": "655A4015297822C72D4C83321A5059507CEB683EC6CD0A89733D80E3049CCF20"
+    },
+    {
+      "path": "configuration.json",
+      "bytes": 1594,
+      "sha256": "D83722D06BF64859762D0109C3C17E60B5D8412A5671607E358BFE88A95A0499"
+    },
+    {
+      "path": "dataset.json",
+      "bytes": 3831,
+      "sha256": "87318B9D7C136B550375F67D83292A6747B460B3782C2A8DB75D55FA08576A98"
+    },
+    {
+      "path": "first\\adapter\\adapter_config.json",
+      "bytes": 1237,
+      "sha256": "E6F47B3B0AC7555CB884AB9335CC932741208D51FB0E1F7BE839B37DC69A027C"
+    },
+    {
+      "path": "first\\adapter\\adapter_model.safetensors",
+      "bytes": 12024,
+      "sha256": "F0C2C8E9E93A2A231F85927AC8C6689DCE8B45EEC27DA76CE675096EB3A725DB"
+    },
+    {
+      "path": "first\\adapter\\README.md",
+      "bytes": 5364,
+      "sha256": "D09CDCCC6269A147C553C2195D475DCB4C004FBF8F022967FB1D29562565FF65"
+    },
+    {
+      "path": "first\\checkpoint\\adapter_config.json",
+      "bytes": 1237,
+      "sha256": "E6F47B3B0AC7555CB884AB9335CC932741208D51FB0E1F7BE839B37DC69A027C"
+    },
+    {
+      "path": "first\\checkpoint\\adapter_model.safetensors",
+      "bytes": 12024,
+      "sha256": "EC594D7349C943028D1A051CA40C0DF9CC27CA5289562C2B2F14276FCAAE34AD"
+    },
+    {
+      "path": "first\\checkpoint\\optimizer.pt",
+      "bytes": 34012,
+      "sha256": "A0B9FC83B01E89150822B03EC170D7911B9A4E40B9A0FB6B012436749DB439AA"
+    },
+    {
+      "path": "first\\checkpoint\\README.md",
+      "bytes": 5364,
+      "sha256": "D09CDCCC6269A147C553C2195D475DCB4C004FBF8F022967FB1D29562565FF65"
+    },
+    {
+      "path": "job\\dataset.json",
+      "bytes": 3831,
+      "sha256": "87318B9D7C136B550375F67D83292A6747B460B3782C2A8DB75D55FA08576A98"
+    },
+    {
+      "path": "job\\job.json",
+      "bytes": 2578,
+      "sha256": "8F01EB957A756757A7307358638C6BE632D5187898CAAFAC29009F328D80435D"
+    },
+    {
+      "path": "job\\test.jsonl",
+      "bytes": 308,
+      "sha256": "A59ECE133E102A999A54BCF4F0E0A0C26CA3561A2950960885A4436D3711C83D"
+    },
+    {
+      "path": "job\\train.jsonl",
+      "bytes": 954,
+      "sha256": "3242B79CB35664BCA383FCA07AC1AEA58903071F3FE1635EDFFDC754A0118EB1"
+    },
+    {
+      "path": "job\\validation.jsonl",
+      "bytes": 368,
+      "sha256": "3BDFCB0C4BA08C3E72E600DBC51A1241247EA008738B840A481DDC3FD64065A9"
+    },
+    {
+      "path": "merged\\config.json",
+      "bytes": 850,
+      "sha256": "03FCFD8812C4CFA6E194473B7E7B7B93FD13DBF717CE9734EE53B045672418A1"
+    },
+    {
+      "path": "merged\\generation_config.json",
+      "bytes": 233,
+      "sha256": "ADBC65BE485958A47E747C8BA9421A88F2A5C620A20A01914F9692A1E06DEE9D"
+    },
+    {
+      "path": "merged\\model.safetensors",
+      "bytes": 101960,
+      "sha256": "45CD05046D59D519E98573B0340E88483EF553CE49657B728B839F7521467CB0"
+    },
+    {
+      "path": "repeat\\adapter\\adapter_config.json",
+      "bytes": 1237,
+      "sha256": "E6F47B3B0AC7555CB884AB9335CC932741208D51FB0E1F7BE839B37DC69A027C"
+    },
+    {
+      "path": "repeat\\adapter\\adapter_model.safetensors",
+      "bytes": 12024,
+      "sha256": "F0C2C8E9E93A2A231F85927AC8C6689DCE8B45EEC27DA76CE675096EB3A725DB"
+    },
+    {
+      "path": "repeat\\adapter\\README.md",
+      "bytes": 5364,
+      "sha256": "D09CDCCC6269A147C553C2195D475DCB4C004FBF8F022967FB1D29562565FF65"
+    },
+    {
+      "path": "repeat\\checkpoint\\adapter_config.json",
+      "bytes": 1237,
+      "sha256": "E6F47B3B0AC7555CB884AB9335CC932741208D51FB0E1F7BE839B37DC69A027C"
+    },
+    {
+      "path": "repeat\\checkpoint\\adapter_model.safetensors",
+      "bytes": 12024,
+      "sha256": "EC594D7349C943028D1A051CA40C0DF9CC27CA5289562C2B2F14276FCAAE34AD"
+    },
+    {
+      "path": "repeat\\checkpoint\\optimizer.pt",
+      "bytes": 34012,
+      "sha256": "A0B9FC83B01E89150822B03EC170D7911B9A4E40B9A0FB6B012436749DB439AA"
+    },
+    {
+      "path": "repeat\\checkpoint\\README.md",
+      "bytes": 5364,
+      "sha256": "D09CDCCC6269A147C553C2195D475DCB4C004FBF8F022967FB1D29562565FF65"
+    },
+    {
+      "path": "request.json",
+      "bytes": 3563,
+      "sha256": "F62721FE37E64FB892F3033F7D1575F8A038D2AFF06ED48E724CB7C83340AB61"
+    },
+    {
+      "path": "resumed\\adapter\\adapter_config.json",
+      "bytes": 1237,
+      "sha256": "E6F47B3B0AC7555CB884AB9335CC932741208D51FB0E1F7BE839B37DC69A027C"
+    },
+    {
+      "path": "resumed\\adapter\\adapter_model.safetensors",
+      "bytes": 12024,
+      "sha256": "F0C2C8E9E93A2A231F85927AC8C6689DCE8B45EEC27DA76CE675096EB3A725DB"
+    },
+    {
+      "path": "resumed\\adapter\\README.md",
+      "bytes": 5364,
+      "sha256": "D09CDCCC6269A147C553C2195D475DCB4C004FBF8F022967FB1D29562565FF65"
+    }
+  ],
+  "limits": [
+    "Synthetic repeated response measures pipeline mechanics, not assistant quality.",
+    "Production base, QLoRA GPU acceptance, Ollama/llama.cpp import and cross-device portability remain pending."
+  ]
+}

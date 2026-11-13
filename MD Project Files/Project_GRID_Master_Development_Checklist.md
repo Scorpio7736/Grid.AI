@@ -1665,19 +1665,24 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.28 GRID-AI / GRID-Agent — Training data pipeline
 
-**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-AI development tooling.
+**Implemented and locally verified — 2026-11-12.** Ownership belongs to GRID-AI development tooling.
 
-- [ ] Build versioned dataset creation, validation, deduplication, labeling, license and privacy review.
-- [ ] Define train/validation/test splits and contamination checks with explicit permission for using conversation or document data.
-- [ ] Verify reproducible dataset manifests, provenance, exclusion/removal procedures and held-out evaluation integrity.
+- [x] Build versioned dataset creation, validation, deduplication, labeling, license and privacy review.
+- [x] Define train/validation/test splits and contamination checks with explicit permission for using conversation or document data.
+- [x] Verify reproducible dataset manifests, provenance, exclusion/removal procedures and held-out evaluation integrity.
+
+Offline build/verify commands passed synthetic entry-point verification, 19 focused cases and the 1,273-test solution suite. Human rights/privacy review and semantic/cross-shard contamination review remain required for production corpora. Model training follows in 6.29. [Usage, evidence and limits](Project_GRID_Training_Data_Pipeline.md).
 
 ## 6.29 GRID-AI / GRID-Agent — Model fine-tuning
 
-**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to GRID-AI development tooling.
+**CPU synthetic reference implemented — 2026-11-13.** Ownership belongs to GRID-AI development tooling. The user selected a small test model and synthetic data for acceptance.
 
-- [ ] Plan LoRA/QLoRA workflows, recorded configurations/seeds, checkpoints, adapters, export and runtime compatibility.
-- [ ] Select supported local training dependencies and hardware requirements, with separate development storage accounting.
-- [ ] Demonstrate a repeatable permitted-data training run, adapter loading/export, baseline comparisons and rollback before Phase 7.
+- [x] Plan LoRA/QLoRA workflows, recorded configurations/seeds, checkpoints, adapters, export and runtime compatibility.
+- [x] Select supported local training dependencies and hardware requirements, with separate development storage accounting for the CPU reference.
+- [x] Demonstrate a repeatable permitted-data training run, adapter loading/export, baseline comparisons and rollback using the authorized synthetic reference.
+- [ ] Complete selected production-model, QLoRA/GPU, agent-runtime import and portable-training acceptance before promoting those capabilities in the final Phase 7 gate.
+
+Thirteen focused cases, 1,286 solution tests and real CPU LoRA training/repeat/resume/export/reload/rollback passed. [Workflow, evidence, dependency lock and remaining gates](Project_GRID_Model_Fine_Tuning.md).
 
 ## 6.30 GRID-AI / GRID-Agent — Continuous quality and release management
 

@@ -193,15 +193,20 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 
 ### 6.28 Training data pipeline
 
-- [ ] Build versioned dataset creation, validation, deduplication, labeling, license and privacy review.
-- [ ] Define train/validation/test splits and contamination checks with explicit permission for using conversation or document data.
-- [ ] Verify reproducible dataset manifests, provenance, exclusion/removal procedures and held-out evaluation integrity.
+- [x] Build versioned dataset creation, validation, deduplication, labeling, license and privacy review.
+- [x] Define train/validation/test splits and contamination checks with explicit permission for using conversation or document data.
+- [x] Verify reproducible dataset manifests, provenance, exclusion/removal procedures and held-out evaluation integrity.
+
+Implemented 2026-11-12. [Commands, verification and review boundaries](Project_GRID_Training_Data_Pipeline.md).
 
 ### 6.29 Model fine-tuning
 
-- [ ] Plan LoRA/QLoRA workflows, recorded configurations/seeds, checkpoints, adapters, export and runtime compatibility.
-- [ ] Select supported local training dependencies and hardware requirements, with separate development storage accounting.
-- [ ] Demonstrate a repeatable permitted-data training run, adapter loading/export, baseline comparisons and rollback before Phase 7.
+- [x] Plan LoRA/QLoRA workflows, recorded configurations/seeds, checkpoints, adapters, export and runtime compatibility.
+- [x] Select supported local training dependencies and hardware requirements, with separate development storage accounting for the CPU reference.
+- [x] Demonstrate a repeatable permitted-data training run, adapter loading/export, baseline comparisons and rollback using the authorized synthetic reference.
+- [ ] Complete production-model, QLoRA/GPU, agent-runtime import and portable-training acceptance before final capability promotion.
+
+CPU synthetic reference verified 2026-11-13. [Implementation, measurements and limits](Project_GRID_Model_Fine_Tuning.md).
 
 ### 6.30 Continuous quality and release management
 

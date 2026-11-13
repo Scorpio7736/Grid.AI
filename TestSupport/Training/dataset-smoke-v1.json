@@ -1,0 +1,14 @@
+{
+  "Version": "grid-dataset-smoke-v1",
+  "Sources": [
+    { "Id": "greeting", "Origin": "GRID synthetic pipeline fixture", "Kind": "synthetic", "License": "Project-authored test fixture", "Reviewer": "GRID fixture author", "ReviewDate": "2026-11-12", "LicenseApproved": true, "PrivacyApproved": true, "TrainingPermission": true },
+    { "Id": "arithmetic", "Origin": "GRID synthetic pipeline fixture", "Kind": "synthetic", "License": "Project-authored test fixture", "Reviewer": "GRID fixture author", "ReviewDate": "2026-11-12", "LicenseApproved": true, "PrivacyApproved": true, "TrainingPermission": true },
+    { "Id": "colors", "Origin": "GRID synthetic pipeline fixture", "Kind": "synthetic", "License": "Project-authored test fixture", "Reviewer": "GRID fixture author", "ReviewDate": "2026-11-12", "LicenseApproved": true, "PrivacyApproved": true, "TrainingPermission": true }
+  ],
+  "Examples": [
+    { "Id": "greeting-1", "SourceId": "greeting", "Group": "greeting-family", "Split": "train", "Label": "greeting", "Prompt": "Give a short greeting.", "Response": "Hello." },
+    { "Id": "arithmetic-1", "SourceId": "arithmetic", "Group": "arithmetic-family", "Split": "validation", "Label": "arithmetic", "Prompt": "What is two plus three?", "Response": "Five." },
+    { "Id": "colors-1", "SourceId": "colors", "Group": "colors-family", "Split": "test", "Label": "color", "Prompt": "Name the color of a clear daytime sky.", "Response": "Blue." }
+  ],
+  "Exclusions": []
+}
