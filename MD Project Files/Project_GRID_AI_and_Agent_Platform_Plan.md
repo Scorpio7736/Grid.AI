@@ -170,20 +170,26 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 
 ### 6.26 Performance optimization
 
-- [ ] Plan exact caching, scoped semantic caching, context optimization and request scheduling.
-- [ ] Include model/prompt/source versions, authorized scope, revocation and expiry in cache policies, and monitor CPU/GPU and memory budgets.
-- [ ] Benchmark supported hardware and prove isolation, stale-cache invalidation and compliance with recorded latency/resource thresholds.
+- [x] Plan exact caching, scoped semantic caching, context optimization and request scheduling. Exact scoped advice/analysis caching is implemented. The linked reference records remaining semantic and scheduling evaluation work.
+- [x] Include model/prompt/source versions, authorized scope, revocation and expiry in exact-cache policies. Preserve CPU/GPU observability and add fresh per-request physical RAM checks.
+- [x] Verify exact-cache isolation, invalidation, limits and baseline local-PC latency. Record the live result and resource observations.
+- [ ] Complete the supported-device benchmark matrix and calibrate resource thresholds under competing load.
 
 - [ ] Choose the smallest installed model passing task acceptance within the eligible profile, recheck memory per request, default to one heavyweight inference, and prioritize Lite UI responsiveness.
 
+**6.26 performance baseline implemented — 2026-11-12.** Scoped advice/document analysis now uses a 30-second exact cache capped at 64 entries and 512 KiB of response content. Keys include identity, source revisions and model/persona settings, with live access checks. The terminal rechecks physical RAM before inference. All 1,243 tests passed. This PC passed the live Qwen benchmark with a 36.492-second first answer and ten cache hits each below one millisecond. Semantic caching, smallest-specialist selection and the full device benchmark matrix remain open. [Implementation, thresholds and evidence](Project_GRID_Performance_Optimization.md).
+
 ### 6.27 Offline and portable deployment
 
-- [ ] Package required dependencies, models and retrieval assets with reproducible builds and integrity inventories.
-- [ ] Migrate the current 20 GB base enforcement to the shared 128,000,000,000-byte managed-installation target for Flash GRID and PC, with category budgets, actual-free-space checks and update reserve.
+- [x] Package the current baseline dependencies, models and retrieval assets with deterministic compilation and sorted integrity inventories.
+- [ ] Complete byte-identical repeat-build comparison and package future selected specialist/image assets.
+- [x] Migrate the current 20 GB base enforcement to the shared 128,000,000,000-byte managed-installation target for Flash GRID and PC, with category budgets, actual-free-space checks and update reserve.
 - [ ] Verify copied/transferred packages on another supported PC offline, including changed drive letters, CPU fallback, updates and rollback.
 
-- [ ] Enforce a 75,000,000,000-byte installed-model sub-limit inside the 128,000,000,000-byte Flash/PC target, counting complete model dependencies and caches with free-space/reserve checks.
+- [x] Enforce a 75,000,000,000-byte installed-model sub-limit inside the 128,000,000,000-byte Flash/PC target, counting complete model dependencies and caches with free-space/reserve checks.
 - [ ] Package all selected runtime/image dependencies in one checksummed and licensed manifest, use atomic optional installs/rollback, and disable implicit downloads, telemetry, auto-updates and cloud fallback.
+
+**6.27 storage/package baseline implemented — 2026-11-12.** Package validation now applies a 128,000,000,000-byte complete-footprint target, 75,000,000,000-byte model/dependency/cache sub-limit, and the existing 256,000,000-byte reserve. Transfer checks include saved data and staging. The builder publishes a verified sibling staging folder atomically and sorts the hash inventory. All 1,254 tests passed. A self-contained Windows x64 package was built, sealed and passed isolated local AI/advice/context/task-draft tests with global lookup paths and the user model cache removed from its test environment. Second-PC/network-blocked acceptance, specialist/image optional installs and repeat-build comparison remain open. [Implementation and acceptance](Project_GRID_Offline_Portable_Deployment.md).
 
 ### 6.28 Training data pipeline
 

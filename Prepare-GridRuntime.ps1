@@ -37,5 +37,7 @@ Copy-Item -LiteralPath $DotnetSource -Destination (Join-Path $Destination 'dotne
 if (Test-Path -LiteralPath $NugetCache) { Copy-Item -LiteralPath $NugetCache -Destination (Join-Path $Destination 'nuget') -Recurse }
 @{ model='qwen3:4b'; manifestSha256=(Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash; runtimeVersion=(& (Join-Path $runtimeTarget 'ollama.exe') --version | Out-String).Trim(); preparedUtc=[DateTime]::UtcNow.ToString('O') } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $Destination 'assets.json') -Encoding UTF8
 $preparedBytes = (Get-ChildItem -LiteralPath $Destination -Recurse -File | Measure-Object -Property Length -Sum).Sum
-if ($preparedBytes -gt 20000000000L) { throw 'Prepared runtime exceeds 20 GB; do not ship this directory. Reduce optional SDK/cache assets before packaging.' }
+if ($preparedBytes -gt 127744000000L) { throw 'Prepared runtime exceeds the 128 GB managed target with reserve.' }
+$modelBytes = (Get-ChildItem -LiteralPath $Destination -Recurse -File | Where-Object { !$_.FullName.StartsWith((Join-Path ([IO.Path]::GetFullPath($Destination)) 'dotnet') + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase) } | Measure-Object -Property Length -Sum).Sum
+if ($modelBytes -gt 75000000000L) { throw 'Prepared AI models, dependencies and caches exceed the 75 GB sub-limit.' }
 Write-Output "GRID runtime provisioned inside $Destination. Normal GRID launch now starts and stops its own bundled AI server."

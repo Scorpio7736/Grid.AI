@@ -4,16 +4,48 @@ namespace Grid.Terminal;
 
 public sealed record PackageFootprint(long BaseBytes, long MutableBytes, long StagingBytes, int FileCount)
 {
+    public long ModelBytes { get; init; }
     public long TotalBytes => checked(BaseBytes + MutableBytes + StagingBytes);
-    public long BaseHeadroom => PackageBudget.Limit - BaseBytes;
+    public long BaseHeadroom => PackageBudget.Limit - TotalBytes - PackageBudget.Reserve;
     public long UpdateFreeSpaceRequired => checked(BaseBytes + PackageBudget.Reserve);
-    public bool WithinLimit => BaseBytes <= PackageBudget.Limit;
-    public override string ToString() => $"Base: {BaseBytes:N0} / {PackageBudget.Limit:N0} bytes; headroom: {BaseHeadroom:N0}\nMutable saves/context/logs/recovery: {MutableBytes:N0} bytes\nStaging/old versions: {StagingBytes:N0} bytes\nTotal footprint: {TotalBytes:N0} bytes in {FileCount} files\nFull replacement staging requires {UpdateFreeSpaceRequired:N0} additional free bytes (base + reserve).";
+    public bool WithinLimit => TotalBytes <= PackageBudget.Limit - PackageBudget.Reserve && ModelBytes <= PackageBudget.ModelLimit;
+    public override string ToString() => $"Managed footprint: {TotalBytes:N0} / {PackageBudget.Limit:N0} bytes; usable headroom after reserve: {BaseHeadroom:N0}\nApplication/source/runtime base: {BaseBytes:N0} bytes\nModels, AI dependencies and caches: {ModelBytes:N0} / {PackageBudget.ModelLimit:N0} bytes (included in footprint)\nMutable saves/context/logs/recovery: {MutableBytes:N0} bytes\nStaging/old versions: {StagingBytes:N0} bytes\nReserve: {PackageBudget.Reserve:N0} bytes; files: {FileCount}\nFull base replacement staging requires {UpdateFreeSpaceRequired:N0} additional free bytes.";
 }
 public static class PackageBudget
 {
-    public const long Limit = 20_000_000_000;
+    public const long Limit = 128_000_000_000;
+    public const long ModelLimit = 75_000_000_000;
     public const long Reserve = 256_000_000;
+    public static bool IsModelDependency(string relative)
+    {
+        var path = "/" + relative.Replace('\\', '/').ToLowerInvariant();
+        var runtime = path.IndexOf("/runtime/", StringComparison.Ordinal);
+        return runtime >= 0 && !path[(runtime + 9)..].StartsWith("dotnet/", StringComparison.Ordinal);
+    }
+    public static PackageFootprint Inventory(IEnumerable<(string Path, long Bytes)> files)
+    {
+        long baseBytes = 0, mutable = 0, staging = 0, models = 0;
+        var count = 0;
+        foreach (var file in files)
+        {
+            if (file.Bytes < 0) throw new InvalidDataException("Negative package file size.");
+            switch (Category(file.Path))
+            {
+                case "mutable": mutable = checked(mutable + file.Bytes); break;
+                case "staging": staging = checked(staging + file.Bytes); break;
+                default: baseBytes = checked(baseBytes + file.Bytes); break;
+            }
+            if (IsModelDependency(file.Path)) models = checked(models + file.Bytes);
+            count++;
+        }
+        return new(baseBytes, mutable, staging, count) { ModelBytes = models };
+    }
+    public static void RequireSpace(PackageFootprint incoming, long availableBytes)
+    {
+        RequireBase(incoming);
+        if (availableBytes < checked(incoming.TotalBytes + Reserve))
+            throw new IOException("Insufficient destination space for the complete package and reserve.");
+    }
     public static string Category(string relative)
     {
         var path = relative.Replace('\\','/').ToLowerInvariant();
@@ -28,25 +60,24 @@ public static class PackageBudget
     public static PackageFootprint Measure(string root)
     {
         root = Path.GetFullPath(root); GridTransfer.CheckPath(root);
-        long baseBytes=0, mutable=0, staging=0; int count=0;
+        var files = new List<(string Path, long Bytes)>();
         void Walk(string directory)
         {
             if(File.GetAttributes(directory).HasFlag(FileAttributes.ReparsePoint)) throw new IOException("Package directory links are not supported: "+directory);
             foreach (var path in Directory.EnumerateFiles(directory))
             {
                 if(File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint)) throw new IOException("Package file links are not supported: "+path); var length = new FileInfo(path).Length;
-                switch(Category(Path.GetRelativePath(root,path))) {
-                    case "mutable": mutable=checked(mutable+length); break;
-                    case "staging": staging=checked(staging+length); break;
-                    default: baseBytes=checked(baseBytes+length); break;
-                } count++;
+                files.Add((Path.GetRelativePath(root, path), length));
             }
             foreach(var child in Directory.EnumerateDirectories(directory)) Walk(child);
         }
-        Walk(root); return new(baseBytes,mutable,staging,count);
+        Walk(root); return Inventory(files);
     }
     public static void RequireBase(PackageFootprint size)
-    { if (!size.WithinLimit) throw new IOException($"Base package exceeds {Limit:N0} bytes by {-size.BaseHeadroom:N0}. No completed package may be published."); }
+    {
+        if (size.ModelBytes > ModelLimit) throw new IOException($"Installed model/dependency/cache footprint exceeds {ModelLimit:N0} bytes.");
+        if (!size.WithinLimit) throw new IOException($"Managed package plus reserve exceeds {Limit:N0} bytes. Review saved data, staging and installed assets.");
+    }
     public static void VerifyModel(string runtime, bool hashes, IReadOnlyDictionary<string,string>? verifiedHashes = null)
     {
         GridTransfer.CheckPath(runtime);

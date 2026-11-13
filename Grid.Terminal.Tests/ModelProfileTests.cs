@@ -57,8 +57,9 @@ public sealed class ModelProfileTests
         Assert.False(result.Available);Assert.True(result.ResponseRejected);Assert.Contains("Split",result.Reason);Assert.Null(handler.Body);
     }
     [Theory]
-    [InlineData(20000000000L,true)] [InlineData(20000000001L,false)]
-    public void BaseCeilingIncludesExactBoundary(long bytes,bool allowed)
+    [InlineData(127743997000L,true)] [InlineData(127743997001L,false)]
+    [InlineData(20000000001L,true)]
+    public void ManagedCeilingIncludesGrowthReserveAndLegacyBoundary(long bytes,bool allowed)
     {
         var size=new PackageFootprint(bytes,1000,2000,3);
         Assert.Equal(bytes+3000,size.TotalBytes);

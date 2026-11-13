@@ -122,7 +122,8 @@ public sealed class GridTransfer
         }
         if (!files.Any(f => f.Source.Equals(world, StringComparison.OrdinalIgnoreCase))) throw new IOException("World save is missing.");
         if (files.Select(f => f.Relative).Distinct(StringComparer.OrdinalIgnoreCase).Count() != files.Count) throw new IOException("Transfer file mapping collides.");
-        PackageBudget.RequireBase(new PackageFootprint(files.Where(f=>PackageBudget.Category(f.Relative)=="base").Sum(f=>f.Length) + 65536,0,0,files.Count));
+        var footprint = PackageBudget.Inventory(files.Select(f => (f.Relative, f.Length)).Append(("transfer-metadata", 65536L)));
+        PackageBudget.RequireBase(footprint);
         if(sourceRoot!=app) {
             // Preflight checks structure/lengths only. Compare the original manifest hashes during copying.
             if(!skipRuntimeValidation) PortableAssets.Validate(sourceRoot,false);
@@ -134,7 +135,7 @@ public sealed class GridTransfer
             }
         }
         var drive = new DriveInfo(Path.GetPathRoot(destination)!);
-        if (drive.AvailableFreeSpace < files.Sum(f => f.Length) + PackageBudget.Reserve) throw new IOException("Insufficient destination space.");
+        PackageBudget.RequireSpace(footprint, drive.AvailableFreeSpace);
         return new(destination, request.Move, app, world, files.ToArray());
     }
     public static string Preview(TransferPlan p) => $"{(p.Move ? "MOVE" : "COPY")} GRID\nApplication: {p.ApplicationRoot}\nWorld: {p.WorldPath}\nDestination: {p.Destination}\n{p.Files.Length} files; {p.Files.Sum(f => f.Length):N0} bytes before final save.\n" +

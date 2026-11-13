@@ -73,7 +73,7 @@ exit /b %errorlevel%
     public static void WriteManifest(string root,IEnumerable<TransferFile> files)
     {
         var entries=files.Where(f=>PackageBudget.Category(f.Relative)=="base" && f.Relative!=Manifest && f.Relative!="transfer-manifest.json" && !f.Relative.Replace('\\','/').StartsWith("transfer-"))
-            .Select(f=>new PortableAsset(f.Relative.Replace('\\','/'),f.Length,f.Hash)).ToArray();
+            .Select(f=>new PortableAsset(f.Relative.Replace('\\','/'),f.Length,f.Hash)).OrderBy(f => f.Path, StringComparer.Ordinal).ToArray();
         File.WriteAllText(Path.Combine(root,Manifest),JsonSerializer.Serialize(entries,new JsonSerializerOptions{WriteIndented=true}));
     }
     public static string? SourceRoot(string app)

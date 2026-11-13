@@ -35,3 +35,9 @@ Grid.Terminal.exe --verify-inference-cache
 ```
 
 The live benchmark uses a synthetic captured fact and an isolated runtime without opening a saved world. Its predefined acceptance checks require the first answer within 120 seconds, ten identical cached answers, ten recorded hits and each hit within 500 milliseconds. It reports available RAM and runtime allocation alongside timings. Startup asset verification time is outside the first-answer timer.
+
+### Live local-PC result — 2026-11-12
+
+The executable returned exit code 0 and `passed=true`. Windows reported version 10.0.26300.0 and 20 logical processors. Qwen3 4B ran through Ollama 0.40.9. The first answer took 36,492 ms. All ten identical cache responses recorded 0 whole elapsed milliseconds, meaning each completed below one millisecond at the timer's reporting precision. Diagnostics recorded ten cache hits.
+
+Available physical RAM was 17,162,137,600 bytes before the question and 18,104,385,536 bytes afterward. Ollama reported model allocation and GPU allocation of 3,180,247,121 bytes each. These are endpoint-reported allocation observations. Host-memory changes include other applications. The benchmark passed the predefined 120-second first-answer and 500-ms cache-hit thresholds on this PC. Broader device/resource acceptance remains open above.
