@@ -7,6 +7,8 @@ using Grid.Simulation.Applications;
 
 if (args.Length > 0 && args[0].StartsWith("--dataset-", StringComparison.Ordinal)) return TrainingDatasetCommands.Run(args);
 if (args.Length > 0 && args[0].StartsWith("--finetune-", StringComparison.Ordinal)) return FineTuningCommands.Run(args);
+if (args.Length > 0 && args[0].StartsWith("--release-", StringComparison.Ordinal)) return await ReleaseCommands.RunAsync(args);
+if (args.SequenceEqual(new[] { "--verify-releases" })) return await ModelReleaseVerification.RunAsync();
 
 if (args.Length == 2 && args[0] == "--extract-document") return DocumentExtraction.RunWorker(args[1]);
 if (args.SequenceEqual(new[] { "--verify-model-providers" })) return await ModelProviderVerification.RunAsync();

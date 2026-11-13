@@ -211,8 +211,11 @@ CPU synthetic reference verified 2026-11-13. [Implementation, measurements and l
 ### 6.30 Continuous quality and release management
 
 - [ ] Run functional, adversarial, regression, performance and compatibility suites over versioned models/prompts/adapters.
-- [ ] Define promotion criteria, known-good release bundles, rollback and migration compatibility checks.
-- [ ] Record candidate-versus-baseline evidence and reject failed candidates while preserving saved GRID data.
+- [x] Implement and test the release-evidence gate across the required result categories.
+- [x] Define promotion criteria, known-good release bundles, rollback and migration compatibility checks.
+- [x] Record candidate-versus-baseline evidence and reject failed candidates while preserving saved GRID data.
+
+Development gates verified 2026-11-13. Production candidate/device acceptance remains open. [Implementation and limits](Project_GRID_Release_Management.md).
 
 - [ ] Run all model-handling acceptance scenarios, including no-GPU Lite, 8 GB Standard eligibility, benchmark-gated 12 GB FLUX discovery, offline jobs, load/unload cycles, validated documents/code and injected failures.
 

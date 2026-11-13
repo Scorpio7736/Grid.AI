@@ -1686,11 +1686,14 @@ Thirteen focused cases, 1,286 solution tests and real CPU LoRA training/repeat/r
 
 ## 6.30 GRID-AI / GRID-Agent — Continuous quality and release management
 
-**Planned — 2026-11-04. Required before Phase 7.** Ownership belongs to All three layers.
+**Development release gates implemented — 2026-11-13. Production/device acceptance remains open before Phase 7.** Ownership belongs to all three layers.
 
 - [ ] Run functional, adversarial, regression, performance and compatibility suites over versioned models/prompts/adapters.
-- [ ] Define promotion criteria, known-good release bundles, rollback and migration compatibility checks.
-- [ ] Record candidate-versus-baseline evidence and reject failed candidates while preserving saved GRID data.
+- [x] Implement and test the release-evidence gate for functional, adversarial, regression, performance, compatibility, migration and rollback results.
+- [x] Define promotion criteria, known-good release bundles, rollback and migration compatibility checks.
+- [x] Record candidate-versus-baseline evidence and reject failed candidates while preserving saved GRID data.
+
+Eighteen release regression cases, 1,304 solution tests and the executable's synthetic promotion/rejection/rollback verifier passed. Production candidate suites and the device matrix below remain unchecked. Live agent adoption belongs to 6.31. [Commands, thresholds, audit retention and verification](Project_GRID_Release_Management.md).
 
 - [ ] Run all model-handling acceptance scenarios, including no-GPU Lite, 8 GB Standard eligibility, benchmark-gated 12 GB FLUX discovery, offline jobs, load/unload cycles, validated documents/code and injected failures.
 
