@@ -141,14 +141,14 @@ public sealed class VoiceTests
     public async Task HostHandlesMissingAudioOrEscapeAndTypedConversationContinues(bool interrupt)
     {
         provider.Fail = true; provider.Interrupt = interrupt; var output = new StringWriter();
-        var host = new TerminalHost(engine, commands, new StringReader("connect\nvoice listen\ntalk hello\nexit\n"), output, interactiveConfirmation: true);
+        var host = new TerminalHost(engine, commands, new StringReader("connect\nlisten to my voice\ntalk hello\n/close\n"), output, interactiveConfirmation: true);
         Assert.Equal(0, await host.RunAsync()); Assert.Contains(interrupt ? "Voice cancelled" : "Voice unavailable", output.ToString()); Assert.Contains("SIMULATED DIALOGUE", output.ToString());
     }
     [Fact]
     public async Task NoninteractiveHostDoesNotRecord()
     {
         var output = new StringWriter();
-        var host = new TerminalHost(engine, commands, new StringReader("connect\nvoice listen\nexit\n"), output);
+        var host = new TerminalHost(engine, commands, new StringReader("connect\nlisten to my voice\n/close\n"), output);
         await host.RunAsync(); Assert.Contains("interactive host", output.ToString()); Assert.Equal(new byte[] { 1, 2, 3, 4 }, provider.Audio);
     }
     [Fact]

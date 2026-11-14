@@ -34,7 +34,7 @@ public sealed partial class ChatCommands
                 if(draft.Session!=identity.Reference || draft.Guard.ConversationId!=id) throw new InvalidOperationException("Draft belongs to an expired session/conversation.");
                 var plan=engine.Coordinate(identity.Reference,draft.Proposal.Request,draft.Key,guard:draft.Guard);
                 save(CancellationToken.None).GetAwaiter().GetResult(); assistanceDraft=null;
-                return new("MCP plan saved; all steps await approval. No tasks executed.\n"+TaskDisplay.Plans(engine.TasksFor(identity.Reference),plan.Id,false)+"\nReview each task with tasks inspect and tasks approve, then mcp run "+plan.Id+" in the original terminal for ordered execution and a final briefing.");
+                return new("MCP plan saved; all steps await approval.\n" + FocusPlan(plan.Id));
             }
             if(args.Count<2 || args[0] is not ("advice" or "analyze" or "propose")) return new(usage);
             if(inference is null) return new("Local AI unavailable. Use context read or the existing explicit task commands.");

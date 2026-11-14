@@ -16,6 +16,9 @@ public sealed class PhaseTwoVerificationTests : IDisposable
 
     private static string BuiltAssembly(string project)
     {
+        var output = new DirectoryInfo(AppContext.BaseDirectory);
+        if (output.Parent?.Name == "Grid.Persistence.Tests" && output.Parent.Parent?.Name == "bin")
+            return Path.Combine(output.Parent.Parent.FullName, Path.GetFileName(project), output.Name, Path.GetFileName(project) + ".dll");
         var root = new DirectoryInfo(AppContext.BaseDirectory);
         while (root is not null && !File.Exists(Path.Combine(root.FullName, "Grid7736.slnx"))) root = root.Parent;
         if (root is null) throw new DirectoryNotFoundException("Repository root not found.");

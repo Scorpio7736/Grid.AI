@@ -76,7 +76,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 return new("Typewriter " + (typewriter ? "on. Any key except Enter skips animation." : "off. Responses display instantly."));
             }) { Capability = "chat" });
             WindowReply Reply(string text = "", bool closed = false, bool live = false, bool clear = false, bool logout = false) =>
-                new(text, mode == "conversation" ? "You> " : commands.Prompt, commands.Commands.Select(c => new WindowCommandInfo(c.Name, c.Usage, c.Description)).ToArray(), closed, live, clear, logout, mode, Typewriter: typewriter);
+                new(text, commands.ConversationConnected?.Invoke() == true ? "You> " : commands.Prompt, commands.ConversationConnected?.Invoke() == true ? [] : commands.Commands.Select(c => new WindowCommandInfo(c.Name, c.Usage, c.Description)).ToArray(), closed, live, clear, logout, mode, Typewriter: typewriter);
             if (!identity.IsAuthenticated || viewCommand is not null && !commands.IsAllowed(viewCommand))
             { await WindowProtocol.WriteAsync(pipe, Reply("Session revoked before attachment.", closed: true), io.Token); return; }
             var conversationText = "";
@@ -85,7 +85,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 conversationText = commands.ExecuteTokens(initialConversation).Text.Replace("Ordinary GRID commands still work.", "Use the original terminal for ordinary GRID commands.");
                 if (commands.ConversationConnected?.Invoke() != true)
                 { await WindowProtocol.WriteAsync(pipe, Reply(conversationText, closed: true), io.Token); return; }
-                conversationText += "\nTypewriter: any key except Enter skips; typewriter off disables it. Exit closes this window; disconnect ends the conversation.";
+                conversationText += "\nAny key except Enter skips animation. Say turn off animation to disable it. Return to terminal ends the conversation. /close detaches this window.";
             }
             await WindowProtocol.WriteAsync(pipe, Reply(mode == "conversation" ? "GRID7736 // CONVERSATION\n\n" + conversationText :
                 $"GRID7736 // ATTACHED {mode.ToUpperInvariant()}\n{identity.Describe()}\nOriginal host owns simulation/save. Closing this window only detaches.\n" +
@@ -130,7 +130,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 {
                     // Lifecycle changes stay on the owning host, so there is one final save/delete/transfer authority.
                     IReadOnlyList<string> tokens;
-                    try { tokens = commands.ParseInput(line); }
+                    try { tokens = commands.ParseUserInput(line); }
                     catch (ArgumentException e) { await WindowProtocol.WriteAsync(pipe, Reply("Error: " + e.Message), io.Token); continue; }
                     var name = tokens.FirstOrDefault() ?? "";
                     var gridControl = name.Equals("grid", StringComparison.OrdinalIgnoreCase) && tokens.Count == 2 &&
@@ -140,7 +140,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                     else
                     {
                         pendingPicker = null;
-                        var result = commands.Execute(line);
+                        var result = commands.ExecuteTokens(tokens);
                         if (name.ToLowerInvariant() is "talk" or "assist" or "screen" or "changes" or "mcp") result = await CompleteConversationOperation(result);
                         pendingPicker = result.ContextPicker;
                         reply = Reply(result.Text, result.ExitRequested, result.LiveViewRequested, result.ClearRequested, result.LogoutRequested) with { PickFiles = pendingPicker is not null, AnimateFrom = result.AnimateFrom, Presentation = result.Presentation };

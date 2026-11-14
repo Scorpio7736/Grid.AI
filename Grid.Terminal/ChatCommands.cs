@@ -28,7 +28,7 @@ public sealed partial class ChatCommands
         commands.Register(new("assist", "assist <advice|analyze|propose|submit|discard> ...", "Scoped AI guidance and reviewed MCP task drafts; never automatic execution.", args => chat.Assist(args)) { Capability = "chat" });
         commands.ConversationConnected = () => chat.active is not null;
         commands.ConversationParticipant = name => chat.active is {} id && chat.Find(id).IsMeeting && chat.Find(id).Participants.Any(p => p.Kind == ParticipantKind.Program && p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-        if (identity is not null) identity.Changed += () => { chat.active = null; chat.followUp = null; chat.fileRequest = null; chat.talkDetails = null; chat.StopScreen(); };
+        if (identity is not null) identity.Changed += () => { chat.active = null; chat.followUp = null; chat.fileRequest = null; chat.talkDetails = null; chat.reviewedPlan = null; chat.savedPlanChoices = null; chat.StopScreen(); };
         commands.Register(new("agent", "agent meetings <AGENT> <AGENT> [...] [-inline]", "Open a shared meeting in a new window. Use talk @AGENT message to direct a turn.", args => chat.Meeting(args, commands)) { Capability = "chat" });
         commands.Register(new("meetings", "meetings <AGENT> <AGENT> [...] [-inline]", "Alias for agent meetings; validates participants before opening a window.", args => chat.Meeting(new[] { "meetings" }.Concat(args).ToArray(), commands)) { Capability = "chat" });
         commands.Register(new("connect", "connect [program-id|name] [-inline]", "Open a dedicated conversation window; default contact is MCP. -inline keeps voice-compatible chat here.", chat.Connect));
@@ -82,7 +82,7 @@ public sealed partial class ChatCommands
         var name = args.Count == 0 ? "MCP" : string.Join(" ", args);
         var recipient = engine.ResolveProgram(name);
         active = engine.StartConversation(Actor, recipient);
-        return new($"Connected to {TerminalTable.Safe(recipient.Name)}\nAI conversation; replies can be mistaken. Freeform replies never execute tasks.\nType a message directly, or use talk <message>, for conversation, advice or reviewed work. Explicit terminal command names remain reserved; use talk to discuss a command. Follow-up questions guide file/screen selection. Earlier conversations are recalled automatically; memory save pins specific details. Read history with transcript; use transcript --details for sources and technical details.");
+        return new($"Connected to {TerminalTable.Safe(recipient.Name)}\nAI conversation; replies can be mistaken.\nType your message directly for conversation, advice or reviewed work. Say show our conversation to read history, remember that followed by a fact to save it, or return to terminal to leave. /terminal also returns to commands. Follow-up questions guide file and screen selection. Earlier conversations are recalled automatically. Host actions require the existing review and approval workflow.");
     }
     private CommandResult Talk(IReadOnlyList<string> args)
     {
@@ -161,7 +161,7 @@ public sealed partial class ChatCommands
         var c = Find(id);
         if (c.Status != ConversationStatus.Open) return new("Conversation has ended. Use connect to start a new one.");
         active = id;
-        return new($"Resumed conversation {id}. Use talk, transcript or disconnect. Absent program recipients cannot receive new turns.");
+        return new($"Resumed conversation {id}. Type your message, say show our conversation, or return to terminal. Absent program recipients cannot receive new turns.");
     }
     private CommandResult Disconnect(IReadOnlyList<string> args)
     {
@@ -169,7 +169,7 @@ public sealed partial class ChatCommands
         if (args.Count != 0) return new("Usage: disconnect");
         if (active is not { } id) return new("No conversation connected.");
         engine.EndConversation(id, Actor); active = null;
-        CancelFileRequest(); followUp = null; lastFileReceipt = null; talkDetails = null;
+        CancelFileRequest(); followUp = null; lastFileReceipt = null; talkDetails = null; reviewedPlan = null; savedPlanChoices = null;
         return new($"Ended conversation {id}. Transcript retained.");
     }
     private CommandResult Response(IEnumerable<GridMessage> messages)

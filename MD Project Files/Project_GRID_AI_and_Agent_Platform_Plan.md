@@ -221,12 +221,16 @@ Development gates verified 2026-11-13. Production candidate/device acceptance re
 
 ## 6.31 Integration and migration
 
+[Current implementation, verification and open release gates](Project_GRID_Integration_Acceptance.md).
+
+**Mandatory outcome confirmed 2026-11-13.** GRID must deliver a fully local agentic coding workflow. Through ordinary conversation, MCP coordinates MAXIS to inspect an authorized repository, modify source files, run local builds/tests, diagnose failures, revise and retry, preserve resumable context, and report actual changes and execution results. Required tools/models are provisioned locally so execution can work offline. The [master checklist's local agentic coding acceptance](Project_GRID_Master_Development_Checklist.md#required-local-agentic-coding-workflow--confirmed-2026-11-13) requires a real disposable-checkout demonstration before Phase 7. Completion of individual planning, inference or file-edit features alone does not establish this outcome.
+
 - [x] Inventory the current inference, role-profile, communication, memory, context, task-approval and persistence contracts before extraction. [Contract baseline and ownership inventory - 2026-11-13](Project_GRID_Integration_Contracts.md).
 - [x] Define the Grid.AI and Grid.Agent project references, typed interfaces, adapter boundaries and test projects. No cycles found; host references are explicit and seven compiled-layer checks passed. [Verification and remaining integration gates](Project_GRID_Integration_Contracts.md).
-- [ ] Wrap the current implementation first, then migrate incrementally through existing terminal, attached-window and meeting entry points.
+- [x] Wrap the current implementation first, then migrate incrementally through existing terminal, attached-window and meeting entry points. Shared contract definitions and existing entry-point regression coverage pass; see integration acceptance.
 - [ ] Preserve agent IDs, world IDs, conversations, memory provenance/grants/expiry, workspaces, task records, approvals and recovery receipts with explicit schema/version handling.
-- [ ] Assign one authoritative owner per state field and test that legacy/new paths cannot produce duplicate agents, independent histories or duplicate execution.
-- [ ] Define backed-up migration and rollback procedures, including handling incompatible database versions and interrupted migrations. Revalidate pending approvals where scope or target identity changes.
+- [x] Assign one authoritative owner per state field and test that legacy/new paths cannot produce duplicate agents, independent histories or duplicate execution. Ownership migration regressions pass.
+- [x] Define backed-up migration and rollback procedures, including handling incompatible database versions and interrupted migrations. Revalidate pending approvals where scope or target identity changes. Local scenarios pass; see [6.31 preservation evidence and procedure](Project_GRID_Integration_Acceptance.md#saved-world-backup-migration-and-rollback-acceptance--2026-11-14).
 - [ ] Record the existing reported AI failure and transfer acceptance status separately from platform planning. Obtain exact failing-instance diagnostics and verify the repair through normal entry points.
 - [ ] Run all 12 acceptance checks below, record evidence and have the user review the release gate before starting Phase 7.
 
@@ -237,13 +241,13 @@ Development gates verified 2026-11-13. Production candidate/device acceptance re
 
 Required before Phase 7. Connected agent chats and meetings interpret ordinary language for supported work. Users can request file operations, context retrieval, memory changes, task planning, delegation, progress, cancellation and results without terminal syntax or task IDs. The agent asks focused questions for missing information, explains the proposed work, obtains required approval in ordinary language and reports verified outcomes.
 
-- [ ] Remove terminal-command dispatch and reserved command-name collisions from connected chats and meetings. Sentences beginning with agent names or words such as `create`, `tasks` and `context` must reach the conversation interpreter.
-- [ ] Keep administrative and diagnostic commands available in the main terminal, with an explicit way to leave a conversation and return there.
+- [x] Remove terminal-command dispatch and reserved command-name collisions from connected chats and meetings. Sentences beginning with agent names or words such as `create`, `tasks` and `context` must reach the conversation interpreter.
+- [x] Keep administrative and diagnostic commands available in the main terminal, with an explicit way to leave a conversation and return there.
 - [ ] Resolve conversational references such as “approve that”, “cancel it” and “ask MAXIS to do it” against the current reviewed operation. Ask for clarification when multiple targets are possible. Bind approval to the exact operation, scope and content through the host gateway.
 - [ ] Support named-agent and group requests in meetings, preserve shared context and private grants, and route work to the appropriate specialist with recorded results.
 - [ ] Demonstrate end-to-end supported tasks entirely through ordinary language in inline chat, attached chat and meetings. Cover clarification, approval, revision, cancellation, failure and completion without requiring command syntax or IDs.
 
-Current implementation supports selected conversational intents and retains explicit command routing. Full acceptance above remains planned. Unsupported requests receive an explanation of available capabilities. Completion claims must come from execution receipts.
+Connected user input now stays conversational; explicit command dispatch remains in the main terminal and trusted host adapters. Verified plan/file workflows and remaining acceptance are recorded in [6.31 integration acceptance](Project_GRID_Integration_Acceptance.md). Broader acceptance above remains open. Unsupported requests receive an explanation of available capabilities. Completion claims must come from execution receipts.
 
 ## Production-readiness acceptance
 

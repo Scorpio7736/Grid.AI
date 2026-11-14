@@ -33,7 +33,7 @@ public sealed class CommunicationVerificationTests
             var source = Path.Combine(folder, "notes.md"); File.WriteAllText(source, "PERSISTENT CAPTURE");
             var first = new Session(); first.Identity.Login(); first.Commands.Execute("connect MCP");
             var agent = first.Engine.CreateRunningCoordinator(); first.Engine.RegisterAgentIdentity(agent.Id);
-            first.Commands.Execute("talk remember this conversation"); var conversation = first.Chat.ActiveConversation!.Value;
+            first.Commands.Execute("talk hello from the saved conversation"); var conversation = first.Chat.ActiveConversation!.Value;
             Assert.Contains("Imported", first.Commands.Execute($"context add \"{source}\" persistent project MCP").Text);
             File.WriteAllText(source, "TEMPORARY CAPTURE");
             Assert.Contains("Imported", first.Commands.Execute($"context add \"{source}\" temporary project MCP").Text);
@@ -46,7 +46,7 @@ public sealed class CommunicationVerificationTests
             Assert.False(next.Identity.IsAuthenticated); Assert.Null(next.Chat.ActiveConversation);
             Assert.Contains("denied", next.Commands.Execute("transcript " + conversation).Text);
             next.Identity.Login(); Assert.Contains("Resumed", next.Commands.Execute("resume " + conversation).Text);
-            Assert.Contains("remember this conversation", next.Commands.Execute("transcript").Text);
+            Assert.Contains("hello from the saved conversation", next.Commands.Execute("transcript").Text);
             Assert.Contains("PERSISTENT CAPTURE", next.Commands.Execute("context read notes.md").Text);
             Assert.Single(next.Engine.ContextFor(null, next.Identity.SessionId));
             Assert.Single(next.Engine.GetSnapshot().Communications.VoiceProfiles);

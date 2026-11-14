@@ -37,10 +37,31 @@ public sealed partial class ChatCommands
         var id = active!.Value;
         engine.RequireAgentActivity();
         var input = text.Trim();
+        if (ResumeSavedPlan(input) is { } resumedPlan) return resumedPlan;
+        if (fileRequest?.Change is { HighRisk: true } && Starts(input, @"^(?:I )?approve this code change[.!]?$")) input = "approve high-risk";
+        if (TryPlanConversation(input, out var planReply)) return planReply;
+        if (Starts(input, @"^(show (?:our |the )?(?:conversation|transcript)|what did we discuss)[.!]?$")) return Transcript([]);
+        if (Starts(input, @"^show conversation details[.!]?$")) return Transcript(["--details"]);
+        if (Starts(input, @"^(show my tasks|how are my tasks doing|task progress)[.!]?$")) return Dispatch("tasks");
+        if (Starts(input, @"^(show my plans|show plan progress)[.!]?$")) return Dispatch("mcp", "brief");
+        if (Starts(input, @"^(turn off (?:the )?(?:typewriter|animation)|stop animating)[.!]?$")) return Dispatch("typewriter", "off");
+        if (Starts(input, @"^turn on (?:the )?(?:typewriter|animation)[.!]?$")) return Dispatch("typewriter", "on");
+        if (Starts(input, @"^listen to my voice[.!]?$")) return Dispatch("voice", "listen");
+        if (Starts(input, @"^(approve|apply|undo|cancel) (?:that|it)[.!]?$"))
+        {
+            if (fileRequest is not null && assistanceDraft is not null)
+                return Explain("There is both a file request and a task draft. Specify the file change or the task draft first.");
+            if (fileRequest is null)
+            {
+                if (assistanceDraft is not null && Starts(input, @"^cancel\b")) return Assist(["discard"]);
+                return Explain("Which operation do you mean? Describe the file change or task draft you want to review first.");
+            }
+            input = Regex.Replace(input, @"\b(?:that|it)[.!]?$", "this change", RegexOptions.IgnoreCase);
+        }
         var planAction = Regex.Match(input, @"^(run|cancel|inspect|brief) plan ([a-f0-9-]{8,36})$", RegexOptions.IgnoreCase);
         if (planAction.Success && identity?.IsMaster == true)
             return Dispatch("mcp", planAction.Groups[1].Value.ToLowerInvariant(), planAction.Groups[2].Value);
-        if (Starts(input, @"^(cancel|never mind|nevermind|cancel that|stop that)[.!]?$"))
+        if (Starts(input, @"^(cancel|never mind|nevermind|cancel that|cancel this change|stop that)[.!]?$"))
         { invitation = null; followUp = null; assistanceDraft = null; assistanceRequest++; CancelFileRequest(); return Explain("Follow-up cancelled. No new action taken; completed changes are not undone."); }
         if (InvitationTalk(input, out var invitationReply)) return invitationReply;
         var progressRequest = Regex.Match(input, @"^@?MCP\s+(progress|plans|brief)(?:\s+([a-f0-9-]{8,36}))?$", RegexOptions.IgnoreCase);
@@ -76,6 +97,7 @@ public sealed partial class ChatCommands
         if (identity?.IsMaster != true)
             return identity is not null && Starts(input, @"^(build|test|plan|edit|approve|run|apply|delete|select files|look at .*screen)\b")
                 ? Explain("Access denied. Operational assistance requires human Master Control.") : Send(id, input, MessageOrigin.Terminal);
+        if (DirectDevelopmentPlan(input) is { } developmentPlan) return developmentPlan;
         var fileSearch = LocalFileSearch.Parse(input);
         if (fileSearch is not null)
         {
@@ -112,6 +134,13 @@ public sealed partial class ChatCommands
             if (body.Length == 0) return Explain("Give a memory key and its text, for example: talk remember preference style: Keep replies concise.");
             return action.StartsWith("remember", StringComparison.Ordinal)
                 ? Memory(["save", action.Contains(' ') ? action.Split(' ')[1] : "Fact", key, body]) : Memory(["correct", key, body]);
+        }
+        var remembered = Regex.Match(input, @"^remember (?:that )?(.+)$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        if (remembered.Success)
+        {
+            var body = remembered.Groups[1].Value.Trim();
+            var key = "note-" + Grid.AI.ModelAcceptance.Hash(body)[..16].ToLowerInvariant();
+            return Memory(["save", "Fact", key, body]);
         }
         var actionMatch = Regex.Match(input, @"^(review|approve|apply|rollback|discard) edit ([a-f0-9-]{36})( high-risk)?$", RegexOptions.IgnoreCase);
         if (actionMatch.Success && Guid.TryParse(actionMatch.Groups[2].Value, out _))

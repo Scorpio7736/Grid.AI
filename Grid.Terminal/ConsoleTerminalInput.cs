@@ -35,7 +35,7 @@ public sealed class ConsoleTerminalInput(CommandDispatcher commands, bool color)
                 }
                 if (key.Key == ConsoleKey.Enter) { Console.WriteLine(); return text.ToString(); }
                 if (key.Key == ConsoleKey.D && key.Modifiers.HasFlag(ConsoleModifiers.Control)) { Console.WriteLine(); return null; }
-                if (key.Key == ConsoleKey.Tab && !secret && cursor == text.Length)
+                if (key.Key == ConsoleKey.Tab && !secret && cursor == text.Length && commands.ConversationConnected?.Invoke() != true)
                 {
                     choices ??= CommandHelp.Complete(text.ToString(), commands.Commands).ToArray();
                     choices = choices.Where(candidate => commands.Commands.Any(c => c.Name.Equals(candidate.Split(' ')[0], StringComparison.OrdinalIgnoreCase))).ToArray();

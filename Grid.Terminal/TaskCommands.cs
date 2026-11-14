@@ -44,7 +44,7 @@ public static class TaskCommands
                     _ = engine.CoordinationBrief(identity.Reference);
                     var id = TaskDisplay.Resolve(args[1], engine.TasksFor(identity.Reference).Plans.Select(p => p.Id), "plan");
                     if (args[0] == "cancel") { engine.CancelCoordination(identity.Reference, id); save(CancellationToken.None).GetAwaiter().GetResult(); return new("Plan cancelled; completed effects are not undone.\n" + Plans(id.ToString())); }
-                    if (!identity.IsMaster || identity.IsAttachment) return new("MCP plan dispatch requires human Master Control in the original host terminal.");
+                    if (!identity.IsMaster) return new("MCP plan dispatch requires human Master Control.");
                     var reference = identity.Reference; var used = 0;
                     var snapshot = engine.TasksFor(reference);
                     var reviewed = snapshot.Plans.Single(p => p.Id == id).TaskIds.Select(taskId => snapshot.Records.Single(t => t.Id == taskId)).Where(t => t.Status != Grid.Simulation.Tasks.TaskStatus.Completed).ToArray();

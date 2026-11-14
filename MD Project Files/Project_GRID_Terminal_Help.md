@@ -1,5 +1,8 @@
 # GRID7736 - Terminal Help
 
+**6.31 update — 2026-11-13:** [Current ownership migration, conversation behavior, 1,347 passing tests and local coding acceptance](Project_GRID_Integration_Acceptance.md). Connected chats now interpret all ordinary input as conversation. Say `return to terminal` for commands or `/close` to close/detach. To review saved unfinished task plans in a private Master Control chat, say `resume my work`, then `resume plan 1`; review before `approve this plan` and `run this plan`. Selection never executes work. Earlier verification counts below are historical.
+
+
 ## AI request authorization
 
 - `ai authorization`

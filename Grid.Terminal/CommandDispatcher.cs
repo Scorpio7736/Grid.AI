@@ -51,6 +51,26 @@ public sealed class CommandDispatcher
         }
         catch (ArgumentException e) { return new("Error: " + e.Message); }
     }
+    // Human input has a conversation boundary. Execute/ExecuteTokens remain trusted host APIs.
+    public CommandResult ExecuteUserInput(string line)
+    {
+        try { return ExecuteTokens(ParseUserInput(line)); }
+        catch (ArgumentException error) { return new("Error: " + error.Message); }
+    }
+
+    public IReadOnlyList<string> ParseUserInput(string line)
+    {
+        var text = line.Trim();
+        if (text.Equals("/close", StringComparison.OrdinalIgnoreCase)) return ["exit"];
+        if (ConversationConnected?.Invoke() != true) return ParseInput(line);
+        if (text.Length == 0) return [];
+        if (text.Equals("/terminal", StringComparison.OrdinalIgnoreCase) ||
+            text.Equals("return to terminal", StringComparison.OrdinalIgnoreCase) ||
+            text.Equals("leave conversation", StringComparison.OrdinalIgnoreCase) ||
+            text.Equals("disconnect", StringComparison.OrdinalIgnoreCase)) return ["disconnect"];
+        if (text.StartsWith("talk ", StringComparison.OrdinalIgnoreCase)) return ["talk", text[5..].Trim()];
+        return ["talk", text];
+    }
     private static bool IsFence(string line) => System.Text.RegularExpressions.Regex.IsMatch(line.Trim(), @"^```(?:text|plaintext|powershell|pwsh|sh|bash)?$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
     // Chat is raw text, not shell-like command tokens. Explicit command names remain reserved.
     public IReadOnlyList<string> ParseInput(string line)
@@ -99,6 +119,12 @@ public sealed class CommandDispatcher
                 {
                     var inline = tokens.Skip(1).Count(t => t.Equals("-inline", StringComparison.OrdinalIgnoreCase));
                     if (inline > 1) return new("Error: use -inline only once.");
+                    if (command.Name == "resume")
+                    {
+                        var arguments = tokens.Skip(1).Where(t => !t.Equals("-inline", StringComparison.OrdinalIgnoreCase)).ToArray();
+                        if (arguments.Length != 1 || !Guid.TryParse(arguments[0], out _))
+                            return new("To resume saved work, use connect MCP -inline, then say resume my work in that conversation. Usage: resume <conversation-id> [-inline]. No window opened.");
+                    }
                     if (inline == 1) return command.Execute(tokens.Skip(1).Where(t => !t.Equals("-inline", StringComparison.OrdinalIgnoreCase)).ToArray());
                     if (OpenConversation is not null) return OpenConversation(tokens);
                 }

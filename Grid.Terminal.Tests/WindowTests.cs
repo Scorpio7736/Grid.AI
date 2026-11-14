@@ -22,9 +22,8 @@ public sealed class WindowTests
         Assert.Contains("DRAFT ONLY", (await child.Send("command", "@VOLT plan current resource status")).Text);
         Assert.Contains("await approval", (await child.Send("command", "submit plan")).Text);
         var plan = Assert.Single(f.Engine.GetSnapshot().Tasks.Plans); var task = Assert.Single(plan.TaskIds);
-        Assert.Contains("Task updated", (await child.Send("command", "tasks approve " + task)).Text);
-        Assert.Contains("original host", (await child.Send("command", "mcp run " + plan.Id)).Text);
-        await f.Engine.RunCoordinationAsync(f.Owner.Reference, plan.Id, _ => Task.CompletedTask, default);
+        Assert.Contains("Approved", (await child.Send("command", "approve this plan")).Text);
+        Assert.Contains("Completed", (await child.Send("command", "run this plan")).Text);
         Assert.Contains("Completed", (await child.Send("command", "MCP progress")).Text);
         await child.Send("command", "remove participant VOLT");
         Assert.Contains("Removed VOLT", (await child.Send("command", "confirm removal")).Text);
@@ -162,15 +161,15 @@ public sealed class WindowTests
         await using var f=new Fixture(inference:new WindowInference(),screens:provider);
         f.Engine.StartAgents(f.Owner.Reference);
         await using var client=await f.Open("connect MCP");
-        Assert.Contains("LEFT",(await client.Send("command","screen options")).Text);
-        Assert.Contains("selected",(await client.Send("command","screen monitoring 1")).Text);
-        var reply=await client.Send("command","screen ask Explain the text");
+        Assert.Contains("LEFT",(await client.Send("command","look at my screen")).Text);
+        Assert.Contains("selected",(await client.Send("command","1")).Text);
+        var reply=await client.Send("command","look at my screen and explain the text");
         Assert.Contains("Suggestion: use status",reply.Text); Assert.NotNull(reply.AnimateFrom);
         Assert.Contains(reply.Presentation!,s=>s.Tone==ConversationTone.Agent);
         Assert.Equal(1,provider.Captures);
         Assert.Empty(f.Engine.GetSnapshot().Communications.Conversations.Single().Messages);
         Assert.Contains("Select a screen first",f.Commands.Execute("screen ask Explain").Text);
-        Assert.Contains("stopped",(await client.Send("command","screen stop")).Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("stopped",(await client.Send("command","stop screen")).Text, StringComparison.OrdinalIgnoreCase);
         f.Owner.Logout(); Assert.True((await client.Send("ping")).Closed);
     }
 
@@ -189,11 +188,11 @@ public sealed class WindowTests
     {
         await using var f = new Fixture(); f.Engine.StartAgents(f.Owner.Reference);
         await using var client = await f.Open("connect MCP");
-        Assert.Contains("Memory project:",(await client.Send("command","memory scope grid")).Text);
-        Assert.Contains("Saved",(await client.Send("command","memory save fact release Release codename is Moonstone.")).Text);
-        Assert.Contains("Moonstone",(await client.Send("command","memory list")).Text);
-        Assert.Contains("Corrected",(await client.Send("command","memory correct release Release codename is Sunstone.")).Text);
-        Assert.Contains("Forgotten",(await client.Send("command","memory forget release")).Text);
+        Assert.Contains("Memory project:",(await client.Send("command","project grid")).Text);
+        Assert.Contains("Saved",(await client.Send("command","remember fact release: Release codename is Moonstone.")).Text);
+        Assert.Contains("Moonstone",(await client.Send("command","show memories")).Text);
+        Assert.Contains("Corrected",(await client.Send("command","correct memory release: Release codename is Sunstone.")).Text);
+        Assert.Contains("Forgotten",(await client.Send("command","forget memory release")).Text);
         f.Owner.Logout(); Assert.True((await client.Send("ping")).Closed);
     }
     [Fact]
@@ -205,12 +204,12 @@ public sealed class WindowTests
         Assert.Contains("MCP: Suggestion:", reply.Text); Assert.DoesNotContain("SOURCES", reply.Text);
         Assert.Contains(reply.Presentation!,s=>s.Tone==ConversationTone.User);
         Assert.Contains(reply.Presentation!,s=>s.Tone==ConversationTone.Agent);
-        var transcript=await client.Send("command","transcript");
+        var transcript=await client.Send("command","show our conversation");
         Assert.Null(transcript.AnimateFrom);Assert.Contains(transcript.Presentation!,s=>s.Tone==ConversationTone.Agent);
-        Assert.False((await client.Send("command","typewriter off")).Typewriter);
-        Assert.True((await client.Send("command","typewriter on")).Typewriter);
+        Assert.False((await client.Send("command","turn off animation")).Typewriter);
+        Assert.True((await client.Send("command","turn on animation")).Typewriter);
         Assert.Equal("You> ", reply.Prompt); Assert.DoesNotContain("capabilities:",client.Greeting.Text);
-        Assert.Contains("SOURCES", (await client.Send("command", "transcript --details")).Text); Assert.NotNull(reply.AnimateFrom);
+        Assert.Contains("SOURCES", (await client.Send("command", "show conversation details")).Text); Assert.NotNull(reply.AnimateFrom);
         Assert.Equal(2, f.Engine.GetSnapshot().Communications.Conversations.Single().Messages.Count);
         Assert.False((await client.Send("ping")).Closed);
     }
@@ -240,7 +239,7 @@ public sealed class WindowTests
         f.Engine.Pause(); await first.Send("command", "step");
         Assert.Equal(1, f.Engine.TickCount);
         Assert.Contains("Tick: 1", (await second.Send("command", "status")).Text);
-        Assert.True((await first.Send("command", "exit")).Closed);
+        Assert.True((await first.Send("command", "/close")).Closed);
         await second.Send("command", "step"); Assert.Equal(2, f.Engine.TickCount);
         Assert.Contains("Tick: 2", f.Commands.Execute("status").Text);
     }
@@ -266,6 +265,7 @@ public sealed class WindowTests
         var preview = await first.Send("command", "edit MCP occupation WindowTest");
         var id = System.Text.RegularExpressions.Regex.Match(preview.Text, @"Preview ([0-9a-f-]+)").Groups[1].Value;
         Assert.NotEmpty(id);
+        await second.Send("command", "return to terminal");
         Assert.Contains("No matching preview", (await second.Send("command", "apply-edit " + id)).Text);
         Assert.Contains("Applied", (await first.Send("command", "apply-edit " + id)).Text);
         Assert.Equal("WindowTest", f.Engine.GetSnapshot().Programs.Single(p => p.Name == "MCP").Occupation);
@@ -355,7 +355,7 @@ public sealed class WindowTests
         Assert.Equal("conversation",child.Greeting.Mode); Assert.Contains("Meeting:",child.Greeting.Text);
         var reply=await child.Send("command","talk @MAXIS build this"); Assert.NotNull(reply.AnimateFrom); Assert.Contains("MAXIS:",reply.Text);
         var meeting=Assert.Single(f.Engine.GetSnapshot().Communications.Conversations); Assert.True(meeting.IsMeeting);
-        Assert.True((await child.Send("command","exit")).Closed);
+        Assert.True((await child.Send("command","/close")).Closed);
         Assert.Equal(ConversationStatus.Open,f.Engine.GetConversation(meeting.Id).Status);
         await using var resumed=await f.Open("resume "+meeting.Id);
         Assert.Contains("JN:",(await resumed.Send("command","talk @JN files")).Text);
@@ -379,16 +379,16 @@ public sealed class WindowTests
         Assert.Equal(2, f.Engine.GetSnapshot().Communications.Conversations.Count);
         Assert.Equal(2, saved.Messages.Count);
         Assert.Contains(saved.Messages[1].Content, response.Text);
-        Assert.Null((await child.Send("command", "transcript")).AnimateFrom);
-        Assert.False((await child.Send("command", "typewriter off")).Typewriter);
-        Assert.True((await child.Send("command", "typewriter on")).Typewriter);
-        Assert.Contains("Usage", (await child.Send("command", "typewriter invalid")).Text);
+        Assert.Null((await child.Send("command", "show our conversation")).AnimateFrom);
+        Assert.False((await child.Send("command", "turn off animation")).Typewriter);
+        Assert.True((await child.Send("command", "turn on animation")).Typewriter);
+        Assert.Contains("You: typewriter invalid", (await child.Send("command", "typewriter invalid")).Text);
         Assert.Contains("You: step", (await child.Send("command", "step")).Text);
-        Assert.True((await child.Send("command", "exit")).Closed);
+        Assert.True((await child.Send("command", "/close")).Closed);
         Assert.Equal(Grid.Communication.ConversationStatus.Open, f.Engine.GetConversation(saved.Id).Status);
         await using var resumed = await f.Open("resume " + saved.Id);
         Assert.Contains("Resumed", resumed.Greeting.Text);
-        Assert.Contains(saved.Messages[1].Content, (await resumed.Send("command", "transcript")).Text);
+        Assert.Contains(saved.Messages[1].Content, (await resumed.Send("command", "show our conversation")).Text);
         Assert.Contains("Ended", (await resumed.Send("command", "disconnect")).Text);
         Assert.Equal(Grid.Communication.ConversationStatus.Ended, f.Engine.GetConversation(saved.Id).Status);
         Assert.Equal(0, f.Engine.TickCount); Assert.True(f.Owner.IsMaster);
@@ -400,8 +400,9 @@ public sealed class WindowTests
         await using var f = new Fixture(); await using var first = await f.Open("connect MCP"); await using var second = await f.Open("connect MCP");
         await first.Send("command", "talk first-window-message");
         await second.Send("command", "talk second-window-message");
-        Assert.DoesNotContain("second-window-message", (await first.Send("command", "transcript")).Text);
-        Assert.DoesNotContain("first-window-message", (await second.Send("command", "transcript")).Text);
+        Assert.DoesNotContain("second-window-message", (await first.Send("command", "show our conversation")).Text);
+        Assert.DoesNotContain("first-window-message", (await second.Send("command", "show our conversation")).Text);
+        await first.Send("command", "return to terminal");
         Assert.True((await first.Send("command", "logout")).ConfirmLogout);
         Assert.False((await first.Send("ping")).Closed);
         Assert.True((await first.Send("logout")).Closed);
@@ -421,9 +422,7 @@ public sealed class WindowTests
         await using var invalid = await f.Open("connect nonexistent-program");
         Assert.True(invalid.Greeting.Closed);
         Assert.Empty(f.Engine.GetSnapshot().Communications.Conversations);
-        await using var invalidResume = await f.Open("resume invalid");
-        Assert.True(invalidResume.Greeting.Closed);
-        Assert.Contains("Usage", invalidResume.Greeting.Text);
+        Assert.Contains("No window opened", f.Commands.Execute("resume invalid").Text);
     }
 
     [Fact]
@@ -432,7 +431,7 @@ public sealed class WindowTests
         await using var f = new Fixture(); await using var child = await f.Open("connect MCP");
         await child.Send("command", "talk hello");
         f.Owner.Logout();
-        var denied = await child.Send("command", "transcript");
+        var denied = await child.Send("command", "show our conversation");
         Assert.True(denied.Closed); Assert.DoesNotContain("hello", denied.Text);
         f.Owner.Login();
         Assert.Contains("Opened", f.Commands.Execute("connect MCP").Text);
@@ -467,7 +466,7 @@ public sealed class WindowTests
             start.ArgumentList.Add(typeof(WindowHub).Assembly.Location); start.ArgumentList.Add("--attach"); start.ArgumentList.Add(endpoint); start.ArgumentList.Add("--no-color");
             child = System.Diagnostics.Process.Start(start)!;
             output = child.StandardOutput.ReadToEndAsync(); error = child.StandardError.ReadToEndAsync();
-            child.StandardInput.WriteLine("talk status"); child.StandardInput.WriteLine("typewriter off"); child.StandardInput.WriteLine("transcript"); child.StandardInput.WriteLine("exit"); child.StandardInput.Close();
+            child.StandardInput.WriteLine("talk status"); child.StandardInput.WriteLine("turn off animation"); child.StandardInput.WriteLine("show our conversation"); child.StandardInput.WriteLine("/close"); child.StandardInput.Close();
             return child.Id;
         });
         try
@@ -512,7 +511,7 @@ public sealed class WindowTests
             start.ArgumentList.Add(typeof(WindowHub).Assembly.Location); start.ArgumentList.Add("--attach"); start.ArgumentList.Add(endpoint); start.ArgumentList.Add("--no-color");
             child = System.Diagnostics.Process.Start(start)!;
             output = child.StandardOutput.ReadToEndAsync(); error = child.StandardError.ReadToEndAsync();
-            child.StandardInput.WriteLine("step"); child.StandardInput.WriteLine("status"); child.StandardInput.WriteLine("exit"); child.StandardInput.Close();
+            child.StandardInput.WriteLine("step"); child.StandardInput.WriteLine("status"); child.StandardInput.WriteLine("/close"); child.StandardInput.Close();
             return child.Id;
         });
         f.Engine.Pause();

@@ -1701,12 +1701,14 @@ Eighteen release regression cases, 1,304 solution tests and the executable's syn
 
 ## 6.31 GRID-AI / GRID-Agent integration and final Phase 7 gate
 
-**Planned — 2026-11-04. Required before Phase 7.**
+**Integration progress verified — 2026-11-13. Final Phase 7 gate remains open.**
 
-- [x] Define solution references and stable interfaces for GRID-AI, GRID-Agent and existing GRID7736 services. Contract baseline verified 2026-11-13: explicit host references, ownership/adapter inventory and seven compiled-layer checks; 42 focused tests passed. Full current-tree suite: 1,297 passed, 14 terminal failures associated with existing conversation-routing edits. Broader 6.31 acceptance remains open. [Contracts and verification](Project_GRID_Integration_Contracts.md).
-- [ ] Migrate existing agents, conversations, memory, permissions and task workflows with one authoritative owner per state field
-- [ ] Preserve IDs, grants, history, approvals and saved worlds with tested backup, schema migration and rollback
-- [ ] Verify normal terminal, attached-window and meeting workflows through the migrated APIs
+[Implementation, 1,347 passing tests, real local coding evidence and remaining gates](Project_GRID_Integration_Acceptance.md).
+
+- [x] Define solution references and stable interfaces for GRID-AI, GRID-Agent and existing GRID7736 services. Contract baseline verified 2026-11-13: explicit host references, ownership/adapter inventory and seven compiled-layer checks; 42 focused tests passed. Historical baseline: 1,297 passed and 14 terminal failures; the subsequent integration suite passed all 1,347 tests. Broader 6.31 acceptance remains open. [Contracts and verification](Project_GRID_Integration_Contracts.md).
+- [x] Migrate existing agents, conversations, memory, permissions and task workflows with one authoritative owner per state field. Legacy type forwards share the Grid.Agent definitions; engine/persistence retain authoritative state. See integration acceptance.
+- [x] Preserve IDs, grants, history, approvals and saved worlds with tested backup, schema migration and rollback. Local populated-world recovery acceptance passed 2026-11-14: corrupt/future primary, invalid backup, successful and interrupted metadata migration; live approvals require re-review. Historical-executable and second-device release acceptance remain open. [Evidence and rollback procedure](Project_GRID_Integration_Acceptance.md#saved-world-backup-migration-and-rollback-acceptance--2026-11-14)
+- [x] Verify normal terminal, attached-window and meeting workflows through the migrated APIs. Existing workflow and ownership regression suites pass; broader conversational feature acceptance remains below.
 - [ ] Resolve the reported local AI failure and complete 6.14–6.15 acceptance with failing-instance and second-device evidence
 - [ ] Complete all 15 platform components and all 12 production-readiness checks in the linked specification
 - [ ] Record measurable release evidence and obtain user review before beginning Phase 7
@@ -1716,15 +1718,33 @@ Eighteen release regression cases, 1,304 solution tests and the executable's syn
 
 ### Conversation-first acceptance — clarified 2026-11-07
 
+### Required local agentic coding workflow — confirmed 2026-11-13
+
+GRID7736 must support an offline agent workflow that performs real software development on the user's local machine. The user gives MCP a task in ordinary language. MCP coordinates with MAXIS and other appropriate agents, obtains any required clarification or approval, and carries the authorized work through implementation and verification. This is a mandatory acceptance requirement before Phase 7.
+
+- [ ] Read and search an authorized local repository, understand relevant project instructions and preserve unrelated user changes.
+- [ ] Create, edit and delete local source files within the authorized task and workspace through the host tool gateway.
+- [ ] Run supported local build, test and diagnostic tools, capture their actual output, and use failures to revise the implementation and retry within the authorized scope.
+- [ ] Complete the workflow through ordinary conversation with MCP, including delegation to MAXIS, progress, clarification, cancellation and reviewed approvals. The user must not need task IDs or terminal syntax to complete supported work.
+- [x] Resume saved operator task plans through ordinary conversation, numbered selection, current-result review and fresh approval after restart; retain completed steps without duplicate execution. [Implementation and limits](Project_GRID_Integration_Acceptance.md#saved-plan-conversational-resumption--2026-11-14).
+- [ ] Save useful task/conversation context and resume interrupted work with recorded file state and execution results.
+- [x] Demonstrate a reviewed local coding cycle in a disposable C# project: real failing test, local-model source fix, approved apply, passing discovered test and saved receipts. See integration acceptance for evidence and harness limitations.
+- [ ] Demonstrate a real end-to-end coding task against a disposable local checkout, including an observed failing test, an agent-produced source change, a passing rerun and a final report identifying changed files and verified results.
+- [ ] Run that acceptance workflow with network access unavailable and the required model, SDK, tools and dependencies provisioned locally. Record model limitations and any unsupported operation explicitly.
+
+This requirement includes the agent actually modifying and testing code. Completion must be supported by filesystem changes and tool receipts. Current building blocks do not by themselves satisfy the end-to-end gate.
+
+### Conversation-first behavior
+
 Required before Phase 7. Connected agent chats and meetings interpret ordinary language for supported work. Users can request file operations, context retrieval, memory changes, task planning, delegation, progress, cancellation and results without terminal syntax or task IDs. The agent asks focused questions for missing information, explains the proposed work, obtains required approval in ordinary language and reports verified outcomes.
 
-- [ ] Remove terminal-command dispatch and reserved command-name collisions from connected chats and meetings. Sentences beginning with agent names or words such as `create`, `tasks` and `context` must reach the conversation interpreter.
-- [ ] Keep administrative and diagnostic commands available in the main terminal, with an explicit way to leave a conversation and return there.
+- [x] Remove terminal-command dispatch and reserved command-name collisions from connected chats and meetings. Sentences beginning with agent names or words such as `create`, `tasks` and `context` must reach the conversation interpreter.
+- [x] Keep administrative and diagnostic commands available in the main terminal, with an explicit way to leave a conversation and return there.
 - [ ] Resolve conversational references such as “approve that”, “cancel it” and “ask MAXIS to do it” against the current reviewed operation. Ask for clarification when multiple targets are possible. Bind approval to the exact operation, scope and content through the host gateway.
 - [ ] Support named-agent and group requests in meetings, preserve shared context and private grants, and route work to the appropriate specialist with recorded results.
 - [ ] Demonstrate end-to-end supported tasks entirely through ordinary language in inline chat, attached chat and meetings. Cover clarification, approval, revision, cancellation, failure and completion without requiring command syntax or IDs.
 
-Current implementation supports selected conversational intents and retains explicit command routing. Full acceptance above remains planned. Unsupported requests receive an explanation of available capabilities. Completion claims must come from execution receipts.
+Connected user input now stays conversational; explicit command dispatch remains in the main terminal and trusted host adapters. Verified plan/file workflows and remaining acceptance are recorded in [6.31 integration acceptance](Project_GRID_Integration_Acceptance.md). Broader acceptance above remains open. Unsupported requests receive an explanation of available capabilities. Completion claims must come from execution receipts.
 
 ---
 

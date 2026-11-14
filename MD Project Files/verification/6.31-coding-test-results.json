@@ -1,0 +1,31 @@
+{
+  "Tests": [
+    {
+      "SHA256": "769D2C1827543ABC662DC1C369ABE8FA205F3D682F7BA3B6E62C9E78863C49B6",
+      "Counters": "<Counters total=\"1\" executed=\"1\" passed=\"0\" failed=\"1\" error=\"0\" timeout=\"0\" aborted=\"0\" inconclusive=\"0\" passedButRunAborted=\"0\" notRunnable=\"0\" notExecuted=\"0\" disconnected=\"0\" warning=\"0\" completed=\"0\" inProgress=\"0\" pending=\"0\" xmlns=\"http://microsoft.com/schemas/VisualStudio/TeamTest/2010\" />",
+      "EvidenceFile": "tests.trx",
+      "Results": [
+        {
+          "Outcome": "Failed",
+          "Name": "CalculatorTests.AddsTwoNumbers",
+          "Duration": "00:00:00.0665720"
+        }
+      ]
+    },
+    {
+      "SHA256": "195420AC6E5650CC8179DA8A123D0EA6E48245EA732A085659C8935D25E7E0B2",
+      "Counters": "<Counters total=\"1\" executed=\"1\" passed=\"1\" failed=\"0\" error=\"0\" timeout=\"0\" aborted=\"0\" inconclusive=\"0\" passedButRunAborted=\"0\" notRunnable=\"0\" notExecuted=\"0\" disconnected=\"0\" warning=\"0\" completed=\"0\" inProgress=\"0\" pending=\"0\" xmlns=\"http://microsoft.com/schemas/VisualStudio/TeamTest/2010\" />",
+      "EvidenceFile": "tests.trx",
+      "Results": [
+        {
+          "Outcome": "Passed",
+          "Name": "CalculatorTests.AddsTwoNumbers",
+          "Duration": "00:00:00.0042473"
+        }
+      ]
+    }
+  ],
+  "Source": "public static class Calculator {\n    public static int Add(int a, int b) => a + b;\n}",
+  "Verification": "6.31 local reviewed coding cycle",
+  "SourceSHA256": "AB2B0AD19FBE884ECF6574E7765C7E7080262E32686808C052138DFF38A75EFB"
+}

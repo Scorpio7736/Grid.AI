@@ -44,8 +44,183 @@ public sealed class UnifiedTalkTests : IDisposable
     public void Dispose() => Directory.Delete(folder, true);
     private async Task<CommandResult> Talk(string message)
     { var r = commands.ExecuteTokens(["talk", message]); return r.BrokerOperation is { } op ? await op(default) : r; }
+    private async Task<CommandResult> Input(string message)
+    { var r = commands.ExecuteUserInput(message); return r.BrokerOperation is { } op ? await op(default) : r; }
+
+    [Theory]
+    [InlineData("tasks clear -all")]
+    [InlineData("context remove everything")]
+    [InlineData("maxis register a workspace")]
+    [InlineData("grid -pause")]
+    [InlineData("exit")]
+    [InlineData("```text")]
+    [InlineData("create an explanation of 'this")]
+    public void ConnectedHumanInputHasNoTerminalCommandNameCollisions(string message)
+    {
+        commands.Execute("connect MCP -inline");
+        Assert.Equal(new[] { "talk", message }, commands.ParseUserInput(message));
+        Assert.True(engine.IsRunning);
+    }
+
+    [Fact]
+    public async Task ExplicitWorkspaceTestCannotBeReplacedByUnrelatedModelPlan()
+    {
+        await Input("connect MCP -inline");
+        ai.Reply = "{\"steps\":[{\"agent\":\"VOLT\",\"capability\":\"volt.status\",\"argument\":\"current\"}]}";
+        var calls = ai.Calls;
+        Assert.Contains("maxis.test", (await Input("test demo")).Text);
+        Assert.Equal(calls, ai.Calls);
+        await Input("submit plan");
+        var task = Assert.Single(engine.GetSnapshot().Tasks.Records);
+        Assert.Equal("maxis.test", task.Capability);
+        Assert.Equal("demo", task.Argument);
+        Assert.Equal(Grid.Simulation.Tasks.TaskStatus.AwaitingApproval, task.Status);
+    }
+
+    [Fact]
+    public async Task HumanInputCreatesReviewsAppliesReadsAndCancelsWithoutIds()
+    {
+        await Input("connect MCP -inline");
+        Assert.Equal("Draft", (await Input("create file ordinary.txt in demo with content First")).FileChange?.State);
+        Assert.Contains("Approval required", (await Input("apply it")).Text);
+        Assert.Equal("Approved", (await Input("approve that")).FileChange?.State);
+        Assert.Equal("Applied", (await Input("apply it")).FileChange?.State);
+        Assert.Equal("First", File.ReadAllText(Path.Combine(folder, "source", "ordinary.txt")));
+        Assert.Contains("First", (await Input("read file ordinary.txt in demo")).Text);
+        await Input("create file cancelled.txt in demo with content Second");
+        Assert.Contains("cancelled", (await Input("cancel it")).Text, StringComparison.OrdinalIgnoreCase);
+        Assert.False(File.Exists(Path.Combine(folder, "source", "cancelled.txt")));
+        Assert.Contains("Saved", (await Input("remember that the project codename is Cedar")).Text);
+        Assert.Contains("Cedar", (await Input("show memories")).Text);
+        Assert.Contains("Ended", (await Input("return to terminal")).Text);
+        Assert.Null(chat.ActiveConversation);
+        Assert.Equal("status", commands.ParseUserInput("status")[0]);
+    }
+
+    [Fact]
+    public async Task PlanApprovalUsesCurrentReviewedPlanAndRunsWithoutIds()
+    {
+        ai.Reply = "{\"steps\":[{\"agent\":\"VOLT\",\"capability\":\"volt.status\",\"argument\":\"current\"}]}";
+        await Input("connect MCP -inline");
+        await Input("plan current resource status");
+        await Input("submit plan");
+        Assert.Contains("Approved", (await Input("approve that")).Text);
+        Assert.Contains("Completed", (await Input("run it")).Text);
+        Assert.Single(engine.GetSnapshot().Tasks.Records);
+        await Input("run it");
+        Assert.Equal(1, engine.GetSnapshot().Tasks.Records[0].Attempts);
+    }
     private string Source(string content)
     { var path = Path.Combine(folder, "context.txt"); File.WriteAllText(path, content); return path; }
+
+    [Fact]
+    public async Task SavedPlanSelectionSurvivesDatabaseReloadWithoutRestoringApproval()
+    {
+        var plan = engine.Coordinate(owner.Reference, "MAXIS: demo resume-proof", "resume-proof");
+        engine.ApproveTask(owner.Reference, plan.TaskIds[0]);
+        using var store = new Grid.Persistence.WorldStore(Path.Combine(folder, "resume.db"));
+        var info = new Grid.Persistence.WorldInfo(engine.GetSnapshot().WorldId, "Resume", DateTimeOffset.UtcNow);
+        store.Create(info, engine.GetSnapshot());
+        var registry = new TerminalSessionRegistry();
+        var nextOwner = new TerminalIdentitySession(() => "talk-owner"); registry.Add(nextOwner);
+        var next = GridSimulationEngine.Restore(store.Load().State, editAuthorizer: registry);
+        nextOwner.Attach(next); nextOwner.Login(); next.StartAgents(nextOwner.Reference);
+        var dispatch = DefaultCommands.Create(next);
+        Task Save(CancellationToken token) { store.Save(info, next.GetSnapshot(), token); return Task.CompletedTask; }
+        TaskCommands.Register(dispatch, next, nextOwner, Save);
+        ChatCommands.Register(dispatch, next, nextOwner, ai, Save); dispatch.UseIdentity(nextOwner);
+        async Task<CommandResult> Say(string text)
+        { var r = dispatch.ExecuteUserInput(text); return r.BrokerOperation is { } op ? await op(default) : r; }
+        await Say("connect MCP -inline");
+        Assert.Contains("resume-proof", (await Say("resume my work")).Text);
+        Assert.Contains("AwaitingApproval", (await Say("resume plan 1")).Text);
+        await Say("run this plan");
+        Assert.Equal(0, Assert.Single(next.GetSnapshot().Tasks.Records).Attempts);
+        Assert.Contains("Approved", (await Say("approve this plan")).Text);
+        Assert.Contains("Completed", (await Say("run this plan")).Text);
+        Assert.Equal(1, Assert.Single(next.GetSnapshot().Tasks.Records).Attempts);
+        Assert.Contains("no unfinished", (await Say("resume my work")).Text);
+    }
+
+    [Fact]
+    public async Task UserDemonstrationTestNeedsNeitherWorkspaceNorModelAndResumesOnce()
+    {
+        engine.RevokeDevelopmentWorkspace(owner.Reference, "demo");
+        ai.Available = false;
+        await Input("connect MCP -inline");
+        var calls = ai.Calls;
+        Assert.Contains("DRAFT ONLY", (await Input("plan to have maxis demonstrate the message \"resume test\"")).Text);
+        await Input("submit plan");
+        var task = Assert.Single(engine.GetSnapshot().Tasks.Records);
+        Assert.Equal("maxis.demo", task.Capability); Assert.Equal("resume test", task.Argument);
+        await Input("return to terminal"); await Input("connect MCP -inline");
+        await Input("resume my work"); await Input("resume plan 1");
+        await Input("run this plan"); Assert.Equal(0, engine.GetSnapshot().Tasks.Records[0].Attempts);
+        await Input("approve this plan"); Assert.Contains("Completed", (await Input("run this plan")).Text);
+        await Input("run this plan"); Assert.Equal(1, engine.GetSnapshot().Tasks.Records[0].Attempts);
+        Assert.Equal(calls, ai.Calls);
+    }
+
+    [Theory]
+    [InlineData("resume my work")]
+    [InlineData("resume")]
+    [InlineData("resume not-an-id -inline")]
+    public void MainTerminalInvalidResumeNeverOpensAWindow(string input)
+    {
+        var opens = 0;
+        commands.OpenConversation = _ => { opens++; return new("opened"); };
+        Assert.Contains("connect MCP -inline", commands.ExecuteUserInput(input).Text);
+        Assert.Equal(0, opens);
+    }
+
+    [Fact]
+    public async Task SavedPlanListRequiresExplicitChoiceAndExpiresOnContextChange()
+    {
+        engine.Coordinate(owner.Reference, "MAXIS: demo first", "first");
+        engine.Coordinate(owner.Reference, "MAXIS: demo second", "second");
+        await Input("connect MCP -inline");
+        var list = await Input("resume my work"); Assert.Contains("1.", list.Text); Assert.Contains("2.", list.Text);
+        await Input("resume plan 1"); await Input("resume my work");
+        Assert.Contains("Review and submit", (await Input("approve this plan")).Text);
+        Assert.Contains("Choose a number", (await Input("resume plan 3")).Text);
+        await Input("remember that scope changed");
+        Assert.Contains("expired", (await Input("resume plan 1")).Text);
+        Assert.All(engine.GetSnapshot().Tasks.Records, t => Assert.Equal(0, t.Attempts));
+    }
+
+    [Fact]
+    public async Task SavedPlanReviewCannotExposePrivateRequestsInMeetings()
+    {
+        engine.Coordinate(owner.Reference, "MAXIS: demo PRIVATE-REQUEST", "private");
+        await Input("meetings MCP MAXIS -inline");
+        var result = await Input("resume my work");
+        Assert.Contains("one-to-one", result.Text); Assert.DoesNotContain("PRIVATE-REQUEST", result.Text);
+    }
+
+    [Fact]
+    public async Task ResumedReviewCannotApproveTasksChangedAfterSelection()
+    {
+        var plan = engine.Coordinate(owner.Reference, "MAXIS: demo changed", "changed");
+        await Input("connect MCP -inline"); await Input("resume my work"); await Input("resume plan 1");
+        engine.DenyTask(owner.Reference, plan.TaskIds[0], "Declined in another session");
+        Assert.Contains("changed since preview", (await Input("approve this plan")).Text);
+        var task = Assert.Single(engine.GetSnapshot().Tasks.Records);
+        Assert.Equal(Grid.Simulation.Tasks.TaskStatus.Denied, task.Status); Assert.Equal(0, task.Attempts);
+    }
+
+    [Fact]
+    public async Task ResumedPartialPlanApprovesOnlyRemainingStepsAndNeverRerunsCompletedStep()
+    {
+        var plan = engine.Coordinate(owner.Reference, "MAXIS: demo first; MAXIS: demo second", "partial");
+        engine.ApproveTask(owner.Reference, plan.TaskIds[0]);
+        await engine.RunNextTaskAsync(owner.Reference, _ => Task.CompletedTask, default);
+        await Input("connect MCP -inline"); await Input("resume my work"); await Input("resume plan 1");
+        Assert.Contains("Approved", (await Input("approve this plan")).Text);
+        Assert.Contains("Completed", (await Input("run this plan")).Text);
+        Assert.All(engine.GetSnapshot().Tasks.Records, t => Assert.Equal(1, t.Attempts));
+        await Input("run this plan");
+        Assert.All(engine.GetSnapshot().Tasks.Records, t => Assert.Equal(1, t.Attempts));
+    }
     private async Task<CommandResult> PickAnalysis()
     {
         Assert.Contains("select files", (await Talk("analyze my document")).Text);
@@ -368,7 +543,7 @@ public sealed class UnifiedTalkTests : IDisposable
     {
         var path = Source("HOST INDIGO"); var output = new StringWriter(); var picks = 0;
         await new TerminalHost(engine, commands,
-            new StringReader("connect MCP -inline\nselect files\nexit\n"), output,
+            new StringReader("connect MCP -inline\nselect files\n/close\n"), output,
             interactiveConfirmation: true, contextPicker: _ => { picks++; return Task.FromResult(new[] { path }); }).RunAsync();
         Assert.Equal(1, picks); Assert.Equal(1, ai.Calls);
         Assert.Contains("HOST INDIGO", ai.Prompt); Assert.Contains("display: flex", output.ToString());

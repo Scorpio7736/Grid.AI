@@ -1,5 +1,8 @@
 # GRID integration contracts and ownership - 6.31
 
+**6.31 update — 2026-11-13:** [Current ownership migration, conversation behavior, 1,347 passing tests and local coding acceptance](Project_GRID_Integration_Acceptance.md). Connected chats now interpret all ordinary input as conversation. Say `return to terminal` for commands or `/close` to close/detach. Earlier verification counts below are historical.
+
+
 ## Scope
 
 Contract baseline defined 2026-11-13 for the first task of 6.31. This reference records existing in-process APIs and their migration boundaries. It does not declare the full integration, conversation-first or production release gate complete. Existing source and saved-data formats remain authoritative.

@@ -1,0 +1,54 @@
+{
+  "Passed": true,
+  "Scope": "Local model plus real disposable C# test project",
+  "Evidence": [
+    {
+      "Message": "connect MCP -inline",
+      "Text": "Connected to MCP\nAI conversation; replies can be mistaken.\nType your message directly for conversation, advice or reviewed work. Say show our conversation to read history, remember that followed by a fact to save it, or return to terminal to leave. /terminal also returns to commands. Follow-up questions guide file and screen selection. Earlier conversations are recalled automatically. Host actions require the existing review and approval workflow."
+    },
+    {
+      "Message": "test demo",
+      "Text": "GRID\n\nDRAFT ONLY \u2014 MAXIS maxis.test for workspace demo.\nSay submit plan to review the task, or discard plan to cancel the draft."
+    },
+    {
+      "Message": "submit plan",
+      "Text": "MCP plan saved; all steps await approval.\nTASK ab8a2cc9 - MAXIS\n------------------------------------------------------\nArchived:    False\nState:       AwaitingApproval\nCapability:  maxis.test\nArgument:    demo\nAttempts:    0 / 3\nRequest key: plan-d7d860d931f54219a3270ccf1f08c6fc-0\nFull ID:     ab8a2cc9-350a-4ba5-b83c-255dc7792878\n\nRESULT\nNo result recorded; no completion claimed.\n\n\nWORKSPACE\nRoot: C:\\Users\\jack\\AppData\\Local\\Temp\\GridAgenticCoding-b8a33bcba2cb4846a82be69f0076cbf2\\source\nProject: CodingProbe.csproj\nEnabled: True\nREAL CODE EXECUTION: project-defined code runs as your Windows user; outputs may be written. No OS sandbox/network isolation.\nNEXT - human Master Control approval required\ntasks approve ab8a2cc9\n\nIDENTITY \u0026 AUDIT\nOperator: ac75675a-80a9-ca7c-87c7-3ca9db129d25\nSubmitted as: Master Control\nApproved by: Not approved\n2026-11-14T03:37:53.0858551\u002B00:00  Delegated\n  MCP plan d7d860d9-31f5-4219-a327-0ccf1f08c6fc; exact specialist request awaits human approval.\n  Operator: ac75675a-80a9-ca7c-87c7-3ca9db129d25\n  Agent: \nSay approve this plan to approve these exact tasks, run this plan to execute approved tasks, or cancel this plan."
+    },
+    {
+      "Message": "approve this plan",
+      "Text": "Approved the reviewed tasks. Say run this plan to execute them.\nTASK ab8a2cc9 - MAXIS\n------------------------------------------------------\nArchived:    False\nState:       Queued\nCapability:  maxis.test\nArgument:    demo\nAttempts:    0 / 3\nRequest key: plan-d7d860d931f54219a3270ccf1f08c6fc-0\nFull ID:     ab8a2cc9-350a-4ba5-b83c-255dc7792878\n\nRESULT\nNo result recorded; no completion claimed.\n\n\nWORKSPACE\nRoot: C:\\Users\\jack\\AppData\\Local\\Temp\\GridAgenticCoding-b8a33bcba2cb4846a82be69f0076cbf2\\source\nProject: CodingProbe.csproj\nEnabled: True\nREAL CODE EXECUTION: project-defined code runs as your Windows user; outputs may be written. No OS sandbox/network isolation.\nNEXT - run the next queued task from the original host\ntasks run\n\nIDENTITY \u0026 AUDIT\nOperator: ac75675a-80a9-ca7c-87c7-3ca9db129d25\nSubmitted as: Master Control\nApproved by: ac75675a-80a9-ca7c-87c7-3ca9db129d25\n2026-11-14T03:37:53.0858551\u002B00:00  Delegated\n  MCP plan d7d860d9-31f5-4219-a327-0ccf1f08c6fc; exact specialist request awaits human approval.\n  Operator: ac75675a-80a9-ca7c-87c7-3ca9db129d25\n  Agent: \n\n2026-11-14T03:37:53.1259904\u002B00:00  Approved\n  Human approved this reviewed batch request for one attempt.\n  Operator: ac75675a-80a9-ca7c-87c7-3ca9db129d25\n  Agent: \nSay approve this plan to approve these exact tasks, run this plan to execute approved tasks, or cancel this plan."
+    },
+    {
+      "Message": "run this plan",
+      "Text": "Plan stopped after an unsuccessful attempt; remaining tasks were not dispatched.\n[VERIFIED BROKER STATE] MCP briefing at tick 0. 1 plan(s). Approved specialist capabilities perform real work; demos remain labeled.\nPlan d7d860d9-31f5-4219-a327-0ccf1f08c6fc | key e6bd656799dc4f55a6e273404e51cf13 | Failed: 1\nRequest: MAXIS: test demo\n  ab8a2cc9-350a-4ba5-b83c-255dc7792878 | MAXIS | maxis.test | Failed | attempts 1\n  Result: Attempt failed: IOException. Build/test exited 1; report: C:\\Users\\jack\\AppData\\Local\\Temp\\GridAgenticCoding-b8a33bcba2cb4846a82be69f0076cbf2\\artifacts\\ab8a2cc9350a4ba5b83c255dc7792878-1\\report.txt Attempt artifacts (if created): C:\\Users\\jack\\AppData\\Local\\Temp\\GridAgenticCoding-b8a33bcba2cb4846a82be69f0076cbf2\\artifacts\\ab8a2cc9350a4ba5b83c255dc7792878-1\n  Review failure; a permitted retry requires fresh human approval."
+    },
+    {
+      "Message": "update file Calculator.cs in demo with instructions Fix the public static Calculator.Add(int a, int b) method to return the sum of a and b. Preserve this API. The observed AddsTwoNumbers test expected 5 from Add(2,3) and failed. Return the complete C# file.",
+      "Text": "Change 196c8c74-6cd1-4095-9d44-b93cb7b13505\nREPLACE C:\\Users\\jack\\AppData\\Local\\Temp\\GridAgenticCoding-b8a33bcba2cb4846a82be69f0076cbf2\\source / Calculator.cs\nAbsolute path: C:\\Users\\jack\\AppData\\Local\\Temp\\GridAgenticCoding-b8a33bcba2cb4846a82be69f0076cbf2\\source\\Calculator.cs\nRisk: HIGH - code/configuration can affect execution\nBefore SHA256: BC712712BF4128AD6F840F56CCE061CDC68C44E699EF643E9AFB666F5D8ED0B0\nAfter SHA256: AB2B0AD19FBE884ECF6574E7765C7E7080262E32686808C052138DFF38A75EFB\n--- BEFORE (complete)\n- public static class Calculator { public static int Add(int a, int b) =\u003E a - b; }\n- \n\u002B\u002B\u002B AFTER (complete)\n\u002B public static class Calculator {\n\u002B     public static int Add(int a, int b) =\u003E a \u002B b;\n\u002B }\nNo change applied. Review all content before approval.\nTo approve this exact change, say approve high-risk. Then say apply this change."
+    },
+    {
+      "Message": "I approve this code change",
+      "Text": "Approved exact operation and before/after hashes. Nothing written. Run changes apply 196c8c74-6cd1-4095-9d44-b93cb7b13505.\nSay apply this change to perform this exact approved operation."
+    },
+    {
+      "Message": "apply this change",
+      "Text": "Applied demo/Calculator.cs\nAbsolute path: C:\\Users\\jack\\AppData\\Local\\Temp\\GridAgenticCoding-b8a33bcba2cb4846a82be69f0076cbf2\\source\\Calculator.cs\nChange: 196c8c74-6cd1-4095-9d44-b93cb7b13505\nBefore SHA256: BC712712BF4128AD6F840F56CCE061CDC68C44E699EF643E9AFB666F5D8ED0B0\nAfter SHA256: AB2B0AD19FBE884ECF6574E7765C7E7080262E32686808C052138DFF38A75EFB\nRecovery/report directory: C:\\Users\\jack\\AppData\\Local\\Temp\\GridAgenticCoding-b8a33bcba2cb4846a82be69f0076cbf2\\artifacts\\workspace-edits\\196c8c746cd140959d44b93cb7b13505\n\nNo builds/tests automatically executed. Backups retained.\nSay undo this change to restore it. Keep the change ID for recovery after restart."
+    },
+    {
+      "Message": "test demo",
+      "Text": "GRID\n\nDRAFT ONLY \u2014 MAXIS maxis.test for workspace demo.\nSay submit plan to review the task, or discard plan to cancel the draft."
+    },
+    {
+      "Message": "submit plan",
+      "Text": "MCP plan saved; all steps await approval.\nTASK ff120a57 - MAXIS\n------------------------------------------------------\nArchived:    False\nState:       AwaitingApproval\nCapability:  maxis.test\nArgument:    demo\nAttempts:    0 / 3\nRequest key: plan-6bb2b4a66fb44658a3a9fd86d2020591-0\nFull ID:     ff120a57-71a2-4488-b303-b3dba1f3a89c\n\nRESULT\nNo result recorded; no completion claimed.\n\n\nWORKSPACE\nRoot: C:\\Users\\jack\\AppData\\Local\\Temp\\GridAgenticCoding-b8a33bcba2cb4846a82be69f0076cbf2\\source\nProject: CodingProbe.csproj\nEnabled: True\nREAL CODE EXECUTION: project-defined code runs as your Windows user; outputs may be written. No OS sandbox/network isolation.\nNEXT - human Master Control approval required\ntasks approve ff120a57\n\nIDENTITY \u0026 AUDIT\nOperator: ac75675a-80a9-ca7c-87c7-3ca9db129d25\nSubmitted as: Master Control\nApproved by: Not approved\n2026-11-14T03:37:58.5199733\u002B00:00  Delegated\n  MCP plan 6bb2b4a6-6fb4-4658-a3a9-fd86d2020591; exact specialist request awaits human approval.\n  Operator: ac75675a-80a9-ca7c-87c7-3ca9db129d25\n  Agent: \nSay approve this plan to approve these exact tasks, run this plan to execute approved tasks, or cancel this plan."
+    },
+    {
+      "Message": "approve this plan",
+      "Text": "Approved the reviewed tasks. Say run this plan to execute them.\nTASK ff120a57 - MAXIS\n------------------------------------------------------\nArchived:    False\nState:       Queued\nCapability:  maxis.test\nArgument:    demo\nAttempts:    0 / 3\nRequest key: plan-6bb2b4a66fb44658a3a9fd86d2020591-0\nFull ID:     ff120a57-71a2-4488-b303-b3dba1f3a89c\n\nRESULT\nNo result recorded; no completion claimed.\n\n\nWORKSPACE\nRoot: C:\\Users\\jack\\AppData\\Local\\Temp\\GridAgenticCoding-b8a33bcba2cb4846a82be69f0076cbf2\\source\nProject: CodingProbe.csproj\nEnabled: True\nREAL CODE EXECUTION: project-defined code runs as your Windows user; outputs may be written. No OS sandbox/network isolation.\nNEXT - run the next queued task from the original host\ntasks run\n\nIDENTITY \u0026 AUDIT\nOperator: ac75675a-80a9-ca7c-87c7-3ca9db129d25\nSubmitted as: Master Control\nApproved by: ac75675a-80a9-ca7c-87c7-3ca9db129d25\n2026-11-14T03:37:58.5199733\u002B00:00  Delegated\n  MCP plan 6bb2b4a6-6fb4-4658-a3a9-fd86d2020591; exact specialist request awaits human approval.\n  Operator: ac75675a-80a9-ca7c-87c7-3ca9db129d25\n  Agent: \n\n2026-11-14T03:37:58.5375032\u002B00:00  Approved\n  Human approved this reviewed batch request for one attempt.\n  Operator: ac75675a-80a9-ca7c-87c7-3ca9db129d25\n  Agent: \nSay approve this plan to approve these exact tasks, run this plan to execute approved tasks, or cancel this plan."
+    },
+    {
+      "Message": "run this plan",
+      "Text": "All selected tasks completed with recorded results.\n[VERIFIED BROKER STATE] MCP briefing at tick 0. 1 plan(s). Approved specialist capabilities perform real work; demos remain labeled.\nPlan 6bb2b4a6-6fb4-4658-a3a9-fd86d2020591 | key 04f56fd685924ab28baf25546a97408a | Completed: 1\nRequest: MAXIS: test demo\n  ff120a57-71a2-4488-b303-b3dba1f3a89c | MAXIS | maxis.test | Completed | attempts 1\n  Result: Process exited 0. Verify diagnostics/test counts in artifacts; no claim that tests were discovered. Report: C:\\Users\\jack\\AppData\\Local\\Temp\\GridAgenticCoding-b8a33bcba2cb4846a82be69f0076cbf2\\artifacts\\ff120a5771a24488b303b3dba1f3a89c-1\\report.txt"
+    }
+  ]
+}

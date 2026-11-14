@@ -40,7 +40,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 var line = await read;
                 if (line is null) break;
                 if (sessionUi is not null) await sessionUi.RefreshAsync();
-                var result = commands.Execute(line);
+                var result = commands.ExecuteUserInput(line);
                 if (result.ConfirmTaskBatch is { } confirmBatch)
                 {
                     if (!interactiveConfirmation) result = new("Bulk approval/clear requires interactive confirmation in the original host. Nothing changed.");
