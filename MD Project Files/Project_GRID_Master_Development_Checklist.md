@@ -1703,7 +1703,7 @@ Eighteen release regression cases, 1,304 solution tests and the executable's syn
 
 **Integration progress verified — 2026-11-13. Final Phase 7 gate remains open.**
 
-[Implementation, 1,347 passing tests, real local coding evidence and remaining gates](Project_GRID_Integration_Acceptance.md).
+[Implementation, current verification, real local coding evidence and remaining gates](Project_GRID_Integration_Acceptance.md).
 
 - [x] Define solution references and stable interfaces for GRID-AI, GRID-Agent and existing GRID7736 services. Contract baseline verified 2026-11-13: explicit host references, ownership/adapter inventory and seven compiled-layer checks; 42 focused tests passed. Historical baseline: 1,297 passed and 14 terminal failures; the subsequent integration suite passed all 1,347 tests. Broader 6.31 acceptance remains open. [Contracts and verification](Project_GRID_Integration_Contracts.md).
 - [x] Migrate existing agents, conversations, memory, permissions and task workflows with one authoritative owner per state field. Legacy type forwards share the Grid.Agent definitions; engine/persistence retain authoritative state. See integration acceptance.
@@ -1722,17 +1722,21 @@ Eighteen release regression cases, 1,304 solution tests and the executable's syn
 
 GRID7736 must support an offline agent workflow that performs real software development on the user's local machine. The user gives MCP a task in ordinary language. MCP coordinates with MAXIS and other appropriate agents, obtains any required clarification or approval, and carries the authorized work through implementation and verification. This is a mandatory acceptance requirement before Phase 7.
 
-- [ ] Read and search an authorized local repository, understand relevant project instructions and preserve unrelated user changes.
-- [ ] Create, edit and delete local source files within the authorized task and workspace through the host tool gateway.
-- [ ] Run supported local build, test and diagnostic tools, capture their actual output, and use failures to revise the implementation and retry within the authorized scope.
+- [x] Read and search an authorized local repository, understand relevant project instructions and preserve unrelated user changes. Verified for bounded single-file reviewed work on 2026-11-14; see local coding integration evidence.
+- [x] Create, edit and delete local source files within the authorized task and workspace through the host tool gateway. Verified for bounded single-file reviewed work on 2026-11-14; see local coding integration evidence.
+- [x] Run supported local build, test and diagnostic tools, capture their actual output, and use failures to revise the implementation and retry within the authorized scope. Verified for bounded single-file reviewed work on 2026-11-14; see local coding integration evidence.
 - [ ] Complete the workflow through ordinary conversation with MCP, including delegation to MAXIS, progress, clarification, cancellation and reviewed approvals. The user must not need task IDs or terminal syntax to complete supported work.
 - [x] Resume saved operator task plans through ordinary conversation, numbered selection, current-result review and fresh approval after restart; retain completed steps without duplicate execution. [Implementation and limits](Project_GRID_Integration_Acceptance.md#saved-plan-conversational-resumption--2026-11-14).
 - [ ] Save useful task/conversation context and resume interrupted work with recorded file state and execution results.
 - [x] Demonstrate a reviewed local coding cycle in a disposable C# project: real failing test, local-model source fix, approved apply, passing discovered test and saved receipts. See integration acceptance for evidence and harness limitations.
-- [ ] Demonstrate a real end-to-end coding task against a disposable local checkout, including an observed failing test, an agent-produced source change, a passing rerun and a final report identifying changed files and verified results.
+- [x] Demonstrate a real end-to-end coding task against a disposable local checkout, including an observed failing test, an agent-produced source change, a passing rerun and a final report identifying changed files and verified results. Verified for bounded single-file reviewed work on 2026-11-14; see local coding integration evidence.
 - [ ] Run that acceptance workflow with network access unavailable and the required model, SDK, tools and dependencies provisioned locally. Record model limitations and any unsupported operation explicitly.
 
 This requirement includes the agent actually modifying and testing code. Completion must be supported by filesystem changes and tool receipts. Current building blocks do not by themselves satisfy the end-to-end gate.
+
+User-test follow-up (2026-11-14): the no-workspace demonstration and invalid main-terminal resume cases are repaired; 1,361 tests passed. [Verification and running-build limitation](Project_GRID_Integration_Acceptance.md#user-test-follow-up--2026-11-14).
+
+[Local coding integration follow-up](Project_GRID_Local_Coding_Integration.md): 1,374 tests pass; real Git-repository diagnosis/repair passed. Saved file recovery and attached meeting plan execution are verified. Second-PC HTTP failure is **still open**: exact status/log and new-package retest required. Production model adoption remains open.
 
 ### Conversation-first behavior
 

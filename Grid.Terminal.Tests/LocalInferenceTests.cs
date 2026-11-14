@@ -9,6 +9,19 @@ namespace Grid.Terminal.Tests;
 [Trait("Phase", "6.5")]
 public sealed class LocalInferenceTests
 {
+    [Theory]
+    [InlineData(404)]
+    [InlineData(500)]
+    [InlineData(503)]
+    [InlineData(403)]
+    public async Task HttpFailureReportsStatusAndGuidanceWithoutRawSensitiveMessage(int status)
+    {
+        await using var service = new SharedLocalInference(new Backend((_, _) =>
+            throw new HttpRequestException("PRIVATE-PROMPT AND PASSWORD", null, (HttpStatusCode)status)));
+        var reply = await service.GenerateAsync("hello");
+        Assert.False(reply.Available); Assert.Contains("HTTP " + status, reply.Reason);
+        Assert.DoesNotContain("PRIVATE-PROMPT", reply.Reason); Assert.DoesNotContain("PASSWORD", reply.Reason);
+    }
     [Fact]
     public async Task PhysicalMemoryIsRecheckedBeforeEveryBackendRequest()
     {

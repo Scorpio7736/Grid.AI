@@ -35,6 +35,22 @@ public static class AgenticCodingVerification
             await File.WriteAllTextAsync(Path.Combine(source, "NuGet.Config"), "<configuration><packageSources><clear /></packageSources></configuration>");
             await File.WriteAllTextAsync(Path.Combine(source, "Calculator.cs"), "public static class Calculator { public static int Add(int a, int b) => a - b; }\n");
             await File.WriteAllTextAsync(Path.Combine(source, "CalculatorTests.cs"), "using Xunit; public class CalculatorTests { [Fact] public void AddsTwoNumbers() { Assert.Equal(5, Calculator.Add(2, 3)); } }\n");
+            await File.WriteAllTextAsync(Path.Combine(source, "AGENTS.md"), "Preserve the public Calculator.Add API. Fix production code, never weaken CalculatorTests.cs. Preserve unrelated files.\n");
+            foreach (var args in new[] { new[] { "init", "-q" }, new[] { "add", "." },
+                new[] { "-c", "user.name=GRID verification", "-c", "user.email=verification@localhost", "commit", "-q", "-m", "Disposable coding fixture" } })
+            {
+                var git = new ProcessStartInfo("git") { WorkingDirectory = source, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
+                foreach (var argument in args) git.ArgumentList.Add(argument);
+                using var process = Process.Start(git) ?? throw new IOException("Git could not start.");
+                var stdout = process.StandardOutput.ReadToEndAsync(); var stderr = process.StandardError.ReadToEndAsync();
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                try { await process.WaitForExitAsync(timeout.Token); }
+                catch (OperationCanceledException) { if (!process.HasExited) process.Kill(true); throw; }
+                var output = await stdout + await stderr;
+                if (process.ExitCode != 0) throw new IOException("Disposable Git fixture setup failed: " + output);
+            }
+            await File.WriteAllTextAsync(Path.Combine(source, "unrelated-user-note.txt"), "Preserve this uncommitted user file.\n");
+            var expectedTests = await File.ReadAllTextAsync(Path.Combine(source, "CalculatorTests.cs"));
             var restore = new ProcessStartInfo(Path.Combine(sdk, "dotnet.exe")) { WorkingDirectory = source, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
             foreach (var arg in new[] { "restore", project, "--packages", Path.Combine(runtimeRoot, "nuget"), "--configfile", Path.Combine(source, "NuGet.Config"), "-p:NuGetAudit=false", "--verbosity", "minimal" }) restore.ArgumentList.Add(arg);
             restore.Environment["DOTNET_ROOT"] = sdk;
@@ -93,7 +109,8 @@ public static class AgenticCodingVerification
             if (initial.Count != 1 || initial[0].Status != Status.Failed) throw new InvalidDataException("Expected one real failing test task.");
             var logs = Directory.GetFiles(Path.Combine(folder, "artifacts"), "stdout.txt", SearchOption.AllDirectories);
             if (!logs.Any(path => File.ReadAllText(path).Contains("AddsTwoNumbers"))) throw new InvalidDataException("Test failure evidence is missing.");
-            var change = await Say("update file Calculator.cs in demo with instructions Fix the public static Calculator.Add(int a, int b) method to return the sum of a and b. Preserve this API. The observed AddsTwoNumbers test expected 5 from Add(2,3) and failed. Return the complete C# file.");
+            await Say("inspect repository demo");
+            var change = await Say("fix failing tests in demo");
             if (change.FileChange?.State != "Draft") throw new InvalidDataException("AI did not produce a reviewable code change.");
             await Say("I approve this code change");
             var applied = await Say("apply this change");
@@ -101,6 +118,9 @@ public static class AgenticCodingVerification
             await TestPlan();
             var records = engine.GetSnapshot().Tasks.Records;
             if (records.Count != 2 || records.Count(t => t.Status == Status.Completed) != 1) throw new InvalidDataException("The corrected code did not pass the actual test run.");
+            if (await File.ReadAllTextAsync(Path.Combine(source, "CalculatorTests.cs")) != expectedTests ||
+                await File.ReadAllTextAsync(Path.Combine(source, "unrelated-user-note.txt")) != "Preserve this uncommitted user file.\n")
+                throw new InvalidDataException("The repair changed tests or unrelated user work.");
             var results = Directory.GetFiles(Path.Combine(folder, "artifacts"), "*.trx", SearchOption.AllDirectories)
                 .Select(System.Xml.Linq.XDocument.Load).SelectMany(document => document.Descendants())
                 .Where(element => element.Name.LocalName == "UnitTestResult" && (string?)element.Attribute("testName") == "CalculatorTests.AddsTwoNumbers").ToArray();

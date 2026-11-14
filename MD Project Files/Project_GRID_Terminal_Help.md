@@ -1,5 +1,8 @@
 # GRID7736 - Terminal Help
 
+**Local coding follow-up:** In a private MCP chat, use `inspect repository demo`, `search repository demo for text`, `fix failing tests in demo` after a recorded failure, and `test this change` after approved apply. Recover saved edits with `resume file changes in demo` and `review file change 1`. [Scope, approval sequence, diagnostics and limitations](Project_GRID_Local_Coding_Integration.md).
+
+
 **6.31 update — 2026-11-13:** [Current ownership migration, conversation behavior, 1,347 passing tests and local coding acceptance](Project_GRID_Integration_Acceptance.md). Connected chats now interpret all ordinary input as conversation. Say `return to terminal` for commands or `/close` to close/detach. To review saved unfinished task plans in a private Master Control chat, say `resume my work`, then `resume plan 1`; review before `approve this plan` and `run this plan`. Selection never executes work. Earlier verification counts below are historical.
 
 

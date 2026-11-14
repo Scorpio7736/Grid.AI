@@ -176,7 +176,7 @@ public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
                 span.Complete(e is OperationCanceledException
                     ? request.CallerToken.IsCancellationRequested ? InferenceOutcome.Cancelled : shutdown.IsCancellationRequested ? InferenceOutcome.Stopped : InferenceOutcome.Timeout
                     : e is HttpRequestException or IOException ? InferenceOutcome.Transport : InferenceOutcome.Unavailable);
-                reply = new(false, "", "Local AI unavailable (" + e.GetType().Name + "); deterministic GRID remains available.", timer.ElapsedMilliseconds);
+                reply = new(false, "", LocalAiFailure.Describe(e), timer.ElapsedMilliseconds);
             }
             finally { span.Dispose(); Interlocked.Exchange(ref active, 0); request.Stop.Dispose(); }
             request.Result.TrySetResult(reply with { RequestId = request.Id,
@@ -308,7 +308,7 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
             return $"Endpoint: {client.BaseAddress} | Ollama {version.RootElement.GetProperty("version").GetString()}\nModel: {Model} | Installed: {installed}\n{allocation}";
         }
         catch (Exception e) when (e is HttpRequestException or IOException or InvalidDataException or JsonException or OperationCanceledException or InvalidOperationException or KeyNotFoundException or FormatException or OverflowException)
-        { return "Local AI unavailable at " + client.BaseAddress + ": " + e.GetType().Name + ": " + e.Message + ". Check bundled runtime setup; deterministic GRID remains available."; }
+        { return "Local AI unavailable at " + client.BaseAddress + ": " + LocalAiFailure.Describe(e); }
     }
     public void Dispose() { client.Dispose(); provider.DisposeAsync().GetAwaiter().GetResult(); }
 }

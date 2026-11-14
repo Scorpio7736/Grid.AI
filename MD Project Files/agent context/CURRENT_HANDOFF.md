@@ -8,7 +8,7 @@ Follow the concise [repository working rules](../../AGENTS.md). Use targeted rea
 
 ## Current milestone
 
-6.31 integration and supported conversation workflows verified 2026-11-13. Latest full verification on 2026-11-14 passed all 1,357 solution tests. Grid.Agent owns migrated contracts with legacy type forwards and one engine state owner. Inline/attached input stays conversational. Reviewed plans and file operations support ordinary approval/execution phrases. A real bundled-model C# coding cycle passed failing-test -> AI source fix -> reviewed apply -> passing-test -> saved evidence. See [Integration acceptance](../Project_GRID_Integration_Acceptance.md) for evidence and limitations. Final Phase 7 acceptance remains open.
+6.31 integration and supported conversation workflows verified 2026-11-13. Latest full verification on 2026-11-14 passed all 1,374 solution tests. Grid.Agent owns migrated contracts with legacy type forwards and one engine state owner. Inline/attached input stays conversational. Reviewed plans and file operations support ordinary approval/execution phrases. A real bundled-model C# coding cycle passed failing-test -> AI source fix -> reviewed apply -> passing-test -> saved evidence. See [Integration acceptance](../Project_GRID_Integration_Acceptance.md) for evidence and limitations. Final Phase 7 acceptance remains open.
 
 6.30 development release gates are implemented. Eighteen focused tests, 1,304 solution tests and `--verify-releases` passed. Promotion uses hash-bound evidence, fixed criteria, baseline comparison and verified rollback. Production model/device suites remain open. [Release management](../Project_GRID_Release_Management.md).
 
@@ -24,12 +24,16 @@ Local 6.31 saved-world preservation acceptance passed 2026-11-14: six populated-
 
 Saved operator plan resumption is implemented: `resume my work` -> numbered plan review -> explicit approval/run. SQLite restart, partial completion, stale selection and private-meeting restrictions are covered. File-edit focus and general autonomous coding recovery remain open.
 
+The reported demonstration/workspace mismatch and invalid main-terminal resume window are fixed and covered by the exact user sequence. Last tests used isolated outputs because the running GRID locked its normal executable; close and rebuild before normal-launch retesting. See the integration reference.
+
+6.31 local coding follow-up verified: repository inspection/search, root-to-target instruction hashes, recorded-failure diagnosis and selected-file repair, source CRUD, saved file recovery and attached meeting plans. Real bundled Qwen repaired a failing disposable Git project without being told the fix; tests and unrelated user file stayed unchanged. [Coding evidence and limits](../Project_GRID_Local_Coding_Integration.md).
+
 ## Next work and open gates
 
 - The user confirmed on 2026-11-13 that an offline local agentic coding workflow is mandatory. MCP/MAXIS must actually edit repository files, run builds/tests, fix failures and report verified results through ordinary conversation. The master checklist now includes a disposable-checkout end-to-end acceptance gate before Phase 7. A reviewed disposable-project cycle is demonstrated; broader autonomous repair, Git-checkout/instruction handling, resume and disconnected-device gates remain open.
 
 - Continue outstanding 6.31 acceptance from the integration reference: general autonomous coding/resume, full meeting tool workflows, live release-model adoption and failing-instance/second-device evidence. The previous 14 terminal failures are resolved. Carry forward production model/corpus selection, QLoRA/GPU and portable-training acceptance. Specialist selection and external-device evidence require user input.
-- Second-PC offline/changed-drive acceptance, selected specialist/image assets and repeat-build comparison remain open. Specialist models have not yet been selected.
+- User confirmed the second PC still fails with an HTTP error; exact status/log/path have not been provided. HTTP diagnostics now expose safe status/category and next steps. Retest a new copied package and collect ai status, ai test and runtime/ai-runtime.log. Do not claim the failure fixed. Specialist/image assets and live catalog-to-agent adoption remain unselected/unverified.
 - Keep remaining Phase 7 prerequisites visible, including conversation-first routing acceptance under 6.31 and the newer terminal-first milestones 6.32-6.38. New GUI work in 6.39 is optional and non-blocking.
 - The working tree contains existing implementation and documentation changes. Inspect and preserve them.
 

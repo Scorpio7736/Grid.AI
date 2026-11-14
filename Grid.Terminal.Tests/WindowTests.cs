@@ -7,6 +7,23 @@ namespace Grid.Terminal.Tests;
 
 public sealed class WindowTests
 {
+    [Fact]
+    public async Task AttachedMeetingRunsReviewedDemonstrationWithoutIdsAndCancelsAnotherPlan()
+    {
+        await using var f = new Fixture(mcp: true); f.Engine.StartAgents(f.Owner.Reference);
+        await using var child = await f.Open("agent meetings MCP MAXIS JN");
+        Assert.Contains("DRAFT ONLY", (await child.Send("command", "plan to have MAXIS demonstrate the message meeting-check")).Text);
+        await child.Send("command", "submit plan");
+        await child.Send("command", "run this plan");
+        Assert.Equal(0, Assert.Single(f.Engine.GetSnapshot().Tasks.Records).Attempts);
+        await child.Send("command", "approve this plan");
+        Assert.Contains("Completed", (await child.Send("command", "run this plan")).Text);
+        await child.Send("command", "run this plan");
+        Assert.Equal(1, Assert.Single(f.Engine.GetSnapshot().Tasks.Records).Attempts);
+        await child.Send("command", "plan to have MAXIS demonstrate the message cancelled-check");
+        await child.Send("command", "submit plan"); await child.Send("command", "cancel this plan");
+        Assert.Contains(f.Engine.GetSnapshot().Tasks.Records, t => t.Status == Grid.Simulation.Tasks.TaskStatus.Cancelled && t.Attempts == 0);
+    }
     private sealed class InvitationInference : ILocalInference
     {
         public Task<InferenceReply> GenerateAsync(string prompt, CancellationToken token = default) => Task.FromResult(new InferenceReply(true,

@@ -221,6 +221,8 @@ Development gates verified 2026-11-13. Production candidate/device acceptance re
 
 ## 6.31 Integration and migration
 
+[Local repository diagnosis/coding, recovery, meeting and HTTP diagnostic integration — 2026-11-14](Project_GRID_Local_Coding_Integration.md). 1,374 tests pass; final device/model/release gates remain open.
+
 [Current implementation, verification and open release gates](Project_GRID_Integration_Acceptance.md).
 
 **Mandatory outcome confirmed 2026-11-13.** GRID must deliver a fully local agentic coding workflow. Through ordinary conversation, MCP coordinates MAXIS to inspect an authorized repository, modify source files, run local builds/tests, diagnose failures, revise and retry, preserve resumable context, and report actual changes and execution results. Required tools/models are provisioned locally so execution can work offline. The [master checklist's local agentic coding acceptance](Project_GRID_Master_Development_Checklist.md#required-local-agentic-coding-workflow--confirmed-2026-11-13) requires a real disposable-checkout demonstration before Phase 7. Completion of individual planning, inference or file-edit features alone does not establish this outcome.

@@ -97,6 +97,7 @@ public sealed partial class ChatCommands
         if (identity?.IsMaster != true)
             return identity is not null && Starts(input, @"^(build|test|plan|edit|approve|run|apply|delete|select files|look at .*screen)\b")
                 ? Explain("Access denied. Operational assistance requires human Master Control.") : Send(id, input, MessageOrigin.Terminal);
+        if (RepositoryConversation(input) is { } repositoryReply) return repositoryReply;
         if (DirectDevelopmentPlan(input) is { } developmentPlan) return developmentPlan;
         var fileSearch = LocalFileSearch.Parse(input);
         if (fileSearch is not null)

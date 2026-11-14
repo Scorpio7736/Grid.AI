@@ -1,0 +1,44 @@
+{
+  "testResults": [
+    {
+      "sha256": "7e7fb784f6faf0e2c9a046ce790aab89de541f69f4c43c96d6208e46c2dd9270",
+      "tests": [
+        {
+          "executionId": "ddb0b17d-7100-4fd7-9519-2a0886510fad",
+          "testId": "f800a1ed-3107-2a1e-2b18-71f4b89f863a",
+          "testName": "CalculatorTests.AddsTwoNumbers",
+          "computerName": "JACK-PC",
+          "duration": "00:00:00.0569184",
+          "startTime": "2026-11-14T03:02:06.7993854-06:00",
+          "endTime": "2026-11-14T03:02:06.8649964-06:00",
+          "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+          "outcome": "Failed",
+          "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+          "relativeResultsDirectory": "ddb0b17d-7100-4fd7-9519-2a0886510fad"
+        }
+      ]
+    },
+    {
+      "sha256": "eb2ffd34e2613af1e52408bc182bd4d64aa64ff93e4825eb9f370d84ce2df561",
+      "tests": [
+        {
+          "executionId": "cd32c9b2-efca-425b-bd14-99fc07fef940",
+          "testId": "f800a1ed-3107-2a1e-2b18-71f4b89f863a",
+          "testName": "CalculatorTests.AddsTwoNumbers",
+          "computerName": "JACK-PC",
+          "duration": "00:00:00.0036411",
+          "startTime": "2026-11-14T03:02:27.6525210-06:00",
+          "endTime": "2026-11-14T03:02:27.6596095-06:00",
+          "testType": "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b",
+          "outcome": "Passed",
+          "testListId": "8c84fa94-04c1-424b-9868-57a2d4851a1d",
+          "relativeResultsDirectory": "cd32c9b2-efca-425b-bd14-99fc07fef940"
+        }
+      ]
+    }
+  ],
+  "source": "public static class Calculator {\n    public static int Add(int a, int b) => a + b;\n}",
+  "sourceSha256": "ab2b0ad19fbe884ecf6574e7765c7e7080262e32686808c052138dff38a75efb",
+  "gitRepository": true,
+  "unrelatedUserFile": "Preserve this uncommitted user file.\n"
+}
