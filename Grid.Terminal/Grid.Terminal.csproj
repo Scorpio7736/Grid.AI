@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -23,5 +23,11 @@
 
   <ItemGroup>
     <PackageReference Include="PdfPig" Version="0.1.16" />
+  </ItemGroup>
+  <!-- Direct contract dependencies; do not rely on another host project's references. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Grid.AI\Grid.AI.csproj" />
+    <ProjectReference Include="..\Grid.Agent\Grid.Agent.csproj" />
+    <ProjectReference Include="..\Grid.Communication\Grid.Communication.csproj" />
   </ItemGroup>
 </Project>

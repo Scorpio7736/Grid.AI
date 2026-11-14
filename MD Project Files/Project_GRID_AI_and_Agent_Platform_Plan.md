@@ -221,8 +221,8 @@ Development gates verified 2026-11-13. Production candidate/device acceptance re
 
 ## 6.31 Integration and migration
 
-- [ ] Inventory the current inference, role-profile, communication, memory, context, task-approval and persistence contracts before extraction.
-- [ ] Define the Grid.AI and Grid.Agent project references, typed interfaces, adapter boundaries and test projects. Resolve any cyclic dependencies before migration.
+- [x] Inventory the current inference, role-profile, communication, memory, context, task-approval and persistence contracts before extraction. [Contract baseline and ownership inventory - 2026-11-13](Project_GRID_Integration_Contracts.md).
+- [x] Define the Grid.AI and Grid.Agent project references, typed interfaces, adapter boundaries and test projects. No cycles found; host references are explicit and seven compiled-layer checks passed. [Verification and remaining integration gates](Project_GRID_Integration_Contracts.md).
 - [ ] Wrap the current implementation first, then migrate incrementally through existing terminal, attached-window and meeting entry points.
 - [ ] Preserve agent IDs, world IDs, conversations, memory provenance/grants/expiry, workspaces, task records, approvals and recovery receipts with explicit schema/version handling.
 - [ ] Assign one authoritative owner per state field and test that legacy/new paths cannot produce duplicate agents, independent histories or duplicate execution.

@@ -1703,7 +1703,7 @@ Eighteen release regression cases, 1,304 solution tests and the executable's syn
 
 **Planned — 2026-11-04. Required before Phase 7.**
 
-- [ ] Define solution references and stable interfaces for GRID-AI, GRID-Agent and existing GRID7736 services
+- [x] Define solution references and stable interfaces for GRID-AI, GRID-Agent and existing GRID7736 services. Contract baseline verified 2026-11-13: explicit host references, ownership/adapter inventory and seven compiled-layer checks; 42 focused tests passed. Full current-tree suite: 1,297 passed, 14 terminal failures associated with existing conversation-routing edits. Broader 6.31 acceptance remains open. [Contracts and verification](Project_GRID_Integration_Contracts.md).
 - [ ] Migrate existing agents, conversations, memory, permissions and task workflows with one authoritative owner per state field
 - [ ] Preserve IDs, grants, history, approvals and saved worlds with tested backup, schema migration and rollback
 - [ ] Verify normal terminal, attached-window and meeting workflows through the migrated APIs

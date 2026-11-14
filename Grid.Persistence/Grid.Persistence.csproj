@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Grid.Core\Grid.Core.csproj" />
@@ -15,4 +15,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- Direct contract dependencies; do not rely on another host project's references. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Grid.AI\Grid.AI.csproj" />
+    <ProjectReference Include="..\Grid.Agent\Grid.Agent.csproj" />
+    <ProjectReference Include="..\Grid.Communication\Grid.Communication.csproj" />
+  </ItemGroup>
 </Project>
