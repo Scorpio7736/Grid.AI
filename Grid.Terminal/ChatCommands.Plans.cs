@@ -81,7 +81,8 @@ public sealed partial class ChatCommands
         var plan = state.Plans.Single(p => p.Id == id);
         var tasks = plan.TaskIds.Select(taskId => state.Records.Single(t => t.Id == taskId)).ToArray();
         reviewedPlan = new(Pending("plan-review", plan.Request), id, tasks);
-        return string.Join("\n\n", tasks.Select(task => TaskDisplay.Inspect(state, task))) +
+        return "PLAN v1 | Source: saved human-submitted task records; model output is not execution evidence.\n" +
+            string.Join("\n\n", tasks.Select(task => McpCapabilityCatalog.Effect(task.Capability) + "\n" + TaskDisplay.Inspect(state, task))) +
             "\nSay approve this plan to approve these exact tasks, run this plan to execute approved tasks, or cancel this plan.";
     }
 
@@ -89,7 +90,7 @@ public sealed partial class ChatCommands
     {
         result = new("");
         var match = System.Text.RegularExpressions.Regex.Match(input,
-            @"^(approve|run|cancel|review|inspect|show|apply|do) (?:(?:this|that|the) plan|that|it)[.!]?$",
+            @"^(approve|run|cancel|review|inspect|show|apply|do|retry) (?:(?:this|that|the) plan|that|it)[.!]?$",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         if (!match.Success) return false;
         var explicitPlan = input.Contains("plan", StringComparison.OrdinalIgnoreCase);
@@ -115,6 +116,13 @@ public sealed partial class ChatCommands
         {
             var action = match.Groups[1].Value.ToLowerInvariant();
             if (action is "review" or "inspect" or "show") result = new(FocusPlan(plan.Id));
+            else if (action == "retry")
+            {
+                var failed = plan.Tasks.Where(t => t.Status is Status.Failed or Status.TimedOut or Status.Interrupted).ToArray();
+                engine.RetryReviewedObservations(identity.Reference, failed);
+                save(CancellationToken.None).GetAwaiter().GetResult();
+                result = new("Read-only retry prepared. Fresh approval is required; nothing ran.\n" + FocusPlan(plan.Id));
+            }
             else if (action == "approve")
             {
                 var pending = plan.Tasks.Where(t => t.Status == Status.AwaitingApproval && !t.Archived).ToArray();

@@ -1,3 +1,5 @@
+**User-directed deferral — 2026-11-14:** Copy/transfer and second-PC offline acceptance are deferred until the transfer device is ready. Keep their unchecked acceptance gates open; continue local terminal milestones beginning with 6.32. This is a scheduling change, not a successful portable-device verification or Phase 7 approval.
+
 # Project GRID — Master Development Checklist
 
 **Terminal-first roadmap placement correction — 2026-11-13.** Added assistant capability milestones **6.32–6.39 at the end of Phase 6**, after 6.31 and before Phase 7. Prioritize terminal-based action routing, local device integration, setup, skills, optional connections, scheduling and permission transparency (6.32–6.38). New GUI work (6.39) is optional and non-blocking. Preserve 6.31's existing acceptance requirements; complete the new core milestones before beginning Phase 7.
@@ -1709,7 +1711,7 @@ Eighteen release regression cases, 1,304 solution tests and the executable's syn
 - [x] Migrate existing agents, conversations, memory, permissions and task workflows with one authoritative owner per state field. Legacy type forwards share the Grid.Agent definitions; engine/persistence retain authoritative state. See integration acceptance.
 - [x] Preserve IDs, grants, history, approvals and saved worlds with tested backup, schema migration and rollback. Local populated-world recovery acceptance passed 2026-11-14: corrupt/future primary, invalid backup, successful and interrupted metadata migration; live approvals require re-review. Historical-executable and second-device release acceptance remain open. [Evidence and rollback procedure](Project_GRID_Integration_Acceptance.md#saved-world-backup-migration-and-rollback-acceptance--2026-11-14)
 - [x] Verify normal terminal, attached-window and meeting workflows through the migrated APIs. Existing workflow and ownership regression suites pass; broader conversational feature acceptance remains below.
-- [ ] Resolve the reported local AI failure and complete 6.14–6.15 acceptance with failing-instance and second-device evidence
+- [ ] Resolve the reported local AI failure and complete 6.14–6.15 acceptance with failing-instance and second-device evidence. PC2 log received 2026-11-14: missing bundled assets; placeholder-port refusal was secondary. Four test setup failures require capability-aware symbolic-link fixtures. Fixes and exact retest steps: [PC2 diagnosis](Project_GRID_PC2_Diagnostics.md). Successful offline PC2 AI retest remains open.
 - [ ] Complete all 15 platform components and all 12 production-readiness checks in the linked specification
 - [ ] Record measurable release evidence and obtain user review before beginning Phase 7
 
@@ -1762,12 +1764,14 @@ Connected user input now stays conversational; explicit command dispatch remains
 
 ## 6.32 Conversation-first intent and action routing
 
-- [ ] Add versioned, typed intent-to-capability planning for ordinary user language, clarification, multi-step execution and safe follow-up context.
-- [ ] Generalize current specific file/search/task utterances without giving the model arbitrary shell, filesystem or OS authority.
-- [ ] Preview the proposed action plan, affected resources, source provenance, agent assignment and required approvals before execution; preserve edit conflict and hash-bound review rules.
-- [ ] Expose what GRID can do, what needs a grant, what is unsupported and why a requested operation was denied.
-- [ ] Permit scoped cancellation, retries and durable resumption only for explicitly approved, idempotent operations; never silently replay stale approvals.
-- [ ] Test ambiguous requests, prompt injection, forged plans, revoked scopes, path escapes, partial execution and conversational recovery.
+- [x] Add versioned, typed intent-to-capability planning for ordinary user language, clarification, multi-step execution and safe follow-up context.
+- [x] Generalize current specific file/search/task utterances without giving the model arbitrary shell, filesystem or OS authority.
+- [x] Preview the proposed action plan, affected resources, source provenance, agent assignment and required approvals before execution; preserve edit conflict and hash-bound review rules.
+- [x] Expose what GRID can do, what needs a grant, what is unsupported and why a requested operation was denied.
+- [x] Permit scoped cancellation, retries and durable resumption only for explicitly approved, idempotent operations; never silently replay stale approvals.
+- [x] Test ambiguous requests, prompt injection, forged plans, revoked scopes, path escapes, partial execution and conversational recovery.
+
+**Completion evidence — 2026-11-14:** Versioned bounded intent interpretation, human-reviewed routing, capability/grant explanations and explicitly reapproved read-only retries are implemented. Existing durable plan/file recovery and hash-bound execution remain authoritative. [Behavior, limits and verification](Project_GRID_Conversation_Intent_Routing.md). Focused verification: 118 tests passed. Full solution: **1,393 passed, zero failed/skipped** (14 Core, 157 Simulation, 99 Persistence, 1,123 Terminal), using isolated `TestResults/intent-routing` outputs.
 
 ## 6.33 Device integration and capability broker
 

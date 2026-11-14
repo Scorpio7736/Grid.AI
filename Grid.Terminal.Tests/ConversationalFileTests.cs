@@ -461,7 +461,7 @@ public sealed class ConversationalFileTests : IDisposable
         Assert.Contains("hash mismatch", commands.Execute("changes recover demo " + draft.FileChange.Id).Text);
         Assert.False(File.Exists(Path.Combine(Root, "note.md")));
     }
-    [Fact]
+    [SymlinkFact]
     public void DeleteAndReadRejectReparseTargetsAndPreserveOriginalBytes()
     {
         var path = Source(); var outside = Path.Combine(folder, "outside.md"); File.WriteAllText(outside, "PRIVATE");

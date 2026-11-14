@@ -105,12 +105,16 @@ public sealed class JnTests : IDisposable
         using var stop=new CancellationTokenSource(); stop.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(()=>new JnRuntime(Database,folder).ExecuteAsync(task,new("sample",Source,Environment.MachineName,true),StorageState.InitialQuota,stop.Token));
     }
-    [Fact]
+    [SymlinkFact]
     public async Task LinksAreNotFollowedAndLimitsProducePartialReports()
     {
         var linked=Path.Combine(Source,"linked"); Directory.CreateSymbolicLink(linked,folder);
         var task=await Run("inventory","sample"); using(var report=Report(task)) Assert.False(report.RootElement.GetProperty("complete").GetBoolean());
         Directory.Delete(linked);
+    }
+    [Fact]
+    public async Task InventoryLimitsAndRootRefusalDoNotRequireLinkPrivileges()
+    {
         Assert.Throws<ArgumentException>(()=>engine.RegisterStorageScope(owner.Reference,"root",Path.GetPathRoot(Source)!));
         for(var i=0;i<2001;i++) File.WriteAllText(Path.Combine(Source,"entry-"+i),"");
         using var bounded=Report(await Run("inventory","sample")); Assert.False(bounded.RootElement.GetProperty("complete").GetBoolean()); Assert.True(bounded.RootElement.GetProperty("files").GetArrayLength()<=2000);

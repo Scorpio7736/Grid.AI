@@ -47,6 +47,87 @@ public sealed class UnifiedTalkTests : IDisposable
     private async Task<CommandResult> Input(string message)
     { var r = commands.ExecuteUserInput(message); return r.BrokerOperation is { } op ? await op(default) : r; }
 
+    private static string Intent(string kind = "CreateFile", string target = "welcome.txt", string scope = "demo", string text = "") =>
+        JsonSerializer.Serialize(new { version = 1, kind, scope, target, text });
+
+    [Fact]
+    public async Task InterpretedRequestRequiresReviewThenSeparateHashBoundApproval()
+    {
+        await Input("connect MCP -inline");
+        ai.Replies.Enqueue(Intent()); ai.Replies.Enqueue("{\"content\":\"Hello\"}");
+        Assert.Contains("INTERPRETATION v1", (await Input("put a greeting into welcome.txt in demo")).Text);
+        Assert.Contains("Review this request first", (await Input("approve this change")).Text);
+        Assert.False(File.Exists(Path.Combine(folder, "source", "welcome.txt")));
+        Assert.Equal("Draft", (await Input("review this request")).FileChange?.State);
+        Assert.Contains("Approval required", (await Input("apply this change")).Text);
+        await Input("approve this change"); await Input("apply this change");
+        Assert.Equal("Hello", File.ReadAllText(Path.Combine(folder, "source", "welcome.txt")));
+    }
+
+    [Theory]
+    [InlineData("../escaped.txt")]
+    [InlineData("C:\\escaped.txt")]
+    public async Task ModelPathsCannotEscapeSelectedWorkspace(string target)
+    {
+        await Input("connect MCP -inline"); ai.Reply = Intent(target: target);
+        await Input("put a greeting in demo");
+        var result = await Input("review this request");
+        Assert.Null(result.FileChange); Assert.Contains("refused", result.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(1, ai.Calls);
+    }
+
+    [Fact]
+    public async Task InterpretationCancellationAndRevokedWorkspacePreventDrafting()
+    {
+        await Input("connect MCP -inline"); ai.Reply = Intent();
+        await Input("put a greeting in demo");
+        Assert.Contains("discarded", (await Input("cancel")).Text);
+        await Input("put a greeting in demo");
+        engine.RevokeDevelopmentWorkspace(owner.Reference, "demo");
+        Assert.Null((await Input("review this request")).FileChange);
+        Assert.False(File.Exists(Path.Combine(folder, "source", "welcome.txt")));
+        Assert.Equal(2, ai.Calls);
+    }
+
+    [Fact]
+    public async Task IntentClarifiesBeforePreparingAndExplainsCapabilities()
+    {
+        await Input("connect MCP -inline");
+        ai.Replies.Enqueue(Intent("Clarify", "", "", "Which folder and file?")); ai.Replies.Enqueue(Intent());
+        Assert.Contains("Which folder", (await Input("put a greeting somewhere")).Text);
+        Assert.Contains("clarification first", (await Input("approve this change")).Text);
+        Assert.Contains("INTERPRETATION v1", (await Input("welcome.txt in demo")).Text);
+        Assert.Contains("User clarification", ai.Prompt);
+        Assert.Contains("Arbitrary shell", (await Input("what can you do?")).Text);
+    }
+
+    [Fact]
+    public async Task FailedObservationRetriesNeedFreshApprovalAndDoNotReplayCompletedSteps()
+    {
+        var plan = engine.Coordinate(owner.Reference, "MAXIS: demo done; MAXIS: inspect demo|missing.cs", "retry");
+        foreach (var id in plan.TaskIds) { engine.ApproveTask(owner.Reference, id); await engine.RunNextTaskAsync(owner.Reference, _ => Task.CompletedTask, default); }
+        await Input("connect MCP -inline"); await Input("resume my work"); await Input("resume plan 1");
+        Assert.Contains("Fresh approval", (await Input("retry this plan")).Text);
+        await Input("run this plan");
+        Assert.All(engine.GetSnapshot().Tasks.Records, task => Assert.Equal(1, task.Attempts));
+        File.WriteAllText(Path.Combine(folder, "source", "missing.cs"), "// now present");
+        await Input("approve this plan"); await Input("run this plan");
+        var tasks = engine.GetSnapshot().Tasks.Records;
+        Assert.Equal(1, tasks.Single(t => t.Capability == "maxis.demo").Attempts);
+        Assert.Equal(2, tasks.Single(t => t.Capability == "maxis.inspect").Attempts);
+        Assert.All(tasks, task => Assert.Equal(Grid.Simulation.Tasks.TaskStatus.Completed, task.Status));
+    }
+
+    [Fact]
+    public async Task ConversationalRetryRefusesPotentialSideEffects()
+    {
+        var plan = engine.Coordinate(owner.Reference, "MAXIS: build demo", "unsafe-retry");
+        engine.ApproveTask(owner.Reference, plan.TaskIds[0]); await engine.RunNextTaskAsync(owner.Reference, _ => Task.CompletedTask, default);
+        await Input("connect MCP -inline"); await Input("resume my work"); await Input("resume plan 1");
+        Assert.Contains("read-only observations", (await Input("retry this plan")).Text);
+        Assert.Equal(1, Assert.Single(engine.GetSnapshot().Tasks.Records).Attempts);
+    }
+
     [Theory]
     [InlineData("tasks clear -all")]
     [InlineData("context remove everything")]

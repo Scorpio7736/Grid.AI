@@ -1,0 +1,78 @@
+This is the error. Remember it.
+
+[xUnit.net 00:00:35.79]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:52.45]   Finished:    Grid.Simulation.Tests
+  Grid.Simulation.Tests test net10.0 succeeded (56.5s)
+[xUnit.net 00:01:01.30]   Finished:    Grid.Terminal.Tests
+  Grid.Terminal.Tests test net10.0 failed with 4 error(s) (65.9s)
+    C:\Users\jack\source\repos\Grid7736\Grid.Terminal.Tests\MaxisTests.cs(149): error TESTERROR:
+      Grid.Terminal.Tests.MaxisTests.ReparseWorkspaceAndMissingProjectAreRefused (48ms): Error Message: System.IO.IOException : A required privilege is not held by the client. : 'C:\Users\jack\
+      AppData\Local\Temp\GridMaxis-a097db061bd942a7bfdc87ec18f11598\linked'.
+      Stack Trace:
+         at Interop.Kernel32.CreateSymbolicLink(String symlinkFileName, String targetFileName, Boolean isDirectory)
+         at System.IO.Directory.CreateSymbolicLink(String path, String pathToTarget)
+         at Grid.Terminal.Tests.MaxisTests.ReparseWorkspaceAndMissingProjectAreRefused() in C:\Users\jack\source\repos\Grid7736\Grid.Terminal.Tests\MaxisTests.cs:line 149
+         at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+         at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    C:\Users\jack\source\repos\Grid7736\Grid.Terminal.Tests\JnTests.cs(111): error TESTERROR:
+      Grid.Terminal.Tests.JnTests.LinksAreNotFollowedAndLimitsProducePartialReports (37ms): Error Message: System.IO.IOException : A required privilege is not held by the client. : 'C:\Users\ja
+      ck\AppData\Local\Temp\GridJn-16480b336cfa4610a003c514a6a5f6f7\source\linked'.
+      Stack Trace:
+         at Interop.Kernel32.CreateSymbolicLink(String symlinkFileName, String targetFileName, Boolean isDirectory)
+         at System.IO.Directory.CreateSymbolicLink(String path, String pathToTarget)
+         at Grid.Terminal.Tests.JnTests.LinksAreNotFollowedAndLimitsProducePartialReports() in C:\Users\jack\source\repos\Grid7736\Grid.Terminal.Tests\JnTests.cs:line 111
+      --- End of stack trace from previous location ---
+    C:\Users\jack\source\repos\Grid7736\Grid.Terminal.Tests\WorkspaceChangeTests.cs(353): error TESTERROR:
+      Grid.Terminal.Tests.WorkspaceChangeTests.ReplacedParentLinkCannotRedirectApprovedWrite (108ms): Error Message: System.IO.IOException : A required privilege is not held by the client. : 'C
+      :\Users\jack\AppData\Local\Temp\GridChanges-0a53fa684b57425599441b6030b292ba\source\sub'.
+      Stack Trace:
+         at Interop.Kernel32.CreateSymbolicLink(String symlinkFileName, String targetFileName, Boolean isDirectory)
+         at System.IO.Directory.CreateSymbolicLink(String path, String pathToTarget)
+         at Grid.Terminal.Tests.WorkspaceChangeTests.ReplacedParentLinkCannotRedirectApprovedWrite() in C:\Users\jack\source\repos\Grid7736\Grid.Terminal.Tests\WorkspaceChangeTests.cs:line 353
+         at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+         at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+    C:\Users\jack\source\repos\Grid7736\Grid.Terminal.Tests\ConversationalFileTests.cs(468): error TESTERROR:
+      Grid.Terminal.Tests.ConversationalFileTests.DeleteAndReadRejectReparseTargetsAndPreserveOriginalBytes (29ms): Error Message: System.IO.IOException : A required privilege is not held by th
+      e client. : 'C:\Users\jack\AppData\Local\Temp\Grid69-f071972ec8c343aaa93261922112e450\source\link.md'.
+      Stack Trace:
+         at Interop.Kernel32.CreateSymbolicLink(String symlinkFileName, String targetFileName, Boolean isDirectory)
+         at System.IO.File.CreateSymbolicLink(String path, String pathToTarget)
+         at Grid.Terminal.Tests.ConversationalFileTests.DeleteAndReadRejectReparseTargetsAndPreserveOriginalBytes() in C:\Users\jack\source\repos\Grid7736\Grid.Terminal.Tests\ConversationalFile
+      Tests.cs:line 468
+         at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+         at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Test summary: total: 1374, failed: 4, succeeded: 1370, skipped: 0, duration: 68.9s
+Build failed with 4 error(s) in 73.6s
+PS C:\Users\jack\source\repos\Grid7736>
+
++======================================================================+
+|                                                                      |
+|   ██████╗ ██████╗ ██╗██████╗     ███████╗███████╗██████╗  ██████╗    |
+|  ██╔════╝ ██╔══██╗██║██╔══██╗    ╚════██║╚════██║╚════██╗██╔════╝    |
+|  ██║ ███╗██████╔╝██║██║  ██║        ██╔╝    ██╔╝ █████╔╝███████╗    |
+|  ██║   ██╗██╔══██╗██║██║  ██║       ██╔╝    ██╔╝  ╚═══██╗██╔══██╗    |
+|  ╚██████╔╝██║  ██║██║██████╔╝       ██║     ██║  ██████╔╝╚██████╔╝    |
+|   ╚═════╝ ╚═╝  ╚═╝╚═╝╚═════╝        ╚═╝     ╚═╝  ╚═════╝  ╚═════╝    |
+|                                                                      |
++======================================================================+
+Welcome, admin
+Authority level: Master Control
+No Windows elevation is granted.
+grid[Master Control]> grid -start
+Simulation running. Agent activity enabled; no tasks were automatically approved or dispatched.
+grid[Master Control]> ai test
+LOCAL AI FOUNDATION | 2026-11-14T18:48:44.5380604+00:00
+Startup: Local AI assets missing. Run Prepare-GridRuntime.ps1 in the source repository, or use a complete portable package. No global Ollama fallback.
+Local AI assets missing. Run Prepare-GridRuntime.ps1 in the source repository, or use a complete portable package. No global Ollama fallback.
+Enabled: False | Queue waiting: 0 | Active: False
+Ollama process-family sample: working set 19,787,776 bytes; 0 CPU ms over 27 wall ms. Includes other Ollama clients; not exclusive GRID attribution.
+GPU allocation is available in ai status while the model is loaded. No host action or conversation change was performed.
+grid[Master Control]> ai status
+LOCAL AI FOUNDATION | 2026-11-14T18:48:54.1544576+00:00
+Startup: Local AI assets missing. Run Prepare-GridRuntime.ps1 in the source repository, or use a complete portable package. No global Ollama fallback.
+Local AI unavailable at http://127.0.0.1:1/: Local AI connection failed (ConnectionRefused). The bundled loopback server could not be reached. Check the startup AI message and runtime/ai-runtime.log, then restart GRID. No cloud fallback was attempted; deterministic GRID remains available.
+Enabled: False | Queue waiting: 0 | Active: False
+Ollama process-family sample: working set 19,787,776 bytes; 0 CPU ms over 2,448 wall ms. Includes other Ollama clients; not exclusive GRID attribution.
+GPU allocation is available in ai status while the model is loaded. No host action or conversation change was performed.
+grid[Master Control]>

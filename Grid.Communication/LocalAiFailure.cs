@@ -15,7 +15,7 @@ public static class LocalAiFailure
                 var guidance = code switch
                 {
                     HttpStatusCode.NotFound => "Check ai status for Installed: True and verify the copied model assets; no model will be downloaded automatically.",
-                    HttpStatusCode.InternalServerError or HttpStatusCode.ServiceUnavailable => "The local server rejected the request. Check runtime/ai-runtime.log in the copied package. Try ai models force-lite on, then restart GRID; the exact cause still requires the runtime log.",
+                    HttpStatusCode.InternalServerError or HttpStatusCode.ServiceUnavailable => "The local server rejected the request. Check runtime/ai-runtime.log in the copied package. Try ai registry force-lite on, then restart GRID; the exact cause still requires the runtime log.",
                     HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => "The local endpoint refused access. Check the configured loopback endpoint and any local security software; do not send credentials to another server.",
                     _ => "Capture ai status, ai test and the copied package's runtime/ai-runtime.log to identify the server failure."
                 };

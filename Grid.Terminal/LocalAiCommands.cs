@@ -41,13 +41,14 @@ public static class LocalAiCommands
                         () => identity.IsMaster && identity.Reference == reference);
                     using var stop = CancellationTokenSource.CreateLinkedTokenSource(token);
                     var before = Sample(); var timer = Stopwatch.StartNew();
-                    var operation = args[0] == "status" ? backend.StatusAsync(stop.Token) : Test(service, stop.Token);
+                    var operation = args[0] == "status" && service.Enabled ? backend.StatusAsync(stop.Token) : Test(service, stop.Token);
                     while (!operation.IsCompleted)
                     {
                         await Task.WhenAny(operation,Task.Delay(50,token));
                         if (token.IsCancellationRequested || !authorization.IsCurrent) { stop.Cancel(); break; }
                     }
                     var text = await operation;
+                    if (!service.Enabled) text += "\nAI service is disabled; no HTTP probe was attempted. Resolve the startup cause before testing connectivity.";
                     if(runtimeStatus is not null) text=runtimeStatus()+"\n"+text;
                     if (!authorization.IsCurrent || token.IsCancellationRequested) return new("AI diagnostic session revoked; output discarded.");
                     var after = Sample();

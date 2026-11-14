@@ -37,6 +37,9 @@ public sealed partial class ChatCommands
         var id = active!.Value;
         engine.RequireAgentActivity();
         var input = text.Trim();
+        try { if (identity?.IsMaster == true && IntentControl(input, out var intentControl)) return intentControl; }
+        catch (Exception intentError) when (intentError is IOException or UnauthorizedAccessException)
+        { return Explain("Request refused: " + TerminalTable.Safe(intentError.Message) + " Nothing executed."); }
         if (ResumeSavedPlan(input) is { } resumedPlan) return resumedPlan;
         if (fileRequest?.Change is { HighRisk: true } && Starts(input, @"^(?:I )?approve this code change[.!]?$")) input = "approve high-risk";
         if (TryPlanConversation(input, out var planReply)) return planReply;
@@ -200,11 +203,18 @@ public sealed partial class ChatCommands
             return Explain("Which operation and target do you mean? I can plan a task or draft a file edit. Approval needs an exact ID: talk approve task <id> or talk approve edit <id>. Nothing executed.");
         if (Starts(input, @"^(how (do|can|should|would|to)|advice\b|help me (understand|learn)|explain\b|what is (the best|a good))"))
             return Send(id, input, MessageOrigin.Terminal);
+        if (Starts(input, @"^(make|write|save|put|change|update|look for|locate|search|organize|check|inspect|prepare|help me (build|test|create|write))\b"))
+            return InterpretAction(input);
         return Send(id, input, MessageOrigin.Terminal);
     }
 
     private CommandResult ContinueTalk(FollowUp p, string input)
     {
+        if (p.Kind == "intent-clarification")
+        {
+            if (Starts(input, @"^(approve|apply|run|execute)\b")) return Ask(p.Kind, p.Request, "Answer the clarification first. Nothing is ready to execute.");
+            return InterpretAction(p.Request + "\nUser clarification: " + input);
+        }
         if (p.Kind == "task-clarification")
         {
             if (Starts(input, @"^(approve|apply|run|execute)\b")) return Ask(p.Kind, p.Request, "Answer the clarification first. Nothing is ready for approval or execution.", target: p.Target);
@@ -263,7 +273,7 @@ public sealed partial class ChatCommands
     }
     private bool IsFollowUp(FollowUp p, string input)
     {
-        if (p.Kind == "task-clarification") return true;
+        if (p.Kind is "task-clarification" or "intent-clarification") return true;
         if (Starts(input, @"^(hello|hi|thanks|thank you)[.!?]?$")) return false;
         if (Starts(input, @"^(select|upload|add) files[.!]?$|^(continue(?: to analy[sz]e)?|analy[sz]e(?: the file uploaded| (?:the|my) (?:file|document)s?)?)[.!]?$"))
             return p.Kind is "files" or "file-confirm" or "edit-files" or "analyze";

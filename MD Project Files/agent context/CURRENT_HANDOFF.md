@@ -8,7 +8,9 @@ Follow the concise [repository working rules](../../AGENTS.md). Use targeted rea
 
 ## Current milestone
 
-6.31 integration and supported conversation workflows verified 2026-11-13. Latest full verification on 2026-11-14 passed all 1,374 solution tests. Grid.Agent owns migrated contracts with legacy type forwards and one engine state owner. Inline/attached input stays conversational. Reviewed plans and file operations support ordinary approval/execution phrases. A real bundled-model C# coding cycle passed failing-test -> AI source fix -> reviewed apply -> passing-test -> saved evidence. See [Integration acceptance](../Project_GRID_Integration_Acceptance.md) for evidence and limitations. Final Phase 7 acceptance remains open.
+6.32 conversation-first intent routing is implemented. See [intent routing](../Project_GRID_Conversation_Intent_Routing.md) for the bounded model contract, review/approval flow and read-only retry policy. Focused tests: 118 passed. Full solution: 1,393 passed, zero failed/skipped, using `TestResults/intent-routing`. Rebuild/restart the ordinary terminal before manually trying the changes; the running instance is not replaced.
+
+6.31 integration and supported conversation workflows verified 2026-11-13. Latest full verification on 2026-11-14 passed all 1,378 solution tests. Grid.Agent owns migrated contracts with legacy type forwards and one engine state owner. Inline/attached input stays conversational. Reviewed plans and file operations support ordinary approval/execution phrases. A real bundled-model C# coding cycle passed failing-test -> AI source fix -> reviewed apply -> passing-test -> saved evidence. See [Integration acceptance](../Project_GRID_Integration_Acceptance.md) for evidence and limitations. Final Phase 7 acceptance remains open.
 
 6.30 development release gates are implemented. Eighteen focused tests, 1,304 solution tests and `--verify-releases` passed. Promotion uses hash-bound evidence, fixed criteria, baseline comparison and verified rollback. Production model/device suites remain open. [Release management](../Project_GRID_Release_Management.md).
 
@@ -30,13 +32,15 @@ The reported demonstration/workspace mismatch and invalid main-terminal resume w
 
 ## Next work and open gates
 
+- User direction 2026-11-14: defer copy/transfer and second-PC acceptance until the transfer device is ready. Do not treat missing device evidence as passed or block unrelated local milestones on it.
+
 - The user confirmed on 2026-11-13 that an offline local agentic coding workflow is mandatory. MCP/MAXIS must actually edit repository files, run builds/tests, fix failures and report verified results through ordinary conversation. The master checklist now includes a disposable-checkout end-to-end acceptance gate before Phase 7. A reviewed disposable-project cycle is demonstrated; broader autonomous repair, Git-checkout/instruction handling, resume and disconnected-device gates remain open.
 
-- Continue outstanding 6.31 acceptance from the integration reference: general autonomous coding/resume, full meeting tool workflows, live release-model adoption and failing-instance/second-device evidence. The previous 14 terminal failures are resolved. Carry forward production model/corpus selection, QLoRA/GPU and portable-training acceptance. Specialist selection and external-device evidence require user input.
-- User confirmed the second PC still fails with an HTTP error; exact status/log/path have not been provided. HTTP diagnostics now expose safe status/category and next steps. Retest a new copied package and collect ai status, ai test and runtime/ai-runtime.log. Do not claim the failure fixed. Specialist/image assets and live catalog-to-agent adoption remain unselected/unverified.
+- Next implement 6.33 device integration and capability broker. Carry outstanding 6.31 acceptance from the integration reference: general autonomous coding/resume, full meeting tool workflows, live release-model adoption and failing-instance/second-device evidence. The previous 14 terminal failures are resolved. Carry forward production model/corpus selection, QLoRA/GPU and portable-training acceptance. Specialist selection and external-device evidence require user input.
+- PC2 evidence received: required bundled AI assets are missing and inference is disabled; placeholder port 1 explains ConnectionRefused. Four tests failed creating symlinks without Windows privilege. [PC2 diagnosis and retained output](../Project_GRID_PC2_Diagnostics.md) records fixes and complete-package/provisioning steps. Successful offline PC2 retest remains open. Specialist/image assets and live catalog-to-agent adoption remain unselected/unverified.
 - Keep remaining Phase 7 prerequisites visible, including conversation-first routing acceptance under 6.31 and the newer terminal-first milestones 6.32-6.38. New GUI work in 6.39 is optional and non-blocking.
 - The working tree contains existing implementation and documentation changes. Inspect and preserve them.
 
 ## Suggested next-chat request
 
-Continue GRID with checklist item 6.31. Read AGENTS.md and the current handoff, verify current repository state, implement the item, and update its completion evidence. Keep output concise and preserve outstanding model/device acceptance gates.
+Continue GRID with checklist item 6.33. Copy/transfer and PC2 acceptance are deferred until the user has the transfer device ready. Read AGENTS.md and the current handoff, verify current repository state, implement the item, and update its completion evidence. Keep output concise and preserve outstanding model/device acceptance gates.

@@ -41,10 +41,12 @@ Direct source creation, update and deletion also use the existing single-file pr
 
 ## Copied-PC HTTP failure
 
-The user confirmed the second PC still fails and described an HTTP error, without an exact status or runtime log. The cause is not established and the gate remains open. Shared inference and `ai status` now report HTTP status codes, connection failure categories and actionable local checks; raw exception/server messages are not echoed. Existing one-time CPU fallback for server errors remains in place.
-
-Retest the freshly built/copied package, then capture its complete `ai status` and `ai test` output, startup AI message, package path and `runtime/ai-runtime.log`. For HTTP 500/503, `ai models force-lite on` followed by a normal restart is a supported diagnostic trial; it is not proof of the cause or a guaranteed repair. HTTP 404 needs installed-model/asset checks; a connection failure needs startup/runtime checks. No downloads, cloud fallback or deletion were added.
+The supplied PC2 log now identifies missing bundled assets and a disabled service. The later connection refusal used placeholder port 1 because no AI server started. Four unrelated test failures came from missing Windows symbolic-link privilege. See [PC2 evidence, fixes and retest steps](Project_GRID_PC2_Diagnostics.md). The runtime bundle must be provisioned or copied completely before connectivity/inference can be tested. A successful PC2 offline retest remains outstanding.
 
 ## Gates not satisfied by this acceptance
 
 Second-device disconnected-network AI success, the exact reported HTTP failure repair, selected specialist/production model evaluation and live release-model adoption/rollback remain open. Production training/device benchmarks and final user release review remain open. Existing model catalog promotion still does not activate arbitrary model artifacts in live agents. General unattended multi-file coding and automatic retry are not claimed. Continue only with explicitly scoped reviewed work; Phase 7 is not approved by this change.
+
+## Conversation routing follow-up — 6.32
+
+[Versioned intent routing](Project_GRID_Conversation_Intent_Routing.md) extends ordinary requests with reviewed interpretation and explicitly reapproved read-only retries. Copy/transfer and offline PC2 acceptance are deferred at the user's request on 2026-11-14 until the transfer device is ready; their gates remain open.

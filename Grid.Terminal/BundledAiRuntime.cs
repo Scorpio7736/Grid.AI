@@ -25,9 +25,11 @@ public sealed class BundledAiRuntime : IAsyncDisposable
         var runtime = new BundledAiRuntime();
         if (Environment.GetEnvironmentVariable("GRID_AI_DISABLED") == "1")
         { runtime.Status = "Local AI disabled by GRID_AI_DISABLED=1."; return runtime; }
-        if (root is null || !File.Exists(Path.Combine(root,"assets.json")) || !File.Exists(Path.Combine(root,"ollama","ollama.exe")) ||
-            !File.Exists(Path.Combine(root,"models","manifests","registry.ollama.ai","library","qwen3","4b")))
-        { runtime.Status = "Local AI assets missing. Run Prepare-GridRuntime.ps1 in the source repository, or use a complete portable package. No global Ollama fallback."; return runtime; }
+        var required = new[] { "assets.json", Path.Combine("ollama", "ollama.exe"), Path.Combine("models", "manifests", "registry.ollama.ai", "library", "qwen3", "4b") };
+        var missing = root is null ? required : required.Where(path => !File.Exists(Path.Combine(root, path))).ToArray();
+        if (root is null || missing.Length > 0)
+        { runtime.Status = "Local AI assets missing. Runtime root: " + (root ?? "not located") + "\nMissing: " + string.Join(", ", missing) +
+            "\nA source clone alone does not include bundled runtime/model assets. Provision the source with Prepare-GridRuntime.ps1 and verified local assets, or launch a complete copied portable package using its launch.cmd. No global Ollama fallback."; return runtime; }
         try
         {
             PackageBudget.VerifyModel(root, hashes: false);

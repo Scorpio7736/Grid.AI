@@ -7,7 +7,7 @@ namespace Grid.Terminal;
 public sealed partial class ChatCommands
 {
     private static readonly string ProposalSchema = JsonSerializer.Serialize(new {
-        type = "object", properties = new { steps = new { type = "array", maxItems = 8, items = new {
+        type = "object", properties = new { version = new { type = "integer", @enum = new[] { 1 } }, steps = new { type = "array", maxItems = 8, items = new {
             type = "object", properties = new { agent = new { type = "string", @enum = McpCapabilityCatalog.Entries.Select(e => e.Agent.ToString()).Distinct().ToArray() },
                 capability = new { type = "string", @enum = McpCapabilityCatalog.Entries.Select(e => e.Capability).ToArray() }, argument = new { type = "string" } },
             required = new[] { "agent", "capability", "argument" }, additionalProperties = false } }, question = new { type = "string" } },
@@ -53,6 +53,7 @@ public sealed partial class ChatCommands
             if(mode=="propose") prompt.Append("MCP means Master Control Program, the user's digital helper. Return ONLY JSON: either {\"question\":\"a concrete clarification or unsupported-capability explanation\"} OR {\"steps\":[{\"agent\":\"VOLT\",\"capability\":\"volt.status\",\"argument\":\"current\"}]}. Cover EVERY requested action, including notification/delivery. A resource check AND notification requires TWO steps, volt.status and relay.notify. Never silently omit an action. Choose 1-8 steps from the catalog; agent is the uppercase capability prefix. Ask when target, scope or intent is missing; never invent a registered name. No MCP steps, shell commands, self-approval or unrequested checks. Execution requires separate human approval. Catalog (capability => argument): " + McpCapabilityCatalog.Prompt + "\n");
             else if(mode=="advice") prompt.Append("Give practical advice only; no file changes, task creation or execution. Answer the actual question concisely, with one minimal code example when useful. At most 120 words, excluding code.\n");
             else prompt.Append("Analyze the captured excerpts to answer the actual question. A question asking for one fact needs only that fact. No file changes, task creation or execution. At most 180 words. Say when excerpts are insufficient.\n");
+            if(mode=="propose") prompt.Append("For task steps include version:1 in the top-level object. Clarifications use only question. The catalog and intent contract are version 1.\n");
             prompt.Append("Registered roles: "+string.Join(",",state.Agents.Select(a=>a.Role))+"\nWorkspaces: "+string.Join(",",state.Workspaces.Where(w=>w.Enabled).Take(12).Select(w=>w.Name))+"\nStorage scopes: "+string.Join(",",state.Storage.Scopes.Where(s=>s.Enabled).Take(12).Select(s=>s.Name))+"\n");
             var promptBudget = repairFormat ? 2900 : 3200;
             if(Encoding.UTF8.GetByteCount(prompt.ToString()+"USER REQUEST: "+input)>promptBudget) return new("Request/catalog exceeds AI context budget; shorten the request.");

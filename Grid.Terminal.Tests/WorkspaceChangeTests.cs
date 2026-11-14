@@ -344,7 +344,7 @@ public sealed class WorkspaceChangeTests : IDisposable
         var result = Run($"changes stage demo notes.md {Context(project: "elsewhere")}");
         Assert.Contains("missing or ambiguous", result.Text); Assert.False(File.Exists(Path.Combine(Root, "notes.md")));
     }
-    [Fact]
+    [SymlinkFact]
     public void ReplacedParentLinkCannotRedirectApprovedWrite()
     {
         var sub=Path.Combine(Root,"sub"); var outside=Path.Combine(folder,"outside");

@@ -142,12 +142,14 @@ public sealed class MaxisTests : IDisposable
         Assert.Equal(Status.Cancelled,engine.GetSnapshot().Tasks.Records.Single().Status);
         Assert.Contains("Attempt artifacts",engine.GetSnapshot().Tasks.Records.Single().Result);
     }
-    [Fact]
+    [SymlinkFact]
     public void ReparseWorkspaceAndMissingProjectAreRefused()
     {
-        Assert.Throws<IOException>(()=>engine.RegisterDevelopmentWorkspace(owner.Reference,"missing",Root,"missing.csproj"));
         var link=Path.Combine(folder,"linked"); Directory.CreateSymbolicLink(link,Root);
         Assert.Throws<IOException>(()=>engine.RegisterDevelopmentWorkspace(owner.Reference,"linked",link,"sample.csproj"));
         Directory.Delete(link);
     }
+    [Fact]
+    public void MissingProjectIsRefusedWithoutLinkPrivileges()
+    { Assert.Throws<IOException>(()=>engine.RegisterDevelopmentWorkspace(owner.Reference,"missing",Root,"missing.csproj")); }
 }

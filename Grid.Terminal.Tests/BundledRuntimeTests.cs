@@ -6,6 +6,28 @@ namespace Grid.Terminal.Tests;
 
 public sealed class BundledRuntimeTests
 {
+    private sealed class NoNetwork : HttpMessageHandler
+    {
+        public int Calls;
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
+        { Calls++; throw new InvalidOperationException("Disabled runtime must not probe HTTP."); }
+    }
+    [Theory]
+    [InlineData("status")]
+    [InlineData("test")]
+    public async Task MissingAssetsReportStartupCauseWithoutProbingSentinelEndpoint(string diagnostic)
+    {
+        using var handler = new NoNetwork();
+        using var backend = new OllamaLocalBackend(handler, new Uri("http://127.0.0.1:1/"));
+        const string reason = "Local AI assets missing. Missing: assets.json";
+        await using var service = new SharedLocalInference(backend, enabled: false, unavailableReason: reason);
+        var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
+        var identity = new TerminalIdentitySession(() => "test"); identity.Attach(engine); identity.Login();
+        var commands = DefaultCommands.Create(engine); LocalAiCommands.Register(commands, identity, service, backend, () => reason); commands.UseIdentity(identity);
+        var result = await commands.Execute("ai " + diagnostic).BrokerOperation!(default);
+        Assert.Contains(reason, result.Text); Assert.Contains("no HTTP probe", result.Text);
+        Assert.DoesNotContain("ConnectionRefused", result.Text); Assert.Equal(0, handler.Calls);
+    }
     [Fact]
     public async Task DisabledChatAndDiagnosticsRetainStartupFailure()
     {
