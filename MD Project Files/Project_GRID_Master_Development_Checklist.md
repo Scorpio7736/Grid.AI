@@ -1775,14 +1775,25 @@ Connected user input now stays conversational; explicit command dispatch remains
 
 ## 6.33 Device integration and capability broker
 
-- [ ] Define an OS-facing, versioned capability catalog with typed inputs/results, policy labels, resource limits, provenance and audit records; reuse the trusted 6.23 gateway.
-- [ ] Distinguish read-only discovery (installed programs, processes, windows, approved paths and resource status) from potentially state-changing actions.
-- [ ] Implement narrowly scoped, consented application launch/focus and approved file/folder operations; add window inspection and screen context only with explicit selection and active grants.
-- [ ] Evaluate optional clipboard, notifications and other Windows integrations individually; default to no access and never infer permission from app discovery.
-- [ ] Recheck original-host, user identity, grant, target, path and request version at execution time; keep passwords, elevated operations and private contexts protected.
+**Local baseline implemented 2026-11-14.** Version-1 device requests, metadata discovery, exact-target review/approve/run, original-host grants and saved execution claims are implemented. Focused tests: 54 passed. Full solution: 1,416 passed. Interactive focus/protected-window and physical-media acceptance remains open. [Commands, policy, evidence and limitations](Project_GRID_Device_Integration.md).
+
+- [x] Define an OS-facing, versioned capability catalog with typed inputs/results, policy labels, resource limits, provenance and audit records; reuse the trusted 6.23 gateway.
+- [x] Distinguish read-only discovery (installed programs, processes, windows, approved paths and resource status) from potentially state-changing actions.
+- [x] Implement narrowly scoped, consented application launch/focus and approved file/folder operations; add window inspection and screen context only with explicit selection and active grants. Window inspection is title-only; screen context retains the existing selected-monitor workflow.
+- [x] Evaluate optional clipboard, notifications and other Windows integrations individually; default to no access and never infer permission from app discovery. Clipboard/new OS notification access is disabled; existing approved RELAY remains separate.
+- [x] Recheck original-host, user identity, grant, target, path and request version at execution time; keep passwords, elevated operations and private contexts protected.
 - [ ] Provide clear degradation on inaccessible apps, OS restrictions, changed devices, read-only media and unsupported operations; test each on real Windows hosts.
 
 ## 6.34 Guided onboarding and hardware-aware setup
+
+Fresh-clone implementation follow-up: [installation workflow](Project_GRID_Fresh_Clone_Installation.md). 1,437 solution tests passed; offline setup and real local-model inline/attachment dispatch passed on the development PC.
+
+- [x] Add an explicit clone installer with pinned runtime/SDK/model assets, offline-cache mode and no silent downloads.
+- [x] Keep clone-local world/identity/history separate from existing-instance copy-to and shared-user default storage.
+- [x] Require real-model conversation checks before publishing clone readiness; preserve worlds on setup failure.
+- [ ] Verify the complete online installation and first credential setup on clean PC2, including physical windows and disconnected runtime use.
+
+Initial setup/profile/health implementation and 1,431 passing regressions: [guided setup](Project_GRID_Guided_Setup.md). Remaining acceptance below is not marked complete; PC2 startup reporting follow-up is recorded in [PC2 diagnostics](Project_GRID_PC2_Diagnostics.md).
 
 - [ ] Offer a terminal-based first-run setup flow for permanent PC GRID versus Flash GRID, local identity/recovery, storage location and optional capabilities.
 - [ ] Discover CPU, available RAM/VRAM, storage and existing managed runtime dependencies; show supported Lite/Standard/Performance choices with measured confidence and resource estimates.

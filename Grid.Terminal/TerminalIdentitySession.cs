@@ -167,7 +167,7 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
         {
             if (!IsMaster || session.SessionId != sessionId || session.Generation != generation || worldInstanceId != Engine.WorldInstanceId)
             { Monitor.Exit(gate); return null; }
-            return new Lease(gate, new(Engine.LocalOperator.Id, sessionId, generation, worldInstanceId, true, null, 1));
+            return new Lease(gate, new(Engine.LocalOperator.Id, sessionId, generation, worldInstanceId, true, null, 1) { IsOriginalHost = !IsAttachment });
         }
         catch { Monitor.Exit(gate); throw; }
     }
@@ -178,7 +178,7 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
         {
             if (!Allows("session") || session.SessionId != sessionId || session.Generation != generation || worldInstanceId != Engine.WorldInstanceId)
             { Monitor.Exit(gate); return null; }
-            return new Lease(gate, new(Engine.LocalOperator.Id, sessionId, generation, worldInstanceId, agent is null, agent, 1));
+            return new Lease(gate, new(Engine.LocalOperator.Id, sessionId, generation, worldInstanceId, agent is null, agent, 1) { IsOriginalHost = !IsAttachment });
         }
         catch { Monitor.Exit(gate); throw; }
     }

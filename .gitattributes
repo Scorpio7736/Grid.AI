@@ -61,3 +61,6 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+# Hash-pinned model metadata must preserve exact bytes on every checkout.
+ThirdParty/Qwen3-4B-*-manifest.json -text

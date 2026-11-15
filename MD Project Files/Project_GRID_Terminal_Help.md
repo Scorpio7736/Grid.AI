@@ -1053,3 +1053,8 @@ mcp ledger <plan-id-shown-by-plans>
 ```
 
 Full format limits and recovery behavior are documented in the [controlled tool gateway reference](Project_GRID_Controlled_Tool_Gateway.md).
+
+## Device integration - 6.33
+
+In the original Master Control terminal, use device catalog, device apps, device paths, device processes, device windows or device resources for read-only discovery. No discovery grants control. Use device select launch "<absolute-exe-path>", device select focus <PID>, device select inspect <PID>, or device select mkdir "<new-folder-path>" to review a selected target. Then issue the displayed device approve <review-id> and device run <review-id> separately. Device revoke <review-id> cancels a pending grant. Reviews expire after two minutes and never survive restart. Clipboard and elevation are unsupported. See [device integration](Project_GRID_Device_Integration.md) for bounds, audit, exact-path policy and remaining manual acceptance.
+Guided setup launch options: `--setup [absolute-new-profile.json]`, `--configured <profile.json>`, and read-only `--doctor`. See [guided setup](Project_GRID_Guided_Setup.md) for limits and rollback. Live isolated chat diagnostic: `--verify-chat-runtime` (inline and attachment protocol; no user world opened).

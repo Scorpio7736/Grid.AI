@@ -6,6 +6,26 @@ namespace Grid.Terminal.Tests;
 
 public sealed class BundledRuntimeTests
 {
+    [Fact]
+    public async Task CorruptPinnedManifestPreservesValidationFailureWithoutStartingServer()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "GridBadRuntime-" + Guid.NewGuid());
+        var manifest = Path.Combine(root, "models", "manifests", "registry.ollama.ai", "library", "qwen3", "4b");
+        Directory.CreateDirectory(Path.GetDirectoryName(manifest)!);
+        Directory.CreateDirectory(Path.Combine(root, "ollama"));
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "assets.json"), "{}");
+            File.WriteAllText(Path.Combine(root, "ollama", "ollama.exe"), "not executable");
+            File.WriteAllText(manifest, "{}");
+            await using var runtime = await BundledAiRuntime.StartAsync(root);
+            Assert.False(runtime.Ready);
+            Assert.Contains("Unbenchmarked model manifest", runtime.Status);
+            Assert.Equal(1, runtime.Endpoint.Port);
+            Assert.Null(runtime.LogPath);
+        }
+        finally { Directory.Delete(root, true); }
+    }
     private sealed class NoNetwork : HttpMessageHandler
     {
         public int Calls;

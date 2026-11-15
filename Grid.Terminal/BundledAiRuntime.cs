@@ -76,7 +76,7 @@ public sealed class BundledAiRuntime : IAsyncDisposable
             }
             throw new IOException("Bundled AI exited before readiness; check bundled libraries and hardware compatibility.");
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception or OperationCanceledException or SocketException)
+        catch (Exception e) when (e is InvalidDataException or System.Text.Json.JsonException or IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception or OperationCanceledException or SocketException)
         {
             await runtime.DisposeAsync();runtime.Status="Bundled local AI unavailable: " + e.Message + (runtime.LogPath is {} log ? "\nRuntime log: "+log : "");
             token.ThrowIfCancellationRequested();return runtime;

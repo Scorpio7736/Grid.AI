@@ -92,3 +92,11 @@ The reported `plan to have maxis demonstrate the message "resume test"` request 
 Malformed main-terminal `resume` arguments are validated before opening an attached window. `resume my work` there explains how to enter an inline conversation; valid conversation IDs retain the existing window behavior.
 
 Full verification passed 1,361 tests (14 Core, 157 Simulation, 99 Persistence, 1,091 Terminal) using `dotnet test --artifacts-path TestResults/resume-fix --no-restore --verbosity quiet`. The user's running GRID locked the normal executable, so verification used isolated outputs. Process-based persistence tests now locate either conventional or isolated build outputs. The running process was not stopped or replaced; close it normally and rebuild before retrying the updated normal executable.
+
+## MCP executable testing follow-up - 2026-11-14
+
+The bundled-model `--verify-mcp-workflow` run completed five of six checks. Local Qwen startup, multi-specialist draft, denial before approval, approved VOLT/RELAY execution, and SQLite evidence retention passed. Missing-workspace clarification failed with `Assistance refused: Invalid clarification response.` This remains an open model-response/clarification defect; do not mark MCP acceptance complete.
+
+Retained source evidence: `C:\Users\jack\AppData\Local\Temp\Grid611Verification-33d634a8a46149569d026db4e52739e5\report.json`.
+
+Interactive testing was blocked because the running GRID console was absent from the computer-control window inventory. Login and mouse/keyboard workflows were not verified. The file-operations attempt was interrupted; no completed Desktop HTML artifact or OneDrive synchronization was confirmed. These are limitations, not passing checks.

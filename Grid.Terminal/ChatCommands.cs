@@ -125,7 +125,7 @@ public sealed partial class ChatCommands
                 {
                     if (!Current()) return new("Conversation stopped or session revoked; nothing stored.");
                     var result = Response(engine.CompleteGroundedTurn(turn, reply, token));
-                    var fallbackNotice = reply.ResponseRejected ? "AI response rejected: " + reply.Reason + " Using a basic reply.\n" : "Local AI is unavailable; using a basic reply.\n";
+                    var fallbackNotice = reply.ResponseRejected ? "AI response rejected: " + reply.Reason + " Using a basic reply.\n" : "Local AI is unavailable; using a basic reply.\nReason: " + TerminalTable.Safe(reply.Reason) + "\nFor startup details, return to terminal and run ai status. Attached conversations share the host runtime.\n";
                     return reply.Available && CommunicationState.ValidContent(reply.Text) ? result : result with
                     { Text = fallbackNotice + result.Text, Presentation = new[] { new ConversationSpan(0,fallbackNotice.Length,ConversationTone.Error) }.Concat(ConversationPresentation.Shift(result.Presentation,fallbackNotice.Length)).ToArray(), AnimateFrom = result.AnimateFrom is { } offset ? offset + fallbackNotice.Length : null };
                 }, "grounded-reply");

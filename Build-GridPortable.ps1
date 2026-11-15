@@ -35,7 +35,7 @@ function Copy-GridSource([string]$From, [string]$To) {
         if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "Source link unsupported: $($entry.FullName)" }
         if ($entry.FullName -eq [IO.Path]::GetFullPath($Destination)) { continue }
         if ($entry.PSIsContainer) {
-            if ($entry.Name -notin @('.git','.vs','.grid-runtime','portable','bin','obj','TestResults','data','runtime','app','node_modules')) { Copy-GridSource $entry.FullName (Join-Path $To $entry.Name) }
+            if ($entry.Name -notlike '.grid-*' -and $entry.Name -notin @('.git','.vs','.grid-runtime','portable','bin','obj','TestResults','data','runtime','app','node_modules')) { Copy-GridSource $entry.FullName (Join-Path $To $entry.Name) }
         } elseif (($entry.Extension -in @('.cs','.csproj','.slnx','.props','.targets','.ps1','.md','.json') -or $entry.Name -in @('PdfPig-LICENSE','llama.cpp-LICENSE')) -and $entry.Name -notmatch '^(appsettings|secrets)') { Copy-Item -LiteralPath $entry.FullName -Destination $To }
     }
 }

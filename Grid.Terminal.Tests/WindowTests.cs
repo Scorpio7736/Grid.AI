@@ -118,6 +118,43 @@ public sealed class WindowTests
         }
         finally { Directory.Delete(folder, true); }
     }
+    private sealed class ChatProbeBackend : IInferenceBackend
+    {
+        public int Calls;
+        public Task<string> GenerateAsync(string prompt, CancellationToken token)
+        { Calls++; return Task.FromResult("Hello from the shared local model."); }
+    }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InlineAndAttachedChatsShareRuntimeAndPreserveStartupReason(bool ready)
+    {
+        var backend = new ChatProbeBackend();
+        const string reason = "Local AI assets missing. Missing: assets.json; Runtime root: PC2/runtime";
+        await using var inference = new SharedLocalInference(backend, enabled: ready, unavailableReason: reason);
+        await using var f = new Fixture(inference: inference);
+        f.Engine.StartAgents(f.Owner.Reference);
+        f.Commands.Execute("connect MCP -inline");
+        var inline = await f.Commands.Execute("Hello MCP").BrokerOperation!(default);
+        f.Commands.Execute("return to terminal");
+        await using var child = await f.Open("connect MCP");
+        var attached = await child.Send("command", "Hello MCP");
+        foreach (var text in new[] { inline.Text, attached.Text })
+        {
+            if (ready)
+            {
+                Assert.Contains("Hello from the shared local model.", text);
+                Assert.DoesNotContain("using a basic reply", text);
+            }
+            else
+            {
+                Assert.Contains(reason, text);
+                Assert.Contains("ai status", text);
+                Assert.Contains("using a basic reply", text);
+            }
+        }
+        Assert.Equal(ready ? 2 : 0, backend.Calls);
+    }
     private sealed class Fixture : IAsyncDisposable
     {
         public readonly TerminalSessionRegistry Registry = new();

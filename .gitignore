@@ -364,3 +364,8 @@ FodyWeavers.xsd
 # Provisioned binary assets and portable release output (rebuild with tracked scripts)
 .grid-runtime/
 portable/
+
+# Per-clone installation, private world and retained setup downloads
+.grid-app/
+.grid-data/
+.grid-install-*/

@@ -2,7 +2,7 @@ namespace Grid.Simulation.Editing;
 
 public sealed record EditSessionReference(Guid SessionId, long Generation);
 public sealed record ProgramEditIdentity(Guid OperatorId, Guid SessionId, long Generation,
-    Guid WorldInstanceId, bool IsMasterControl, Guid? AgentId, long PolicyVersion);
+    Guid WorldInstanceId, bool IsMasterControl, Guid? AgentId, long PolicyVersion) { public bool IsOriginalHost { get; init; } }
 
 /// <summary>
 /// Trusted providers verify live authentication, programs.edit, scope, expiry and current policy.

@@ -25,3 +25,17 @@ Then capture startup, `ai status`, `ai test`, and a chat response with the netwo
 ## Verification
 
 Focused verification passed 15 cases with no skips on the development host. With the explicit test-only `GRID_TEST_DISABLE_SYMLINKS=1` capability simulation, two independent checks passed and the four link cases were reported skipped, with no failures. This simulation does not substitute for rerunning on PC2. Full solution verification passed **1,378 tests**, no failures or skips, on the development host (14 Core, 157 Simulation, 99 Persistence, 1,108 Terminal). Command: `dotnet test --artifacts-path TestResults/pc2-fixes -p:NuGetAudit=false -p:RestoreIgnoreFailedSources=true --verbosity quiet`.
+
+## Inline/attached startup reporting follow-up - 2026-11-14
+
+A fresh user report says PC2 `grid -start`, `connect MCP -inline`, `Hello MCP` produces the basic fallback. Its present cause is not yet established: current PC2 `ai status` and launch path were requested. Earlier missing-assets evidence remains relevant but is not proof of this new installation's state.
+
+Confirmed code defect: `ChatCommands.Send` discarded `InferenceReply.Reason` in ordinary unavailable-AI fallback. It now displays the sanitized startup/inference reason and points to main-terminal `ai status`. Runtime validation failures for a corrupt pinned model manifest now produce an unavailable status instead of escaping the startup handler. Neither change invents missing assets or enables a disabled runtime.
+
+`Program.cs` creates one shared inference service and passes it into each host-owned dispatcher. Attached windows send messages through `WindowHub`; they do not initialize their own model or inherit a separate inference service. Regressions exercise both inline dispatch and the real named-pipe attachment protocol with enabled/disabled inference, retaining the same failure and making no backend call when disabled. A corrupt-manifest fixture verifies that no server starts.
+
+New opt-in command: `Grid.Terminal.exe --verify-chat-runtime`. It opens a synthetic world and uses the bundled model for `Hello MCP` through inline and attachment-protocol paths. No user world/credentials are opened. It prints JSON evidence and returns nonzero on failure. This tests protocol dispatch, not physical window rendering.
+
+Development-host live result: all three checks passed (bundled Qwen3 4B ready, inline model greeting, attached-protocol model greeting). Full solution: 1,431 passed, zero failures/skips. PC2 real-model acceptance remains OPEN pending a complete installation and retest on PC2. The earlier missing-workspace MCP clarification failure remains open separately.
+
+Latest PC2 report confirms missing .grid-runtime/assets.json, bundled Ollama and Qwen manifest. User selected a fresh repository installation rather than copy-to. Follow [fresh clone installation](Project_GRID_Fresh_Clone_Installation.md); this gives a clone-local world and explicit pinned dependency installation. PC2 completion remains unverified.

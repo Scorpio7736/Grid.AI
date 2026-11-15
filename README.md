@@ -1,5 +1,11 @@
 # GRID7736
 
+## Fresh clone: install a new GRID instance
+
+From 64-bit PowerShell in the clone, run ` .\Setup-GridClone.ps1 -Download`, then `.\Start-GridClone.ps1`. The explicit installer downloads pinned dependencies, builds GRID and requires successful real-model conversation checks. The launcher uses `.grid-data/world.db`, with fresh local identity/history on first launch. Existing instances are not imported or erased. `grid -copyto` remains the existing-instance transfer path.
+
+Use `-Plan` for a read-only setup preview. Offline setup and verification limits: [fresh clone installation](MD%20Project%20Files/Project_GRID_Fresh_Clone_Installation.md). PC2 end-to-end download acceptance remains pending. These instructions supersede the historical fresh-clone notes below.
+
 **AI response recovery — 2026-10-26:** Truncated answers now get one bounded larger retry, and rejected responses are distinguished from an offline service. Advice and analysis prompts were refined; MCP greetings no longer receive unrelated district counts. **759 Release tests passed**, and the bundled model answered the reported HTML question successfully. [Fix, limits and regression test](MD%20Project%20Files/Project_GRID_AI_Response_Recovery.md).
 
 
