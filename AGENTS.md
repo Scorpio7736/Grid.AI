@@ -9,6 +9,8 @@
 
 ## Verification
 
+- Before promoting changes to production `main`, follow [main branch requirements](MD%20Project%20Files/Project_GRID_Main_Branch_Requirements.md): the final candidate must pass the entire solution suite with no skipped tests, and installation must remain reproducible using the tracked setup and verified dependency pins. Record fresh-install evidence when installation behavior or dependencies change. Broader production rules are deferred.
+
 - Run focused tests during development. Run one full suite at completion when appropriate for the change and its acceptance criteria.
 - Add regression coverage for behavior that existing tests would miss. Documentation-only changes normally need link/content review and `git diff --check`.
 - Record actual verification results and keep unverified acceptance items open.

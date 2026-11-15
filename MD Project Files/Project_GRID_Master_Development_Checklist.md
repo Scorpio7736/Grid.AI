@@ -1,4 +1,8 @@
+**Initial production branch requirements — 2026-11-15:** `main` requires all solution tests to pass on the final candidate (zero failures/skips) and reproducible installation through tracked setup and verified dependency pins. These are the only newly agreed branch requirements; additional protection/review/device rules are deferred. [Requirements and enforcement status](Project_GRID_Main_Branch_Requirements.md). Documentation/link review and `git diff --check` verify this policy-only change; no GitHub blocking checks were configured. Existing four-skip PC2 runs do not meet the new all-tests-pass gate.
+
 **User-directed deferral — 2026-11-14:** Copy/transfer and second-PC offline acceptance are deferred until the transfer device is ready. Keep their unchecked acceptance gates open; continue local terminal milestones beginning with 6.32. This is a scheduling change, not a successful portable-device verification or Phase 7 approval.
+
+**Future production requirements recorded — 2026-11-15:** [Deferred requirements](Project_GRID_Main_Branch_Requirements.md#future-requirements-deferred) preserve the proposed review, protection, supported-device, data-preservation and release safeguards for later adoption. Only the two initial requirements are active under this branch policy. Documentation/link review and `git diff --check` passed.
 
 # Project GRID — Master Development Checklist
 

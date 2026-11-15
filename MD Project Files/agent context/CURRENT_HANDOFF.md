@@ -8,6 +8,10 @@ Follow the concise [repository working rules](../../AGENTS.md). Use targeted rea
 
 ## Current milestone
 
+Future production branch ideas are now recorded as unchecked, deferred items in the [main requirements reference](../Project_GRID_Main_Branch_Requirements.md#future-requirements-deferred). No additional branch gates or GitHub protections were activated. Documentation/link review and `git diff --check` passed.
+
+Initial `main` requirements agreed 2026-11-15: full candidate suite must pass with zero skipped tests; installation must remain reproducible through tracked setup and pinned verified dependencies. [Policy and enforcement status](../Project_GRID_Main_Branch_Requirements.md). Added to AGENTS.md and master checklist; other proposed branch rules are deferred. GitHub branch protection/status checks are not configured. Existing four-skip development results do not satisfy this production gate. Documentation-only verification: link/content review and `git diff --check`.
+
 AI readiness alerts added 2026-11-15: immediate host startup and post-login warning plus inline/resume/meeting and attached opening notices retain cause and explain fallback-only operation. Actual disabled ephemeral terminal and attached-protocol regressions passed. Full suite 1,436 passed, zero failed, four symbolic-link privilege skips. See [alert evidence/limits](../Project_GRID_Fresh_Clone_Installation.md#ai-readiness-alerts-2026-11-15). This reports startup availability, not continuous backend monitoring.
 
 PC2 fresh-clone online installation completed 2026-11-15: pinned runtime/SDK/model downloads verified, Release build clean, real inline and attached-protocol Qwen greetings passed, readiness published. Launch with Start-GridClone.ps1; existing terminals need restart. Explicit -Download -RepairRuntime retains an incomplete old runtime; startup guidance points to the online installer. Physical windows, first login and disconnected PC2 acceptance remain open. See [installation evidence](../Project_GRID_Fresh_Clone_Installation.md#pc2-online-installation-2026-11-15). Earlier development-PC evidence below is historical.
