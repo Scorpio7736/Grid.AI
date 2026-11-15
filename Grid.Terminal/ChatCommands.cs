@@ -8,13 +8,14 @@ public sealed partial class ChatCommands
     private readonly GridSimulationEngine engine;
     private Guid? active;
     private ILocalInference? inference;
+    private Func<string>? aiWarning;
     private Func<CancellationToken, Task>? save;
     private TerminalIdentitySession? identity;
     private Recipient Actor => identity?.CurrentRecipient ?? engine.LocalOperator;
     private ChatCommands(GridSimulationEngine engine) => this.engine = engine;
-    public static ChatCommands Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession? identity = null, ILocalInference? inference = null, Func<CancellationToken, Task>? save = null, IScreenContextProvider? screenProvider = null)
+    public static ChatCommands Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession? identity = null, ILocalInference? inference = null, Func<CancellationToken, Task>? save = null, IScreenContextProvider? screenProvider = null, Func<string>? aiWarning = null)
     {
-        var chat = new ChatCommands(engine) { identity = identity, inference = inference, save = save, dispatcher = commands };
+        var chat = new ChatCommands(engine) { identity = identity, inference = inference, save = save, dispatcher = commands, aiWarning = aiWarning };
         chat.screens = screenProvider ?? new WindowsScreenContextProvider();
         commands.Register(new("screen", "screen <options|monitoring|ask|status|stop> ...", "One-shot offline screen OCR assistance; never background recording or actions.", chat.Screen) { Capability = "world.admin" });
         if (identity?.IsAttachment != true)
@@ -66,7 +67,7 @@ public sealed partial class ChatCommands
                 return commands.OpenConversation(new[] { "agent", "meetings" }.Concat(names).ToArray());
             active = engine.StartMeeting(identity.Reference,names);
             save?.Invoke(CancellationToken.None).GetAwaiter().GetResult();
-            return new("Meeting: " + string.Join(", ",participants.Select(p => TerminalTable.Safe(p.Name))) +
+            return new((aiWarning?.Invoke() ?? "") + "Meeting: " + string.Join(", ",participants.Select(p => TerminalTable.Safe(p.Name))) +
                 "\nNormally one participant replies per turn. Address MAXIS by name, hey MAXIS or @MAXIS; each of you/everyone requests get a reply from each participant.\nThis transcript is shared. Private files and memories are not automatically included. Freeform replies never execute tasks.");
         }
         catch (Exception e) when (e is ArgumentException or InvalidOperationException or UnauthorizedAccessException) { return new("Meeting error: " + e.Message); }
@@ -82,7 +83,7 @@ public sealed partial class ChatCommands
         var name = args.Count == 0 ? "MCP" : string.Join(" ", args);
         var recipient = engine.ResolveProgram(name);
         active = engine.StartConversation(Actor, recipient);
-        return new($"Connected to {TerminalTable.Safe(recipient.Name)}\nAI conversation; replies can be mistaken.\nType your message directly for conversation, advice or reviewed work. Say show our conversation to read history, remember that followed by a fact to save it, or return to terminal to leave. /terminal also returns to commands. Follow-up questions guide file and screen selection. Earlier conversations are recalled automatically. Host actions require the existing review and approval workflow.");
+        return new((aiWarning?.Invoke() ?? "") + $"Connected to {TerminalTable.Safe(recipient.Name)}\nAI conversation; replies can be mistaken.\nType your message directly for conversation, advice or reviewed work. Say show our conversation to read history, remember that followed by a fact to save it, or return to terminal to leave. /terminal also returns to commands. Follow-up questions guide file and screen selection. Earlier conversations are recalled automatically. Host actions require the existing review and approval workflow.");
     }
     private CommandResult Talk(IReadOnlyList<string> args)
     {
@@ -161,7 +162,7 @@ public sealed partial class ChatCommands
         var c = Find(id);
         if (c.Status != ConversationStatus.Open) return new("Conversation has ended. Use connect to start a new one.");
         active = id;
-        return new($"Resumed conversation {id}. Type your message, say show our conversation, or return to terminal. Absent program recipients cannot receive new turns.");
+        return new((aiWarning?.Invoke() ?? "") + $"Resumed conversation {id}. Type your message, say show our conversation, or return to terminal. Absent program recipients cannot receive new turns.");
     }
     private CommandResult Disconnect(IReadOnlyList<string> args)
     {

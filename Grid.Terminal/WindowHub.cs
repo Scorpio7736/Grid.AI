@@ -6,7 +6,7 @@ namespace Grid.Terminal;
 
 /// <summary>The original host alone owns workers/storage. Windows are scoped, process-bound local clients.</summary>
 public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegistry registry,
-    Func<TerminalIdentitySession, CommandDispatcher> createCommands, Func<string, int>? launcher = null, bool noColor = false) : IAsyncDisposable
+    Func<TerminalIdentitySession, CommandDispatcher> createCommands, Func<string, int>? launcher = null, bool noColor = false, Func<string>? aiWarning = null) : IAsyncDisposable
 {
     private readonly CancellationTokenSource stop = new();
     private readonly object gate = new();
@@ -48,7 +48,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 var pid = (launcher ?? Launch)(name);
                 var task = Serve(pipe, pid, identity, commands, mode, snapshot, view?.FirstOrDefault(), conversation ? view : null);
                 clients.RemoveAll(t => t.IsCompleted); clients.Add(task); active++;
-                return new("Opened " + mode + " window connected to this GRID. Closing it only detaches.");
+                return new((conversation ? aiWarning?.Invoke() ?? "" : "") + "Opened " + mode + " window connected to this GRID. Closing it only detaches.");
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or PlatformNotSupportedException or System.ComponentModel.Win32Exception)
             {

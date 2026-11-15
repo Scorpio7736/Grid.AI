@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([switch]$Download, [switch]$Plan)
+param([switch]$Download, [switch]$Plan, [switch]$RepairRuntime)
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $root = [IO.Path]::GetFullPath($PSScriptRoot)
@@ -23,6 +23,16 @@ if ($Plan) {
 if (![Environment]::Is64BitProcess -or $env:OS -ne 'Windows_NT' -or $env:PROCESSOR_ARCHITECTURE -ne 'AMD64') { throw 'Use 64-bit PowerShell on Windows x64.' }
 if ($env:GRID_AI_DISABLED -eq '1') { throw 'GRID_AI_DISABLED=1 disables inference. Review that setting before full clone setup; it was not changed.' }
 $drive = [IO.DriveInfo]::new([IO.Path]::GetPathRoot($root))
+if ($RepairRuntime) {
+    if (!$Download) { throw '-RepairRuntime requires -Download to stage verified replacement dependencies. Existing files retained.' }
+    if ($drive.AvailableFreeSpace -lt 20000000000L) { throw 'At least 20 GB free staging space is required. Existing runtime retained in place.' }
+    if (Test-Path -LiteralPath $runtime) {
+        $retained = Join-Path $root ('.grid-install-retained-' + [Guid]::NewGuid().ToString('N'))
+        Assert-LocalPath $runtime; Assert-LocalPath $retained
+        Move-Item -LiteralPath $runtime -Destination $retained
+        Write-Output "Previous runtime retained at $retained. Worlds and application data are unchanged."
+    }
+}
 if (!(Test-Path -LiteralPath $runtime)) {
     if (!$Download) { throw 'Dependencies are absent. Run .\Setup-GridClone.ps1 -Download for explicit online installation, or provision verified local assets with Prepare-GridRuntime.ps1 first. No files downloaded.' }
     if ($drive.AvailableFreeSpace -lt 20000000000L) { throw 'At least 20 GB free staging space is required for this baseline. Nothing downloaded.' }
@@ -71,7 +81,7 @@ if (!(Test-Path -LiteralPath $runtime)) {
 }
 $dotnet = Join-Path $runtime 'dotnet\dotnet.exe'
 foreach ($required in @($dotnet,(Join-Path $runtime 'assets.json'),(Join-Path $runtime 'ollama\ollama.exe'))) {
-    if (!(Test-Path -LiteralPath $required -PathType Leaf)) { throw "Incomplete runtime: $required. Existing files retained; repair/provision assets explicitly." }
+    if (!(Test-Path -LiteralPath $required -PathType Leaf)) { throw "Incomplete runtime: $required. Existing files retained. Close GRID, then run .\Setup-GridClone.ps1 -Download -RepairRuntime to retain and replace this runtime, or provision verified local assets." }
 }
 $manifest = Join-Path $runtime 'models\manifests\registry.ollama.ai\library\qwen3\4b'
 if ((Get-FileHash -LiteralPath $manifest).Hash -ne $lock.Model.ManifestSha256) { throw 'Pinned model manifest verification failed.' }

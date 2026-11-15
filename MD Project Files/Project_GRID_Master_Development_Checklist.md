@@ -1791,6 +1791,9 @@ Fresh-clone implementation follow-up: [installation workflow](Project_GRID_Fresh
 - [x] Add an explicit clone installer with pinned runtime/SDK/model assets, offline-cache mode and no silent downloads.
 - [x] Keep clone-local world/identity/history separate from existing-instance copy-to and shared-user default storage.
 - [x] Require real-model conversation checks before publishing clone readiness; preserve worlds on setup failure.
+- [x] Alert immediately and after login when local AI startup is unavailable; repeat the cause/fallback limitation on inline/resumed/meeting and attached conversation opening. Actual isolated terminal startup and attached-protocol warning verified 2026-11-15; full suite **1,436 passed, zero failed, four privilege skips**. [Readiness alert behavior and limits](Project_GRID_Fresh_Clone_Installation.md#ai-readiness-alerts-2026-11-15).
+- [x] PC2 online clone installation verified 2026-11-15: pinned downloads/hash checks, restore, zero-warning Release build, and real Qwen replies through inline/attached protocol passed. Missing-asset guidance now names the clone installer; explicit `-Download -RepairRuntime` retains incomplete runtime files. [Evidence and repair behavior](Project_GRID_Fresh_Clone_Installation.md#pc2-online-installation-2026-11-15).
+- Verification 2026-11-15: full solution **1,434 passed, zero failed, four symbolic-link privilege skips**; all seven clone setup cases passed. Skipped protection checks and physical/offline acceptance remain open.
 - [ ] Verify the complete online installation and first credential setup on clean PC2, including physical windows and disconnected runtime use.
 
 Initial setup/profile/health implementation and 1,431 passing regressions: [guided setup](Project_GRID_Guided_Setup.md). Remaining acceptance below is not marked complete; PC2 startup reporting follow-up is recorded in [PC2 diagnostics](Project_GRID_PC2_Diagnostics.md).

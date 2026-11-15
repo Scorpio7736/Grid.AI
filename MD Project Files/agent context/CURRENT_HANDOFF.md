@@ -1,12 +1,18 @@
 # GRID current handoff
 
-Updated 2026-11-14. Verify the working tree and checklist before starting work.
+Updated 2026-11-15. Verify the working tree and checklist before starting work.
 
 ## Working approach
 
 Follow the concise [repository working rules](../../AGENTS.md). Use targeted reads and tests, retain completion evidence, and link detailed documentation instead of repeating it. The [historical chat workflow](CHAT_WORKFLOW_AND_AGENT_HANDOFF.md) preserves earlier decisions.
 
 ## Current milestone
+
+AI readiness alerts added 2026-11-15: immediate host startup and post-login warning plus inline/resume/meeting and attached opening notices retain cause and explain fallback-only operation. Actual disabled ephemeral terminal and attached-protocol regressions passed. Full suite 1,436 passed, zero failed, four symbolic-link privilege skips. See [alert evidence/limits](../Project_GRID_Fresh_Clone_Installation.md#ai-readiness-alerts-2026-11-15). This reports startup availability, not continuous backend monitoring.
+
+PC2 fresh-clone online installation completed 2026-11-15: pinned runtime/SDK/model downloads verified, Release build clean, real inline and attached-protocol Qwen greetings passed, readiness published. Launch with Start-GridClone.ps1; existing terminals need restart. Explicit -Download -RepairRuntime retains an incomplete old runtime; startup guidance points to the online installer. Physical windows, first login and disconnected PC2 acceptance remain open. See [installation evidence](../Project_GRID_Fresh_Clone_Installation.md#pc2-online-installation-2026-11-15). Earlier development-PC evidence below is historical.
+
+Current verification: full suite 1,434 passed, zero failed, four symbolic-link privilege skips; seven clone setup cases passed. `git diff --check` passed. No commit/push performed in this follow-up.
 
 Fresh clone path implemented: Setup-GridClone.ps1 -Download installs pinned dependencies; Start-GridClone.ps1 uses .grid-data/world.db with no imported world. Final offline setup and real inline/attachment model chats passed. Full suite 1,437 passed. Complete online clean-PC2 acceptance remains open. Latest PC2 report confirms missing bundled runtime/model assets. See [fresh clone installation](../Project_GRID_Fresh_Clone_Installation.md). User authorized commit/push to Scorpio7736/Grid7736.
 

@@ -31,6 +31,24 @@ With an already provisioned `.grid-runtime` and populated `.grid-runtime/nuget`,
 
 Incomplete existing runtimes are retained and reported; the installer does not silently overwrite them. A failed build/model test marks setup incomplete. Resolve the exact error and rerun setup. A new repository clone can be used to stage another fresh installation without deleting the failed instance. GRID_AI_DISABLED remains authoritative and must be reviewed if set. No global Ollama service, machine-wide SDK installation, cloud inference, security-policy change or user-world reset is part of setup.
 
+To replace an incomplete runtime, close GRID and run `Setup-GridClone.ps1 -Download -RepairRuntime`. This explicitly moves the old runtime into a unique `.grid-install-retained-*` directory before downloading verified replacements. It requires 20 GB free space in addition to the retained files. A download failure leaves the old files in that retained directory; it does not restore them automatically. World and identity files are untouched. Without `-Download`, repair refuses before moving files.
+
+## PC2 online installation (2026-11-15)
+
+On the user's PC2 clone, `Setup-GridClone.ps1 -Download` completed the full online path: pinned Ollama/SDK archives, pinned Qwen model blobs, hash/size verification, NuGet restore, Release build (zero warnings/errors), and real-model inline plus named-pipe attached greetings. The installer published `.grid-app/clone-ready.json` with `ready: true`. MCP answered “Hello. I'm MCP, your local GRID coordinator.” No saved user world or credential setup was opened by verification. Start this installation with `Start-GridClone.ps1`; an already running terminal must be closed and restarted.
+
+This establishes online installation and actual inference on PC2, not compatibility with every machine. Supported baseline remains Windows x64, sufficient storage/memory, and Internet for first installation. Physical conversation windows, first credential setup and disconnected operation on PC2 remain open acceptance checks. Earlier development-PC evidence below is historical.
+
+Verification after the follow-up changes: `dotnet test Grid7736.slnx --verbosity quiet -p:NuGetAudit=false` exited 0: **1,434 passed, zero failed, four skipped** (symbolic-link fixtures require privileges unavailable on this account). Seven fresh-clone cases passed, including partial-runtime repair guidance, offline repair refusal/file preservation and corrupt-model refusal. The Windows PowerShell child test environment now initializes its own module paths instead of inheriting PowerShell 7 paths. `git diff --check` passed. Full online replacement of a deliberately damaged runtime was not repeated; successful online installation above used an absent runtime.
+
+## AI readiness alerts (2026-11-15)
+
+If bundled AI startup is unavailable (including missing/corrupt assets, disabled inference, startup failure or timeout), the host now immediately prints `WARNING: AI unavailable — setup or repair required.` with the retained cause and `ai status` guidance. The warning repeats after login so the welcome display cannot hide it. It explicitly states that simulation startup does not enable AI and that connections can only provide basic fallback replies. Inline connections, resumed conversations and meetings include the warning before their connection text; attached conversation windows show it in both the parent opening result and their initial conversation response. Available runtimes receive no warning. Ordinary commands remain usable; the alert does not grant authority, install dependencies or prevent conversation-history access.
+
+This is the result of the startup check, not a continuous health monitor or a guarantee that every generation will succeed. Later inference failures retain the existing per-turn diagnostics and fallback notice.
+
+Verification: actual terminal process with `GRID_AI_DISABLED=1 --ephemeral --no-color` displayed the warning, exact disabled cause and fallback limitation before login, then exited 0 on closed input. No saved world was opened. Added regression cases exercise a genuinely missing runtime, recovery guidance and retained line breaks, healthy-warning suppression, connect/resume warnings, and attached parent plus initial named-pipe reply. Full solution: **1,436 passed, zero failed, four symbolic-link privilege skips**. `git diff --check` passed. Physical window rendering remains unverified.
+
 ## Evidence and limits (2026-11-14)
 
 - Final offline setup passed with existing verified local assets: isolated build succeeded with zero warnings/errors; bundled Qwen3 4B answered Hello MCP through inline dispatch and the attached named-pipe protocol. No saved user world was opened.

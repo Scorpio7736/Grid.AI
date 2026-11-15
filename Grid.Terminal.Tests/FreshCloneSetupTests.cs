@@ -20,6 +20,8 @@ public sealed class FreshCloneSetupTests
             var start = new ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true, WorkingDirectory = Root };
             foreach (var arg in new[] { "-NoProfile", "-NonInteractive", "-File", Path.Combine(Root, script) }.Concat(args)) start.ArgumentList.Add(arg);
             start.Environment.Remove("GRID_AI_DISABLED");
+            // PowerShell 7's inherited module paths can hide Windows PowerShell's built-in modules.
+            start.Environment.Remove("PSModulePath");
             using var process = Process.Start(start)!;
             var output = process.StandardOutput.ReadToEndAsync(); var errors = process.StandardError.ReadToEndAsync();
             using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -78,6 +80,20 @@ public sealed class FreshCloneSetupTests
         Assert.False(Directory.Exists(Path.Combine(clone.Root, ".grid-data")));
     }
     [Fact]
+    public async Task PartialRuntimeProvidesRepairCommandWithoutChangingFiles()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        using var clone = new Clone();
+        var runtime = Path.Combine(clone.Root, ".grid-runtime"); Directory.CreateDirectory(runtime);
+        var sentinel = Path.Combine(runtime, "keep.txt"); File.WriteAllText(sentinel, "retain");
+        var result = await clone.Run("Setup-GridClone.ps1");
+        Assert.NotEqual(0, result.Exit); Assert.Contains("-Download -RepairRuntime", result.Output);
+        var refused = await clone.Run("Setup-GridClone.ps1", "-RepairRuntime");
+        Assert.NotEqual(0, refused.Exit); Assert.Contains("requires -Download", refused.Output);
+        Assert.Equal("retain", File.ReadAllText(sentinel));
+        Assert.Empty(Directory.GetDirectories(clone.Root, ".grid-install-*"));
+    }
+    [Fact]
     public async Task CorruptModelStopsBeforeBuildOrExecutableRuns()
     {
         if (!OperatingSystem.IsWindows()) return;
@@ -87,7 +103,7 @@ public sealed class FreshCloneSetupTests
             var path = Path.Combine(clone.Root, ".grid-runtime", file); Directory.CreateDirectory(Path.GetDirectoryName(path)!); File.WriteAllText(path, "invalid fixture");
         }
         var result = await clone.Run("Setup-GridClone.ps1");
-        Assert.NotEqual(0, result.Exit); Assert.Contains("Pinned model manifest verification failed", result.Output);
+        Assert.NotEqual(0, result.Exit); Assert.True(result.Output.Contains("Pinned model manifest verification failed", StringComparison.Ordinal), result.Output);
         Assert.False(Directory.Exists(Path.Combine(clone.Root, ".grid-app")));
     }
 }

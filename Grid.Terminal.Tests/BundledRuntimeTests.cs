@@ -7,6 +7,51 @@ namespace Grid.Terminal.Tests;
 public sealed class BundledRuntimeTests
 {
     [Fact]
+    public async Task MissingRuntimeWarnsBeforeFirstMessageAndOnResume()
+    {
+        await using var runtime = await BundledAiRuntime.StartAsync(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
+        var warning = AiReadinessNotice.Format(runtime.Ready, runtime.Status);
+        Assert.StartsWith("WARNING: AI unavailable", warning);
+        Assert.Contains("Setup-GridClone.ps1 -Download", warning);
+        Assert.Contains("only basic fallback replies", warning);
+        Assert.Contains("ai status", warning);
+        Assert.Contains("\nMissing:", warning);
+        Assert.Equal("", AiReadinessNotice.Format(true, "ready"));
+        var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis()).PrepareChatFixture();
+        var identity = new TerminalIdentitySession(() => "test"); identity.Attach(engine); identity.Login();
+        var commands = DefaultCommands.Create(engine);
+        var chat = ChatCommands.Register(commands, engine, identity, aiWarning: () => warning); commands.UseIdentity(identity);
+        Assert.StartsWith(warning, commands.Execute("connect MCP -inline").Text);
+        var id = chat.ActiveConversation!.Value;
+        var resumed = DefaultCommands.Create(engine);
+        ChatCommands.Register(resumed, engine, identity, aiWarning: () => warning); resumed.UseIdentity(identity);
+        Assert.StartsWith(warning, resumed.Execute("resume " + id + " -inline").Text);
+    }
+
+    [Fact]
+    public async Task AttachedConversationWarnsInParentAndInitialWindowReply()
+    {
+        const string warning = "WARNING: AI unavailable — setup or repair required.\n";
+        var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis()).PrepareChatFixture();
+        var registry = new TerminalSessionRegistry();
+        var owner = new TerminalIdentitySession(() => "test"); registry.Add(owner); owner.Attach(engine); owner.Login();
+        CommandDispatcher Create(TerminalIdentitySession session)
+        {
+            var commands = DefaultCommands.Create(engine);
+            ChatCommands.Register(commands, engine, session, aiWarning: () => warning); commands.UseIdentity(session); return commands;
+        }
+        var parent = Create(owner); string endpoint = "";
+        await using var hub = new WindowHub(engine, registry, Create, name => { endpoint = name; return Environment.ProcessId; }, aiWarning: () => warning);
+        hub.Register(parent, owner);
+        Assert.StartsWith(warning, parent.Execute("connect MCP").Text);
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await using var pipe = new System.IO.Pipes.NamedPipeClientStream(".", endpoint, System.IO.Pipes.PipeDirection.InOut, System.IO.Pipes.PipeOptions.Asynchronous | System.IO.Pipes.PipeOptions.CurrentUserOnly);
+        await pipe.ConnectAsync(deadline.Token);
+        var reply = await WindowProtocol.ReadAsync<WindowReply>(pipe, deadline.Token);
+        Assert.Contains(warning, reply!.Text);
+    }
+
+    [Fact]
     public async Task CorruptPinnedManifestPreservesValidationFailureWithoutStartingServer()
     {
         var root = Path.Combine(Path.GetTempPath(), "GridBadRuntime-" + Guid.NewGuid());

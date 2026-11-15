@@ -149,7 +149,9 @@ try
     startupMessages.Add(ModelRegistryCommands.LoadOverride(BundledAiRuntime.FindRoot(AppContext.BaseDirectory)));
     if (setupProfile?.AiMode == "lite") Grid.Communication.AgentModelProfiles.ForceLite = true;
     await using var aiRuntime = await BundledAiRuntime.StartAsync(BundledAiRuntime.FindRoot(AppContext.BaseDirectory), shutdown.Token);
-    startupMessages.Add(aiRuntime.Status);
+    var aiWarning = AiReadinessNotice.Format(aiRuntime.Ready, aiRuntime.Status);
+    if (aiWarning.Length > 0) Console.WriteLine(aiWarning);
+    startupMessages.Add(aiWarning.Length > 0 ? aiWarning : aiRuntime.Status);
     var personas = new Grid.Agent.AgentPersonas();
     try { if (BundledAiRuntime.FindRoot(AppContext.BaseDirectory) is { } personaRoot) personas = PersonaSettings.Read(personaRoot); }
     catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or ArgumentException)
@@ -168,7 +170,7 @@ try
         MaxisCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         DeviceCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         TaskCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
-        var chat = ChatCommands.Register(dispatcher, engine, session, localAi, persistence is null ? null : token => persistence.SaveAsync(token)); ResourcesCommand.Register(dispatcher, engine);
+        var chat = ChatCommands.Register(dispatcher, engine, session, localAi, persistence is null ? null : token => persistence.SaveAsync(token), aiWarning: () => aiWarning); ResourcesCommand.Register(dispatcher, engine);
         VoiceCommands.Register(dispatcher, engine, session, chat, save: persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult());
         ContextCommands.Register(dispatcher, engine, session, persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult(), shutdown.Token);
         if (store is not null) HistoryCommand.Register(dispatcher, store);
@@ -179,7 +181,7 @@ try
     }
     engine.ConfigureDeviceIntegration(new WindowsDeviceIntegration());
     var commands = CreateCommands(identity);
-    await using var windows = new WindowHub(engine, identities, CreateCommands, noColor: options.NoColor);
+    await using var windows = new WindowHub(engine, identities, CreateCommands, noColor: options.NoColor, aiWarning: () => aiWarning);
     windows.Register(commands, identity);
     var telemetry = new HostTelemetryMonitor(new WindowsHostTelemetryProvider(), engine);
     await telemetry.SampleOnceAsync(shutdown.Token);

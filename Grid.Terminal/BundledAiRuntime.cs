@@ -29,7 +29,7 @@ public sealed class BundledAiRuntime : IAsyncDisposable
         var missing = root is null ? required : required.Where(path => !File.Exists(Path.Combine(root, path))).ToArray();
         if (root is null || missing.Length > 0)
         { runtime.Status = "Local AI assets missing. Runtime root: " + (root ?? "not located") + "\nMissing: " + string.Join(", ", missing) +
-            "\nA source clone alone does not include bundled runtime/model assets. Provision the source with Prepare-GridRuntime.ps1 and verified local assets, or launch a complete copied portable package using its launch.cmd. No global Ollama fallback."; return runtime; }
+            "\nA source clone alone does not include bundled runtime/model assets. In PowerShell at the repository root, run .\\Setup-GridClone.ps1 -Download, then .\\Start-GridClone.ps1. For an incomplete existing runtime, close GRID and use -Download -RepairRuntime; previous runtime files are retained. Offline: use Prepare-GridRuntime.ps1 with verified local assets, or a complete portable package's launch.cmd. No global Ollama fallback."; return runtime; }
         try
         {
             PackageBudget.VerifyModel(root, hashes: false);
