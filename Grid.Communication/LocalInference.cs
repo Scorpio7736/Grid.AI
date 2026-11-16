@@ -41,22 +41,26 @@ public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
     private readonly Task worker;
     private readonly IInferenceBackend backend;
     private readonly TimeSpan deadline;
+    private readonly TimeSpan coldStartDeadline;
     private readonly bool enabled;
     private readonly string? unavailableReason;
     private int pending;
     private int active;
     private readonly TimeProvider clock;
     private int runtimeFailures;
+    private int warmed;
     private DateTimeOffset retryAfter;
     private readonly ScopedInferenceCache cache;
     public InferenceDiagnostics Diagnostics { get; } = new();
     public int Pending => Volatile.Read(ref pending);
     public bool Enabled => enabled;
     public bool Active => Volatile.Read(ref active) != 0;
-    public SharedLocalInference(IInferenceBackend backend, bool enabled = true, int capacity = 8, TimeSpan? deadline = null, string? unavailableReason = null, TimeProvider? clock = null)
+    public SharedLocalInference(IInferenceBackend backend, bool enabled = true, int capacity = 8, TimeSpan? deadline = null, string? unavailableReason = null, TimeProvider? clock = null, TimeSpan? coldStartDeadline = null)
     {
         if (capacity is < 1 or > 64) throw new ArgumentOutOfRangeException(nameof(capacity));
         this.backend = backend; this.enabled = enabled; this.deadline = deadline ?? TimeSpan.FromSeconds(120);
+        this.coldStartDeadline = coldStartDeadline ?? this.deadline;
+        if (this.coldStartDeadline < this.deadline || this.coldStartDeadline > TimeSpan.FromMinutes(5)) throw new ArgumentOutOfRangeException(nameof(coldStartDeadline));
         this.unavailableReason=unavailableReason;
         this.clock = clock ?? TimeProvider.System;
         cache = new(this.clock);
@@ -92,7 +96,8 @@ public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
         if (InferenceContentGuard.ContainsCredentials(prompt))
             return Immediate(InferenceOutcome.InvalidOutput, "Input contains recognizable credential material. Remove credentials from the request or shared context and retry.") with { ResponseRejected = true };
         if (shutdown.IsCancellationRequested) return Immediate(InferenceOutcome.Stopped, "Local AI stopped.");
-        var stop = CancellationTokenSource.CreateLinkedTokenSource(token, shutdown.Token); stop.CancelAfter(fileDraft ? TimeSpan.FromSeconds(300) : deadline);
+        var stop = CancellationTokenSource.CreateLinkedTokenSource(token, shutdown.Token);
+        stop.CancelAfter(fileDraft ? TimeSpan.FromSeconds(300) : Volatile.Read(ref warmed) == 0 ? coldStartDeadline : deadline);
         var requestToken = stop.Token;
         var completion = new TaskCompletionSource<InferenceReply>(TaskCreationOptions.RunContinuationsAsynchronously);
         Interlocked.Increment(ref pending);
@@ -144,6 +149,7 @@ public sealed class SharedLocalInference : ILocalInference, IAsyncDisposable
                 InferenceContentGuard.ValidateOutput(text, request.FileDraft ? 131072 : 8192);
                 if (key is not null && version == backend.CacheVersion(request.Agent)) cache.Store(key, text);
                 runtimeFailures = 0;
+                Interlocked.Exchange(ref warmed, 1);
                 retryAfter = default;
                 span.Complete(InferenceOutcome.Success);
                 reply = new(true, text, "Local model output; unverified, no action executed.", timer.ElapsedMilliseconds);
@@ -199,19 +205,24 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
     private readonly OllamaModelProvider provider;
     private readonly bool lowMemoryMode, cpuOnlyMode;
     private readonly Func<long?>? availableMemory;
+    private readonly TimeSpan requestDeadline, coldStartDeadline;
+    private int warmed;
     public Grid.Agent.AgentPersonas Personas { get; }
-    public OllamaLocalBackend(HttpMessageHandler? handler = null, Uri? endpoint = null, bool? lowMemory = null, bool? cpuOnly = null, Grid.Agent.AgentPersonas? personas = null, Func<long?>? availableMemory = null)
+    public OllamaLocalBackend(HttpMessageHandler? handler = null, Uri? endpoint = null, bool? lowMemory = null, bool? cpuOnly = null, Grid.Agent.AgentPersonas? personas = null, Func<long?>? availableMemory = null, TimeSpan? coldStartDeadline = null)
     {
         Personas = personas ?? new();
         this.availableMemory = availableMemory;
         lowMemoryMode = lowMemory ?? AgentModelProfiles.LowMemory;
         cpuOnlyMode = lowMemoryMode || (cpuOnly ?? AgentModelProfiles.CpuOnly);
+        requestDeadline = TimeSpan.FromSeconds(120);
+        this.coldStartDeadline = coldStartDeadline ?? requestDeadline;
+        if (this.coldStartDeadline < requestDeadline || this.coldStartDeadline > TimeSpan.FromMinutes(5)) throw new ArgumentOutOfRangeException(nameof(coldStartDeadline));
         endpoint ??= new Uri(Endpoint);
         if (endpoint.Scheme != "http" || endpoint.Host != "127.0.0.1" || endpoint.AbsolutePath != "/" || !string.IsNullOrEmpty(endpoint.UserInfo) || !string.IsNullOrEmpty(endpoint.Query))
             throw new ArgumentException("Local AI requires an IPv4 loopback HTTP endpoint.");
         provider = new OllamaModelProvider(endpoint, handler);
         client = new(handler ?? new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false })
-        { BaseAddress = endpoint, Timeout = TimeSpan.FromSeconds(120) };
+        { BaseAddress = endpoint, Timeout = this.coldStartDeadline };
     }
     private async Task<JsonDocument> JsonAsync(HttpRequestMessage request, CancellationToken token)
     {
@@ -232,10 +243,12 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
     public Task<string> GenerateStructuredAsync(string prompt,CancellationToken token) => GenerateCore(prompt,true,token);
     public Task<string> GenerateStructuredAsync(string prompt,string schema,CancellationToken token) => GenerateCore(prompt,true,token,schema);
     public Task<string> GenerateFileAsync(string prompt, CancellationToken token) => GenerateCore(prompt, true, token, fileDraft: true);
+    public TimeSpan OperationDeadline(bool fileDraft) => fileDraft ? TimeSpan.FromSeconds(300) : Volatile.Read(ref warmed) == 0 ? coldStartDeadline : requestDeadline;
     private async Task<string> GenerateCore(string prompt,bool structured,CancellationToken token,string? schema=null, bool fileDraft=false, AgentModelProfile? profile=null)
     {
         using var recoveryDeadline = CancellationTokenSource.CreateLinkedTokenSource(token);
-        recoveryDeadline.CancelAfter(TimeSpan.FromSeconds(fileDraft ? 300 : 120));
+        var operationDeadline = OperationDeadline(fileDraft);
+        recoveryDeadline.CancelAfter(operationDeadline);
         token = recoveryDeadline.Token;
         var freeMemory = availableMemory?.Invoke();
         if (freeMemory is >= 0 and < 1_073_741_824)
@@ -243,7 +256,9 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
         var lean = lowMemoryMode || AgentModelProfiles.LowMemory || freeMemory is >= 0 and < 4_294_967_296;
         try
         {
-            return await GenerateAttempt(prompt, structured, token, schema, fileDraft, profile, lean, cpuOnlyMode || AgentModelProfiles.ForceLite);
+            var result = await GenerateAttempt(prompt, structured, token, schema, fileDraft, profile, lean, cpuOnlyMode || AgentModelProfiles.ForceLite, operationDeadline);
+            Interlocked.Exchange(ref warmed, 1);
+            return result;
         }
         catch (HttpRequestException error) when (!cpuOnlyMode && error.StatusCode is System.Net.HttpStatusCode.InternalServerError or System.Net.HttpStatusCode.ServiceUnavailable)
         {
@@ -251,12 +266,14 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
             token.ThrowIfCancellationRequested();
             await provider.UnloadAsync(new LocalModel(Model), token);
             token.ThrowIfCancellationRequested();
-            return await GenerateAttempt(prompt, structured, token, schema, fileDraft, profile, true, true);
+            var result = await GenerateAttempt(prompt, structured, token, schema, fileDraft, profile, true, true, operationDeadline);
+            Interlocked.Exchange(ref warmed, 1);
+            return result;
         }
     }
 
     private async Task<string> GenerateAttempt(string prompt, bool structured, CancellationToken token, string? schema,
-        bool fileDraft, AgentModelProfile? profile, bool lean, bool cpuOnly)
+        bool fileDraft, AgentModelProfile? profile, bool lean, bool cpuOnly, TimeSpan operationDeadline)
     {
         profile ??= AgentModelProfiles.Get("MCP");
         if (lean && fileDraft && prompt.Length > 12000) throw Rejected("context", "File input exceeds reduced-memory context. Split the request.");
@@ -271,7 +288,7 @@ public sealed class OllamaLocalBackend : IInferenceBackend, IDisposable
                 ContextTokens: fileDraft ? (lean ? 8192 : 16384) : (lean ? Math.Min(4096, profile.ContextTokens) : profile.ContextTokens),
                 MaxOutputTokens: fileDraft ? (lean ? (attempt == 0 ? 2048 : 4096) : (attempt == 0 ? 4096 : 8192)) : (attempt == 0 ? profile.InitialTokens : profile.RetryTokens),
                 Json: structured, JsonSchema: schema, CpuOnly: cpuOnly)
-                { Timeout = TimeSpan.FromSeconds(fileDraft ? 300 : 120), SystemInstruction = persona.SystemInstruction, PromptVersion = persona.Version, PromptTemplate = persona.Template };
+                { Timeout = operationDeadline, SystemInstruction = persona.SystemInstruction, PromptVersion = persona.Version, PromptTemplate = persona.Template };
             InferenceSpan.Current?.Attempt();
             var result = await provider.GenerateAsync(new LocalModel(Model), request, token);
             InferenceSpan.Current?.Metrics(result);

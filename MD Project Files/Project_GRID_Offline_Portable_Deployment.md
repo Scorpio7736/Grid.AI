@@ -1,5 +1,15 @@
 # GRID offline and portable deployment — 6.27
 
+## Flash-drive AI cold-start repair — 2026-11-16
+
+A physical transferred package reported the bundled runtime and pinned `qwen3:4b` model ready at `D:\GRID7736\runtime`, but `ai test` returned the deterministic fallback after **122,748 ms**. This establishes that assets, Ollama startup and model discovery succeeded. The failure aligned with the former 120-second generation deadline: readiness probes did not load the 4.7 GB model weights, and first inference from slower portable storage exhausted the normal request limit.
+
+Portable packages now receive one bounded five-minute cold-start allowance until the first successful inference. Both the shared queue and Ollama request use the same allowance. After success, ordinary chat/structured requests return to the normal two-minute deadline; file drafts remain bounded at five minutes. Installed/source operation retains the normal two-minute deadline from its first request. Attached conversation client/server I/O remains open for 320 seconds so it cannot cancel an otherwise valid portable cold load. Startup tells the user that the first portable request can take up to five minutes.
+
+The allowance is based on being a verified portable package, not a specific drive letter or PC. Timeouts remain bounded, caller cancellation and session revocation remain effective, and an unsuccessful cold start does not falsely mark the model warm. This change does not mask missing/corrupt assets or claim that every flash drive is fast enough.
+
+Regression coverage verifies portable versus installed timing, one extended shared-service request followed by the normal limit, the Ollama backend's transition after a successful generation, and attached-window compatibility. Focused inference/portable/window tests: **105 passed**. Full solution: **1,443 passed, zero failed, four symbolic-link privilege skips** (14 Core, 157 Simulation, 99 Persistence, 1,173 Terminal). These development results do not satisfy the zero-skip `main` gate. Physical retest from the user's flash drive remains open because the reported package contains the earlier executable; create a fresh transfer with the rebuilt application before retesting.
+
 ## Implemented storage and packaging baseline — 2026-11-12
 
 Flash and PC packages now share a 128,000,000,000-byte managed-installation target. The measured footprint includes application/source files, runtime assets, saved data, logs, caches, staging and retained versions. The existing 256,000,000-byte reserve is included when checking usable headroom. Completed packages must fit within 127,744,000,000 bytes of occupied space. Destination free-space checks independently require the incoming footprint plus reserve.

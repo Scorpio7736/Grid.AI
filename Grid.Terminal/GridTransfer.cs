@@ -250,6 +250,7 @@ public sealed class GridTransfer
         CheckPath(plan.WorldPath); CheckPath(plan.ApplicationRoot); CheckPath(plan.Destination);
         using var lease = new FileStream(plan.WorldPath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
         var handles = new List<FileStream>();
+        var sourceHashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         try
         {
             foreach (var file in plan.Files)
@@ -261,12 +262,20 @@ public sealed class GridTransfer
                     throw new IOException("Unsafe source/destination manifest boundary.");
                 CheckPath(file.Source); CheckPath(target);
                 // Acquire every file before deleting any: another active process/writer aborts cleanup.
-                var source = new FileStream(file.Source, FileMode.Open, FileAccess.Read, FileShare.Delete); handles.Add(source);
+                // One source can supply several package paths (for example Test-GridPortable.ps1).
+                // Retain one exclusive-reader handle per source; reopening would conflict with ourselves.
+                var sourcePath = Path.GetFullPath(file.Source);
+                if (!sourceHashes.TryGetValue(sourcePath, out var sourceHash))
+                {
+                    var source = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete); handles.Add(source);
+                    sourceHash = Convert.ToHexString(SHA256.HashData(source));
+                    sourceHashes.Add(sourcePath, sourceHash);
+                }
                 var copy = new FileStream(target, FileMode.Open, FileAccess.Read, FileShare.Read); handles.Add(copy);
-                if (Convert.ToHexString(SHA256.HashData(source)) != file.Hash || Convert.ToHexString(SHA256.HashData(copy)) != file.Hash)
+                if (sourceHash != file.Hash || Convert.ToHexString(SHA256.HashData(copy)) != file.Hash)
                     throw new IOException("Source or destination changed; cleanup refused: " + file.Source);
             }
-            foreach (var file in plan.Files.Where(f=>f.DeleteSource)) { CheckPath(file.Source); File.Delete(file.Source); }
+            foreach (var source in plan.Files.Where(f=>f.DeleteSource).Select(f=>Path.GetFullPath(f.Source)).Distinct(StringComparer.OrdinalIgnoreCase)) { CheckPath(source); File.Delete(source); }
         }
         finally { foreach (var handle in handles) handle.Dispose(); }
     }

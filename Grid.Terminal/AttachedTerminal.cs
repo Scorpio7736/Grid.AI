@@ -19,7 +19,7 @@ public static class AttachedTerminal
             var output = new TerminalOutput(Console.Out, TerminalTheme.Enabled(noColor));
             async Task<WindowReply> Receive(bool inference = false)
             {
-                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stop.Token); timeout.CancelAfter(TimeSpan.FromSeconds(inference ? 140 : 10));
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(stop.Token); timeout.CancelAfter(inference ? PortableInferenceTiming.AttachedTransport : TimeSpan.FromSeconds(10));
                 return await WindowProtocol.ReadAsync<WindowReply>(pipe, timeout.Token);
             }
             async Task<WindowReply> Send(WindowRequest request)

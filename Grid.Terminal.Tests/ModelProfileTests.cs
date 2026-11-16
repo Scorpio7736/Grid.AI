@@ -43,6 +43,16 @@ public sealed class ModelProfileTests
         Assert.Equal(4096,handler.Body.Value.GetProperty("options").GetProperty("num_ctx").GetInt32());
     }
     [Fact]
+    public async Task PortableBackendReturnsToNormalDeadlineAfterFirstSuccess()
+    {
+        var handler=new Handler(); using var backend=new OllamaLocalBackend(handler,coldStartDeadline:TimeSpan.FromMinutes(5));
+        Assert.Equal(TimeSpan.FromMinutes(5),backend.OperationDeadline(false));
+        Assert.Equal(TimeSpan.FromMinutes(5),backend.OperationDeadline(true));
+        Assert.Equal("answer",await backend.GenerateAsync("Question",default));
+        Assert.Equal(TimeSpan.FromMinutes(2),backend.OperationDeadline(false));
+        Assert.Equal(TimeSpan.FromMinutes(5),backend.OperationDeadline(true));
+    }
+    [Fact]
     public async Task LowMemoryFileRequestsUseCpuAndSmallerContext()
     {
         var handler=new Handler(); using var backend=new OllamaLocalBackend(handler,lowMemory:true); await using var ai=new SharedLocalInference(backend);

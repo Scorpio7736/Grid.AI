@@ -8,6 +8,15 @@ namespace Grid.Terminal.Tests;
 public sealed class PortableTransferTests
 {
     [Fact]
+    public void PortablePackagesReceiveBoundedColdLoadAllowance()
+    {
+        Assert.Equal(TimeSpan.FromMinutes(2),PortableInferenceTiming.ColdStart(null));
+        Assert.Equal(TimeSpan.FromMinutes(5),PortableInferenceTiming.ColdStart("D:\\GRID7736"));
+        Assert.True(PortableInferenceTiming.AttachedTransport > PortableInferenceTiming.PortableColdStart);
+        Assert.Contains("first request",PortableInferenceTiming.Notice("D:\\GRID7736"));
+        Assert.Equal("",PortableInferenceTiming.Notice(null));
+    }
+    [Fact]
     public void CorruptSourceCannotBeResealedAsValidByCopying()
     {
         var root=Path.Combine(Path.GetTempPath(),"GridCorruptSource-"+Guid.NewGuid());Directory.CreateDirectory(root);

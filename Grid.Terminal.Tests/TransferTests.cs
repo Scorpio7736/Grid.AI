@@ -89,6 +89,40 @@ public sealed class TransferTests : IDisposable
         Assert.Throws<IOException>(() => GridTransfer.Cleanup(receipt.Plan));
         Assert.True(File.Exists(world)); Assert.True(File.Exists(Path.Combine(app, "asset.txt")));
     }
+
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(false, false, true)]
+    public void DuplicateSourceCleanupRetainsLocksAndVerifiesEveryCopy(bool retainSource, bool corruptCopy, bool externalLock)
+    {
+        var source = Path.Combine(app, "Test-GridPortable.ps1"); File.WriteAllText(source, "verified script");
+        var destination = Path.Combine(root, "duplicate-move");
+        var transfer = new GridTransfer(app, world, skipRuntimeValidation: true);
+        transfer.Execute(transfer.Prepare(new(destination, true)), () => true, _ => { });
+        var receipt = System.Text.Json.JsonSerializer.Deserialize<TransferReceipt>(File.ReadAllText(Path.Combine(destination, "transfer-manifest.json")))!;
+        var original = receipt.Plan.Files.Single(f => f.Source == source) with { DeleteSource = !retainSource };
+        var duplicate = original with { Relative = "source/Test-GridPortable.ps1" };
+        Directory.CreateDirectory(Path.Combine(destination, "source"));
+        var secondCopy = Path.Combine(destination, duplicate.Relative);
+        File.Copy(source, secondCopy);
+        var plan = receipt.Plan with { Files = receipt.Plan.Files.Select(f => f.Source == source ? original : f).Append(duplicate).ToArray() };
+        if (corruptCopy) File.WriteAllText(secondCopy, "corrupt script");
+        using (var locked = externalLock ? new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.None) : null)
+        {
+            if (corruptCopy || externalLock)
+            {
+                Assert.Throws<IOException>(() => GridTransfer.Cleanup(plan));
+                Assert.True(File.Exists(world)); Assert.True(File.Exists(Path.Combine(app, "asset.txt"))); Assert.True(File.Exists(source));
+                return;
+            }
+            GridTransfer.Cleanup(plan);
+        }
+        Assert.Equal(retainSource, File.Exists(source));
+        Assert.False(File.Exists(world));
+        Assert.Equal("verified script", File.ReadAllText(secondCopy));
+    }
     [Fact]
     public void TransferCommandsRequireMasterAndParseQuotedPaths()
     {

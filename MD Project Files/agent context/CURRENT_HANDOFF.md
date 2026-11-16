@@ -1,12 +1,16 @@
 # GRID current handoff
 
-Updated 2026-11-15. Verify the working tree and checklist before starting work.
+Updated 2026-11-16. Verify the working tree and checklist before starting work.
 
 ## Working approach
 
 Follow the concise [repository working rules](../../AGENTS.md). Use targeted reads and tests, retain completion evidence, and link detailed documentation instead of repeating it. The [historical chat workflow](CHAT_WORKFLOW_AND_AGENT_HANDOFF.md) preserves earlier decisions.
 
 ## Current milestone
+
+Flash-drive AI cold-start repair 2026-11-16: the reported portable assets/runtime were ready, but first generation ended at 122.7 seconds, matching the former two-minute deadline while weights loaded from D:. Verified portable packages now get one bounded five-minute allowance through shared inference, Ollama and attached transport until first success, then return to two minutes. Installed/source timing is unchanged. 105 focused and 1,443 full-suite tests passed; four privilege skips remain. [Evidence/limits](../Project_GRID_Offline_Portable_Deployment.md#flash-drive-ai-cold-start-repair--2026-11-16). Fresh physical transfer/retest remains open; the reported flash package has the old executable.
+
+Flash-drive move cleanup repair 2026-11-15: read-only inspection of D:/GRID7736 status/receipt confirmed duplicate retained Test-GridPortable.ps1 entries caused self-locking before deletion. Cleanup now holds one reader per canonical source and verifies every destination copy. 39 focused transfer tests and 1,440 full-suite tests passed; four privilege skips remain. [Evidence/recovery limits](../Project_GRID_Transfer_Implementation.md#duplicate-source-cleanup-repair--2026-11-15). Existing flash package remains unchanged with old executable; do not blindly retry its receipt after source rebuilds. Fixed-helper physical flash acceptance remains open. Changes remain on Updates_Local.
 
 Future production branch ideas are now recorded as unchecked, deferred items in the [main requirements reference](../Project_GRID_Main_Branch_Requirements.md#future-requirements-deferred). No additional branch gates or GitHub protections were activated. Documentation/link review and `git diff --check` passed.
 

@@ -337,6 +337,19 @@ public sealed class LocalInferenceTests
             Assert.Contains("deterministic",(await service.GenerateAsync("hello")).Reason);
     }
     [Fact]
+    public async Task ColdStartGetsOneBoundedExtendedDeadlineThenReturnsToNormal()
+    {
+        var calls=0;
+        await using var service=new SharedLocalInference(new Backend(async(_,token)=>
+        {
+            calls++; await Task.Delay(100,token); return "ready";
+        }),deadline:TimeSpan.FromMilliseconds(30),coldStartDeadline:TimeSpan.FromSeconds(5));
+        Assert.True((await service.GenerateAsync("cold start")).Available);
+        var warm=await service.GenerateAsync("warm request");
+        Assert.False(warm.Available); Assert.Contains("timed out",warm.Reason,StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(2,calls);
+    }
+    [Fact]
     public async Task DisabledServiceNeverCallsBackendAndValidatesInputs()
     {
         await using var service=new SharedLocalInference(new Backend((_,_)=>throw new Exception("must not call")),enabled:false);

@@ -149,15 +149,18 @@ try
     startupMessages.Add(ModelRegistryCommands.LoadOverride(BundledAiRuntime.FindRoot(AppContext.BaseDirectory)));
     if (setupProfile?.AiMode == "lite") Grid.Communication.AgentModelProfiles.ForceLite = true;
     await using var aiRuntime = await BundledAiRuntime.StartAsync(BundledAiRuntime.FindRoot(AppContext.BaseDirectory), shutdown.Token);
+    var inferenceColdStart = PortableInferenceTiming.ColdStart(packageRoot);
+    var portableAiNotice = PortableInferenceTiming.Notice(packageRoot);
     var aiWarning = AiReadinessNotice.Format(aiRuntime.Ready, aiRuntime.Status);
     if (aiWarning.Length > 0) Console.WriteLine(aiWarning);
     startupMessages.Add(aiWarning.Length > 0 ? aiWarning : aiRuntime.Status);
+    if (portableAiNotice.Length > 0) startupMessages.Add(portableAiNotice);
     var personas = new Grid.Agent.AgentPersonas();
     try { if (BundledAiRuntime.FindRoot(AppContext.BaseDirectory) is { } personaRoot) personas = PersonaSettings.Read(personaRoot); }
     catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or ArgumentException)
     { startupMessages.Add("Persona settings unreadable; using bundled v2 defaults. Original settings retained: " + e.Message); }
-    using var aiBackend = new Grid.Communication.OllamaLocalBackend(endpoint: aiRuntime.Endpoint, personas: personas, availableMemory: WindowsHostTelemetryProvider.AvailablePhysicalMemory);
-    await using var localAi = new Grid.Communication.SharedLocalInference(aiBackend, enabled: aiRuntime.Ready && Environment.GetEnvironmentVariable("GRID_AI_DISABLED") != "1", unavailableReason: aiRuntime.Status);
+    using var aiBackend = new Grid.Communication.OllamaLocalBackend(endpoint: aiRuntime.Endpoint, personas: personas, availableMemory: WindowsHostTelemetryProvider.AvailablePhysicalMemory, coldStartDeadline: inferenceColdStart);
+    await using var localAi = new Grid.Communication.SharedLocalInference(aiBackend, enabled: aiRuntime.Ready && Environment.GetEnvironmentVariable("GRID_AI_DISABLED") != "1", unavailableReason: aiRuntime.Status, coldStartDeadline: inferenceColdStart);
     CommandDispatcher CreateCommands(TerminalIdentitySession session)
     {
         var dispatcher = DefaultCommands.Create(engine);

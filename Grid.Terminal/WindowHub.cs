@@ -93,7 +93,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
             async Task<CommandResult> CompleteConversationOperation(CommandResult result)
             {
                 if (result.BrokerOperation is not { } operation) return result;
-                io.CancelAfter(TimeSpan.FromSeconds(140));
+                io.CancelAfter(PortableInferenceTiming.AttachedTransport);
                 using var inferenceStop = CancellationTokenSource.CreateLinkedTokenSource(io.Token);
                 var completion = operation(inferenceStop.Token);
                 while (!completion.IsCompleted)
