@@ -1,8 +1,8 @@
-# Project GRID - Installed application availability
+# Project Grid.AI - Installed application availability
 
 ## Terminal commands and shutdown complete - 1.12 (2026-10-19)
 
-Implemented grouped `help`, display-only `clear`, `programs -active`, `programs -possible`, `programs -sleeping`, and a GRID7736 ASCII farewell. Active selects fresh Running applications; sleeping selects fresh On call or Sleeping applications; possible includes current applications plus the saved known-application catalog. `ids` works with one filter. Unknown/stale observations are never classified as active or sleeping. Bare `programs` still includes agents and other residents.
+Implemented grouped `help`, display-only `clear`, `programs -active`, `programs -possible`, `programs -sleeping`, and a Grid.AI ASCII farewell. Active selects fresh Running applications; sleeping selects fresh On call or Sleeping applications; possible includes current applications plus the saved known-application catalog. `ids` works with one filter. Unknown/stale observations are never classified as active or sleeping. Bare `programs` still includes agents and other residents.
 
 **Schema v6** adds a separate ApplicationCatalog table (key, name, source, last catalog observation UTC). The catalog is captured with the simulation snapshot and saved atomically with world/history; backup/recovery and schema validation include it. Installed/observed metadata survives restart; ordinary residents, PID lifetimes, activity and resource readings are not restored. Last observation is catalog provenance, not proof of a launch or current installation. Entries missing from fresh discovery display Historical / unknown. Existing schema-v5-only statements below describe earlier milestones.
 
@@ -23,7 +23,7 @@ The user's revised GRID-REQ-005 intent is to represent programs on the PC, inclu
 
 ## Implemented scope
 
-Windows inventory reads HKCU/HKLM uninstall registrations in both registry views, excluding entries explicitly marked SystemComponent. Existing executable DisplayIcon targets supply candidate executable mappings; other entries remain unknown. Inventory refreshes every five minutes. Accessible processes in the current interactive session are sampled every two seconds, including background-only executables. GRID excludes its own process and other sessions/services in session zero. It never launches, stops or changes host programs.
+Windows inventory reads HKCU/HKLM uninstall registrations in both registry views, excluding entries explicitly marked SystemComponent. Existing executable DisplayIcon targets supply candidate executable mappings; other entries remain unknown. Inventory refreshes every five minutes. Accessible processes in the current interactive session are sampled every two seconds, including background-only executables. Grid.AI excludes its own process and other sessions/services in session zero. It never launches, stops or changes host programs.
 
 Multiple processes/windows of one executable share a representative; different executables can remain separate even when marketed as one application. Known installed entries and applications encountered during the session remain in an in-memory catalog after exit. A complete process-name inventory can establish absence even if unrelated executable paths are inaccessible. Partial observations never invent a sleeping state. Unknown observations retain unresolved lifetimes for subsequent reconciliation.
 
@@ -39,4 +39,4 @@ This is **discoverable installed applications plus current-session processes**, 
 
 `dotnet test -c Release --no-restore`: **290 passed** (14 Core, 127 Simulation, 79 Persistence, 70 Terminal). Coverage includes sleep/wake identity and incarnation, background/window classification, invalid empty running observations, incomplete discovery, per-executable absence despite unrelated access denial, and prior persistence/behavior regressions.
 
-Windows disposable-world startup/reopen reused city d3074c26-4d5a-41bf-87d3-c82224aab1ba and saved successfully. Final observation: **223 residents**, with **49 Sleeping, 65 On call, 13 Running and 96 unknown**. Counts are machine/time-specific; partial coverage was explicitly reported. Existing user saves and running GRID sessions were not changed.
+Windows disposable-world startup/reopen reused city d3074c26-4d5a-41bf-87d3-c82224aab1ba and saved successfully. Final observation: **223 residents**, with **49 Sleeping, 65 On call, 13 Running and 96 unknown**. Counts are machine/time-specific; partial coverage was explicitly reported. Existing user saves and running Grid.AI sessions were not changed.
