@@ -1,4 +1,4 @@
-# Project GRID — 5.4 SENTINEL Security
+# Project Grid.AI — 5.4 SENTINEL Security
 
 ## Implemented — 2026-10-21
 
@@ -47,7 +47,7 @@ Firewall reads the ActiveStore profiles, reports enabled state and default inbou
 
 Events reads only Security-log ID, record ID and UTC timestamp. The window is the previous 24 hours with a hard maximum of ten newest entries; messages, account names, IP addresses and payloads are not collected or saved. An empty query is not proof of safety. This bounded sample does not classify individual records as attacks. Security-log access may be unavailable under the current Windows account.
 
-Access denied, missing services/modules, unsupported hosts and provider failures are explicitly unknown/unavailable. The query can complete successfully with an UNAVAILABLE observation: Completed means the observation was recorded, not that the PC is healthy. Invalid/malformed/oversized provider data fails the task instead of producing a healthy result. GRID does not ask for Windows elevation or bypass access restrictions.
+Access denied, missing services/modules, unsupported hosts and provider failures are explicitly unknown/unavailable. The query can complete successfully with an UNAVAILABLE observation: Completed means the observation was recorded, not that the PC is healthy. Invalid/malformed/oversized provider data fails the task instead of producing a healthy result. Grid.AI does not ask for Windows elevation or bypass access restrictions.
 
 ## Execution, persistence and safety boundaries
 
