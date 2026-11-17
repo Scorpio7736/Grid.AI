@@ -1,4 +1,4 @@
-# Project GRID - Phase 2 verification
+# Project Grid.AI - Phase 2 verification
 
 ## Program behavior completion - 2026-10-19
 
