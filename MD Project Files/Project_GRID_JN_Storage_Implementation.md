@@ -1,4 +1,4 @@
-# Project GRID — 5.5 JN Storage and Files
+# Project Grid.AI — 5.5 JN Storage and Files
 
 ## Implemented — 2026-10-21
 
@@ -25,9 +25,9 @@ jn
     # EXAMPLE: jn quota
 ```
 
-Up to 32 immutable aliases are supported, including revoked aliases. Aliases cannot be rebound; register a new one after a move or machine change. Registry records the absolute path, machine name and enabled flag. Drive roots, UNC paths, reparse/symbolic-link paths and overlap with JN's report directory are refused. Directory enumeration does not follow links; unreadable, changed, missing or limited coverage is reported as partial. Registered personal folders are not attributed to the GRID logical budget.
+Up to 32 immutable aliases are supported, including revoked aliases. Aliases cannot be rebound; register a new one after a move or machine change. Registry records the absolute path, machine name and enabled flag. Drive roots, UNC paths, reparse/symbolic-link paths and overlap with JN's report directory are refused. Directory enumeration does not follow links; unreadable, changed, missing or limited coverage is reported as partial. Registered personal folders are not attributed to the Grid.AI logical budget.
 
-Registration/revocation and quota approval require Master Control. MCP and JN may inspect governance state; other agents cannot. JN proposes only its own capabilities; MCP may delegate them. Every execution still requires individual task approval and the original host's `tasks run`. Read-only means source files are not modified; reports are written to GRID's artifact directory.
+Registration/revocation and quota approval require Master Control. MCP and JN may inspect governance state; other agents cannot. JN proposes only its own capabilities; MCP may delegate them. Every execution still requires individual task approval and the original host's `tasks run`. Read-only means source files are not modified; reports are written to Grid.AI's artifact directory.
 
 ## Task capabilities
 
@@ -56,7 +56,7 @@ Equal content is only a possible duplicate: files may serve distinct purposes or
 
 Reports are JSON under `<database-path>.jn-artifacts/<task-id-without-hyphens>-<attempt>/report.json`. They contain full local paths and should be handled as local private data. Task summaries identify real storage observations and link to reports. Attempts have a 120-second deadline, use the durable-start barrier, observe cancellation/revocation, and never overwrite previous attempt reports. A cancelled attempt may leave a partial report; its task status determines whether the attempt completed.
 
-GRID copy/move includes the selected world's JN artifact directory. SQLite backups contain registrations, quota history and task summaries, not external JSON report contents; back up the artifact directory as well. Absolute historical report paths are not rewritten after transfer—find the same task/attempt under the destination's companion directory. NGE keeps its existing database/backup deletion scope; JN reports remain for separate manual cleanup. No automatic report pruning is implemented.
+Grid.AI copy/move includes the selected world's JN artifact directory. SQLite backups contain registrations, quota history and task summaries, not external JSON report contents; back up the artifact directory as well. Absolute historical report paths are not rewritten after transfer—find the same task/attempt under the destination's companion directory. NGE keeps its existing database/backup deletion scope; JN reports remain for separate manual cleanup. No automatic report pruning is implemented.
 
 ## Managed storage accounting
 
@@ -74,7 +74,7 @@ mcp request "JN: quota 25" jn-quota-test
 2. JN samples managed storage and creates a proposal bound to that task and the saved MCP identity. The budget remains unchanged.
 3. Use `jn quota` and `jn quota inspect <proposal-reference>` to review the historical measurement, coverage and requested amount. The task report provides evidence.
 4. If desired, human Master Control runs `jn quota approve <proposal-reference>`. MCP/JN cannot approve it themselves.
-5. GRID records the approving operator/time and saves the new logical budget. It does not allocate disk space or delete anything.
+5. Grid.AI records the approving operator/time and saves the new logical budget. It does not allocate disk space or delete anything.
 
 Requests must expand the current budget, use whole decimal GB, and lie between 21 and 1,000 GB. Up to 32 proposals are retained. Only proposals from completed tasks can be approved; reused, stale/non-expanding and already-approved requests are refused. Retrying the same task does not create a second proposal. There is no quota reduction, proposal deletion or forecast-based automatic expansion. Disk free-space/reserve validation and proactive notifications described in the long-term architecture remain future work; users must assess physical capacity separately before adding data.
 
