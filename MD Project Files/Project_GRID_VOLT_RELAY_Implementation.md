@@ -1,4 +1,4 @@
-# Project GRID — 5.6 VOLT and RELAY
+# Project Grid.AI — 5.6 VOLT and RELAY
 
 ## Bulk tasks — 5.8 completed (2026-10-22)
 
@@ -12,7 +12,7 @@ MCP delegation, human approval, real MAXIS unit-test execution and RELAY recorde
 
 ## Implemented — 2026-10-21
 
-VOLT reads the existing host telemetry feed and controls GRID's automatic simulation pacing through approved tasks. RELAY delivers approved messages and recorded task-result briefings to a saved local inbox, records delivery outcomes, supports human acknowledgement, and speaks a reviewed notification only after a separate approved speech task. No external messaging, automatic speech, Windows allocation changes or process-priority changes are introduced.
+VOLT reads the existing host telemetry feed and controls Grid.AI's automatic simulation pacing through approved tasks. RELAY delivers approved messages and recorded task-result briefings to a saved local inbox, records delivery outcomes, supports human acknowledgement, and speaks a reviewed notification only after a separate approved speech task. No external messaging, automatic speech, Windows allocation changes or process-priority changes are introduced.
 
 ## VOLT monitoring and pacing
 
@@ -42,7 +42,7 @@ Monitoring reuses the existing two-second host sampling loop and ten-second fres
 
 Auto mode uses 4x wait when fresh CPU headroom is below 15%, fresh available RAM is below 10% of matching host capacity, or a supplied fresh GPU headroom reading is below 10%. Pressure holds the 4x wait for ten seconds after its last observation to reduce oscillation. With no pressure/hold, missing or stale CPU/RAM data uses a conservative 2x wait; otherwise 1x. Unsupported GPU alone does not force throttling when CPU/RAM are usable. Eco always uses 4x and normal always 1x. Waits are clamped to the scheduler's supported timer range.
 
-Pacing applies to the next automatic wait and slows GRID's simulated progress relative to wall time. Tick duration, deterministic per-tick calculations, manual step, pause/resume and cancellation remain unchanged; delayed work does not replay catch-up ticks. Telemetry, autosave and user input retain their existing independent loops. This prioritizes host responsiveness by reducing GRID simulation frequency, not by reallocating Windows resources. MAXIS builds/tests, other explicit task adapters, model inference and GPU workloads are not dynamically governed by this initial pacing control. Broader workload throttling and performance guarantees remain future work.
+Pacing applies to the next automatic wait and slows Grid.AI's simulated progress relative to wall time. Tick duration, deterministic per-tick calculations, manual step, pause/resume and cancellation remain unchanged; delayed work does not replay catch-up ticks. Telemetry, autosave and user input retain their existing independent loops. This prioritizes host responsiveness by reducing Grid.AI simulation frequency, not by reallocating Windows resources. MAXIS builds/tests, other explicit task adapters, model inference and GPU workloads are not dynamically governed by this initial pacing control. Broader workload throttling and performance guarantees remain future work.
 
 ## RELAY inbox and task-result briefings
 
