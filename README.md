@@ -1,4 +1,42 @@
-# GRID7736
+# Grid.AI
+
+**Grid.AI** is a local-first, offline AI and multi-agent development environment built on C#/.NET. The project originated as **GRID7736**; that name is retained in some technical identifiers, package paths, command examples, and historical records for compatibility. The GitHub repository is now [Scorpio7736/Grid.AI](https://github.com/Scorpio7736/Grid.AI).
+
+## What Grid.AI does
+
+- **Offline conversations and inference:** bundled local Qwen3 4B inference, agent-specific conversations, contextual recall, explicit memory controls, and shared agent meetings. No cloud inference is required for normal operation after local assets have been installed.
+- **Agent coordination:** MCP coordinates approved work with MAXIS (development), SENTINEL (security observations), JN (storage), VOLT (host resources), and RELAY (communications).
+- **Reviewed coding workflows:** inspect and search registered local repositories; propose a bounded source fix from recorded build/test failure evidence; require explicit review and approval before applying a change or running tests.
+- **Persistent local operation:** SQLite worlds, identity, scoped access grants, history, saved tasks, audit records, and recovery paths.
+- **Conversation-first actions:** bounded intent interpretation and review for supported file and specialist tasks; AI-generated interpretations do not grant permissions or execute work.
+- **Device integration:** read-only local discovery and explicitly reviewed original-host actions for launching an executable, focusing a window, inspecting a window title, or creating a folder.
+- **Portable and fresh-clone setup:** pinned offline-capable runtime/model packaging and an explicit online installer for acquiring dependencies on a fresh computer.
+
+## Development status — November 17, 2026
+
+The most recent repository handoff (November 15) identifies **6.33 local device integration** as implemented and **6.34 guided setup and health diagnostics** as the next milestone, with first-run and physical-device acceptance still open. A real, explicitly reviewed local-model coding repair was demonstrated; this is **not** a claim of unrestricted autonomous coding. The handoff reports a full test run of **1,436 passed, zero failed, four symbolic-link privilege skips**. The GUI remains optional and deferred to **6.39**; core functionality stays terminal-first.
+
+Second-PC/disconnected-device acceptance, production model/corpus validation, expanded autonomous repair, and final Phase 7 integration gates remain open. Transfer-device acceptance has been intentionally deferred pending hardware availability.
+
+See [current agent handoff](MD%20Project%20Files/agent%20context/CURRENT_HANDOFF.md), [local coding integration](MD%20Project%20Files/Project_GRID_Local_Coding_Integration.md), [guided setup](MD%20Project%20Files/Project_GRID_Guided_Setup.md), [device integration](MD%20Project%20Files/Project_GRID_Device_Integration.md), and [fresh-clone installation](MD%20Project%20Files/Project_GRID_Fresh_Clone_Installation.md).
+
+## Getting started
+
+From 64-bit PowerShell in a fresh source clone:
+
+```powershell
+.\Setup-GridClone.ps1 -Plan -Download
+.\Setup-GridClone.ps1 -Download
+.\Start-GridClone.ps1
+```
+
+The installer needs internet access to acquire pinned dependencies; the installed runtime is designed for local inference. A clone creates its own `.grid-data/world.db` rather than importing an existing instance. Review the [installation guide](MD%20Project%20Files/Project_GRID_Fresh_Clone_Installation.md) for staging requirements, limitations, and recovery.
+
+---
+
+## Historical development notes
+
+The following dated updates document earlier milestones. References to **GRID**, **GRID7736**, `Grid.*` assemblies, `grid` terminal commands, and historical file/package names may be intentional technical or historical identifiers rather than the current product name.
 
 ## Fresh clone: install a new GRID instance
 
