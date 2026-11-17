@@ -1,4 +1,4 @@
-# Project GRID - Movement, occupations and workstations
+# Project Grid.AI - Movement, occupations and workstations
 
 ## Autonomy completion - 3.4 (2026-10-20)
 
@@ -56,4 +56,4 @@ New tests cover legal routes and per-edge timing, district membership, no work w
 
 A disposable built-terminal smoke created world 224af104-c5ba-496c-bdfd-d013ea9771e4, displayed jobs/activity, saved, and reopened the same city under v7. Normal population was221 observed/catalog residents at that moment; that count is machine/time-specific. Movement of configured agents is fixture-tested; production startup does not fabricate agents to demonstrate it.
 
-The user's running Release GRID process locked Release output. It was left running; Verification output was used for checks. The user must close the old terminal and rebuild their normal Release/Debug target before that installed launcher picks up these changes. Existing user world files were not opened or migrated by smoke tests. Section3.3 social behavior, 3.4 sustained autonomy/performance acceptance, interactive administrative job configuration and real delegated OS work remain future work.
+The user's running Release Grid.AI process locked Release output. It was left running; Verification output was used for checks. The user must close the old terminal and rebuild their normal Release/Debug target before that installed launcher picks up these changes. Existing user world files were not opened or migrated by smoke tests. Section3.3 social behavior, 3.4 sustained autonomy/performance acceptance, interactive administrative job configuration and real delegated OS work remain future work.
