@@ -1,4 +1,4 @@
-# GRID agent lifecycle — 5.9
+# Grid.AI agent lifecycle — 5.9
 
 ## Agent lifecycle — 5.9 completed (2026-10-23)
 
@@ -15,7 +15,7 @@ In-flight dialogue is cancelled and cannot commit across a pause/resume generati
 - Pause advances the activity generation. Dialogue carries that generation through inference and final commit, so even an immediate resume cannot accept a pre-pause reply. The task broker checks activity before claiming work, after the durable-start save, while waiting and before recording the final outcome.
 - Cancellation is cooperative, not an operating-system freeze or rollback. Running helpers are asked to stop; already-performed filesystem/build/speech effects cannot be undone. While a task settles, another dispatch is refused. Interrupted tasks require retry and a new approval; queued work still requires an explicit run command. A completed result already committed before pause remains completed.
 - Scheduler shutdown pauses the clock and changes the generation; attached requests are revoked/drained by the existing host shutdown flow. World reload keeps stable identities/history but starts paused and does not replay tasks or catch up missed time.
-- The shared local model server can remain loaded/idle while paused; it is infrastructure, not an independent agent. Explicit `ai status/test` diagnostics remain available to Master Control. Dialogue cannot run until GRID starts. A manual `step` remains an explicit simulation tick for civic behavior testing; it does not enable AI, task dispatch or autonomous scheduling.
+- The shared local model server can remain loaded/idle while paused; it is infrastructure, not an independent agent. Explicit `ai status/test` diagnostics remain available to Master Control. Dialogue cannot run until Grid.AI starts. A manual `step` remains an explicit simulation tick for civic behavior testing; it does not enable AI, task dispatch or autonomous scheduling.
 - Low-level engine `Start` remains a trusted simulation-clock API for fixtures; production startup and terminal commands use the authenticated `StartAgents` path. Communication storage/read APIs do not themselves execute agents. Normal connect/resume is activity-gated and does not create residents.
 
 ## Verification
