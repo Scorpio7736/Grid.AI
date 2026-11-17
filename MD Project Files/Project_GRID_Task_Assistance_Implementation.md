@@ -17,7 +17,7 @@
 **AI response recovery — 2026-10-26:** Truncated answers now get one bounded larger retry, and rejected responses are distinguished from an offline service. Advice and analysis prompts were refined; MCP greetings no longer receive unrelated district counts. **759 Release tests passed**, and the bundled model answered the reported HTML question successfully. [Fix, limits and regression test](Project_GRID_AI_Response_Recovery.md).
 
 
-Implemented 2026-10-26. Schema v23 unchanged. GRID uses its existing local inference service, captured-context store, registered capabilities, MCP coordinator and durable approval broker. No new online dependency or execution bypass is introduced.
+Implemented 2026-10-26. Schema v23 unchanged. Grid.AI uses its existing local inference service, captured-context store, registered capabilities, MCP coordinator and durable approval broker. No new online dependency or execution bypass is introduced.
 
 ## Intent and workflow
 
@@ -38,7 +38,7 @@ assist
     # EXAMPLE: assist propose Check current resource status using VOLT.
 ```
 
-Requires authenticated human Master Control, running GRID and an open one-to-one conversation with a registered agent. Works inline and in a dedicated conversation window. Meetings cannot borrow private assistance context. MCP collaboration means validated specialist delegation through the existing broker; it is not automatic sharing of private files, recursive agent execution or multi-model deliberation.
+Requires authenticated human Master Control, running Grid.AI and an open one-to-one conversation with a registered agent. Works inline and in a dedicated conversation window. Meetings cannot borrow private assistance context. MCP collaboration means validated specialist delegation through the existing broker; it is not automatic sharing of private files, recursive agent execution or multi-model deliberation.
 
 A submitted plan can contain up to eight specialist steps. Use the original terminal to inspect, approve and dispatch them:
 
@@ -81,7 +81,7 @@ Unavailable inference produces an explicit failure with no task creation. The ex
 
 ## Acceptance test
 
-After closing an older running GRID instance, launch the updated build, log in and run:
+After closing an older running Grid.AI instance, launch the updated build, log in and run:
 
 ```text
 grid -start
@@ -94,7 +94,7 @@ tasks
 
 Before `assist submit`, there should be no new task. After submission, the VOLT task should be awaiting approval. Inspect it before deciding whether to approve and run. For a multi-agent draft, ask for VOLT resource status plus SENTINEL firewall status; each step must still validate and be approved independently. AI can produce invalid proposals; refusal is expected rather than automatic repair/execution.
 
-The original debug instance was running during this implementation. It was left alone; its locked executable was not replaced. The updated development build is `Grid.Terminal/bin/Release/net10.0/Grid.Terminal.exe`. Its normal default save is the existing per-user GRID database, unless a custom `--world` path is supplied. The separately refreshed portable package uses its own package data directory; do not assume its world is the same as the development instance.
+The original debug instance was running during this implementation. It was left alone; its locked executable was not replaced. The updated development build is `Grid.Terminal/bin/Release/net10.0/Grid.Terminal.exe`. Its normal default save is the existing per-user Grid.AI database, unless a custom `--world` path is supplied. The separately refreshed portable package uses its own package data directory; do not assume its world is the same as the development instance.
 
 ## Completion verification
 
