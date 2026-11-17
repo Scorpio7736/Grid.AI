@@ -1,4 +1,4 @@
-# GRID offline and portable deployment — 6.27
+# Grid.AI offline and portable deployment — 6.27
 
 ## Implemented storage and packaging baseline — 2026-11-12
 
@@ -43,4 +43,4 @@ The package is a fresh installation containing the source/runtime snapshot captu
 
 ### Isolated local runtime test passed
 
-`Test-GridPortable.ps1 -AssistanceOnly` returned exit code 0 for the new package. The child used a package-local temporary profile, a system-only PATH and an empty global model-cache location. The bundled runtime returned GRID LOCAL READY, answered a greeting and advice request, retrieved the synthetic captured release code Cobalt42 and produced a typed VOLT task draft. The test opened no saved world. This verifies the local package boundary on this PC. Second-device and disconnected-network acceptance remain open.
+`Test-GridPortable.ps1 -AssistanceOnly` returned exit code 0 for the new package. The child used a package-local temporary profile, a system-only PATH and an empty global model-cache location. The bundled runtime returned Grid.AI LOCAL READY, answered a greeting and advice request, retrieved the synthetic captured release code Cobalt42 and produced a typed VOLT task draft. The test opened no saved world. This verifies the local package boundary on this PC. Second-device and disconnected-network acceptance remain open.
