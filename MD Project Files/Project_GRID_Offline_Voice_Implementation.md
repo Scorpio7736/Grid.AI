@@ -1,4 +1,4 @@
-# Project GRID - Offline Voice Communication (4.4)
+# Project Grid.AI - Offline Voice Communication (4.4)
 
 **4.2E compatibility update (2026-10-21):** Use `connect MCP -inline` or `resume ID -inline` in the original host before voice commands. Default connect/resume opens a typed conversation window; attached audio remains unavailable. Inline output is instant. See [conversation windows](Project_GRID_Conversation_Windows_Implementation.md).
 
@@ -20,7 +20,7 @@ Failures now report a bounded stage, exception type and HRESULT rather than hidi
 
 The original host terminal now supports explicit microphone recording, local speech recognition, transcript review/correction, and opt-in playback of the connected agent's latest reply. Typed `talk` and reviewed `voice send` use the same conversation and atomic deterministic dialogue service. Speech is conversation data, never input to the terminal command dispatcher: saying `nge`, `exit`, or a file-transfer command cannot execute it. This does not add task execution, delegation, or AI-generated replies.
 
-The initial provider uses installed Windows `System.Speech` recognition and synthesis engines through a hidden Windows PowerShell helper. This is the Windows MVP allowed by the design specification. It needs no NuGet audio package, downloads, API keys or network connection at runtime. Offline recognition-language and voice assets must already be installed on the host. If missing, unsupported, disabled or busy, GRID reports the failure and typed chat continues. GRID does not silently substitute a cloud provider. Whisper.cpp and Piper are future provider alternatives, not installed or implemented by this milestone.
+The initial provider uses installed Windows `System.Speech` recognition and synthesis engines through a hidden Windows PowerShell helper. This is the Windows MVP allowed by the design specification. It needs no NuGet audio package, downloads, API keys or network connection at runtime. Offline recognition-language and voice assets must already be installed on the host. If missing, unsupported, disabled or busy, Grid.AI reports the failure and typed chat continues. Grid.AI does not silently substitute a cloud provider. Whisper.cpp and Piper are future provider alternatives, not installed or implemented by this milestone.
 
 ## Commands and first use
 
@@ -65,7 +65,7 @@ Only the original interactive host terminal owns voice hardware in this version.
 
 Raw audio stays in bounded process memory, passes to the helper as data over stdin, and is cleared/released after transcription/cancellation. No WAV file is written and raw audio is not saved in the world, event audit or transcripts. Standard OS memory/process diagnostics are outside this application-level retention guarantee. Only explicitly sent text enters conversation history. Review drafts, mute state, device IDs and active playback are not persisted or resumed after restart.
 
-Voice profiles are an additive `VoiceProfiles` field in `WorldCommunications.StateJson` under the existing schema v13. Existing JSON without the field defaults to an empty list; profile names/IDs/rates/volumes are bounded and validated on load. Profiles are immutable snapshot data and survive ordinary dialogue changes, restart and backup recovery. No city regeneration or source-file changes occur. Saving with an older GRID binary may drop the new optional field; use this build to preserve profiles. A save failure reports that the profile remains changed in memory.
+Voice profiles are an additive `VoiceProfiles` field in `WorldCommunications.StateJson` under the existing schema v13. Existing JSON without the field defaults to an empty list; profile names/IDs/rates/volumes are bounded and validated on load. Profiles are immutable snapshot data and survive ordinary dialogue changes, restart and backup recovery. No city regeneration or source-file changes occur. Saving with an older Grid.AI binary may drop the new optional field; use this build to preserve profiles. A save failure reports that the profile remains changed in memory.
 
 ## Completion verification
 
