@@ -1,4 +1,4 @@
-# GRID 6.31 integration acceptance
+# Grid.AI 6.31 integration acceptance
 
 Updated 2026-11-14. Integration is implemented for the verified workflows below; the final Phase 7 gate remains open.
 
@@ -18,7 +18,7 @@ Every scenario checks world/agent/operator IDs, identity registration, conversat
 
 Rollback procedure:
 
-1. Stop all GRID sessions before replacing a deployment. Keep the matching executable/package, database backup and required file-edit recovery artifacts together. Record their location/version; do not mix independently updated packages and data.
+1. Stop all Grid.AI sessions before replacing a deployment. Keep the matching executable/package, database backup and required file-edit recovery artifacts together. Record their location/version; do not mix independently updated packages and data.
 
 2. Work on a separate copy when testing upgrades. Preserve the original package and save. This ownership release uses schema v24 and does not introduce a schema upgrade.
 
@@ -46,7 +46,7 @@ These are supported conversational intents. Arbitrary multi-step autonomous codi
 
 ## Saved-plan conversational resumption — 2026-11-14
 
-In a one-to-one conversation as Master Control, say `resume my work` (also `continue my work` or `show unfinished plans`). GRID lists saved, non-archived operator plans with unfinished steps across conversations. Say `resume plan 1` to select the numbered entry and review its current tasks/results, then `approve this plan` and `run this plan` when appropriate. Selection never approves or executes work. Completed, cancelled and denied-only plans are omitted.
+In a one-to-one conversation as Master Control, say `resume my work` (also `continue my work` or `show unfinished plans`). Grid.AI lists saved, non-archived operator plans with unfinished steps across conversations. Say `resume plan 1` to select the numbered entry and review its current tasks/results, then `approve this plan` and `run this plan` when appropriate. Selection never approves or executes work. Completed, cancelled and denied-only plans are omitted.
 
 This uses the existing durable coordination/task records; no schema change or model inference is required. Numbers bind to the displayed list, not a newly sorted query. Selection expires after changes to identity, conversation, project, agent activity, context or memory. Private operator plan requests are not listed in meetings or agent identities. Selecting a plan does not restore earlier private chat/context grants or file-edit approval.
 
@@ -91,7 +91,7 @@ The reported `plan to have maxis demonstrate the message "resume test"` request 
 
 Malformed main-terminal `resume` arguments are validated before opening an attached window. `resume my work` there explains how to enter an inline conversation; valid conversation IDs retain the existing window behavior.
 
-Full verification passed 1,361 tests (14 Core, 157 Simulation, 99 Persistence, 1,091 Terminal) using `dotnet test --artifacts-path TestResults/resume-fix --no-restore --verbosity quiet`. The user's running GRID locked the normal executable, so verification used isolated outputs. Process-based persistence tests now locate either conventional or isolated build outputs. The running process was not stopped or replaced; close it normally and rebuild before retrying the updated normal executable.
+Full verification passed 1,361 tests (14 Core, 157 Simulation, 99 Persistence, 1,091 Terminal) using `dotnet test --artifacts-path TestResults/resume-fix --no-restore --verbosity quiet`. The user's running Grid.AI locked the normal executable, so verification used isolated outputs. Process-based persistence tests now locate either conventional or isolated build outputs. The running process was not stopped or replaced; close it normally and rebuild before retrying the updated normal executable.
 
 ## MCP executable testing follow-up - 2026-11-14
 
@@ -99,4 +99,4 @@ The bundled-model `--verify-mcp-workflow` run completed five of six checks. Loca
 
 Retained source evidence: `C:\Users\jack\AppData\Local\Temp\Grid611Verification-33d634a8a46149569d026db4e52739e5\report.json`.
 
-Interactive testing was blocked because the running GRID console was absent from the computer-control window inventory. Login and mouse/keyboard workflows were not verified. The file-operations attempt was interrupted; no completed Desktop HTML artifact or OneDrive synchronization was confirmed. These are limitations, not passing checks.
+Interactive testing was blocked because the running Grid.AI console was absent from the computer-control window inventory. Login and mouse/keyboard workflows were not verified. The file-operations attempt was interrupted; no completed Desktop HTML artifact or OneDrive synchronization was confirmed. These are limitations, not passing checks.
