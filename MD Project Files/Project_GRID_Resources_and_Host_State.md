@@ -1,4 +1,4 @@
-# Project GRID - Resources and host state
+# Project Grid.AI - Resources and host state
 
 ## Autonomy completion - 3.4 (2026-10-20)
 
