@@ -1,4 +1,4 @@
-# GRID7736 - Terminal Help
+# Grid.AI - Terminal Help
 
 **Local coding follow-up:** In a private MCP chat, use `inspect repository demo`, `search repository demo for text`, `fix failing tests in demo` after a recorded failure, and `test this change` after approved apply. Recover saved edits with `resume file changes in demo` and `review file change 1`. [Scope, approval sequence, diagnostics and limitations](Project_GRID_Local_Coding_Integration.md).
 
@@ -53,7 +53,7 @@
 
 **6.11 completed — 2026-10-28:** MCP (Master Control Program) now offers custom catalog-based planning, scoped clarification, visible specialist-selection reasons, approved ordered plan execution, cancellation, reusable plans and recorded-result briefings. Reserved human controls remain explicit. **1,012 automated tests and six bundled-model checks passed.** Meeting shorthand (`meetings ...` and `connect meetings ...`) now validates before opening a window and supports `-inline`. [Workflow, authority matrix and terminal test](Project_GRID_MCP_Digital_Helper_Implementation.md). Earlier 6.11-planned statements below are historical; Phase 7 still requires 6.12–6.15.
 
-**2026-10-28 follow-up — GRID logo animation restored at user request:** Startup/login and shutdown show the supplied GRID7736 artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
+**2026-10-28 follow-up — Grid.AI logo animation restored at user request:** Startup/login and shutdown show the supplied Grid.AI artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
 
 **6.10A implemented — 2026-10-28:** Centralized 13-color terminal theme, semantic feedback, compact headers, section bars, responsive help tables and Unicode-aware layout/input are implemented. Truecolor is used in supported terminals, with console-color and plain-text fallbacks. User input stays white, prompts cyan, agent dialogue amber; errors are red, success green and approval labels gold. This supersedes historical blanket-yellow and oversized-header requirements. Commands, authentication and approval rules are unchanged. **999 automated tests passed**, plus Windows pseudoconsole login/color/masking/resize checks. [Implementation and limitations](Project_GRID_Terminal_Visual_Theme_Implementation.md). Phase 7 remains blocked on 6.11–6.15.
 
@@ -61,7 +61,7 @@
 
 **2026-10-28 — longer file drafting and conversational revisions (current limits):** File generation now has its own inference profile: 4,096 output tokens initially, one 8,192-token retry only on explicit truncation, 16,384-token model context, a 300-second queue-inclusive deadline, and up to 131,072 serialized-response characters. Ordinary chat/proposal limits stay unchanged. Editable UTF-8 files now allow 64 KiB, replacing the earlier 16-KiB bound. The file-generation prompt accepts up to 24,000 UTF-8 bytes (including source/previous draft); it refuses oversized input rather than truncating it. These are bounded budgets, not a guarantee that every model request can produce an arbitrarily large file. Partial/truncated JSON is never staged.
 
-Pending previews now accept revision requests such as `make a full web page about all the parts of the grid`, `expand...`, `revise...`, or `draft:`. The previous candidate and exact target are retained; old approval is cleared. Success replaces the draft and requires new approval. Failure keeps the previous draft available through `review` or `changes list`, unapproved. An already applied file requires an update request. Generated GRID pages receive a concise implemented-feature summary and captured tick/running/district/resident values; the prompt explicitly forbids inventing health percentages, uptime, anomaly history and guarantees. Generated claims still require review; there is no live health-score source.
+Pending previews now accept revision requests such as `make a full web page about all the parts of the grid`, `expand...`, `revise...`, or `draft:`. The previous candidate and exact target are retained; old approval is cleared. Success replaces the draft and requires new approval. Failure keeps the previous draft available through `review` or `changes list`, unapproved. An already applied file requires an update request. Generated Grid.AI pages receive a concise implemented-feature summary and captured tick/running/district/resident values; the prompt explicitly forbids inventing health percentages, uptime, anomaly history and guarantees. Generated claims still require review; there is no live health-score source.
 
 Also completed from the earlier transcript: combined filename/location/description requests route to AI drafting; instruction-like content follow-ups request generation while `content:` remains literal. The file extension is provided to the model. Apply typos retain the pending draft without execution. Changes list displays full IDs on separate lines. HTML/code still requires `approve high-risk`, then `apply this change`.
 
@@ -70,7 +70,7 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 **2026-10-28 — pending-step approval correction:** While selecting a folder, filename or content, approve/apply/review/undo workflow phrases now explain the missing step and retain the pending request. They are never interpreted as a new folder name or literal file contents. Folder-choice prompts explicitly ask for a number before approval; the preview remains the approval boundary. To intentionally write such a phrase as text, use `content:`. Verification: **969 tests passed** (14 Core, 157 Simulation, 99 Persistence, 699 Terminal), including three regression cases following the UWGB folder-choice → early action → select 1 → content → preview → approve → apply flow.
 
-**2026-10-28 — dynamic folder-name lookup implemented:** File requests can now name user-created directories, for example `create a file in my Homework folder called notes.md and fill it with six random words.` GRID looks up directory names at request time under the user profile, resolved common folders, and enabled local project roots; no fixed list of user folder names or saved index is required. Nested references such as `Classes/Math`, `%USERPROFILE%` paths and `~/` paths are accepted. Exact registered aliases retain priority. A single match within the searched scope becomes an absolute destination shown in the preview. Multiple matches (or any matches from a truncated lookup) prompt for a numbered choice or full path while retaining filename/content. Lookup reads directory names only and does not authorize a write; approval/apply remain separate.
+**2026-10-28 — dynamic folder-name lookup implemented:** File requests can now name user-created directories, for example `create a file in my Homework folder called notes.md and fill it with six random words.` Grid.AI looks up directory names at request time under the user profile, resolved common folders, and enabled local project roots; no fixed list of user folder names or saved index is required. Nested references such as `Classes/Math`, `%USERPROFILE%` paths and `~/` paths are accepted. Exact registered aliases retain priority. A single match within the searched scope becomes an absolute destination shown in the preview. Multiple matches (or any matches from a truncated lookup) prompt for a numbered choice or full path while retaining filename/content. Lookup reads directory names only and does not authorize a write; approval/apply remain separate.
 
 Lookup is limited to six levels below each search root, 2,000 queued/visited directories, 20 matches and a best-effort 1.5-second enumeration budget. It skips inaccessible, hidden/system child folders, links/reparse points and reserved/generated roots. Limits prevent an unbounded whole-machine scan; a name alone is not guaranteed discoverable everywhere. An explicit absolute directory/file path continues to work outside the lookup scope subject to existing access/text/path restrictions. Missing folders are not created. Tests use injected temporary search roots, not a scan or mutation of the operator's real documents.
 
@@ -79,7 +79,7 @@ Verification: **966 tests passed** (14 Core, 157 Simulation, 99 Persistence, 696
 
 **2026-10-28 — explicit file locations expanded (supersedes Desktop-only scope):** Reviewed text file operations now accept Desktop, Documents, Downloads, Pictures, Music and Videos, plus an explicit absolute folder or full file path. Standard folders resolve on the original host; Downloads honors its Windows User Shell Folders setting. An unfamiliar folder description asks for an existing absolute path or registered alias, retaining the filename and content request. No location is inferred from AI output. File-only destinations require no `.csproj` and cannot run builds/tests. Explicit drive-root and UNC file destinations use the file boundary; project-workspace registration keeps its previous restrictions. UNC paths were not exercised against a live network share in this verification.
 
-Examples: `create a file in my documents called words-test.md and fill it with six random words.`; `create a file in "D:\Notes" called test.md and fill it with 10 random letters`; `create file "D:\Notes\test.md" with content Hello`; `read file test.md in "D:\Notes"`. Folder paths must already exist and Windows must permit access. The existing single-file UTF-8 extension/16-KiB limits, reserved/generated paths, device-path and reparse restrictions, hash checks, approval, durable backup, and undo remain enforced. Absolute roots cannot bypass reserved path-component checks. Unavailable or ambiguous destinations are refused or clarified; GRID does not create missing folder trees or grant Windows elevation.
+Examples: `create a file in my documents called words-test.md and fill it with six random words.`; `create a file in "D:\Notes" called test.md and fill it with 10 random letters`; `create file "D:\Notes\test.md" with content Hello`; `read file test.md in "D:\Notes"`. Folder paths must already exist and Windows must permit access. The existing single-file UTF-8 extension/16-KiB limits, reserved/generated paths, device-path and reparse restrictions, hash checks, approval, durable backup, and undo remain enforced. Absolute roots cannot bypass reserved path-component checks. Unavailable or ambiguous destinations are refused or clarified; Grid.AI does not create missing folder trees or grant Windows elevation.
 
 For the natural “and fill it with” request, counts 1–100 of random numbers, letters or words are generated locally and previewed exactly. Number words one through ten are supported. Letters are lowercase a–z; numbers are 0–999; words come from a small built-in vocabulary; repeats are allowed. These are sample data, not cryptographic randomness. Other content requests continue through reviewed AI drafting. `reate a file` prompts a correction without executing. A supplied full absolute file path works without a workspace alias; explicitly pairing it with a different workspace still cannot escape that workspace.
 
@@ -88,12 +88,12 @@ Verification: **963 tests passed** (14 Core, 157 Simulation, 99 Persistence, 693
 
 **Implemented 2026-10-28 — Desktop file destination (6.9 follow-up):** Explicit Desktop requests now use the host Windows Desktop known folder, including OneDrive redirection. This file-only destination is `@desktop`; it does not require a `.csproj`, register a development workspace, or permit builds/tests. Registered workspace aliases still resolve to their own roots; an absolute Desktop path explicitly paired with a repository alias remains refused. Arbitrary destination folders are not added by this change.
 
-Example: `create a file on my desktop called test.md and fill it with 10 random numbers.` GRID stages ten integers from 0 through 999 (duplicates possible), shows the complete preview and absolute path, then requires `approve this change` followed by `apply this change`. Requests for 1–100 random numbers use local generation without AI. Other drafting instructions use the existing optional local AI draft path. `create a file on my desktop` asks for a filename and content. `read file test.md on my desktop`, update/delete equivalents, and explicit `changes ... @desktop ...` use the same bounded UTF-8 text policy, identity/activity checks, guarded backups and rollback. Delete/code changes still require high-risk approval. Recovery syntax: `recover change <id> in @desktop`. No outside-root traversal, missing-parent creation, or implicit overwrite is allowed.
+Example: `create a file on my desktop called test.md and fill it with 10 random numbers.` Grid.AI stages ten integers from 0 through 999 (duplicates possible), shows the complete preview and absolute path, then requires `approve this change` followed by `apply this change`. Requests for 1–100 random numbers use local generation without AI. Other drafting instructions use the existing optional local AI draft path. `create a file on my desktop` asks for a filename and content. `read file test.md on my desktop`, update/delete equivalents, and explicit `changes ... @desktop ...` use the same bounded UTF-8 text policy, identity/activity checks, guarded backups and rollback. Delete/code changes still require high-risk approval. Recovery syntax: `recover change <id> in @desktop`. No outside-root traversal, missing-parent creation, or implicit overwrite is allowed.
 
 Creating an existing file now reports its absolute path and asks the user to read, rename, or explicitly update it, even when its content matches. An incomplete `creat` receives deterministic file-workflow guidance rather than AI instructions to manually create a file. Disconnect clears pending requests and receipt scope so reconnect does not consume the next request with an expired-state response. Verification: **951 tests passed** (14 Core, 157 Simulation, 99 Persistence, 681 Terminal), including six new cases using a synthetic Desktop directory. No real user Desktop files were changed by verification. No schema migration or new external dependency.
 
 
-**2026-10-28 — verified file destinations:** Previews, captured reads and applied/rollback receipts now show the full absolute target path. In chat, “Where did you save the file?” and “What is the file path?” use the latest operation receipt in the current identity/conversation scope, refreshing its draft state when available. These answers bypass AI, distinguish unperformed drafts from applied operations, and explicitly do not claim a fresh filesystem check. Without a valid receipt, GRID cannot confirm a location. A workspace alias resolves to its registered root; `edits-demo` is not implicitly Desktop. Verification: 945 automated tests passed, including destination/state checks, explicit-command apply, and reconnect isolation. Existing user files were not moved.
+**2026-10-28 — verified file destinations:** Previews, captured reads and applied/rollback receipts now show the full absolute target path. In chat, “Where did you save the file?” and “What is the file path?” use the latest operation receipt in the current identity/conversation scope, refreshing its draft state when available. These answers bypass AI, distinguish unperformed drafts from applied operations, and explicitly do not claim a fresh filesystem check. Without a valid receipt, Grid.AI cannot confirm a location. A workspace alias resolves to its registered root; `edits-demo` is not implicitly Desktop. Verification: 945 automated tests passed, including destination/state checks, explicit-command apply, and reconnect isolation. Existing user files were not moved.
 
 **6.9 follow-up repaired — 2026-10-28:** Workspace clarifications display immediately, name the missing alias and show available aliases while retaining the request. Printable keys used to skip a reply are preserved for the next input; secret entry clears that one-off buffer. Markdown fence-only lines are ignored without calling AI or clearing the pending request. A disconnected file request explains how to reconnect; `reate file` requests a correction instead of asking the model to invent a destination. **944 tests passed**, plus six real Windows-console checks. The supplied unexpected disconnect was not reproduced; the tested flow retains its connection. [Console evidence](verification/6.9-input-repair-report.md).
 
@@ -132,7 +132,7 @@ Creating an existing file now reports its absolute path and asks the user to rea
 
 ## Agent lifecycle — 5.9
 
-Start GRID before talking to agents or running tasks. Existing identities/history remain saved while paused; transcripts and task inspection remain available. `agents initialize` only shows migration guidance, and connect no longer creates MCP. Explicit launch `--start` initializes after owner login; normal startup is paused.
+Start Grid.AI before talking to agents or running tasks. Existing identities/history remain saved while paused; transcripts and task inspection remain available. `agents initialize` only shows migration guidance, and connect no longer creates MCP. Explicit launch `--start` initializes after owner login; normal startup is paused.
 
 ```text
 grid
@@ -180,12 +180,12 @@ tasks
     # EXAMPLE: tasks -list -MAXIS
 ```
 
-`tasks list` remains an alias for all history; `-archived` limits it to archives. Old `start`/`pause` only show migration guidance. Transfers remain original-host-only. Selecting a folder creates its GRID7736 child; explicit non-root paths remain exact new destinations. Existing targets are never merged or overwritten. Agent lifecycle coupling is implemented in 5.9. [Implementation and verification](Project_GRID_Terminal_Controls_Implementation.md).
+`tasks list` remains an alias for all history; `-archived` limits it to archives. Old `start`/`pause` only show migration guidance. Transfers remain original-host-only. Selecting a folder creates its Grid.AI child; explicit non-root paths remain exact new destinations. Existing targets are never merged or overwritten. Agent lifecycle coupling is implemented in 5.9. [Implementation and verification](Project_GRID_Terminal_Controls_Implementation.md).
 
 
 ## Bundled AI and animation (2026-10-23)
 
-Normal GRID startup owns the bundled local AI server. Fresh source clones need `Prepare-GridRuntime.ps1`; prepared portable packages use `launch.cmd`. Use `ai status` / `ai test` after login, or `launch.cmd --verify-runtime` for an isolated package test. No separate global Ollama server is required.
+Normal Grid.AI startup owns the bundled local AI server. Fresh source clones need `Prepare-GridRuntime.ps1`; prepared portable packages use `launch.cmd`. Use `ai status` / `ai test` after login, or `launch.cmd --verify-runtime` for an isolated package test. No separate global Ollama server is required.
 
 `typewriter on` and `typewriter off` now work in original-host inline chat and attached chat. Fallback replies animate too; redirected streams and TERM=dumb remain instant. Explicit on overrides an initial GRID_TYPEWRITER=off preference.
 
@@ -219,7 +219,7 @@ ai
     # EXAMPLE: ai test
 ```
 
-If unavailable, run `Start-GridLocalAI.ps1` from PowerShell beside the built terminal or in the repository. It starts a separate local server on port 11435 using installed Ollama/model files. No inference request downloads a model. `GRID_AI_DISABLED=1` disables generation; deterministic GRID remains usable. Agent conversations now use this queue with grounded context and deterministic fallback; see [6.2](Project_GRID_Grounded_Conversations_Implementation.md). [Setup, license and diagnostic limits](Project_GRID_Shared_Local_AI_Implementation.md).
+If unavailable, run `Start-GridLocalAI.ps1` from PowerShell beside the built terminal or in the repository. It starts a separate local server on port 11435 using installed Ollama/model files. No inference request downloads a model. `GRID_AI_DISABLED=1` disables generation; deterministic Grid.AI remains usable. Agent conversations now use this queue with grounded context and deterministic fallback; see [6.2](Project_GRID_Grounded_Conversations_Implementation.md). [Setup, license and diagnostic limits](Project_GRID_Shared_Local_AI_Implementation.md).
 
 
 ## Bulk task commands — 5.8 (2026-10-22)
@@ -275,12 +275,12 @@ typewriter
     # EXAMPLE: typewriter off
 ```
 
-`typewriter` is available in dedicated conversation windows. Set `GRID_TYPEWRITER=off` before launching GRID for reduced motion across inherited windows. Redirected input/output and dumb terminals always use instant text. For voice, use `connect MCP -inline` in the original host before `voice listen`. [Details and acceptance test](Project_GRID_Conversation_Windows_Implementation.md).
+`typewriter` is available in dedicated conversation windows. Set `GRID_TYPEWRITER=off` before launching Grid.AI for reduced motion across inherited windows. Redirected input/output and dumb terminals always use instant text. For voice, use `connect MCP -inline` in the original host before `voice listen`. [Details and acceptance test](Project_GRID_Conversation_Windows_Implementation.md).
 
 
 ## VOLT and RELAY — 5.6 completed (2026-10-21)
 
-VOLT now reports existing host telemetry and supports approved normal/eco/auto pacing of GRID's automatic simulation. Unknown/unsupported GPU data is preserved; Windows resources and manual tick behavior are unchanged. RELAY provides a saved local inbox, recorded-task briefings, human acknowledgements and explicitly approved offline speech with delivery/failure receipts. Schema v19 preserves mode and inbox history without automatic playback/replay. **551 tests passed** (14 Core, 157 Simulation, 97 Persistence, 283 Terminal). See [VOLT/RELAY implementation and acceptance test](Project_GRID_VOLT_RELAY_Implementation.md) for commands and boundaries. Next: **5.7 end-to-end verification**. Earlier milestone/schema/test statements below remain historical.
+VOLT now reports existing host telemetry and supports approved normal/eco/auto pacing of Grid.AI's automatic simulation. Unknown/unsupported GPU data is preserved; Windows resources and manual tick behavior are unchanged. RELAY provides a saved local inbox, recorded-task briefings, human acknowledgements and explicitly approved offline speech with delivery/failure receipts. Schema v19 preserves mode and inbox history without automatic playback/replay. **551 tests passed** (14 Core, 157 Simulation, 97 Persistence, 283 Terminal). See [VOLT/RELAY implementation and acceptance test](Project_GRID_VOLT_RELAY_Implementation.md) for commands and boundaries. Next: **5.7 end-to-end verification**. Earlier milestone/schema/test statements below remain historical.
 
 
 ## JN storage — 5.5 completed (2026-10-21)
@@ -618,7 +618,7 @@ Grid7736
 
 ## Login/welcome workflow
 
-Opening GRID7736 graphic -> first-run credential setup if needed -> login -> clear screen -> welcome username and Master Control authority -> Enter -> terminal. Agent selection remains available after authentication. Logout asks y/n; cancellation retains context, confirmation clears the screen and returns to welcome. Expiry denies commands immediately and returns to welcome at the next input boundary. EOF/Ctrl+C exits through normal save/shutdown handling.
+Opening Grid.AI graphic -> first-run credential setup if needed -> login -> clear screen -> welcome username and Master Control authority -> Enter -> terminal. Agent selection remains available after authentication. Logout asks y/n; cancellation retains context, confirmation clears the screen and returns to welcome. Expiry denies commands immediately and returns to welcome at the next input boundary. EOF/Ctrl+C exits through normal save/shutdown handling.
 
 ## Palette and completion
 
@@ -981,7 +981,7 @@ assist
     # EXAMPLE: assist propose Check current resource status using VOLT.
 ```
 
-Start GRID and connect to an agent as Master Control. Use `memory scope <project>` in an empty conversation to match imported context. Import with an explicit grant, for example `context add -search persistent grid MCP`. Use the original terminal for `tasks inspect`, `tasks approve`, and `tasks run`. Analysis responses are transient; captured file content is not copied into automatic conversation memory.
+Start Grid.AI and connect to an agent as Master Control. Use `memory scope <project>` in an empty conversation to match imported context. Import with an explicit grant, for example `context add -search persistent grid MCP`. Use the original terminal for `tasks inspect`, `tasks approve`, and `tasks run`. Analysis responses are transient; captured file content is not copied into automatic conversation memory.
 
 ## MCP workflow and meeting shortcuts (6.11)
 
@@ -999,7 +999,7 @@ Master Control, original host terminal:
 - `ai registry verify` — hash all referenced active/retained assets and measure shared storage.
 - `ai registry import "absolute-manifest.json"` — validate and register already provisioned assets.
 - `ai registry rollback <id>` — verify and restore the previous metadata revision.
-- `ai registry force-lite on` / `off` — persist the setting; restart GRID to apply it.
+- `ai registry force-lite on` / `off` — persist the setting; restart Grid.AI to apply it.
 
 Example: `ai registry register-baseline`, then `ai registry verify`. Registry changes do not switch the running chat model.
 
