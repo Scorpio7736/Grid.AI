@@ -1,4 +1,4 @@
-# Project GRID — Conversation windows and typewriter responses (4.2E)
+# Project Grid.AI — Conversation windows and typewriter responses (4.2E)
 
 **6.9 update — 2026-10-27:** Authenticated attached conversation dispatchers now expose reviewed `changes` operations and conversational CRUD. All file access remains in the host; the UI process only sends requests. Drafts/approvals are per dispatcher, parent revocation blocks work, and applied backups can be recovered by ID after closing/restarting. [Verification](Project_GRID_Conversational_File_Operations.md).
 
@@ -48,7 +48,7 @@ typewriter
     # EXAMPLE: typewriter off
 ```
 
-Preference is per window, not persisted. Set the environment variable `GRID_TYPEWRITER=off` before launching GRID to disable animation in all inherited windows for reduced-motion/accessibility needs. Redirected input/output and `TERM=dumb` also force instant text. `typewriter on` overrides the initial `GRID_TYPEWRITER=off` preference, but cannot override redirected streams or `TERM=dumb`.
+Preference is per window, not persisted. Set the environment variable `GRID_TYPEWRITER=off` before launching Grid.AI to disable animation in all inherited windows for reduced-motion/accessibility needs. Redirected input/output and `TERM=dumb` also force instant text. `typewriter on` overrides the initial `GRID_TYPEWRITER=off` preference, but cannot override redirected streams or `TERM=dumb`.
 
 The engine generates and records the complete turn before display. Animation never calls the engine, appends partial messages or executes tasks. Existing host autosave/orderly-shutdown persistence applies; animation does not add an immediate durable-save guarantee. Attachment heartbeats run during animation (every 16 displayed text elements), checking revocation and keeping the pipe alive. Cancellation stops rendering without removing or duplicating the recorded turn. This is presentation animation, not streamed model generation.
 
@@ -69,10 +69,10 @@ Attached windows still do not own microphone/speaker controls. For voice, use `c
 
 Commands used: `dotnet test <project>/<project>.csproj -c Verification --no-restore --verbosity minimal`, serially for Grid.Core.Tests, Grid.Simulation.Tests, Grid.Persistence.Tests and Grid.Terminal.Tests. Terminal tests were rerun after terminal-only fixes. Automated subprocess tests use hidden redirected consoles; physical window placement, colors and animation timing require the following manual smoke test.
 
-1. Launch the updated GRID, log in, and run `connect MCP`. Confirm a new conversation window opens while the original terminal still accepts `status`.
+1. Launch the updated Grid.AI, log in, and run `connect MCP`. Confirm a new conversation window opens while the original terminal still accepts `status`.
 2. In the new window, run `talk status`. Confirm the MCP label and typewriter response. Press Escape during a reply to finish it immediately.
 3. Run `typewriter off`, then `talk who are you`; confirm instant output. `transcript` must contain one user/agent pair per turn.
-4. Run `exit` in the conversation window. Confirm the main GRID remains running. Use `conversations`, copy the full ID, and run `resume ID` to reopen the retained conversation.
+4. Run `exit` in the conversation window. Confirm the main Grid.AI remains running. Use `conversations`, copy the full ID, and run `resume ID` to reopen the retained conversation.
 5. Confirm parent logout revokes the view. Separately, test `connect MCP -inline` in the original host if using microphone commands.
 
 Future 6.2A meetings should reuse the dedicated view, scoped attachment lifecycle and renderer metadata, while adding a separate participant/turn-routing contract. Do not mark meetings implemented until that module is delivered.
