@@ -1,17 +1,17 @@
-# Project GRID - Local Login and Identity Sessions (4.2A)
+# Project Grid.AI - Local Login and Identity Sessions (4.2A)
 
 **6.7 login update — 2026-10-27:** Successful authentication now shows a five-second skippable banner animation and enters the terminal automatically. Welcome name/authority remain; no post-login Enter read. Masking, setup and logout confirmation are preserved. [Timing/static modes and evidence](Project_GRID_Login_Animation_and_Colors.md).
 
 ## Current 4.2B completion - 2026-10-20
 
-Terminal UX and local password credentials are implemented and verified by 368 passing tests. Schema v12 preserves existing owners and adds authenticated credential migration/rotation. New worlds use interactive setup; existing owners use `login master`, then `credentials`. Read [4.2B implementation notes](Project_GRID_Terminal_UX_Implementation.md) for exact behavior and limits. Earlier 4.2A/schema v11 notes below describe their historical milestone. Full Flash GRID packaging remains planned.
+Terminal UX and local password credentials are implemented and verified by 368 passing tests. Schema v12 preserves existing owners and adds authenticated credential migration/rotation. New worlds use interactive setup; existing owners use `login master`, then `credentials`. Read [4.2B implementation notes](Project_GRID_Terminal_UX_Implementation.md) for exact behavior and limits. Earlier 4.2A/schema v11 notes below describe their historical milestone. Full Flash Grid.AI packaging remains planned.
 
 
 ## New UI, portable-package and offline requirements - 2026-10-20
 
 **4.2B implemented - 2026-10-20.** GRID-REQ-006 provides dashed per-command option lists with usage/examples, bundled `help -md`, opening artwork, username/password setup when not configured, clear/welcome/authority/Enter after login, confirmed logout returning to welcome, a light-blue/white/yellow/red palette, and capability-aware Tab completion. The [Markdown help reference](Project_GRID_Terminal_Help.md) is bundled and displayed offline by `help -md`.
 
-GRID-REQ-007 requires a self-contained flash-drive package with portable identity and package-relative managed storage/dependencies. GRID-REQ-008 requires all GRID runtime tasks to work offline; only explicit installs/provisioning may use the internet. Portable password authentication is implemented; host-local storage and PATH registration still do not fulfill full package portability. Earlier optional-cloud/online runtime plans are superseded by this offline requirement. Preserve saved city and world history across host changes.
+GRID-REQ-007 requires a self-contained flash-drive package with portable identity and package-relative managed storage/dependencies. GRID-REQ-008 requires all Grid.AI runtime tasks to work offline; only explicit installs/provisioning may use the internet. Portable password authentication is implemented; host-local storage and PATH registration still do not fulfill full package portability. Earlier optional-cloud/online runtime plans are superseded by this offline requirement. Preserve saved city and world history across host changes.
 
 See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) and checklist 4.2B (implemented), 8.6 and 8.7 (planned). See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
 
@@ -19,7 +19,7 @@ See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) 
 
 ## Authentication choice and startup
 
-The production terminal uses the current Windows process token's user SID as its local authentication source (WindowsIdentity.GetCurrent), never an environment variable or a user-typed identifier. The administrative role is **Master Control**. No GRID password is collected, no Windows elevation occurs, and an agent identity is a role selected by the authenticated human rather than a separate OS account.
+The production terminal uses the current Windows process token's user SID as its local authentication source (WindowsIdentity.GetCurrent), never an environment variable or a user-typed identifier. The administrative role is **Master Control**. No Grid.AI password is collected, no Windows elevation occurs, and an agent identity is a role selected by the authenticated human rather than a separate OS account.
 
 Every launch begins locked. Use `login master`; on a new/unbound world this binds its owner to the verified Windows SID. Existing bound worlds require an exact match. For saved worlds the owner registry is saved successfully before login grants permissions. An unavailable OS identity, different owner or failed owner save cannot grant access. Non-Windows production login currently fails closed; alternate credential providers are not implemented. Test providers are injected only in tests.
 
@@ -86,6 +86,6 @@ The same world database/backup/NGE boundaries apply to the identity registry. A 
 
 **362 tests passed:** 14 Core, 155 Simulation, 90 Persistence, 103 Terminal. Each test project ran with `dotnet test <project>/<project>.csproj -c Verification --no-restore`. New coverage includes locked commands/scoped help, default-deny extensions, wrong/missing OS identity, owner restore, registered agent restrictions, unrelated transcript isolation, chat/preview reset, service-level edit denial, stale leases, expiry, failed owner persistence, observation-owned fields, schema v10 migration and registry/edit backup recovery. Existing editing tests retain invalid values, concurrency, revision, atomicity and membership coverage.
 
-A real Windows-token terminal smoke used a disposable world: denied pre-login status; login; create/register MCP; switch to agent and deny pause; return to master; preview/confirm an occupation edit; logout and deny status; restart requiring login; verify retained edit/registration and agent switching. The user's default save and running GRID instance were untouched. Build/restart the normal launcher target to use this login flow.
+A real Windows-token terminal smoke used a disposable world: denied pre-login status; login; create/register MCP; switch to agent and deny pause; return to master; preview/confirm an occupation edit; logout and deny status; restart requiring login; verify retained edit/registration and agent switching. The user's default save and running Grid.AI instance were untouched. Build/restart the normal launcher target to use this login flow.
 
 Remaining: independent passwords/MFA or alternate OS providers, owner-transfer/recovery UI, agent deregistration/custom policy UI, transcript retention UI, real task services and their scoped views, autonomous agent execution, remote clients and stronger storage protections. Earlier dated notes that login/admin editing are planned remain historical milestones; this implementation supplies the Windows local-terminal scope described here.
