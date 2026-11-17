@@ -1,4 +1,4 @@
-# GRID agent working rules
+# Grid.AI agent working rules
 
 ## Scope and context
 
