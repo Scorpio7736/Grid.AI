@@ -1,4 +1,4 @@
-# GRID terminal controls, task views and destinations — 4.2G
+# Grid.AI terminal controls, task views and destinations — 4.2G
 
 **6.3 completed — 2026-10-26:** `assist advice/analyze/propose` now provides scoped local-AI guidance and typed MCP drafts. `assist submit` creates only tasks awaiting approval; no automatic execution. Captured context stays within explicit agent/project grants, and assistance outputs are not copied into chat recall. **752 Release tests passed**; bundled-model analysis/drafting verified. [Commands and limits](Project_GRID_Task_Assistance_Implementation.md). Earlier 6.3-pending statements are historical; monitor assistance remains planned in 6.3A.
 
@@ -20,14 +20,14 @@ In-flight dialogue is cancelled and cannot commit across a pause/resume generati
 
 ### 4.2G folder-picker repair — 2026-10-23
 
-Fixed a user-reported Windows dialog failure: FolderBrowserDialog supports Description, not Title. Removed the unsupported property, explicitly emit JSON null on cancellation (Windows PowerShell otherwise emits no JSON for null), suppress first-use progress and keep raw helper stderr/CLIXML out of terminal errors. **392 terminal tests passed**, including three new tests executing the actual Windows PowerShell helper with a real Windows Forms dialog object. Tests substitute only the modal ShowDialog result for selection/cancellation and verify concise failure output. Physical dialog interaction remains a manual check. Earlier injected-picker tests did not cover this platform failure. Restart GRID to load the corrected binary. Schema remains v21.
+Fixed a user-reported Windows dialog failure: FolderBrowserDialog supports Description, not Title. Removed the unsupported property, explicitly emit JSON null on cancellation (Windows PowerShell otherwise emits no JSON for null), suppress first-use progress and keep raw helper stderr/CLIXML out of terminal errors. **392 terminal tests passed**, including three new tests executing the actual Windows PowerShell helper with a real Windows Forms dialog object. Tests substitute only the modal ShowDialog result for selection/cancellation and verify concise failure output. Physical dialog interaction remains a manual check. Earlier injected-picker tests did not cover this platform failure. Restart Grid.AI to load the corrected binary. Schema remains v21.
 
 
 ## 4.2G completed — 2026-10-23
 
 `grid -start` / `grid -pause` replace the old start/pause commands, which now give migration guidance without changing state. `tasks` and `tasks list` show all authorized retained history, including labeled archives. `tasks -completed` shows Completed only; `tasks -list` excludes Completed and Denied (cancelled/failed and archived records remain visible). All views accept one agent filter. Master Control can use `tasks deny <reference> "reason"` on an AwaitingApproval task; denial is terminal, separately audited and saved in schema v21. Existing v20 history upgrades without rewriting cancellations as denials.
 
-Transfers accept drive roots as containers: `grid -copyto "E:\"` targets `E:\GRID7736`. `grid -copyto -select` / `grid -transferto -select` select a container and create its new GRID7736 child. Existing targets are refused; no merging or overwriting. Original-host Master Control, interactive preview/y/n, saved-world verification and move cleanup safeguards remain. No files move when selection is cancelled, authority changes or media is unavailable.
+Transfers accept drive roots as containers: `grid -copyto "E:\"` targets `E:\GRID7736`. `grid -copyto -select` / `grid -transferto -select` select a container and create its new Grid.AI child. Existing targets are refused; no merging or overwriting. Original-host Master Control, interactive preview/y/n, saved-world verification and move cleanup safeguards remain. No files move when selection is cancelled, authority changes or media is unavailable.
 
 **Verification:** 658 tests passed (14 Core, 157 Simulation, 98 Persistence, 389 Terminal), including ten new regression cases; zero skipped. Native dialog appearance and physical flash-drive removal/cross-PC acceptance remain manual release checks. The picker uses Windows' built-in local folder dialog, with no new external package/service. The saved city and user files were not relocated by verification. Agent lifecycle coupling (5.9), startup test gate (8.8), changed-device handling (8.9), meetings (6.2A), and full portable/disaster acceptance (8.6) remain planned. See [implementation and test commands](Project_GRID_Terminal_Controls_Implementation.md).
 
@@ -47,7 +47,7 @@ tasks
 
 Copy the returned task reference, then run `tasks deny <reference> "Not needed for this run"`. Check `tasks inspect <reference>` and `tasks -list`; the denied task remains in history but is excluded from that view. Denial does not execute the task and cannot approve/retry it. A new proposal requires a new request key. Only human Master Control may deny; agent-scoped views still cannot expose another role's tasks.
 
-For a harmless folder-picker test, run `grid -copyto -select`, choose a container, review the proposed child path, then answer `n`. Both copy and move require confirmation and close the original host after saving when accepted. A normal non-root explicit path is the exact new destination; only root paths and picker containers gain a GRID7736 child. Select another container or use a new explicit path if that child already exists.
+For a harmless folder-picker test, run `grid -copyto -select`, choose a container, review the proposed child path, then answer `n`. Both copy and move require confirmation and close the original host after saving when accepted. A normal non-root explicit path is the exact new destination; only root paths and picker containers gain a Grid.AI child. Select another container or use a new explicit path if that child already exists.
 
 ## Persistence and verification boundaries
 
