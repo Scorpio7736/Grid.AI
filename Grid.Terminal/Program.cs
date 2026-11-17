@@ -5,7 +5,7 @@ using Grid.Terminal;
 using Grid.Simulation.Resources;
 using Grid.Simulation.Applications;
 
-if (args.Length > 0 && args[0] is "--setup" or "--doctor") return await GuidedSetup.RunAsync(args, Console.In, Console.Out);
+if (args.Length > 0 && args[0] is "--setup" or "--doctor" or "--doctor-check") return await GuidedSetup.RunAsync(args, Console.In, Console.Out);
 if (args.Length > 0 && args[0].StartsWith("--dataset-", StringComparison.Ordinal)) return TrainingDatasetCommands.Run(args);
 if (args.Length > 0 && args[0].StartsWith("--finetune-", StringComparison.Ordinal)) return FineTuningCommands.Run(args);
 if (args.Length > 0 && args[0].StartsWith("--release-", StringComparison.Ordinal)) return await ReleaseCommands.RunAsync(args);
@@ -56,6 +56,15 @@ var packageRoot = GridTransfer.PackageRoot(AppContext.BaseDirectory);
 if (packageRoot is not null && File.Exists(Path.Combine(packageRoot, "transfer-status.txt")) &&
     File.ReadAllText(Path.Combine(packageRoot, "transfer-status.txt")).Contains("pending", StringComparison.OrdinalIgnoreCase))
 { Console.Error.WriteLine("Move cleanup is pending. Check transfer-status.txt before launching."); return 1; }
+var defaultWorld = packageRoot is null
+    ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GRID", "world.db")
+    : Path.Combine(packageRoot, "data", "world.db");
+if (GuidedSetup.OfferFirstRun(args, !Console.IsInputRedirected, defaultWorld))
+{
+    Console.WriteLine("First run: type setup to review PC/Flash storage, local AI and permissions, or press Enter to continue with default storage and secure identity setup.");
+    if (Console.ReadLine()?.Trim().Equals("setup", StringComparison.OrdinalIgnoreCase) == true)
+        return await GuidedSetup.RunAsync(["--setup"], Console.In, Console.Out);
+}
 using var shutdown = new CancellationTokenSource();
 ConsoleCancelEventHandler cancel = (_, eventArgs) => { eventArgs.Cancel = true; shutdown.Cancel(); };
 Console.CancelKeyPress += cancel;

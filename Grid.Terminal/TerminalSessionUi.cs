@@ -33,6 +33,7 @@ public sealed class TerminalSessionUi(TerminalIdentitySession identity, ITermina
         if (!input.Interactive) { await output.WriteLineAsync("Error: credential setup requires interactive masked input; redirected setup is refused."); return true; }
         if (!identity.NeedsSetup && !identity.IsMaster) { await output.WriteLineAsync("Access denied. Authenticate the current owner before credential migration."); return true; }
         await output.WriteLineAsync($"Create local credentials. Existing owner/agent identities and transcripts are preserved. Password: {Grid.Communication.PasswordCredential.MinimumPasswordLength}..{Grid.Communication.PasswordCredential.MaximumPasswordLength} characters. Uppercase, lowercase, numbers and symbols are allowed; no mixture is required.");
+        await output.WriteLineAsync("Keep your password in your own password manager. No recovery code or password-reset bypass is created. World backup recovery does not reset a forgotten password. After login, credentials changes credentials and revokes existing sessions. Optional capabilities remain off until explicitly requested.");
         var name = await Read("Username: ", false, token); if (name is null) return false;
         var password = await Read("Password: ", true, token); if (password is null) return false;
         var confirm = await Read("Confirm password: ", true, token); if (confirm is null) return false;

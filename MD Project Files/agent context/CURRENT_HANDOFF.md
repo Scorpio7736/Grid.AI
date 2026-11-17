@@ -1,12 +1,14 @@
 # GRID current handoff
 
-Updated 2026-11-15. Verify the working tree and checklist before starting work.
+Updated 2026-11-16. Verify the working tree and checklist before starting work.
 
 ## Working approach
 
 Follow the concise [repository working rules](../../AGENTS.md). Use targeted reads and tests, retain completion evidence, and link detailed documentation instead of repeating it. The [historical chat workflow](CHAT_WORKFLOW_AND_AGENT_HANDOFF.md) preserves earlier decisions.
 
 ## Current milestone
+
+6.34 local onboarding implementation updated 2026-11-16: reviewed offline/online installer, retained-file inventory and staging admission checks, explicit save-to-secure-login launch, first-run offer, identity/world-recovery guidance and capability revoke help. `--doctor-check <profile.json>` performs bounded storage/voice-inventory/synthetic-OCR/device-metadata/local-inference checks. All five passed on this Windows host; 53 focused tests passed; full suite **1,456 passed, zero failures/skips** and `git diff --check` passed. See [guided setup](../Project_GRID_Guided_Setup.md). Physical clean-user/PC2/removable-media/disconnected acceptance and Standard/Performance promotion remain open; do not count simulated tests as physical evidence. Next local implementation item is 6.35 when requested; earlier milestone entries below are historical.
 
 AI readiness alerts added 2026-11-15: immediate host startup and post-login warning plus inline/resume/meeting and attached opening notices retain cause and explain fallback-only operation. Actual disabled ephemeral terminal and attached-protocol regressions passed. Full suite 1,436 passed, zero failed, four symbolic-link privilege skips. See [alert evidence/limits](../Project_GRID_Fresh_Clone_Installation.md#ai-readiness-alerts-2026-11-15). This reports startup availability, not continuous backend monitoring.
 
@@ -55,6 +57,6 @@ The reported demonstration/workspace mismatch and invalid main-terminal resume w
 
 ## Suggested next-chat request
 
-Continue GRID with checklist item 6.34 while retaining the open 6.33 real-device acceptance checks. Copy/transfer and PC2 acceptance are deferred until the user has the transfer device ready. Read AGENTS.md and the current handoff, verify current repository state, implement the item, and update its completion evidence. Keep output concise and preserve outstanding model/device acceptance gates.
+Continue GRID with checklist item 6.35 while retaining open 6.33/6.34 physical-device acceptance checks. Copy/transfer acceptance is deferred until the user has the transfer device ready. Read AGENTS.md and the current handoff, verify current repository state, implement the item, and update its completion evidence. Keep output concise and preserve outstanding model/device acceptance gates.
 
 MCP testing follow-up: five of six executable workflow checks passed; missing-workspace clarification returned Invalid clarification response. Interactive UI and Desktop HTML delivery remain unverified. See the integration acceptance reference, MCP executable testing follow-up.

@@ -1798,12 +1798,14 @@ Fresh-clone implementation follow-up: [installation workflow](Project_GRID_Fresh
 
 Initial setup/profile/health implementation and 1,431 passing regressions: [guided setup](Project_GRID_Guided_Setup.md). Remaining acceptance below is not marked complete; PC2 startup reporting follow-up is recorded in [PC2 diagnostics](Project_GRID_PC2_Diagnostics.md).
 
-- [ ] Offer a terminal-based first-run setup flow for permanent PC GRID versus Flash GRID, local identity/recovery, storage location and optional capabilities.
-- [ ] Discover CPU, available RAM/VRAM, storage and existing managed runtime dependencies; show supported Lite/Standard/Performance choices with measured confidence and resource estimates.
-- [ ] Select only verified compatible local models, provision missing assets through an explicit install action, and allow an offline pre-provisioned path; never silently download or use a cloud provider.
-- [ ] Explain requested Windows permissions and connectivity separately, with skip, revoke and later-edit controls; default to minimum grants.
-- [ ] Provide one-command local AI, voice, storage, screen and capability health diagnostics with actionable repair messages and rollback.
+- [x] Offer a terminal-based first-run setup flow for permanent PC GRID versus Flash GRID, local identity/recovery, storage location and optional capabilities. Explicit save/launch continues to masked credentials; recovery guidance preserves the distinction between world restore and password recovery (no reset bypass).
+- [x] Discover CPU, available RAM/VRAM, storage and existing managed runtime dependencies; show supported Lite/Standard/Performance choices with measured confidence and resource estimates. Lite eligibility is conservative; Standard/Performance remain explicitly unavailable pending device acceptance. Managed install/data/staging inventory and additional staging budget are reviewed before installation.
+- [x] Select only verified compatible local models, provision missing assets through an explicit install action, and allow an offline pre-provisioned path; never silently download or use a cloud provider. Reviewed clone installer invokes offline or explicit download mode; Flash stays pre-provisioned. Running installed binaries must be closed before rebuilding their output directory.
+- [x] Explain requested Windows permissions and connectivity separately, with skip, revoke and later-edit controls; default to minimum grants. Review maps to existing voice/screen/device/workspace controls; profiles never carry secrets or grants.
+- [x] Provide one-command local AI, voice, storage, screen and capability health diagnostics with actionable repair messages and rollback. `--doctor-check <profile.json>` verifies temporary storage, voice inventory, synthetic OCR, metadata discovery and real local inference without opening worlds or capturing live audio/screens. Existing profiles/worlds retained; repairs remain explicit.
 - [ ] Test clean-user first runs, low-end hardware, unavailable GPU, limited space, drive-letter changes, second PC and network-blocked installation/runtime paths.
+
+Local implementation evidence 2026-11-16: **53 focused tests passed; full suite 1,456 passed, zero failures/skips**; all five active diagnostics passed on this Windows host, including a real pinned-model reply. [Detailed coverage, usage and remaining physical gates](Project_GRID_Guided_Setup.md). Automated resource/relocation/offline-failure cases do not close clean-user/second-PC/removable-media/disconnected physical acceptance.
 
 ## 6.35 Reusable skills and integration system
 

@@ -15,10 +15,10 @@ public static class GuidedSetup
     public const long DiskReserve = 256_000_000;
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true, UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
     public static string DefaultPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GRID", "setup.json");
-    public const string Permissions = "Identity: create/login with the existing secure local credential prompt; never put passwords in launch arguments. Keep recovery material outside this profile. --recover restores the world backup, not a forgotten password.\n" +
+    public const string Permissions = "Identity: create/login with the existing secure local credential prompt; never put passwords in launch arguments. Store your password in your own password manager. No password-reset backdoor or recovery code is created. --recover restores the world backup, not a forgotten password.\n" +
         "Optional permissions are skipped by default. Setup grants no file, microphone, screen, process or network access to agents.\n" +
-        "Voice: explicit voice listen/review/send; voice mute on stops speech. Windows microphone permission remains separate.\n" +
-        "Screen: explicitly select and review a capture in conversation; no background watching.\n" +
+        "Voice: explicit voice listen/review/send; voice cancel discards an unsent draft, voice mute on disables playback; Esc stops active recording/playback. Revoke microphone access in Windows privacy settings.\n" +
+        "Screen: screen options lists displays; screen monitoring selects one; screen ask explicitly captures one frame. screen stop cancels pending work and clears selection. No background watching.\n" +
         "Files: register only chosen workspace/storage paths and review each change. Disable those registrations to revoke access.\n" +
         "Device: device catalog explains limits; device revoke <review-id> cancels a pending grant.\n" +
         "Connectivity: inference uses bundled loopback services. Internet is not required after provisioning; no cloud provider or automatic downloads.\n" +
@@ -39,6 +39,13 @@ public static class GuidedSetup
         "Standard: unavailable until model-specific device acceptance. Performance: unavailable until model-specific GPU/runtime acceptance.\n" +
         "Only the pinned Qwen3 4B baseline can be selected here; Lite requests reduced context and CPU-only inference. Off keeps deterministic GRID available.";
     public static bool CanUseLite(SetupCapacity capacity) => capacity.SupportedHost && capacity.AvailableRam >= MinimumRam && capacity.FreeDisk >= DiskReserve;
+    public static bool OfferFirstRun(string[] args, bool interactive, string world) => args.Length == 0 && interactive && !File.Exists(world);
+
+    public static string RecoveryGuidance(string world) =>
+        "Local identity: a new world asks for a username and masked password when launched. Existing worlds require their existing credentials; setup cannot reset them.\n" +
+        "After login, credentials changes your password and revokes existing sessions. Keep your password outside the setup profile.\n" +
+        "World recovery (not password recovery): close all sessions and use --recover --world \"" + world + "\" to restore the existing backup. This rolls back changes since that backup; it is never run automatically.\n" +
+        "Preference rollback: launch with your earlier profile. Choosing another database does not move or restore the previous world.";
 
     public static void Validate(SetupProfile profile, string machine, string? packageRoot)
     {
@@ -48,6 +55,7 @@ public static class GuidedSetup
         {
             if (packageRoot is null || profile.WorldPath != "data/world.db")
                 throw new InvalidDataException("Flash setup requires a complete portable package and its relative data/world.db path.");
+            GridTransfer.CheckPath(Path.Combine(packageRoot, "data", "world.db"));
         }
         else ValidatePath(profile.WorldPath);
     }
@@ -84,7 +92,7 @@ public static class GuidedSetup
     {
         if (!CanUseLite(capacity)) throw new IOException("Lite requires Windows x64, 8 GB available RAM and 256 MB free reserve. Choose off or free resources and retry.");
         if (runtime is null || !File.Exists(Path.Combine(runtime, "assets.json")) || !File.Exists(Path.Combine(runtime, "ollama", "ollama.exe")))
-            throw new IOException("Managed runtime missing. Use a complete offline package or explicitly run Prepare-GridRuntime.ps1 with your selected local assets. Nothing downloaded.");
+            throw new IOException("Managed runtime missing. Choose the reviewed installer in --setup, run Setup-GridClone.ps1 -Download explicitly, or use Prepare-GridRuntime.ps1 with selected offline assets/a complete package. Nothing downloaded.");
         PackageBudget.VerifyModel(runtime, hashes: true);
     }
     public static async Task<string> DiagnoseAsync(string? runtime, string storage, CancellationToken token)
@@ -105,17 +113,32 @@ public static class GuidedSetup
         lines.Add(Permissions);
         return string.Join("\n", lines);
     }
-    public static async Task<int> RunAsync(string[] args, TextReader input, TextWriter output)
+    public static async Task<int> RunAsync(string[] args, TextReader input, TextWriter output, Func<string, Task<int>>? launch = null)
     {
         try
         {
-            if (args.Length is < 1 or > 2 || args[0] is not ("--setup" or "--doctor") || args[0] == "--doctor" && args.Length != 1)
-                throw new ArgumentException("Usage: --setup [absolute-new-profile.json] | --doctor | --configured <profile.json>");
+            if (args.Length is < 1 or > 2 || args[0] is not ("--setup" or "--doctor" or "--doctor-check") || args[0] == "--doctor-check" && args.Length != 2)
+                throw new ArgumentException("Usage: --setup [absolute-new-profile.json] | --doctor [profile.json] | --doctor-check <profile.json> | --configured <profile.json>");
             var runtime = BundledAiRuntime.FindRoot(AppContext.BaseDirectory);
             var package = GridTransfer.PackageRoot(AppContext.BaseDirectory);
             var path = args.Length == 2 ? args[1] : DefaultPath;
-            if (args[0] == "--doctor") { await output.WriteLineAsync(await DiagnoseAsync(runtime, AppContext.BaseDirectory, default)); return 0; }
-            await output.WriteLineAsync("GUIDED SETUP - saves preferences only; no world opened, no downloads. Enter skip at any prompt to cancel.\n" + Permissions);
+            if (args[0] is "--doctor" or "--doctor-check")
+            {
+                var storage = args.Length == 2 ? ResolveWorld(Read(path, Environment.MachineName, package), package) : AppContext.BaseDirectory;
+                if (args[0] == "--doctor") { await output.WriteLineAsync(await DiagnoseAsync(runtime, storage, default)); return 0; }
+                await output.WriteLineAsync("Explicit health checks: temporary storage probe, offline voice inventory, synthetic OCR and local inference. No world opened, desktop captured, audio recorded or grants changed. Runtime logs/cache may be written. Ctrl+C cancels.");
+                using var stop = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+                ConsoleCancelEventHandler cancel = (_, e) => { e.Cancel = true; stop.Cancel(); };
+                Console.CancelKeyPress += cancel;
+                try
+                {
+                    var checks = await SetupHealth.RunAsync(runtime, storage, stop.Token);
+                    await output.WriteLineAsync(SetupHealth.Format(checks));
+                    return checks.All(c => c.Passed) ? 0 : 1;
+                }
+                finally { Console.CancelKeyPress -= cancel; }
+            }
+            await output.WriteLineAsync("GUIDED SETUP - no world opened and no downloads unless explicitly reviewed. Enter skip at any prompt to cancel.\n" + Permissions);
             await output.WriteLineAsync("Deployment: pc (permanent PC) or flash (existing complete portable package):");
             var mode = input.ReadLine()?.Trim().ToLowerInvariant();
             if (mode is null or "skip") return 0;
@@ -133,6 +156,22 @@ public static class GuidedSetup
             var capacity = Observe(resolved);
             await output.WriteLineAsync(Choices(capacity));
             if (runtime is not null) await output.WriteLineAsync(await ModelDeviceDiscovery.DescribeAsync(runtime, default));
+            var clone = SetupInstallation.FindClone(AppContext.BaseDirectory);
+            if (mode == "pc" && clone is not null)
+            {
+                await output.WriteLineAsync("Dependencies: keep (default, already provisioned/offline), offline (build from verified local cache), or download (review online installer). No automatic retry online.");
+                var installation = input.ReadLine()?.Trim().ToLowerInvariant();
+                if (installation is null or "skip") return 0;
+                if (installation is not ("" or "keep" or "offline" or "download")) throw new ArgumentException("Choose keep, offline or download.");
+                if (installation is "offline" or "download")
+                {
+                    if (Path.GetFullPath(AppContext.BaseDirectory).StartsWith(Path.Combine(clone, ".grid-app") + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                        throw new IOException("Close this installed GRID before rebuilding it. Run Setup-GridClone.ps1 from PowerShell at the clone root (add -Download only for online installation), then rerun setup. No installer started.");
+                    await SetupInstallation.ReviewAsync(SetupInstallation.Plan(clone, installation == "download"), input, output);
+                    runtime = BundledAiRuntime.FindRoot(AppContext.BaseDirectory);
+                    capacity = Observe(resolved);
+                }
+            }
             await output.WriteLineAsync("Local AI: off (default) or lite (verify pinned installed model now):");
             var ai = input.ReadLine()?.Trim().ToLowerInvariant();
             if (ai is null or "skip") return 0;
@@ -140,13 +179,22 @@ public static class GuidedSetup
             profile = profile with { AiMode = ai };
             Validate(profile, Environment.MachineName, package);
             if (ai == "lite") VerifyLite(runtime, capacity);
+            await output.WriteLineAsync(RecoveryGuidance(resolved));
+            await output.WriteLineAsync("Optional capabilities: Enter/skip leaves all grants off; type review to read permission and revoke instructions. Setup does not authorize any capability.");
+            var permissions = input.ReadLine()?.Trim().ToLowerInvariant();
+            if (permissions is null) return 0;
+            if (permissions == "review") await output.WriteLineAsync(Permissions);
+            else if (permissions is not ("" or "skip")) throw new ArgumentException("Choose review, skip or Enter.");
             await output.WriteLineAsync("REVIEW\n" + JsonSerializer.Serialize(profile, Json) + "\nProfile file: " + path + "\nOptional capabilities: skipped, no grants. Type save to create this new profile; anything else cancels.");
             if (input.ReadLine()?.Trim() != "save") return 0;
             SaveNew(path, profile);
             await output.WriteLineAsync("Saved. Launch explicitly with --configured \"" + path + "\". Use --doctor for health diagnostics. No world or credential changed.");
+            await output.WriteLineAsync("Type launch to open this world and continue secure identity setup/login now; Enter finishes without launching.");
+            if (input.ReadLine()?.Trim() == "launch") return await (launch ?? SetupInstallation.LaunchAsync)(path);
             return 0;
         }
         catch (Exception e) when (Expected(e)) { await output.WriteLineAsync("Setup stopped: " + e.Message + " Previous configuration/world retained."); return 1; }
+        catch (OperationCanceledException) { await output.WriteLineAsync("Health checks cancelled or timed out. Existing world and grants retained."); return 1; }
     }
     public static bool Expected(Exception e) => e is InvalidDataException or IOException or UnauthorizedAccessException or ArgumentException or JsonException or NotSupportedException;
 }
