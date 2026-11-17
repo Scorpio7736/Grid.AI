@@ -1,4 +1,4 @@
-# Project GRID - Move and Copy Implementation
+# Project Grid.AI - Move and Copy Implementation
 
 **2026-10-30 transfer/AI follow-up:** Removed repeated full-content transfer checks while retaining independent destination verification and pinned model/manifest matching. Hashing now reports byte progress; ETA uses measured copy/verification work. AI diagnostics retain startup errors, and bundled startup tolerates slow media. Original-PC AI passed an isolated test; the reported failing instance remains undiagnosed pending its exact error. [Implementation, evidence and limits](Project_GRID_Transfer_Checks_and_AI_Diagnostics.md). Physical second-PC acceptance and 6.15 remain pending.
 
@@ -21,14 +21,14 @@
 
 ### 4.2G folder-picker repair — 2026-10-23
 
-Fixed a user-reported Windows dialog failure: FolderBrowserDialog supports Description, not Title. Removed the unsupported property, explicitly emit JSON null on cancellation (Windows PowerShell otherwise emits no JSON for null), suppress first-use progress and keep raw helper stderr/CLIXML out of terminal errors. **392 terminal tests passed**, including three new tests executing the actual Windows PowerShell helper with a real Windows Forms dialog object. Tests substitute only the modal ShowDialog result for selection/cancellation and verify concise failure output. Physical dialog interaction remains a manual check. Earlier injected-picker tests did not cover this platform failure. Restart GRID to load the corrected binary. Schema remains v21.
+Fixed a user-reported Windows dialog failure: FolderBrowserDialog supports Description, not Title. Removed the unsupported property, explicitly emit JSON null on cancellation (Windows PowerShell otherwise emits no JSON for null), suppress first-use progress and keep raw helper stderr/CLIXML out of terminal errors. **392 terminal tests passed**, including three new tests executing the actual Windows PowerShell helper with a real Windows Forms dialog object. Tests substitute only the modal ShowDialog result for selection/cancellation and verify concise failure output. Physical dialog interaction remains a manual check. Earlier injected-picker tests did not cover this platform failure. Restart Grid.AI to load the corrected binary. Schema remains v21.
 
 
 ## 4.2G completed — 2026-10-23
 
 `grid -start` / `grid -pause` replace the old start/pause commands, which now give migration guidance without changing state. `tasks` and `tasks list` show all authorized retained history, including labeled archives. `tasks -completed` shows Completed only; `tasks -list` excludes Completed and Denied (cancelled/failed and archived records remain visible). All views accept one agent filter. Master Control can use `tasks deny <reference> "reason"` on an AwaitingApproval task; denial is terminal, separately audited and saved in schema v21. Existing v20 history upgrades without rewriting cancellations as denials.
 
-Transfers accept drive roots as containers: `grid -copyto "E:\"` targets `E:\GRID7736`. `grid -copyto -select` / `grid -transferto -select` select a container and create its new GRID7736 child. Existing targets are refused; no merging or overwriting. Original-host Master Control, interactive preview/y/n, saved-world verification and move cleanup safeguards remain. No files move when selection is cancelled, authority changes or media is unavailable.
+Transfers accept drive roots as containers: `grid -copyto "E:\"` targets `E:\GRID7736`. `grid -copyto -select` / `grid -transferto -select` select a container and create its new Grid.AI child. Existing targets are refused; no merging or overwriting. Original-host Master Control, interactive preview/y/n, saved-world verification and move cleanup safeguards remain. No files move when selection is cancelled, authority changes or media is unavailable.
 
 **Verification:** 658 tests passed (14 Core, 157 Simulation, 98 Persistence, 389 Terminal), including ten new regression cases; zero skipped. Native dialog appearance and physical flash-drive removal/cross-PC acceptance remain manual release checks. The picker uses Windows' built-in local folder dialog, with no new external package/service. The saved city and user files were not relocated by verification. Agent lifecycle coupling (5.9), startup test gate (8.8), changed-device handling (8.9), meetings (6.2A), and full portable/disaster acceptance (8.6) remain planned. See [implementation and test commands](Project_GRID_Terminal_Controls_Implementation.md).
 
@@ -46,7 +46,7 @@ To check the rename without transferring files, run `help`, type `grid -c` then 
 
 ## 4.2D delivery - 2026-10-20
 
-Master Control (Master Admin) can run `grid -transferto "location"` to move GRID or `grid -copyto "location"` to copy GRID. The destination must be a new absolute directory whose parent already exists. Agent and logged-out sessions are denied. Commands preview the source, selected world, destination, file count and size, then require interactive y/n confirmation. Both commands close the terminal after stopping workers and saving the latest state. Redirected confirmation is refused.
+Master Control (Master Admin) can run `grid -transferto "location"` to move Grid.AI or `grid -copyto "location"` to copy GRID. The destination must be a new absolute directory whose parent already exists. Agent and logged-out sessions are denied. Commands preview the source, selected world, destination, file count and size, then require interactive y/n confirmation. Both commands close the terminal after stopping workers and saving the latest state. Redirected confirmation is refused.
 
 Examples:
 
@@ -71,11 +71,11 @@ One host retains its world lease while workers stop, final save completes and fi
 
 A helper timeout or failed launch leaves an incomplete status and source files; a crash before updating status may leave a pending marker. Inspect the manifest/status and verify the destination before manual recovery. Automatic resume/rollback of partial source deletion is not implemented.
 
-### Starting the transferred GRID
+### Starting the transferred Grid.AI
 
 Use the destination's `launch.cmd`. Package startup selects `data/world.db` and skips automatic host PATH/registry installation. Existing Windows-owner worlds still require their owner account; configure portable password credentials using `credentials` before moving between PCs. Password hashes and saved identities/transcripts travel with the database; authenticated sessions do not.
 
-The current launcher/helper uses `dotnet`, so a compatible .NET 10 runtime must already be installed. This feature does not provision runtime/models or fulfill the full PC GRID/Flash GRID installer and offline release gates. Package transfer requires its standard `data/world.db`; transferring an arbitrary alternate world from an existing package is refused.
+The current launcher/helper uses `dotnet`, so a compatible .NET 10 runtime must already be installed. This feature does not provision runtime/models or fulfill the full PC GRID/Flash Grid.AI installer and offline release gates. Package transfer requires its standard `data/world.db`; transferring an arbitrary alternate world from an existing package is refused.
 
 ### Verification and remaining integration
 
