@@ -1,8 +1,8 @@
-# GRID device integration and capability broker - 6.33
+# Grid.AI device integration and capability broker - 6.33
 
 ## Implemented baseline - 2026-11-14
 
-GRID exposes a bounded local device catalog and reviewed device actions through the original Master Control terminal. The implementation uses Grid.Agent typed contracts, the engine's existing TaskLease authorization and history, and the 6.23 file-destination gateway for folder creation. Existing file review/apply and screen-assistance services remain authoritative. This does not add arbitrary commands, elevation, unattended app control or cloud access.
+Grid.AI exposes a bounded local device catalog and reviewed device actions through the original Master Control terminal. The implementation uses Grid.Agent typed contracts, the engine's existing TaskLease authorization and history, and the 6.23 file-destination gateway for folder creation. Existing file review/apply and screen-assistance services remain authoritative. This does not add arbitrary commands, elevation, unattended app control or cloud access.
 
 Sources: [contracts](../Grid.Agent/DeviceCapabilities.cs), [host broker](../Grid.Simulation/GridSimulationEngine.Devices.cs), [Windows adapter](../Grid.Terminal/WindowsDeviceIntegration.cs), [terminal commands](../Grid.Terminal/DeviceCommands.cs).
 
@@ -52,7 +52,7 @@ Revoke cancels an unexecuted grant/approval. Selection expires after two minutes
 - Revocation, logout/login, agent switching, expiry, pause/restart, changed device and changed target invalidate outstanding authority. Grants and approvals are never serialized or restored across process restart. Re-selection is required.
 - Filesystem/process checks reduce accidental stale-target use but are not an OS security boundary against malicious concurrent replacement by another process. No secure-desktop access, privilege escalation or OS sandbox is claimed.
 
-Windows may refuse a foreground request. GRID reports that refusal and asks for manual selection; it does not attach input queues or bypass Windows foreground policy. See [Microsoft SetForegroundWindow documentation](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow).
+Windows may refuse a foreground request. Grid.AI reports that refusal and asks for manual selection; it does not attach input queues or bypass Windows foreground policy. See [Microsoft SetForegroundWindow documentation](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow).
 
 ## Audit and failure behavior
 
@@ -72,7 +72,7 @@ Added 23 cases in [DeviceCapabilityTests](../Grid.Terminal.Tests/DeviceCapabilit
 
 Real Windows checks on this PC passed process discovery, exact-file hashing and launch of argument-free Windows where.exe, command-host refusal, temporary empty-folder creation, existing-folder refusal and the normal engine file-gateway path. Temporary folders were removed. The initial discovery assertion was corrected because a capped/incomplete inventory need not include the test process.
 
-Full solution: **1,416 passed, zero failed/skipped** (Core 14, Simulation 157, Persistence 99, Terminal 1,146). Isolated outputs preserve any running ordinary GRID instance.
+Full solution: **1,416 passed, zero failed/skipped** (Core 14, Simulation 157, Persistence 99, Terminal 1,146). Isolated outputs preserve any running ordinary Grid.AI instance.
 
 ```powershell
 dotnet test Grid.Terminal.Tests/Grid.Terminal.Tests.csproj --artifacts-path TestResults/device-integration -p:NuGetAudit=false -p:RestoreIgnoreFailedSources=true --filter "FullyQualifiedName~DeviceCapabilityTests|FullyQualifiedName~IntegrationBoundaryTests|FullyQualifiedName~IdentitySessionTests|FullyQualifiedName~TaskBrokerTests" --verbosity minimal
