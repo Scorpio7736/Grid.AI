@@ -1,4 +1,4 @@
-# Project GRID — Grounded agent conversations (6.2)
+# Project Grid.AI — Grounded agent conversations (6.2)
 
 **AI response recovery — 2026-10-26:** Truncated answers now get one bounded larger retry, and rejected responses are distinguished from an offline service. Advice and analysis prompts were refined; MCP greetings no longer receive unrelated district counts. **759 Release tests passed**, and the bundled model answered the reported HTML question successfully. [Fix, limits and regression test](Project_GRID_AI_Response_Recovery.md).
 
@@ -98,4 +98,4 @@ talk What did I ask you earlier?
 
 Expect separately labeled facts, unverified AI text and sources. The original terminal remains usable; `tasks list` should show no task created by these messages. Exit the conversation window to keep it open, then use `conversations` and `resume CONVERSATION_ID` in the original terminal to verify retained history. Use `disconnect` only when you want to end the conversation.
 
-For the voice-compatible inline workflow use `connect MCP -inline`. The existing record/review/edit/send confirmation remains required. For deterministic fallback, launch GRID with `GRID_AI_DISABLED=1` and repeat `talk status`; remove that temporary setting before normal use. Never launch a second owner against the same world database just to test.
+For the voice-compatible inline workflow use `connect MCP -inline`. The existing record/review/edit/send confirmation remains required. For deterministic fallback, launch Grid.AI with `GRID_AI_DISABLED=1` and repeat `talk status`; remove that temporary setting before normal use. Never launch a second owner against the same world database just to test.
