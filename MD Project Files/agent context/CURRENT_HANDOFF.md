@@ -1,6 +1,6 @@
-# GRID current handoff
+# Grid.AI current handoff
 
-Updated 2026-11-15. Verify the working tree and checklist before starting work.
+Updated 2026-11-17 for the Grid.AI repository name. Technical identifiers and historical milestone evidence remain unchanged. Verify the working tree and checklist before starting work.
 
 ## Working approach
 
@@ -38,7 +38,7 @@ Local 6.31 saved-world preservation acceptance passed 2026-11-14: six populated-
 
 Saved operator plan resumption is implemented: `resume my work` -> numbered plan review -> explicit approval/run. SQLite restart, partial completion, stale selection and private-meeting restrictions are covered. File-edit focus and general autonomous coding recovery remain open.
 
-The reported demonstration/workspace mismatch and invalid main-terminal resume window are fixed and covered by the exact user sequence. Last tests used isolated outputs because the running GRID locked its normal executable; close and rebuild before normal-launch retesting. See the integration reference.
+The reported demonstration/workspace mismatch and invalid main-terminal resume window are fixed and covered by the exact user sequence. Last tests used isolated outputs because the running Grid.AI locked its normal executable; close and rebuild before normal-launch retesting. See the integration reference.
 
 6.31 local coding follow-up verified: repository inspection/search, root-to-target instruction hashes, recorded-failure diagnosis and selected-file repair, source CRUD, saved file recovery and attached meeting plans. Real bundled Qwen repaired a failing disposable Git project without being told the fix; tests and unrelated user file stayed unchanged. [Coding evidence and limits](../Project_GRID_Local_Coding_Integration.md).
 
@@ -55,6 +55,6 @@ The reported demonstration/workspace mismatch and invalid main-terminal resume w
 
 ## Suggested next-chat request
 
-Continue GRID with checklist item 6.34 while retaining the open 6.33 real-device acceptance checks. Copy/transfer and PC2 acceptance are deferred until the user has the transfer device ready. Read AGENTS.md and the current handoff, verify current repository state, implement the item, and update its completion evidence. Keep output concise and preserve outstanding model/device acceptance gates.
+Continue Grid.AI with checklist item 6.34 while retaining the open 6.33 real-device acceptance checks. Copy/transfer and PC2 acceptance are deferred until the user has the transfer device ready. Read AGENTS.md and the current handoff, verify current repository state, implement the item, and update its completion evidence. Keep output concise and preserve outstanding model/device acceptance gates.
 
 MCP testing follow-up: five of six executable workflow checks passed; missing-workspace clarification returned Invalid clarification response. Interactive UI and Desktop HTML delivery remain unverified. See the integration acceptance reference, MCP executable testing follow-up.
