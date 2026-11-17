@@ -1,4 +1,4 @@
-# Project GRID - Social Civilization (3.3)
+# Project Grid.AI - Social Civilization (3.3)
 
 ## Autonomy completion - 3.4 (2026-10-20)
 
