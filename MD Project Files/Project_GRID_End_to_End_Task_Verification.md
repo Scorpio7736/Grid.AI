@@ -1,4 +1,4 @@
-# Project GRID — End-to-end task verification (5.7)
+# Project Grid.AI — End-to-end task verification (5.7)
 
 **Verified 2026-10-21.** Phase 5's explicit, human-approved task workflow is verified. No production-code or schema changes were needed; schema remains v19. Natural-language planning and shared local inference remain planned for Phase 6, starting with 6.1.
 
@@ -28,7 +28,7 @@ dotnet test Grid.Terminal.Tests/Grid.Terminal.Tests.csproj -c Verification --no-
 
 **560 tests passed, zero failed/skipped:** 14 Core, 157 Simulation, 97 Persistence, 292 Terminal. Nine new cases are in `Grid.Terminal.Tests/EndToEndTaskTests.cs`. Release verification: `dotnet build Grid.Terminal/Grid.Terminal.csproj -c Release --no-restore --verbosity minimal` succeeded with zero warnings/errors. The nested real xUnit runs are test fixtures and are not added to this outer suite count. For the focused verification, add `--filter FullyQualifiedName~EndToEndTaskTests` to the Terminal command.
 
-The fixture uses a fresh temporary directory, its own database and separate MAXIS artifacts. Its restore clears all package sources and disables package audit, using the already cached package versions required by GRID's tests. It downloads nothing. Missing cached dependencies cause a failure, not a skip. Temporary worlds, sources and evidence are deleted after verification; ordinary user task artifacts remain retained under the configured world artifact directory. The user's world is never loaded by these tests.
+The fixture uses a fresh temporary directory, its own database and separate MAXIS artifacts. Its restore clears all package sources and disables package audit, using the already cached package versions required by Grid.AI's tests. It downloads nothing. Missing cached dependencies cause a failure, not a skip. Temporary worlds, sources and evidence are deleted after verification; ordinary user task artifacts remain retained under the configured world artifact directory. The user's world is never loaded by these tests.
 
 ## Terminal acceptance test
 
@@ -50,7 +50,7 @@ tasks run
 tasks inspect TASK
 ```
 
-MAXIS uses Debug and `--no-restore`; dependencies must already be restored. Review the scope before approval: the trusted project executes as the current Windows user and writes its normal build outputs. Avoid a running Debug GRID instance locking those outputs. Inspect the reported artifact directory's tests.trx and stdout.txt for actual discovery/counts (currently 14 Core tests). Exit code zero alone does not establish that tests were discovered; the production result deliberately retains this caveat.
+MAXIS uses Debug and `--no-restore`; dependencies must already be restored. Review the scope before approval: the trusted project executes as the current Windows user and writes its normal build outputs. Avoid a running Debug Grid.AI instance locking those outputs. Inspect the reported artifact directory's tests.trx and stdout.txt for actual discovery/counts (currently 14 Core tests). Exit code zero alone does not establish that tests were discovered; the production result deliberately retains this caveat.
 
 Copy the **full task GUID** from inspection, replace FULL-TASK-GUID below, then approve the newly created RELAY task:
 
