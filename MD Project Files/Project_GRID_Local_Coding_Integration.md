@@ -1,4 +1,4 @@
-# GRID local coding integration — 6.31
+# Grid.AI local coding integration — 6.31
 
 Verified 2026-11-14. This implements a bounded, reviewed local coding workflow. Final production and second-device gates remain open.
 
@@ -9,7 +9,7 @@ In a private Master Control conversation with MCP, using an enabled registered p
 1. `inspect repository demo` lists supported file paths and applicable project AGENTS.md guidance.
 2. `search repository demo for Calculator` searches captured source text literally, returning relative paths, line numbers and SHA256 values.
 3. `test demo` or `build demo` prepares the exact MAXIS task. Say `submit plan`, review, `approve this plan`, then `run this plan`.
-4. After an actual failure, say `fix failing tests in demo` or `fix failed build in demo`. GRID captures the latest attempted build/test outcome and bounded report/stdout/stderr excerpts. MAXIS diagnoses the failure and selects one existing source file from the inventory, then drafts its replacement using the actual source and applicable instructions.
+4. After an actual failure, say `fix failing tests in demo` or `fix failed build in demo`. Grid.AI captures the latest attempted build/test outcome and bounded report/stdout/stderr excerpts. MAXIS diagnoses the failure and selects one existing source file from the inventory, then drafts its replacement using the actual source and applicable instructions.
 5. Review the complete change. Say `I approve this code change`, then `apply this change`. No inferred/model-generated approval is accepted.
 6. Say `test this change`, then submit, review, approve and run the verification plan. If it fails again, request another diagnosis; every revision and test attempt requires its own explicit approval. There is no unattended mutation/retry loop.
 
@@ -36,7 +36,7 @@ Direct source creation, update and deletion also use the existing single-file pr
 - Full suite: **1,374 passed**, no failures or skips (14 Core, 157 Simulation, 99 Persistence, 1,104 Terminal). Command: `dotnet test --artifacts-path TestResults/integration-finish --no-restore --verbosity quiet`.
 - New coverage includes repository exclusions/search, revoked workspace refusal, nested instructions and changed-guidance rejection, source CRUD approval, no-failure refusal, forged model paths/approval fields, persisted file recovery/newer-file conflict, attached meeting execution/cancellation/no duplicate run, and safe HTTP status diagnostics.
 - Real bundled Qwen local inference passed `--verify-agentic-coding` in a disposable Git repository: actual failed xUnit test, autonomous diagnosis and file selection from captured output, reviewed source repair, passing discovered test, unchanged test assertions and unrelated uncommitted user file, and task-record SQLite reload. The harness did not tell the model the faulty operator or target filename in the repair request. [Transcript](verification/6.31-repository-repair.json); [TRX-derived results and corrected source hash](verification/6.31-repository-repair-results.json).
-- Full retained evidence: temporary directory `GridAgenticCoding-dd0465e834714dc99698e5f83aee75b5`, printed by the verifier. Git, bundled AI/SDK and cached test dependencies are prerequisites for this developer acceptance harness. GRID's ordinary coding tools do not require Git to edit a registered workspace.
+- Full retained evidence: temporary directory `GridAgenticCoding-dd0465e834714dc99698e5f83aee75b5`, printed by the verifier. Git, bundled AI/SDK and cached test dependencies are prerequisites for this developer acceptance harness. Grid.AI's ordinary coding tools do not require Git to edit a registered workspace.
 - Restore used no package sources and AI used the bundled loopback service. OS-level network blocking and second-PC execution were not performed here. Isolated build outputs avoid replacing the user's running GRID.
 
 ## Copied-PC HTTP failure
