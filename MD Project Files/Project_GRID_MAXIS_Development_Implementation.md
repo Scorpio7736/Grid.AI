@@ -1,4 +1,4 @@
-# Project GRID — 5.3 MAXIS Development
+# Project Grid.AI — 5.3 MAXIS Development
 
 ## End-to-end task verification — 5.7 completed (2026-10-21)
 
@@ -19,7 +19,7 @@ maxis workspaces
 
 Only human Master Control can register/revoke. Registration records an alias, absolute root, relative .csproj, machine name and enabled flag. It does not approve tasks. Up to 32 aliases are supported; aliases are case-insensitively unique, immutable and never reused, including after revocation. Use a different alias for another project or machine. MCP/MAXIS can see workspace metadata; other agents cannot. Registry state persists in schema v16 WorldTasks JSON; v15 worlds migrate with an empty registry and no regeneration.
 
-Registration requires an existing local directory/project, refuses drive roots, UNC paths and symbolic links/junctions, and prevents overlap with GRID's artifact directory. Source paths must be relative, without traversal or alternate data streams. Runtime rechecks the registry, machine and paths; revoked/missing workspaces cannot execute. This is a trusted-workspace feature: external concurrent filesystem changes and hostile project code are not contained by an OS sandbox.
+Registration requires an existing local directory/project, refuses drive roots, UNC paths and symbolic links/junctions, and prevents overlap with Grid.AI's artifact directory. Source paths must be relative, without traversal or alternate data streams. Runtime rechecks the registry, machine and paths; revoked/missing workspaces cannot execute. This is a trusted-workspace feature: external concurrent filesystem changes and hostile project code are not contained by an OS sandbox.
 
 ## Commands and approval
 
@@ -61,7 +61,7 @@ Arguments use `|` separators. Full argument length remains 256 printable charact
 tasks propose MAXIS maxis.suggest "grid|relative/file.cs|OldName|NewName" suggestion-1
 ```
 
-Replace the example path/literals with a file and change you have reviewed. After approval, GRID writes a candidate under the attempt's working-copy directory, preserves original.txt, and writes a replacement report. **The original source is never automatically changed by inspect/suggest.** The working copy contains the changed file, not a complete buildable repository checkout. Applying/merging it remains a manual review step; there is no automatic source-apply capability.
+Replace the example path/literals with a file and change you have reviewed. After approval, Grid.AI writes a candidate under the attempt's working-copy directory, preserves original.txt, and writes a replacement report. **The original source is never automatically changed by inspect/suggest.** The working copy contains the changed file, not a complete buildable repository checkout. Applying/merging it remains a manual review step; there is no automatic source-apply capability.
 
 Supported text extensions: .cs, .csproj, .sln, .slnx, .props, .targets, .md, .txt, .json, .xml, .yml, .yaml. Files must be valid UTF-8 text, without NUL, and at most 1 MiB at the size check. Inspection saves full text to report.txt rather than flooding the terminal. Registered source scope may contain sensitive text; reports are local files with inherited filesystem permissions.
 
@@ -71,7 +71,7 @@ Artifacts are stored beside the selected database in `<database-path>.maxis-arti
 
 MAXIS attempts have a 120-second deadline; demos retain one second. Cancellation, workspace revocation, logout and host shutdown cancel work and request process-tree termination. Already performed external actions cannot be rolled back. Retries require fresh human approval, up to the existing three-attempt limit. Restart clears queued approval, marks running attempts Interrupted, and never automatically replays or reattaches to a possibly orphaned external process. Inspect partial logs and running processes after a crash before retrying.
 
-SQLite saves/backups contain workspace registrations, task results and audit, not artifact file contents. Back up the companion artifact directory too. GRID copy/move transfers now include that selected world's artifact directory; registered external repositories are not copied. Historical absolute report paths in saved results are not rewritten on transfer: locate the same task/attempt folder beside the destination database. Registrations on a different machine refuse execution; register a new local alias. NGE continues deleting its displayed database/backup targets; external MAXIS reports/working copies are retained and require separate manual cleanup. Automatic artifact pruning is not implemented.
+SQLite saves/backups contain workspace registrations, task results and audit, not artifact file contents. Back up the companion artifact directory too. Grid.AI copy/move transfers now include that selected world's artifact directory; registered external repositories are not copied. Historical absolute report paths in saved results are not rewritten on transfer: locate the same task/attempt folder beside the destination database. Registrations on a different machine refuse execution; register a new local alias. NGE continues deleting its displayed database/backup targets; external MAXIS reports/working copies are retained and require separate manual cleanup. Automatic artifact pruning is not implemented.
 
 ## Completion verification
 
