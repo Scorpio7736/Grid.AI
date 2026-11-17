@@ -37,7 +37,7 @@ transcript --details
 exit
 ```
 
-Expected speakers: MAXIS, JN, then MCP. One agent responds per turn with the existing skippable typewriter effect. `typewriter off` disables animation. `exit` detaches and preserves an open meeting; use `conversations`, then `resume <conversation-id>` in the original terminal to reopen it. `disconnect` ends it. Parent logout revokes the attached window. Pausing GRID blocks new replies; stale or simultaneous responses cannot overwrite a newer turn.
+Expected speakers: MAXIS, JN, then MCP. One agent responds per turn with the existing skippable typewriter effect. `typewriter off` disables animation. `exit` detaches and preserves an open meeting; use `conversations`, then `resume <conversation-id>` in the original terminal to reopen it. `disconnect` ends it. Parent logout revokes the attached window. Pausing Grid.AI blocks new replies; stale or simultaneous responses cannot overwrite a newer turn.
 
 For reviewed offline voice, use `agent meetings MCP MAXIS JN -inline` in the original host, then the existing `voice listen`, `voice review`, `voice send` workflow. Dedicated windows remain typed interfaces; microphone capture stays in the original host. Voice depends on installed local Windows speech support, as before.
 
