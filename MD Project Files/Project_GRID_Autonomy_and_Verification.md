@@ -1,4 +1,4 @@
-# Project GRID - Autonomy and Verification (3.4)
+# Project Grid.AI - Autonomy and Verification (3.4)
 
 **Implemented and verified - 2026-10-20**
 
