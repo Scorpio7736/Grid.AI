@@ -37,7 +37,7 @@ memory
     # EXAMPLE: memory save fact release Release codename is Moonstone.
 ```
 
-Commands work in the original terminal's inline conversation and in dedicated conversation windows. Only the authenticated human Master Control identity may review or edit private memory. Meeting windows reject private-memory controls; meetings never import these entries. Program identities do not inherit the human's memory-control authority. Paused GRID still permits administrative memory review/edits; it does not generate agent replies until started.
+Commands work in the original terminal's inline conversation and in dedicated conversation windows. Only the authenticated human Master Control identity may review or edit private memory. Meeting windows reject private-memory controls; meetings never import these entries. Program identities do not inherit the human's memory-control authority. Paused Grid.AI still permits administrative memory review/edits; it does not generate agent replies until started.
 
 ## Recall, conflicts and forgetting
 
@@ -79,7 +79,7 @@ memory forget release
 talk What is the release codename?
 ```
 
-Expected: Moonstone, then Sunstone, then an acknowledgment that the codename is not saved. `memory list` shows the tombstone. Repeating with MAXIS or another project must not disclose MCP/demo memory. For restart recall, save before forgetting, exit GRID normally, relaunch, start GRID, connect MCP and select `demo` before asking. Use another key for repeated tests after forgetting.
+Expected: Moonstone, then Sunstone, then an acknowledgment that the codename is not saved. `memory list` shows the tombstone. Repeating with MAXIS or another project must not disclose MCP/demo memory. For restart recall, save before forgetting, exit Grid.AI normally, relaunch, start Grid.AI, connect MCP and select `demo` before asking. Use another key for repeated tests after forgetting.
 
 ## Completion verification
 
