@@ -1,4 +1,4 @@
-# Project GRID - Program needs and behavior
+# Project Grid.AI - Program needs and behavior
 
 ## Autonomy completion - 3.4 (2026-10-20)
 
@@ -47,7 +47,7 @@ Configured occupations have distinct simulated goals: civic-record review, archi
 
 Rows are evaluated in this order for the applicable resident kind; numeric priorities describe the selected need. Shifts use elapsed simulation hours modulo 24, support midnight wrap and never use wall-clock scheduling or offline catch-up. Start hour is 0–23; shift length is 1–24 hours. Configuration permits work bursts/rest periods from one second through one simulation day. Unit duration must divide the work burst exactly. Work/rest transitions occur on tick boundaries; large steps stop at the current burst/rest boundary and do not spend excess time replaying several cycles.
 
-Entering/re-entering work requires condition >=60; a currently Working resident may continue at >=40. This hysteresis prevents threshold flicker. The existing 2.4 condition calculation remains the weakest sourced headroom ratio with EMA 0.25 and explicit unknown handling. The thresholds are GRID simulation policy, not claims about application health. Rest is scheduled simulated duty, not measured fatigue or magic energy recharge. Resource uncertainty and off-duty scheduling freeze both work and rest progress.
+Entering/re-entering work requires condition >=60; a currently Working resident may continue at >=40. This hysteresis prevents threshold flicker. The existing 2.4 condition calculation remains the weakest sourced headroom ratio with EMA 0.25 and explicit unknown handling. The thresholds are Grid.AI simulation policy, not claims about application health. Rest is scheduled simulated duty, not measured fatigue or magic energy recharge. Resource uncertainty and off-duty scheduling freeze both work and rest progress.
 
 Legal transitions are owned by the policy, not arbitrary status commands. Application actions are Observing/Unknown; unassigned agents remain Idle; configured persistent residents select Working/Resting/WaitingForResources/Unknown/OffDuty. Persisted progress and configuration are validated. Completed-unit overflow, invalid configuration or revision exhaustion fail before tick state is committed. Tick updates stage all residents first, honor cancellation before commit, then update clock, behavior, revisions and history under the shared engine lock.
 
@@ -69,6 +69,6 @@ Restore retains last committed behavior/progress, starts paused and discards liv
 
 - `dotnet test -c Release --no-restore`: **278 passed** (14 Core, 125 Simulation, 79 Persistence, 60 Terminal). Ten new tests cover work/rest cycles, resource hysteresis/unknown inputs, midnight shifts, observation-only application behavior, validation, cancellation/read-only snapshots, unassigned residents, whole-tick overflow rollback, save/reopen/recovery and terminal inspection.
 - `dotnet build -c Release --no-restore`: zero warnings/errors.
-- Debug verification was blocked by binaries locked by an already-running GRID instance and Visual Studio. Those sessions were left running; Release provided separate output. The existing test-only crash probe was added to the solution so Release tests build it in the matching configuration. This corrected an exposed test infrastructure issue, not a production dependency.
+- Debug verification was blocked by binaries locked by an already-running Grid.AI instance and Visual Studio. Those sessions were left running; Release provided separate output. The existing test-only crash probe was added to the solution so Release tests build it in the matching configuration. This corrected an exposed test infrastructure issue, not a production dependency.
 - Disposable Release terminal smoke: a step showed nine applications as Observing, with zero simulated units and no energy changes; exit/reopen retained the city and paused tick 1. Persistent routine progression/recovery was fixture-tested with explicit budgets. The user's default world was not modified.
 - This completes 3.1's behavior foundation. It does not complete 3.2 movement/workplaces, 3.3 social systems, 3.4 extended autonomy/performance acceptance or later task execution/agent delegation.
