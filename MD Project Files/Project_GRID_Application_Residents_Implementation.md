@@ -1,4 +1,4 @@
-# Project GRID - Application residents implementation
+# Project Grid.AI - Application residents implementation
 
 ## Movement and occupations completion - 3.2 (2026-10-20)
 
@@ -22,7 +22,7 @@ See [Program Needs and Behavior](Project_GRID_Program_Behavior.md) for policy, A
 
 Normal terminal startup loads the saved city and persistent residents, archives any legacy fictional residents, then samples running applications. The monitor samples every two seconds independently of simulation ticks, including while paused. `--ephemeral` retains the original twenty-citizen demonstration without application discovery.
 
-The Windows adapter represents **current-session windowed executable groups**, not every OS process. At least one observed main window initially qualifies an executable. All accessible same-executable processes in that session join one representative, including multiple independent windows and same-image helpers. Different executable paths remain separate even when display names match. Other sessions, session-zero services and GRID's own process are excluded. Shell/window-host processes can qualify; hosted applications may appear under their host executable. Cross-executable child ownership, background-only apps and per-window/per-instance representatives are outside this first policy.
+The Windows adapter represents **current-session windowed executable groups**, not every OS process. At least one observed main window initially qualifies an executable. All accessible same-executable processes in that session join one representative, including multiple independent windows and same-image helpers. Different executable paths remain separate even when display names match. Other sessions, session-zero services and Grid.AI's own process are excluded. Shell/window-host processes can qualify; hosted applications may appear under their host executable. Cross-executable child ownership, background-only apps and per-window/per-instance representatives are outside this first policy.
 
 Grouping keys hash the normalized full executable path plus session ID. Paths are used locally for grouping and are not saved in world/history. No titles, command lines, documents or credentials are collected. Names are display labels and grant no privileges. Process identity combines PID with UTC process start time; neither a PID nor display name alone identifies a lifetime.
 
@@ -32,7 +32,7 @@ Main-window detection follows the platform's heuristic, not a universal applicat
 
 ## Lifecycle and identities
 
-Core defines Legacy, Application, Agent and Special resident kinds. Application residents receive a new resident ID and incarnation GUID on discovery; neither survives GRID restart. Explicit Agent/Special classification preserves durable identity but does not grant an authenticated role. Legacy is reserved for preserved old data and demos, not automatically promoted to Agent/Special.
+Core defines Legacy, Application, Agent and Special resident kinds. Application residents receive a new resident ID and incarnation GUID on discovery; neither survives Grid.AI restart. Explicit Agent/Special classification preserves durable identity but does not grant an authenticated role. Legacy is reserved for preserved old data and demos, not automatically promoted to Agent/Special.
 
 The engine validates and detaches observations before reconciling under the same lock as ticks, edits and snapshots. Overlapping process lifetimes preserve an application's incarnation as helpers start/stop. A confirmed disjoint replacement creates a new incarnation, including PID reuse. Membership removal and addition are serialized; transfers and edit previews for expired resident IDs fail.
 
