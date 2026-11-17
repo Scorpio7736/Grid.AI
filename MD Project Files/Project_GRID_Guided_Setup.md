@@ -1,6 +1,6 @@
 # Guided setup and health diagnostics (6.34)
 
-Initial local implementation, 2026-11-14. Full milestone acceptance remains open.
+Grid.AI guided setup: initial local implementation, 2026-11-14. Full milestone acceptance remains open.
 
 ## Use
 
