@@ -1,10 +1,10 @@
 # PC2 diagnosis — 2026-11-14
 
-[Original user-supplied output](verification/6.31-pc2-reported-errors.txt) is retained as observed evidence. It reports 1,374 tests, 1,370 passed, four failed, no skips, then GRID ai test/status output. Paths in the stack identify a source checkout at `C:\Users\jack\source\repos\Grid7736`. This does not establish that a complete portable package was transferred or launched.
+[Original user-supplied output](verification/6.31-pc2-reported-errors.txt) is retained as observed evidence. It reports 1,374 tests, 1,370 passed, four failed, no skips, then Grid.AI ai test/status output. Paths in the stack identify a source checkout at `C:\Users\jack\source\repos\Grid7736`. This does not establish that a complete portable package was transferred or launched.
 
 ## Confirmed causes
 
-1. **AI assets missing.** The startup report explicitly says `Local AI assets missing`, and inference is disabled. The later `ConnectionRefused` targets `127.0.0.1:1`, GRID's placeholder endpoint when no bundled server started. This report does not support a firewall, GPU or model-inference diagnosis. The log did not identify exactly which asset was absent.
+1. **AI assets missing.** The startup report explicitly says `Local AI assets missing`, and inference is disabled. The later `ConnectionRefused` targets `127.0.0.1:1`, Grid.AI's placeholder endpoint when no bundled server started. This report does not support a firewall, GPU or model-inference diagnosis. The log did not identify exactly which asset was absent.
 2. **Test-fixture privilege missing.** Four cases fail in Windows CreateSymbolicLink with `A required privilege is not held by the client`, before reaching reparse-policy assertions: MaxisTests.ReparseWorkspaceAndMissingProjectAreRefused, JnTests.LinksAreNotFollowedAndLimitsProducePartialReports, WorkspaceChangeTests.ReplacedParentLinkCannotRedirectApprovedWrite, and ConversationalFileTests.DeleteAndReadRejectReparseTargetsAndPreserveOriginalBytes. This is separate from AI startup.
 
 ## Changes
