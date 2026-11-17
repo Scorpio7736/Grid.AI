@@ -1,6 +1,6 @@
 # Fresh repository clone installation
 
-A repository clone is a new GRID instance; `grid -copyto` transfers an existing instance. These are different workflows. Binary runtimes and model weights are not stored in Git.
+A repository clone is a new Grid.AI instance; `grid -copyto` transfers an existing instance. These are different workflows. Binary runtimes and model weights are not stored in Git.
 
 ## PC2: new instance from the repository
 
@@ -31,11 +31,11 @@ With an already provisioned `.grid-runtime` and populated `.grid-runtime/nuget`,
 
 Incomplete existing runtimes are retained and reported; the installer does not silently overwrite them. A failed build/model test marks setup incomplete. Resolve the exact error and rerun setup. A new repository clone can be used to stage another fresh installation without deleting the failed instance. GRID_AI_DISABLED remains authoritative and must be reviewed if set. No global Ollama service, machine-wide SDK installation, cloud inference, security-policy change or user-world reset is part of setup.
 
-To replace an incomplete runtime, close GRID and run `Setup-GridClone.ps1 -Download -RepairRuntime`. This explicitly moves the old runtime into a unique `.grid-install-retained-*` directory before downloading verified replacements. It requires 20 GB free space in addition to the retained files. A download failure leaves the old files in that retained directory; it does not restore them automatically. World and identity files are untouched. Without `-Download`, repair refuses before moving files.
+To replace an incomplete runtime, close Grid.AI and run `Setup-GridClone.ps1 -Download -RepairRuntime`. This explicitly moves the old runtime into a unique `.grid-install-retained-*` directory before downloading verified replacements. It requires 20 GB free space in addition to the retained files. A download failure leaves the old files in that retained directory; it does not restore them automatically. World and identity files are untouched. Without `-Download`, repair refuses before moving files.
 
 ## PC2 online installation (2026-11-15)
 
-On the user's PC2 clone, `Setup-GridClone.ps1 -Download` completed the full online path: pinned Ollama/SDK archives, pinned Qwen model blobs, hash/size verification, NuGet restore, Release build (zero warnings/errors), and real-model inline plus named-pipe attached greetings. The installer published `.grid-app/clone-ready.json` with `ready: true`. MCP answered “Hello. I'm MCP, your local GRID coordinator.” No saved user world or credential setup was opened by verification. Start this installation with `Start-GridClone.ps1`; an already running terminal must be closed and restarted.
+On the user's PC2 clone, `Setup-GridClone.ps1 -Download` completed the full online path: pinned Ollama/SDK archives, pinned Qwen model blobs, hash/size verification, NuGet restore, Release build (zero warnings/errors), and real-model inline plus named-pipe attached greetings. The installer published `.grid-app/clone-ready.json` with `ready: true`. MCP answered “Hello. I'm MCP, your local Grid.AI coordinator.” No saved user world or credential setup was opened by verification. Start this installation with `Start-GridClone.ps1`; an already running terminal must be closed and restarted.
 
 This establishes online installation and actual inference on PC2, not compatibility with every machine. Supported baseline remains Windows x64, sufficient storage/memory, and Internet for first installation. Physical conversation windows, first credential setup and disconnected operation on PC2 remain open acceptance checks. Earlier development-PC evidence below is historical.
 
