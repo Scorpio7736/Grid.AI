@@ -34,7 +34,7 @@ Expect Completed, a recorded demonstration result and a corresponding MCP plan r
 If the runtime is unavailable, start it from PowerShell:
 
 ```powershell
-Set-Location 'C:\Users\jack\source\repos\Grid7736'
+Set-Location 'C:\path\to\Grid.AI'
 .\Start-GridLocalAI.ps1
 ```
 

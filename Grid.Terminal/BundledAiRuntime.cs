@@ -17,7 +17,7 @@ public sealed class BundledAiRuntime : IAsyncDisposable
         var packaged = Path.GetFullPath(Path.Combine(start, "..", "runtime"));
         if (File.Exists(Path.Combine(start,"..",GridTransfer.Marker))) return packaged;
         for (var dir = new DirectoryInfo(start); dir is not null; dir = dir.Parent)
-            if (File.Exists(Path.Combine(dir.FullName,"Grid7736.slnx"))) return Path.Combine(dir.FullName,".grid-runtime");
+            if (File.Exists(Path.Combine(dir.FullName,"Grid.AI.slnx"))) return Path.Combine(dir.FullName,".grid-runtime");
         return null;
     }
     public static async Task<BundledAiRuntime> StartAsync(string? root, CancellationToken token = default)

@@ -28,7 +28,7 @@ Fixed a user-reported Windows dialog failure: FolderBrowserDialog supports Descr
 
 `grid -start` / `grid -pause` replace the old start/pause commands, which now give migration guidance without changing state. `tasks` and `tasks list` show all authorized retained history, including labeled archives. `tasks -completed` shows Completed only; `tasks -list` excludes Completed and Denied (cancelled/failed and archived records remain visible). All views accept one agent filter. Master Control can use `tasks deny <reference> "reason"` on an AwaitingApproval task; denial is terminal, separately audited and saved in schema v21. Existing v20 history upgrades without rewriting cancellations as denials.
 
-Transfers accept drive roots as containers: `grid -copyto "E:\"` targets `E:\GRID7736`. `grid -copyto -select` / `grid -transferto -select` select a container and create its new GRID7736 child. Existing targets are refused; no merging or overwriting. Original-host Master Control, interactive preview/y/n, saved-world verification and move cleanup safeguards remain. No files move when selection is cancelled, authority changes or media is unavailable.
+Transfers accept drive roots as containers: `grid -copyto "E:\"` targets `E:\GRID.AI`. `grid -copyto -select` / `grid -transferto -select` select a container and create its new GRID.AI child. Existing targets are refused; no merging or overwriting. Original-host Master Control, interactive preview/y/n, saved-world verification and move cleanup safeguards remain. No files move when selection is cancelled, authority changes or media is unavailable.
 
 **Verification:** 658 tests passed (14 Core, 157 Simulation, 98 Persistence, 389 Terminal), including ten new regression cases; zero skipped. Native dialog appearance and physical flash-drive removal/cross-PC acceptance remain manual release checks. The picker uses Windows' built-in local folder dialog, with no new external package/service. The saved city and user files were not relocated by verification. Agent lifecycle coupling (5.9), startup test gate (8.8), changed-device handling (8.9), meetings (6.2A), and full portable/disaster acceptance (8.6) remain planned. See [implementation and test commands](Project_GRID_Terminal_Controls_Implementation.md).
 
@@ -51,15 +51,15 @@ Master Control (Master Admin) can run `grid -transferto "location"` to move GRID
 Examples:
 
 ```text
-grid -copyto "E:\GRID7736 Copy"
-grid -transferto "E:\GRID7736"
+grid -copyto "E:\GRID.AI Copy"
+grid -transferto "E:\GRID.AI"
 ```
 
 ### Actual file scope
 
 The transfer inventories every file under the running application directory, including bundled dependencies and Markdown documentation, plus the selected world's database, backup, historical archives and matching sidecars. Live `.lock` files are excluded. An existing transferred package also includes its managed folders such as models, configuration, assets, logs and data. Destination files are organized under `app/` and `data/`, with `launch.cmd`, `grid-package.json`, `transfer-manifest.json` and `transfer-status.txt` at the root.
 
-The source Git repository, unrelated host applications/user documents, other installed worlds, and shared user PATH launcher are not part of the movable installation inventory. Runtime/session handles are not transferred. The shared managed launcher is retargeted after a move only when it and the user Grid7736 variable point at the moved installation; unrelated registrations are preserved. Empty source directories, lease files and old generated package metadata can remain. Completion describes removal of the verified source file inventory, not recursive deletion of the entire source directory.
+The source Git repository, unrelated host applications/user documents, other installed worlds, and shared user PATH launcher are not part of the movable installation inventory. Runtime/session handles are not transferred. The shared managed launcher is retargeted after a move only when it and the user Grid.AI variable point at the moved installation; unrelated registrations are preserved. Empty source directories, lease files and old generated package metadata can remain. Completion describes removal of the verified source file inventory, not recursive deletion of the entire source directory.
 
 ### Verified transfer and move handoff
 

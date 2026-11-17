@@ -1,4 +1,4 @@
-# GRID7736 - Terminal Help
+# GRID.AI - Terminal Help
 
 **Local coding follow-up:** In a private MCP chat, use `inspect repository demo`, `search repository demo for text`, `fix failing tests in demo` after a recorded failure, and `test this change` after approved apply. Recover saved edits with `resume file changes in demo` and `review file change 1`. [Scope, approval sequence, diagnostics and limitations](Project_GRID_Local_Coding_Integration.md).
 
@@ -53,7 +53,7 @@
 
 **6.11 completed — 2026-10-28:** MCP (Master Control Program) now offers custom catalog-based planning, scoped clarification, visible specialist-selection reasons, approved ordered plan execution, cancellation, reusable plans and recorded-result briefings. Reserved human controls remain explicit. **1,012 automated tests and six bundled-model checks passed.** Meeting shorthand (`meetings ...` and `connect meetings ...`) now validates before opening a window and supports `-inline`. [Workflow, authority matrix and terminal test](Project_GRID_MCP_Digital_Helper_Implementation.md). Earlier 6.11-planned statements below are historical; Phase 7 still requires 6.12–6.15.
 
-**2026-10-28 follow-up — GRID logo animation restored at user request:** Startup/login and shutdown show the supplied GRID7736 artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
+**2026-10-28 follow-up — GRID logo animation restored at user request:** Startup/login and shutdown show the supplied GRID.AI artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
 
 **6.10A implemented — 2026-10-28:** Centralized 13-color terminal theme, semantic feedback, compact headers, section bars, responsive help tables and Unicode-aware layout/input are implemented. Truecolor is used in supported terminals, with console-color and plain-text fallbacks. User input stays white, prompts cyan, agent dialogue amber; errors are red, success green and approval labels gold. This supersedes historical blanket-yellow and oversized-header requirements. Commands, authentication and approval rules are unchanged. **999 automated tests passed**, plus Windows pseudoconsole login/color/masking/resize checks. [Implementation and limitations](Project_GRID_Terminal_Visual_Theme_Implementation.md). Phase 7 remains blocked on 6.11–6.15.
 
@@ -159,13 +159,13 @@ grid
     - grid -pause
       # USAGE: Pause simulation and agent activity; in-flight work settles cooperatively.
     - grid -copyto -select
-      # USAGE: Pick a container for a new GRID7736 copy; review and confirm y/n.
+      # USAGE: Pick a container for a new GRID.AI copy; review and confirm y/n.
     - grid -transferto -select
-      # USAGE: Pick a container for a new GRID7736 move; review and confirm y/n.
+      # USAGE: Pick a container for a new GRID.AI move; review and confirm y/n.
     - grid -copyto "E:\"
-      # USAGE: Copy to E:\GRID7736; refuse an existing target and preserve other drive files.
+      # USAGE: Copy to E:\GRID.AI; refuse an existing target and preserve other drive files.
     - grid -transferto "E:\"
-      # USAGE: Move to E:\GRID7736 using the verified transfer and cleanup flow.
+      # USAGE: Move to E:\GRID.AI using the verified transfer and cleanup flow.
     # EXAMPLE: grid -copyto -select
 
 tasks
@@ -180,7 +180,7 @@ tasks
     # EXAMPLE: tasks -list -MAXIS
 ```
 
-`tasks list` remains an alias for all history; `-archived` limits it to archives. Old `start`/`pause` only show migration guidance. Transfers remain original-host-only. Selecting a folder creates its GRID7736 child; explicit non-root paths remain exact new destinations. Existing targets are never merged or overwritten. Agent lifecycle coupling is implemented in 5.9. [Implementation and verification](Project_GRID_Terminal_Controls_Implementation.md).
+`tasks list` remains an alias for all history; `-archived` limits it to archives. Old `start`/`pause` only show migration guidance. Transfers remain original-host-only. Selecting a folder creates its GRID.AI child; explicit non-root paths remain exact new destinations. Existing targets are never merged or overwritten. Agent lifecycle coupling is implemented in 5.9. [Implementation and verification](Project_GRID_Terminal_Controls_Implementation.md).
 
 
 ## Bundled AI and animation (2026-10-23)
@@ -602,23 +602,23 @@ exit
 ## Startup options (shell, not grid prompt)
 
 ```text
-Grid7736
-    - Grid7736 --start
+Grid.AI
+    - Grid.AI --start
       # USAGE: Request simulation start after successful login.
-    - Grid7736 --world "<path>"
+    - Grid.AI --world "<path>"
       # USAGE: Select a world file; parent directory must exist.
-    - Grid7736 --recover
+    - Grid.AI --recover
       # USAGE: Explicitly recover the selected/default world from backup.
-    - Grid7736 --ephemeral
+    - Grid.AI --ephemeral
       # USAGE: Run without persistent storage; incompatible with --world/--recover.
-    - Grid7736 --no-color
+    - Grid.AI --no-color
       # USAGE: Disable ANSI/console colors; combine with other valid options.
-    # EXAMPLE: Grid7736 --no-color
+    # EXAMPLE: Grid.AI --no-color
 ```
 
 ## Login/welcome workflow
 
-Opening GRID7736 graphic -> first-run credential setup if needed -> login -> clear screen -> welcome username and Master Control authority -> Enter -> terminal. Agent selection remains available after authentication. Logout asks y/n; cancellation retains context, confirmation clears the screen and returns to welcome. Expiry denies commands immediately and returns to welcome at the next input boundary. EOF/Ctrl+C exits through normal save/shutdown handling.
+Opening GRID.AI graphic -> first-run credential setup if needed -> login -> clear screen -> welcome username and Master Control authority -> Enter -> terminal. Agent selection remains available after authentication. Logout asks y/n; cancellation retains context, confirmation clears the screen and returns to welcome. Expiry denies commands immediately and returns to welcome at the next input boundary. EOF/Ctrl+C exits through normal save/shutdown handling.
 
 ## Palette and completion
 
@@ -657,7 +657,7 @@ grid
       # USAGE: Copy the GRID application and selected save inventory after preview and y/n confirmation; keep the original.
     - grid -transferto "location"
       # USAGE: Move the GRID application and selected save inventory after preview and y/n confirmation; source cleanup runs after exit.
-    # EXAMPLE: grid -copyto "E:\GRID7736 Copy"
+    # EXAMPLE: grid -copyto "E:\GRID.AI Copy"
 ```
 
 Supply one operation and one destination; quote paths with spaces. Switches are case-insensitive. `copexist` and `tranexist` only show the new syntax and perform no transfer. Attached terminals and conversation windows must use the original host for transfers.
@@ -806,7 +806,7 @@ maxis
       # USAGE: Master Control registers a workspace; individual tasks still need approval.
     - maxis revoke <alias>
       # USAGE: Disable workspace execution and request cancellation of running work.
-    # EXAMPLE: maxis register grid "C:\Users\jack\source\repos\Grid7736" "Grid.Core/Grid.Core.csproj"
+    # EXAMPLE: maxis register grid "C:\path\to\Grid.AI" "Grid.Core/Grid.Core.csproj"
 ```
 
 ```text

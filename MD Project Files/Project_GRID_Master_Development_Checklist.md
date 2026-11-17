@@ -2,6 +2,8 @@
 
 # Project GRID — Master Development Checklist
 
+**Project rename — 2026-11-17:** The product and solution are now **Grid.AI**. Active UI, package/transfer defaults, launcher/environment documentation and solution commands use the new name. The prior `Grid7736` launcher/environment identifier is retained only as a migration alias; raw evidence, historical paths and repository URLs keep their observed values. Focused verification passed 132 tests; the renamed full solution passed all 1,466 tests. [Implementation, compatibility and verification](Project_GRID_Rename_to_Grid_AI.md).
+
 **Terminal-first roadmap placement correction — 2026-11-13.** Added assistant capability milestones **6.32–6.39 at the end of Phase 6**, after 6.31 and before Phase 7. Prioritize terminal-based action routing, local device integration, setup, skills, optional connections, scheduling and permission transparency (6.32–6.38). New GUI work (6.39) is optional and non-blocking. Preserve 6.31's existing acceptance requirements; complete the new core milestones before beginning Phase 7.
 
 **Model-handling planning update — 2026-11-04.** Added the supplied seven model candidates, hardware-aware Lite/Standard/Performance eligibility, cold/warm benchmarks, bounded fallback, deterministic delegation, validated artifact generation and offline manifests. Installed models have a 75 GB decimal sub-limit within the shared 128 GB Flash/PC target. All related acceptance remains required before Phase 7. [Model selection and handling plan](Project_GRID_Model_Selection_and_Handling_Plan.md).
@@ -24,7 +26,7 @@
 
 **2026-10-28 meeting identity repair:** Leading participant names now direct replies (`maxis`, `MAXIS, introduce yourself`) without requiring `@`; absent named agents are refused rather than silently routed to MCP. `each of you introduce yourselves` stores one user message followed by every participant’s registered role introduction, atomically and without AI inference. Ordinary meeting AI receives the authoritative participant roster and roles, with shared history only. General discussion still selects one speaker per turn; this does not add automatic invitations or general multi-agent broadcasts. Verification: 1,017 regression tests passed across the four suites (747 Terminal), and the bundled model correctly handled the reported introduction/name sequence in an isolated world. Evidence: `%TEMP%\GridMeetingIdentityProbe\report.txt`.
 
-**2026-10-28 follow-up — GRID logo animation restored at user request:** Startup/login and shutdown show the supplied GRID7736 artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
+**2026-10-28 follow-up — GRID logo animation restored at user request:** Startup/login and shutdown show the supplied GRID.AI artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
 
 **6.4 implemented — 2026-10-26:** Original-host `changes` drafts new/revised workspace files from captured context or local MAXIS AI, previews complete content/hashes, requires explicit approval, and applies with backups and guarded rollback. Optional verification uses separately approved MAXIS tasks. **838 Release tests passed**. Drafts are transient; recovery files persist. [Workflow, limits and demo](Project_GRID_Authorized_Editing_Implementation.md).
 
@@ -170,7 +172,7 @@ See [Current implementation and verification](Project_GRID_Current_Implementatio
 ## 1.1 Repository and environment
 
 - [x] Install Visual Studio and .NET 10 SDK
-- [x] Create the Grid7736 Git repository
+- [x] Create the Grid.AI Git repository
 - [x] Create the Visual Studio solution
 - [x] Create Grid.Core (.NET class library)
 - [x] Create Grid.Simulation (.NET class library)
@@ -243,7 +245,7 @@ See [Current implementation and verification](Project_GRID_Current_Implementatio
 - `GridDistrict.ProgramIds` is read-only to callers, and `GridProgram.CurrentDistrictId` has an internal setter to prevent external placement changes.
 - `GridWorldFactory.CreateGenesis(seed)` creates five districts with four citizens each. Equal seeds reproduce IDs and placement in independent world instances.
 - Added `Grid.Core.Tests` to the solution. Eight automated tests cover initialization, seeded reproducibility, transfers and population totals, invalid requests, duplicate IDs, world ownership, and read-only membership access.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all eight tests. `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false` passed all eight tests. `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
 
 At section 1.4 completion, the terminal still used its original district demonstration; factory integration is now complete in section 1.7.
 
@@ -265,7 +267,7 @@ At section 1.4 completion, the terminal still used its original district demonst
 - Time advances only through explicit advancement calls; there are no Windows clock reads, background timers, or offline catch-up. Callers must use a single simulation thread.
 - Elapsed time uses exact TimeSpan ticks. Overflow is checked before either counter changes.
 - Added `Grid.Simulation.Tests` to the solution. All 13 clock test cases passed, covering defaults, invalid durations, exact fixed steps, repeated start/pause, resume, manual steps, and overflow.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 21 tests (13 simulation clock and eight World Management). `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false` passed all 21 tests (13 simulation clock and eight World Management). `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
 
 Automatic scheduling and world updates are now implemented in section 1.6; terminal clock commands are now implemented in section 1.7.
 
@@ -289,8 +291,8 @@ Automatic scheduling and world updates are now implemented in section 1.6; termi
 - `RunAsync(cancellationToken)` provides cancellable scheduling with at most one fixed simulation step per completed delay, without missed-time catch-up. Pause/resume invalidates a pending wait. Cancellation completes normally, pauses the clock, and releases scheduler ownership; other failures propagate after the same cleanup. Callers await the run task before releasing the world.
 - Duplicate schedulers and competing external `Tick()` calls during scheduling are rejected. Automatic scheduling accepts durations from 1 ms through 4294967294 ms; manual advancement supports the clock's wider positive TimeSpan range.
 - Scheduling uses an injectable `TimeProvider`; the engine has no AI, renderer, or host telemetry dependency. Tests control timer completion directly rather than sleeping.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 45 tests: eight World Management, 13 clock, and 24 engine cases. Coverage includes energy rules and bounds, genuine events, deterministic results, membership preservation, pause/resume, manual stepping, cancellation, scheduler exclusivity, invalid-state recovery, and overflow.
-- `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false` passed all 45 tests: eight World Management, 13 clock, and 24 engine cases. Coverage includes energy rules and bounds, genuine events, deterministic results, membership preservation, pause/resume, manual stepping, cancellation, scheduler exclusivity, invalid-state recovery, and overflow.
+- `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
 
 Terminal command integration is now complete in section 1.7. Persistence and durable event history remain in Phase 2.
 
@@ -315,8 +317,8 @@ Terminal command integration is now complete in section 1.7. Persistence and dur
 - Start enables the scheduler; pause stops automatic advancement; step/tick advances once while paused. Output reports actual simulation state and committed events. Idle citizens remain Idle rather than receiving fabricated activity.
 - Exit, EOF, and Ctrl+C cancel and await scheduler shutdown. Scheduler failures are reported with a nonzero process result. Console reads run off the control thread so blocked input cannot prevent shutdown; a pending background read can remain until input arrives or the process exits.
 - Added `Grid.Terminal.Tests` to the solution and a README with run instructions, command examples, lifecycle behavior, and the command extension pattern.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 69 tests (eight World Management, 37 clock/engine, and 24 terminal cases). Terminal coverage includes parsing, actual output, extension registration/help, snapshots, invalid input, exit, EOF, blocked-input cancellation, and scheduler failure.
-- `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors. Executable smoke checks verified help, status, district/program inspection, two manual steps, invalid-command recovery, and clean exit. A live redirected process advanced automatically to tick 2, paused, reported its real state, and exited successfully.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false` passed all 69 tests (eight World Management, 37 clock/engine, and 24 terminal cases). Terminal coverage includes parsing, actual output, extension registration/help, snapshots, invalid input, exit, EOF, blocked-input cancellation, and scheduler failure.
+- `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors. Executable smoke checks verified help, status, district/program inspection, two manual steps, invalid-command recovery, and clean exit. A live redirected process advanced automatically to tick 2, paused, reported its real state, and exited successfully.
 
 World state remains in memory; persistence is planned for Phase 2. The extension point is an in-process command registry, not a dynamic plugin loader. Genesis release is marked by the annotated v0.1.0-genesis tag.
 
@@ -417,8 +419,8 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - Added an injectable authorization lease contract with default-deny behavior. Trusted providers must verify authentication, current programs.edit capability and world scope, and hold authorization validity through commit. The engine also checks Master Control identity and session/world bindings. The test provider is compiled only into test projects.
 - Preview/apply check current authorization separately. Revoked sessions, agent sessions, changed session generations, foreign previews, replayed consumed previews, stale revisions and invalid values do not commit changes. Cancellation is honored before commit, never midway through a mutation.
 - Receipts carry request/operator/session identity, revisions, old/new values, simulation tick/time and UTC time for later audit integration; these receipts are not a durable audit log or live-event buffer.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 117 tests: eight World Management, 85 simulation (including 48 new editing cases), and 24 terminal cases. Tests cover validation, atomicity, no-ops, one-time behavior, membership, authorization, revocation/commit ordering, preview isolation, concurrency with ticks, and unchanged terminal behavior.
-- `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors. The executable status/step/inspect/exit smoke check also passed.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false` passed all 117 tests: eight World Management, 85 simulation (including 48 new editing cases), and 24 terminal cases. Tests cover validation, atomicity, no-ops, one-time behavior, membership, authorization, revocation/commit ordering, preview isolation, concurrency with ticks, and unchanged terminal behavior.
+- `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors. The executable status/step/inspect/exit smoke check also passed.
 - Login, credential verification, a production authenticated-session provider, terminal edit commands, persistence, and durable audit remain deferred. Existing Genesis commands keep their current behavior; newly added administrative APIs deny access by default.
 
 **Deferred implementation:** Actual login and credential handling, identity switching UI, saved roles, and durable audit history remain in the planned persistence/session/system-agent work. Sections 4.2A and 5.1 describe that later integration; do not mark those capabilities complete merely because these contracts or APIs exist.
@@ -450,7 +452,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - Added an atomic live snapshot and a bounded 256-event buffer (configurable 1-10,000), stable per-engine sequence IDs and explicit eviction count. Records actual tick/energy changes, clock transitions, direct world transfers and applied edit summaries. No-op/failed edits do not fabricate changes.
 - Shows real current statuses, energy, occupation, district and simulation time; Idle does not imply autonomous work. Prior LastTick and edit receipt contracts remain intact. Recent events are not durable history.
 - Redraw fits the console, updates only changed rows, restores the cursor and handles resize, cancellation and scheduler failure. Redirected/TERM=dumb/unsupported or too-small surfaces show one snapshot and return to commands. Text is sanitized to single-cell ASCII and clipping is marked.
-- Verification: `dotnet test Grid7736.slnx --no-restore --verbosity minimal -p:NuGetAudit=false` passed 140 tests (8 Core, 93 Simulation, 39 Terminal), zero failed/skipped. Added 23 event and live-view cases. Solution build succeeded with zero warnings/errors.
+- Verification: `dotnet test Grid.AI.slnx --no-restore --verbosity minimal -p:NuGetAudit=false` passed 140 tests (8 Core, 93 Simulation, 39 Terminal), zero failed/skipped. Added 23 event and live-view cases. Solution build succeeded with zero warnings/errors.
 - Interactive smoke checks verified running ticks, Q return, paused view and exit; TERM=dumb fallback also passed. Resize/cancellation and scheduler-failure paths have injected-console tests.
 - See [Terminal Live View](Project_GRID_Terminal_Live_View.md) for controls, architecture, limitations and verification details. Login visibility, persistence, autonomous actions and GRID-REQ-004 remain deferred; earlier completion notes remain historical.
 
@@ -487,7 +489,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - [x] Add `programs -sleeping` for On call and Sleeping application residents, keeping their labels distinct
 - [x] Preserve bare `programs`, support `ids` with one filter, and validate flags/empty results
 - [x] Persist minimal previously seen application catalog metadata across restarts separately from live/resident state; verify migration and stale/uninstalled entries
-- [x] Add a GRID7736 ASCII shutdown banner with truthful save/failure/ephemeral messages and no blocking key prompt; updated to the user-supplied artwork with light-blue default text (75 terminal tests passed)
+- [x] Add a GRID.AI ASCII shutdown banner with truthful save/failure/ephemeral messages and no blocking key prompt; updated to the user-supplied artwork with light-blue default text (75 terminal tests passed)
 - [x] Verify normal-terminal versus Visual Studio host behavior; do not claim the application can replace Visual Studio's post-exit footer
 - [x] Test help/filter/clear/catalog/shutdown behavior and update dated completion notes when implemented
 
@@ -504,7 +506,7 @@ See [Terminal Command and Shutdown Plan](Project_GRID_Terminal_Command_and_Shutd
 - [x] Validate the active-world deletion manifest, including managed backup/recovery artifacts; preserve unrelated files/worlds
 - [x] Stop workers and serialize persistence; suppress final save and prevent save recreation during shutdown
 - [x] Handle partial failures/interruption explicitly; exit without replacement-world creation or false success claims
-- [x] Show NGE-specific GRID7736 farewell instead of saved-world messages
+- [x] Show NGE-specific GRID.AI farewell instead of saved-world messages
 - [x] Verify a later startup creates a fresh world and that cancel preserves the existing world
 - [x] Enforce authenticated human Master Control for NGE, including authorization recheck before deletion; agent sessions cannot invoke it (4.2A)
 - [x] Complete disposable-world regression tests and dated documentation verification
@@ -517,13 +519,13 @@ See [NGE plan](Project_GRID_NGE_Nullify_Grid_Existence_Plan.md) for confirmation
 
 **Implemented and verified - 2026-10-20.**
 
-- [x] Ensure Windows user variable `Grid7736` points to an available terminal executable at startup
+- [x] Ensure Windows user variable `Grid.AI` points to an available terminal executable at startup
 - [x] Preserve valid existing installation paths; repair missing/empty/broken values without writing shell quotes
 - [x] Keep environment-update failures nonfatal and skip Windows-specific registration on other platforms
-- [x] Document PowerShell `& $env:Grid7736`, Command Prompt `"%Grid7736%"`, refresh behavior and development-build path limitations
+- [x] Document PowerShell `& ${env:Grid.AI}`, Command Prompt `"%Grid.AI%"`, refresh behavior and development-build path limitations
 - [x] Verify behavior with injected environment tests and an ephemeral Windows startup
 
-**Completion evidence:** 87 terminal tests passed. Actual user variable registered to the Release apphost and its existence verified. The smoke session did not open the user's saved world. Follow-up: managed `Grid7736.cmd` and deduplicated user PATH registration now support the bare `Grid7736` command. 89 terminal tests passed and a bare-command ephemeral launch succeeded.
+**Completion evidence:** 87 terminal tests passed. Actual user variable registered to the Release apphost and its existence verified. The smoke session did not open the user's saved world. Follow-up: managed `Grid.AI.cmd` and deduplicated user PATH registration now support the bare `Grid.AI` command. 89 terminal tests passed and a bare-command ephemeral launch succeeded.
 
 ---
 
@@ -543,12 +545,12 @@ See [NGE plan](Project_GRID_NGE_Nullify_Grid_Existence_Plan.md) for confirmation
 
 **Completion notes - 2026-10-18**
 
-- Replaced the empty Grid.Persistence scaffold with SqliteGridDatabase and GridSchema, retaining Microsoft.Data.Sqlite 10.0.13. Added persistence and its test project to Grid7736.slnx.
+- Replaced the empty Grid.Persistence scaffold with SqliteGridDatabase and GridSchema, retaining Microsoft.Data.Sqlite 10.0.13. Added persistence and its test project to Grid.AI.slnx.
 - Added STRICT schema v1 for Worlds, Districts, Programs, DistrictResources and SimulationStates, plus migration history. Composite keys enforce same-world membership; program district references are the single stored membership source.
 - Stores energy/status/revision and integer simulation clock values with constraints. Durable world identity is distinct from runtime instance/session identity. Seed/version provenance is optional; hardware profiles/layouts remain future migrations.
 - Explicit initialization creates schema only. OpenExisting refuses missing/uninitialized databases. Every managed connection enables foreign keys, FULL synchronization, private cache and a bounded busy timeout.
 - Migration metadata, DDL and version markers share an immediate transaction. Unknown/future/inconsistent databases are rejected; failed upgrades roll back. Tests cover concurrent initialization and synthetic next-version migration; only v1 ships.
-- Verification: 31 new persistence tests passed. Full solution `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed 171 tests (8 Core, 93 Simulation, 39 Terminal, 31 Persistence), zero failed/skipped. Solution build passed with zero warnings/errors.
+- Verification: 31 new persistence tests passed. Full solution `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false` passed 171 tests (8 Core, 93 Simulation, 39 Terminal, 31 Persistence), zero failed/skipped. Solution build passed with zero warnings/errors.
 - Tests verify SQL row preservation, constraints, relationships, rollback and schema lifecycle. They do not claim engine save/load, crash recovery or power-loss verification. At that milestone, sections 2.2-2.6 and GRID-REQ-004 remained pending; the subsequent 2.2 completion is recorded below.
 - See [Persistence Architecture and Schema](Project_GRID_Persistence_Architecture.md) for tables, connection/migration policy, identity conventions and future audit/hardware integration.
 
@@ -569,7 +571,7 @@ See [NGE plan](Project_GRID_NGE_Nullify_Grid_Existence_Plan.md) for confirmation
 - Normal terminal startup creates and persists Genesis once, then restores the existing world paused unless --start is passed. No wall-clock catch-up occurs. Default storage is %LOCALAPPDATA%\GRID\world.db; --world selects another file and --ephemeral explicitly opts out of saving.
 - Autosave captures a consistent snapshot every 30 seconds without holding the engine lock during disk I/O. Exit, EOF and Ctrl+C await scheduler/autosave shutdown before a final save. Failures are visible and produce a nonzero result.
 - Saves roll back on SQL failure/cancellation before commit. A validated rolling .backup is published after each successful primary commit. --recover validates that backup and preserves damaged primary/sidecar files; interrupted recovery requires an explicit retry. Missing/corrupt saves are never silently regenerated. An exclusive session lease prevents competing GRID instances for one file.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal --no-restore` passed **200 tests** (8 Core, 93 Simulation, 50 Terminal, 49 Persistence), zero failed/skipped. `dotnet build Grid7736.slnx --no-restore --verbosity minimal` passed with zero warnings/errors. Added 29 cases covering world round trips, injected transaction failure, cancellation, invalid data, backup/recovery failures, periodic saving, ownership and terminal lifecycle.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal --no-restore` passed **200 tests** (8 Core, 93 Simulation, 50 Terminal, 49 Persistence), zero failed/skipped. `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` passed with zero warnings/errors. Added 29 cases covering world round trips, injected transaction failure, cancellation, invalid data, backup/recovery failures, periodic saving, ownership and terminal lifecycle.
 - Built-terminal smoke verification used an isolated temporary database: create, step twice, exit/save, reopen paused at tick 2 with the same identity, reject corruption, explicitly recover, and verify --ephemeral --start. No default user world was opened.
 - Limits: abrupt termination can lose work after the last committed snapshot; tests do not claim physical power-loss validation. Backups are one rolling snapshot, not historical retention. Durable events/audit (2.3), hardware-generated cities (2.6), login and Windows service integration remain pending. See [Persistence Architecture](Project_GRID_Persistence_Architecture.md).
 
@@ -629,7 +631,7 @@ See [Resources and Host State](Project_GRID_Resources_and_Host_State.md) for exa
 - Added a test-only subprocess that holds an uncommitted SQLite transaction with spilled pages. The parent terminates that child after a readiness handshake; reopening restores the last committed world/history, removes uncommitted schema/data, passes integrity_check and retains the backup unchanged. Existing injected-failure tests continue to verify production save/history transaction rollback and retry.
 - Verified restored world/program IDs, revisions, values, district membership/resources and clock state. Restoration starts paused with a fresh runtime identity, no stale host telemetry and no offline advancement; a manual step advances exactly once.
 - Headless terminal subprocesses operate with redirected streams and no viewer/model dependency. Tests use unique temporary worlds and never the user's default database. No production behavior changes were needed.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal` and final `--no-restore` run passed **231 tests** (8 Core, 106 Simulation, 64 Persistence, 53 Terminal), zero failed/skipped. `dotnet build Grid7736.slnx --no-restore --verbosity minimal` passed with zero warnings/errors.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal` and final `--no-restore` run passed **231 tests** (8 Core, 106 Simulation, 64 Persistence, 53 Terminal), zero failed/skipped. `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` passed with zero warnings/errors.
 - Scope: process-crash/journal recovery is tested, not physical power loss or exhaustive storage-failure coverage. Pending application-energy binding (2.4/2.7), hardware generation (2.6), and application-resident retrofit (2.7) remain pending.
 - See [Phase 2 Verification](Project_GRID_Phase_2_Verification.md) for the requirement-to-test mapping, helper isolation and limitations.
 
@@ -857,7 +859,7 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 - [x] Format each command with indented dashed options/flags/switches, a # USAGE line per option, and a final example
 - [x] Create the offline Markdown help reference (documentation artifact only, 2026-10-20)
 - [x] Implement help -md to open the bundled local reference with an offline terminal fallback
-- [x] Add responsive GRID7736 opening artwork and welcome/login screen
+- [x] Add responsive GRID.AI opening artwork and welcome/login screen
 - [x] Add local username/password setup when credentials are not configured for a new/authorized migrated world; no plaintext storage or password completion/history
 - [x] Migrate existing Windows-SID-bound ownership explicitly and preserve identities, roles and transcripts across PCs
 - [x] After login clear screen, show Welcome username and authority level, and wait for Enter before the prompt
@@ -953,7 +955,7 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 - [x] Accept drive roots for `grid -copyto` / `grid -transferto` and add `-select` folder pickers
 - [x] Retain Master Control preview/confirmation, verified transfer/recovery and unrelated-file protection at roots; verify collisions, media failures and cancellation
 
-**Completion verification:** 658 tests passed (14 Core, 157 Simulation, 98 Persistence, 389 Terminal), including ten new 4.2G cases. Root/picker destinations create a new GRID7736 child and refuse collisions; existing files remain protected. Denial is a saved human decision distinct from cancellation. Native dialog appearance and physical media/cross-PC disaster acceptance remain Phase 8 checks. Agent start/pause coupling remains 5.9. See [implementation and acceptance commands](Project_GRID_Terminal_Controls_Implementation.md).
+**Completion verification:** 658 tests passed (14 Core, 157 Simulation, 98 Persistence, 389 Terminal), including ten new 4.2G cases. Root/picker destinations create a new GRID.AI child and refuse collisions; existing files remain protected. Denial is a saved human decision distinct from cancellation. Native dialog appearance and physical media/cross-PC disaster acceptance remain Phase 8 checks. Agent start/pause coupling remains 5.9. See [implementation and acceptance commands](Project_GRID_Terminal_Controls_Implementation.md).
 
 ### 4.2G folder-picker repair — 2026-10-23
 
@@ -1319,7 +1321,7 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 **Implemented — 2026-10-27.**
 
-- [x] Replace post-login Enter gate with a five-second GRID7736 ASCII animation and automatic entry; support skip/static output
+- [x] Replace post-login Enter gate with a five-second GRID.AI ASCII animation and automatic entry; support skip/static output
 - [x] Use yellow terminal/agent/error output, white user text and light-blue prompts/labels consistently across windows
 - [x] Verify elapsed timing, no-color behavior and host/attached presentation; retain final user-window visual acceptance in 6.15
 
@@ -1550,7 +1552,7 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.19 GRID-AI / GRID-Agent — Observability and evaluation foundation
 
-**Text observability/evaluation foundation implemented — 2026-11-05. Specialist and image benchmarks remain open.** Ownership belongs to Both APIs and GRID7736.
+**Text observability/evaluation foundation implemented — 2026-11-05. Specialist and image benchmarks remain open.** Ownership belongs to Both APIs and GRID.AI.
 
 - [x] Define structured request/tool traces, model/prompt versions, error categories, latency, throughput, CPU/GPU and memory metrics.
 - [x] Create versioned benchmark datasets and record the existing Qwen3 4B baseline and measurable release thresholds.
@@ -1588,7 +1590,7 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.22 GRID-AI / GRID-Agent — Identity and authorization
 
-**Inference-route coverage completed — 2026-11-05. Joint 6.23–6.24 action acceptance remains open.** Ownership belongs to Both APIs with GRID7736 authoritative host checks.
+**Inference-route coverage completed — 2026-11-05. Joint 6.23–6.24 action acceptance remains open.** Ownership belongs to Both APIs with GRID.AI authoritative host checks.
 
 - [x] Establish authenticated host admission, bounded per-owner quotas, least-privilege inference capabilities and content-free audit for ordinary chat and assistance routes.
 - [x] Carry user, caller, agent, project, conversation and world/session identity through host-built trusted request context.
@@ -1601,7 +1603,7 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 ## 6.23 GRID-AI / GRID-Agent — Controlled tool gateway
 
-**Gateway implementation and acceptance completed — 2026-11-12. Broader layered guardrails are tracked in 6.24.** Ownership belongs to GRID-Agent routing and GRID7736 execution.
+**Gateway implementation and acceptance completed — 2026-11-12. Broader layered guardrails are tracked in 6.24.** Ownership belongs to GRID-Agent routing and GRID.AI execution.
 
 - [x] Define typed file read/write, command and simulation requests with path validation, execution isolation and approval requirements.
 - [x] Route execution through the existing GRID task broker and approved file-change services, using recorded receipts for results.
@@ -1707,7 +1709,7 @@ Eighteen release regression cases, 1,304 solution tests and the executable's syn
 
 [Implementation, current verification, real local coding evidence and remaining gates](Project_GRID_Integration_Acceptance.md).
 
-- [x] Define solution references and stable interfaces for GRID-AI, GRID-Agent and existing GRID7736 services. Contract baseline verified 2026-11-13: explicit host references, ownership/adapter inventory and seven compiled-layer checks; 42 focused tests passed. Historical baseline: 1,297 passed and 14 terminal failures; the subsequent integration suite passed all 1,347 tests. Broader 6.31 acceptance remains open. [Contracts and verification](Project_GRID_Integration_Contracts.md).
+- [x] Define solution references and stable interfaces for GRID-AI, GRID-Agent and existing GRID.AI services. Contract baseline verified 2026-11-13: explicit host references, ownership/adapter inventory and seven compiled-layer checks; 42 focused tests passed. Historical baseline: 1,297 passed and 14 terminal failures; the subsequent integration suite passed all 1,347 tests. Broader 6.31 acceptance remains open. [Contracts and verification](Project_GRID_Integration_Contracts.md).
 - [x] Migrate existing agents, conversations, memory, permissions and task workflows with one authoritative owner per state field. Legacy type forwards share the Grid.Agent definitions; engine/persistence retain authoritative state. See integration acceptance.
 - [x] Preserve IDs, grants, history, approvals and saved worlds with tested backup, schema migration and rollback. Local populated-world recovery acceptance passed 2026-11-14: corrupt/future primary, invalid backup, successful and interrupted metadata migration; live approvals require re-review. Historical-executable and second-device release acceptance remain open. [Evidence and rollback procedure](Project_GRID_Integration_Acceptance.md#saved-world-backup-migration-and-rollback-acceptance--2026-11-14)
 - [x] Verify normal terminal, attached-window and meeting workflows through the migrated APIs. Existing workflow and ownership regression suites pass; broader conversational feature acceptance remains below.
@@ -1722,7 +1724,7 @@ Eighteen release regression cases, 1,304 solution tests and the executable's syn
 
 ### Required local agentic coding workflow — confirmed 2026-11-13
 
-GRID7736 must support an offline agent workflow that performs real software development on the user's local machine. The user gives MCP a task in ordinary language. MCP coordinates with MAXIS and other appropriate agents, obtains any required clarification or approval, and carries the authorized work through implementation and verification. This is a mandatory acceptance requirement before Phase 7.
+GRID.AI must support an offline agent workflow that performs real software development on the user's local machine. The user gives MCP a task in ordinary language. MCP coordinates with MAXIS and other appropriate agents, obtains any required clarification or approval, and carries the authorized work through implementation and verification. This is a mandatory acceptance requirement before Phase 7.
 
 - [x] Read and search an authorized local repository, understand relevant project instructions and preserve unrelated user changes. Verified for bounded single-file reviewed work on 2026-11-14; see local coding integration evidence.
 - [x] Create, edit and delete local source files within the authorized task and workspace through the host tool gateway. Verified for bounded single-file reviewed work on 2026-11-14; see local coding integration evidence.
@@ -1809,12 +1811,14 @@ Local implementation evidence 2026-11-16: **53 focused tests passed; full suite 
 
 ## 6.35 Reusable skills and integration system
 
-- [ ] Define a versioned skill manifest and typed invocation contract compatible with existing GRID-Agent tool scopes, model capabilities and host authorization.
-- [ ] Implement a terminal-accessible local skills catalog for discovery, enable/disable, per-skill configuration, dependency checks and clear capability descriptions.
-- [ ] Support explicit import/install of locally bundled or user-selected community skills with origin/version/hash/license metadata and review of required permissions; never auto-trust third-party content.
-- [ ] Sandbox untrusted skill execution; constrain filesystem/network/process access, runtime and resources, and protect against instructions in retrieved skill/tool content.
-- [ ] Keep skills offline-operational after provisioning where their declared capabilities permit; label network-dependent integrations as optional and unavailable offline.
-- [ ] Validate install/update/revoke/uninstall, incompatible versions, malicious manifests, access denial, rollback and portability between devices.
+- [x] Define a versioned skill manifest and typed invocation contract compatible with existing GRID-Agent tool scopes, model capabilities and host authorization. Version 1 is declarative and cannot call models directly; model-backed steps require a future typed capability.
+- [x] Implement a terminal-accessible local skills catalog for discovery, enable/disable/revoke, per-skill configuration, dependency checks and clear capability descriptions.
+- [x] Support explicit import/install/update of locally bundled or user-selected community skills with origin/version/hash/license metadata and review of required permissions; never auto-trust third-party content.
+- [x] Sandbox untrusted skill execution; constrain filesystem/network/process access, runtime and resources, and protect against instructions in retrieved skill/tool content. Version 1 executes no third-party code: it can only propose already-allowlisted GRID tasks that retain separate approval.
+- [x] Keep skills offline-operational after provisioning where their declared capabilities permit; label network-dependent integrations as optional and unavailable offline.
+- [ ] Validate install/update/revoke/uninstall, incompatible versions, malicious manifests, access denial, rollback and portability between devices. Automated lifecycle/adversarial checks and local catalog relocation pass; physical removable-media/second-PC portability remains deferred until the user's transfer device is ready.
+
+**Local implementation evidence — 2026-11-16:** Ten added lifecycle/security cases and the expanded 56-test skills/device/task boundary suite passed. Full solution: **1,466 passed, zero failures/skips** (14 Core, 157 Simulation, 99 Persistence, 1,196 Terminal). [Manifest, commands, security boundary, evidence and remaining physical gate](Project_GRID_Reusable_Skills.md). Skills are world-specific under `world.db.skills`; transfer inventory includes that directory. Invocation creates only unapproved existing-capability tasks, never scripts or implicit execution.
 
 ## 6.36 App and service connections
 

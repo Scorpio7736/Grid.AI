@@ -88,9 +88,9 @@ public sealed class TerminalUxTests
         identity.Logout(); Assert.Empty(CommandHelp.Complete("ed", commands.Commands));
         Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Name | Value")); Assert.Equal(ConsoleColor.DarkCyan, TerminalTheme.Color("---+---"));
         Assert.Equal(ConsoleColor.Red, TerminalTheme.Color("Access denied")); Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Welcome"));
-        Assert.Contains("GRID7736", TerminalSessionUi.Opening(30));
+        Assert.Contains("GRID.AI", TerminalSessionUi.Opening(30));
         Assert.Contains("OFFLINE MARKDOWN HELP", commands.Execute("help -md").Text);
-        Assert.Contains("# GRID7736", commands.Execute("help -md").Text);
+        Assert.Contains("# GRID.AI", commands.Execute("help -md").Text);
     }
 
     [Theory]

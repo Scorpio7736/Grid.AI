@@ -10,7 +10,7 @@
 
 **6.16 text-provider implementation — 2026-11-04.** Grid.AI now provides common lifecycle, generation, streaming, timeout, cancellation and capability contracts. Existing Ollama chat uses the new adapter. A pinned optional llama.cpp CPU provider passed live checks using the existing Qwen weights. Current suites total 1,090 passing tests. Actual image-provider lifecycle/resource verification remains open, alongside model registry/profile acceptance and other Phase 7 gates. [Implementation and verification](Project_GRID_Model_Abstraction_Implementation.md).
 
-**Planning update — 2026-11-04.** Plan C#/.NET Grid.AI and Grid.Agent project boundaries with versioned provider and application capability interfaces. Existing GRID7736 services migrate incrementally through tested adapters and schema/rollback contracts. Sections 6.16–6.31, including provisioned offline training and evaluation, precede Phase 7. Specialist model selection and training/vector dependencies await evaluation. Both Flash and PC storage targets are 128 GB decimal. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
+**Planning update — 2026-11-04.** Plan C#/.NET Grid.AI and Grid.Agent project boundaries with versioned provider and application capability interfaces. Existing GRID.AI services migrate incrementally through tested adapters and schema/rollback contracts. Sections 6.16–6.31, including provisioned offline training and evaluation, precede Phase 7. Specialist model selection and training/vector dependencies await evaluation. Both Flash and PC storage targets are 128 GB decimal. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
 
 ## Offline voice - 4.4 Windows MVP completed (2026-10-21)
 
@@ -105,7 +105,7 @@ Implementation tests must cover deterministic profile/seed/version inputs, parti
 
 ## Implementation status - 2026-10-17
 
-Genesis is implemented and tagged v0.1.0-genesis. Sections 1.9.1 and 1.9.2 completed design contracts; 1.9.3 now implements the validated editing API. The actual solution is Grid7736.slnx with root-level Grid.Core, Grid.Simulation, Grid.Terminal, Grid.Persistence and their four matching test projects. Python/C++ integrations and the expanded layouts below remain proposals. Checklist 1.10 live view is now implemented (2026-10-18); sections 2.1 persistence architecture and 2.2 save/recovery are complete; next is 2.3 history and observability.
+Genesis is implemented and tagged v0.1.0-genesis. Sections 1.9.1 and 1.9.2 completed design contracts; 1.9.3 now implements the validated editing API. The actual solution is Grid.AI.slnx with root-level Grid.Core, Grid.Simulation, Grid.Terminal, Grid.Persistence and their four matching test projects. Python/C++ integrations and the expanded layouts below remain proposals. Checklist 1.10 live view is now implemented (2026-10-18); sections 2.1 persistence architecture and 2.2 save/recovery are complete; next is 2.3 history and observability.
 
 See [Current implementation and verification](Project_GRID_Current_Implementation_Status.md).
 

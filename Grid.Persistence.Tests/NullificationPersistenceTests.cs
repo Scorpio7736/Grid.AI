@@ -19,11 +19,13 @@ public sealed class NullificationPersistenceTests
             using (var store = new WorldStore(path))
             {
                 store.Create(info, state);
+                Directory.CreateDirectory(path + ".skills");
+                File.WriteAllText(Path.Combine(path + ".skills", "manifest.json"), "skill sentinel");
                 var session = new WorldPersistenceSession(store, info, engine);
                 var plan = session.PrepareNullification();
                 Assert.Throws<InvalidOperationException>(() => store.Nullify(plan with { WorldId = Guid.NewGuid() }));
                 await session.NullifyAsync(plan);
-                Assert.All(plan.Paths, p => Assert.False(File.Exists(p)));
+                Assert.All(plan.Paths, p => { Assert.False(File.Exists(p)); Assert.False(Directory.Exists(p)); });
                 Assert.False(File.Exists(path + ".nullifying"));
                 await Assert.ThrowsAsync<InvalidOperationException>(() => session.SaveAsync());
                 Assert.Throws<IOException>(() => store.Recover());

@@ -43,7 +43,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                     foreach (var command in commands.Commands.ToArray())
                         if (!allowed.Contains(command.Name)) commands.Remove(command.Name);
                 }
-                var name = "GRID7736-" + Guid.NewGuid().ToString("N");
+                var name = "GRID.AI-" + Guid.NewGuid().ToString("N");
                 pipe = new NamedPipeServerStream(name, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
                 var pid = (launcher ?? Launch)(name);
                 var task = Serve(pipe, pid, identity, commands, mode, snapshot, view?.FirstOrDefault(), conversation ? view : null);
@@ -87,8 +87,8 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 { await WindowProtocol.WriteAsync(pipe, Reply(conversationText, closed: true), io.Token); return; }
                 conversationText += "\nAny key except Enter skips animation. Say turn off animation to disable it. Return to terminal ends the conversation. /close detaches this window.";
             }
-            await WindowProtocol.WriteAsync(pipe, Reply(mode == "conversation" ? "GRID7736 // CONVERSATION\n\n" + conversationText :
-                $"GRID7736 // ATTACHED {mode.ToUpperInvariant()}\n{identity.Describe()}\nOriginal host owns simulation/save. Closing this window only detaches.\n" +
+            await WindowProtocol.WriteAsync(pipe, Reply(mode == "conversation" ? "GRID.AI // CONVERSATION\n\n" + conversationText :
+                $"GRID.AI // ATTACHED {mode.ToUpperInvariant()}\n{identity.Describe()}\nOriginal host owns simulation/save. Closing this window only detaches.\n" +
                 (mode == "snapshot" ? snapshot : conversationText)), io.Token);
             async Task<CommandResult> CompleteConversationOperation(CommandResult result)
             {

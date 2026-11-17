@@ -205,7 +205,7 @@ public sealed class TransferTests : IDisposable
     public void RootDestinationsResolveToDedicatedFolderWithoutTouchingDrive()
     {
         var drive = Path.GetPathRoot(root)!;
-        Assert.Equal(Path.Combine(drive, "GRID7736"), GridTransfer.ResolveDestination(drive));
+        Assert.Equal(Path.Combine(drive, "GRID.AI"), GridTransfer.ResolveDestination(drive));
         Assert.Equal(Path.Combine(root, "new"), GridTransfer.ResolveDestination(Path.Combine(root, "new")));
         Assert.Throws<IOException>(() => GridTransfer.ResolveDestination("relative"));
     }
@@ -234,8 +234,8 @@ public sealed class TransferTests : IDisposable
             showPrompt: false, persistence: persistence, interactiveConfirmation: true, transfer: new GridTransfer(app, world,skipRuntimeValidation:true),
             transferPicker: _ => Task.FromResult<string?>(select ? root : null)).RunAsync();
         Assert.Contains("Transfer cancelled", output.ToString());
-        if (select) Assert.Contains(Path.Combine(root, "GRID7736"), output.ToString());
-        Assert.False(Directory.Exists(Path.Combine(root, "GRID7736"))); Assert.True(File.Exists(world));
+        if (select) Assert.Contains(Path.Combine(root, "GRID.AI"), output.ToString());
+        Assert.False(Directory.Exists(Path.Combine(root, "GRID.AI"))); Assert.True(File.Exists(world));
     }
     [Fact]
     public async Task SelectedDestinationCopySavesAndPreservesUnrelatedContainerFiles()
@@ -249,9 +249,9 @@ public sealed class TransferTests : IDisposable
             transfer: new GridTransfer(app, world,skipRuntimeValidation:true), transferPicker: _ => Task.FromResult<string?>(selected)).RunAsync();
         Assert.Contains("Copy complete", output.ToString());
         Assert.Equal("unrelated", File.ReadAllText(Path.Combine(selected,"keep.txt")));
-        using var copied = new WorldStore(Path.Combine(selected, "GRID7736", "data", "world.db"));
+        using var copied = new WorldStore(Path.Combine(selected, "GRID.AI", "data", "world.db"));
         Assert.Equal(engine.GetSnapshot().WorldId, copied.Load().State.WorldId);
-        Assert.Throws<IOException>(() => new GridTransfer(app, world,skipRuntimeValidation:true).Prepare(new(Path.Combine(selected,"GRID7736"),false)));
+        Assert.Throws<IOException>(() => new GridTransfer(app, world,skipRuntimeValidation:true).Prepare(new(Path.Combine(selected,"GRID.AI"),false)));
     }
     [Fact]
     public async Task UnavailableSelectedMediaRetainsSource()
@@ -277,7 +277,7 @@ public sealed class TransferTests : IDisposable
             showPrompt: false, persistence: persistence, interactiveConfirmation: true,
             transfer: new GridTransfer(app, world,skipRuntimeValidation:true), transferPicker: Pick).RunAsync();
         Assert.Equal(1, calls); Assert.Contains("session changed", output.ToString());
-        Assert.False(Directory.Exists(Path.Combine(root, "GRID7736")));
+        Assert.False(Directory.Exists(Path.Combine(root, "GRID.AI")));
         identity.Login(); output.GetStringBuilder().Clear();
         await new TerminalHost(engine, commands, new StringReader("grid -copyto -select\nexit\n"), output,
             showPrompt: false, persistence: persistence, transfer: new GridTransfer(app, world,skipRuntimeValidation:true), transferPicker: Pick).RunAsync();

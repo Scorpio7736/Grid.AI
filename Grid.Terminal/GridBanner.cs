@@ -7,12 +7,12 @@ public static class GridBanner
     public const string Logo = """
         +======================================================================+
         |                                                                      |
-        |   ██████╗ ██████╗ ██╗██████╗     ███████╗███████╗██████╗  ██████╗    |
-        |  ██╔════╝ ██╔══██╗██║██╔══██╗    ╚════██║╚════██║╚════██╗██╔════╝    |
-        |  ██║ ███╗██████╔╝██║██║  ██║        ██╔╝    ██╔╝ █████╔╝███████╗    |
-        |  ██║   ██╗██╔══██╗██║██║  ██║       ██╔╝    ██╔╝  ╚═══██╗██╔══██╗    |
-        |  ╚██████╔╝██║  ██║██║██████╔╝       ██║     ██║  ██████╔╝╚██████╔╝    |
-        |   ╚═════╝ ╚═╝  ╚═╝╚═╝╚═════╝        ╚═╝     ╚═╝  ╚═════╝  ╚═════╝    |
+        |   ██████╗ ██████╗ ██╗██████╗       █████╗ ██╗                     |
+        |  ██╔════╝ ██╔══██╗██║██╔══██╗     ██╔══██╗██║                     |
+        |  ██║  ███╗██████╔╝██║██║  ██║     ███████║██║                     |
+        |  ██║   ██║██╔══██╗██║██║  ██║     ██╔══██║██║                     |
+        |  ╚██████╔╝██║  ██║██║██████╔╝ ██╗ ██║  ██║██║                     |
+        |   ╚═════╝ ╚═╝  ╚═╝╚═╝╚═════╝  ╚═╝ ╚═╝  ╚═╝╚═╝                     |
         |                                                                      |
         +======================================================================+
         """;
@@ -26,8 +26,8 @@ public static class GridBanner
             return string.Join("\n", artwork.Select(line => TerminalLayout.Pad(TerminalLayout.Fit(line, revealed), TerminalLayout.Width(line))));
         }
         // Keep the compact fallback when the full logo would wrap.
-        if(width < 26) return "GRID7736";
-        var title = progress < 1 ? "PROJECT GRID // INITIALIZING" : "PROJECT GRID // GRID7736";
+        if(width < 26) return "GRID.AI";
+        var title = progress < 1 ? "PROJECT GRID // INITIALIZING" : "PROJECT GRID // GRID.AI";
         return string.Join("\n", TerminalLayout.Wrap(title, width)) + "\n" + new string('=', Math.Min(width, 78)) + "\nCOMMAND TERMINAL";
     }
 }

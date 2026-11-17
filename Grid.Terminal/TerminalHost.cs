@@ -157,7 +157,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                                 var selected = await pick;
                                 if (!commands.IsAllowed("grid") || commands.IdentityGeneration != generation) throw new UnauthorizedAccessException("Transfer session changed while selecting a folder.");
                                 if (selected is null) { await output.WriteLineAsync("Transfer cancelled. Files unchanged."); continue; }
-                                request = request with { Destination = Path.Combine(selected, "GRID7736") };
+                                request = request with { Destination = Path.Combine(selected, "GRID.AI") };
                             }
                             var plan = transfer.Prepare(request);
                             await output.WriteLineAsync(GridTransfer.Preview(plan)); await output.FlushAsync();

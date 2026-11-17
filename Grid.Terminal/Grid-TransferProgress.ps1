@@ -4,7 +4,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 [Windows.Forms.Application]::EnableVisualStyles()
 $form=New-Object Windows.Forms.Form
-$form.Text='GRID7736 // TRANSFER'
+$form.Text='GRID.AI // TRANSFER'
 $form.Size=New-Object Drawing.Size(850,520)
 $form.MinimumSize=$form.Size
 $form.StartPosition='CenterScreen'
@@ -14,7 +14,7 @@ $form.Font=New-Object Drawing.Font('Consolas',11)
 $layout=New-Object Windows.Forms.TableLayoutPanel
 $layout.Dock='Fill';$layout.Padding=New-Object Windows.Forms.Padding(18);$layout.ColumnCount=1;$layout.RowCount=7
 $form.Controls.Add($layout)
-$heading=New-Object Windows.Forms.Label;$heading.Text='GRID7736 // TRANSFER';$heading.AutoSize=$true
+$heading=New-Object Windows.Forms.Label;$heading.Text='GRID.AI // TRANSFER';$heading.AutoSize=$true
 $destination=New-Object Windows.Forms.Label;$destination.AutoSize=$true;$destination.MaximumSize=New-Object Drawing.Size(780,70)
 $phase=New-Object Windows.Forms.Label;$phase.AutoSize=$true;$phase.ForeColor=[Drawing.Color]::Gold
 $bar=New-Object Windows.Forms.ProgressBar;$bar.Dock='Top';$bar.Height=26

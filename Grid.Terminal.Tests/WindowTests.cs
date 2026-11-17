@@ -529,7 +529,7 @@ public sealed class WindowTests
             await child!.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(20));
             Assert.True(child.ExitCode == 0, await error!);
             var text = await output!;
-            Assert.Contains("GRID7736 // CONVERSATION", text); Assert.Contains("VERIFIED GRID STATE", text);
+            Assert.Contains("GRID.AI // CONVERSATION", text); Assert.Contains("VERIFIED GRID STATE", text);
             Assert.Contains("Typewriter off", text); Assert.DoesNotContain("World saved", text);
             Assert.Equal(2, Assert.Single(f.Engine.GetSnapshot().Communications.Conversations).Messages.Count);
             Assert.True(f.Owner.IsMaster); Assert.Equal(0, f.Engine.TickCount);

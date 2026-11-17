@@ -13,7 +13,7 @@ MAXIS now performs real, explicitly approved development actions: read a registe
 
 ```text
 agents initialize
-maxis register grid "C:\Users\jack\source\repos\Grid7736" "Grid.Core/Grid.Core.csproj"
+maxis register grid "C:\path\to\Grid.AI" "Grid.Core/Grid.Core.csproj"
 maxis workspaces
 ```
 
@@ -45,7 +45,7 @@ Each proposal requires `tasks inspect <task-reference>`, `tasks approve <task-re
 To test a test project, register it under a separate alias:
 
 ```text
-maxis register coretests "C:\Users\jack\source\repos\Grid7736" "Grid.Core.Tests/Grid.Core.Tests.csproj"
+maxis register coretests "C:\path\to\Grid.AI" "Grid.Core.Tests/Grid.Core.Tests.csproj"
 tasks propose MAXIS maxis.test coretests tests-1
 ```
 

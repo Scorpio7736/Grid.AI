@@ -37,7 +37,7 @@ public static class GridTerminalTheme
         if(System.Text.RegularExpressions.Regex.IsMatch(line, @"^(?:Error|Failed|Failure|Access denied|Unknown command|.* error:|.* refused:|AI response rejected|Local AI unavailable|SHUTDOWN ERROR|\[ERROR\]|\[FAILED\])", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) return TerminalRole.Error;
         if(System.Text.RegularExpressions.Regex.IsMatch(line, @"^(?:Approved|Applied|Saved|Restored|Connected|Completed|Success|Ready|Simulation running|\[SUCCESS\]|\[READY\]|\[ACTIVE\])\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) return TerminalRole.Success;
         if(line.StartsWith("Approval",StringComparison.OrdinalIgnoreCase) || line.StartsWith("Approve:") || line.StartsWith("Risk:") || line.StartsWith("Authority level:")) return TerminalRole.Approval;
-        if(line.StartsWith("PROJECT GRID") || line is "COMMAND REFERENCE" or "COMMAND TERMINAL" || line.StartsWith("COMMAND / ") || line.StartsWith("GRID7736 //")) return TerminalRole.Title;
+        if(line.StartsWith("PROJECT GRID") || line is "COMMAND REFERENCE" or "COMMAND TERMINAL" || line.StartsWith("COMMAND / ") || line.StartsWith("GRID.AI //")) return TerminalRole.Title;
         if(line.Length > 0 && line.All(c => "-=+_|─═│┼ ".Contains(c))) return TerminalRole.Border;
         if(line.Contains("# USAGE:")) return TerminalRole.Command;
         if(line.StartsWith("- ") || line.Contains("# EXAMPLE:")) return TerminalRole.Command;

@@ -1,4 +1,4 @@
-param([string]$Destination = (Join-Path $PSScriptRoot 'portable\GRID7736'), [string]$RuntimeSource = (Join-Path $PSScriptRoot '.grid-runtime'))
+param([string]$Destination = (Join-Path $PSScriptRoot 'portable\GRID.AI'), [string]$RuntimeSource = (Join-Path $PSScriptRoot '.grid-runtime'))
 $ErrorActionPreference = 'Stop'
 if (Test-Path -LiteralPath $Destination) { throw "Destination exists: $Destination. Select a new folder; existing worlds/packages are never overwritten." }
 if (!(Test-Path -LiteralPath (Join-Path $RuntimeSource 'assets.json'))) { throw 'Run Prepare-GridRuntime.ps1 first or supply a prepared -RuntimeSource.' }

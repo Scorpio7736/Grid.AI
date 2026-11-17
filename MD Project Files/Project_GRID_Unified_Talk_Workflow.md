@@ -161,7 +161,7 @@ Pending follow-ups are per-terminal and transient. Identity changes clear them. 
 Run automated checks from repository PowerShell:
 
 ```powershell
-dotnet test Grid7736.slnx -c Release
+dotnet test Grid.AI.slnx -c Release
 dotnet test Grid.Terminal.Tests/Grid.Terminal.Tests.csproj -c Release --filter "Phase=6.6"
 ```
 

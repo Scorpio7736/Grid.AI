@@ -46,8 +46,8 @@ The crash probe exercises SQLite interruption recovery through the same connecti
 On 2026-10-19:
 
 ```powershell
-dotnet test Grid7736.slnx --verbosity minimal
-dotnet build Grid7736.slnx --no-restore --verbosity minimal
+dotnet test Grid.AI.slnx --verbosity minimal
+dotnet build Grid.AI.slnx --no-restore --verbosity minimal
 ```
 
 Full suite: **231 passed**, zero failed/skipped: Core 8, Simulation 106, Persistence 64, Terminal 53. Build: zero warnings/errors. The earlier 223-test total is retained as historical evidence for 2.4, and 208/200 totals remain evidence for 2.3/2.2.

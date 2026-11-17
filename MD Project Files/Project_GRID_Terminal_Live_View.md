@@ -22,11 +22,11 @@ Schema v7 preserves station assignments, remaining routes and edge timing in exi
 
 ## Closing artwork and default color - 2026-10-19
 
-The farewell now uses the user's supplied large GRID7736 ASCII artwork and blank-line spacing. Successful persistent exits retain `Stopping GRID.`, `World saved.`, then the artwork and `WORLD SAVED // USER DISCONNECTED`. Error and ephemeral messages remain truthful. Consoles narrower than 78 columns use a compact GRID7736 farewell. Ordinary terminal output and input echo default to light blue (bright cyan / ConsoleColor.Cyan); status, warning and error accents remain. The prior shell foreground is restored on exit. `--no-color`, NO_COLOR, TERM=dumb and redirected output continue to disable application color changes. Terminal verification: **75 tests passed**; no claim of visual color matching across user console themes.
+The farewell now uses the user's supplied large GRID.AI ASCII artwork and blank-line spacing. Successful persistent exits retain `Stopping GRID.`, `World saved.`, then the artwork and `WORLD SAVED // USER DISCONNECTED`. Error and ephemeral messages remain truthful. Consoles narrower than 78 columns use a compact GRID.AI farewell. Ordinary terminal output and input echo default to light blue (bright cyan / ConsoleColor.Cyan); status, warning and error accents remain. The prior shell foreground is restored on exit. `--no-color`, NO_COLOR, TERM=dumb and redirected output continue to disable application color changes. Terminal verification: **75 tests passed**; no claim of visual color matching across user console themes.
 
 ## Terminal commands and shutdown complete - 1.12 (2026-10-19)
 
-Implemented grouped `help`, display-only `clear`, `programs -active`, `programs -possible`, `programs -sleeping`, and a GRID7736 ASCII farewell. Active selects fresh Running applications; sleeping selects fresh On call or Sleeping applications; possible includes current applications plus the saved known-application catalog. `ids` works with one filter. Unknown/stale observations are never classified as active or sleeping. Bare `programs` still includes agents and other residents.
+Implemented grouped `help`, display-only `clear`, `programs -active`, `programs -possible`, `programs -sleeping`, and a GRID.AI ASCII farewell. Active selects fresh Running applications; sleeping selects fresh On call or Sleeping applications; possible includes current applications plus the saved known-application catalog. `ids` works with one filter. Unknown/stale observations are never classified as active or sleeping. Bare `programs` still includes agents and other residents.
 
 **Schema v6** adds a separate ApplicationCatalog table (key, name, source, last catalog observation UTC). The catalog is captured with the simulation snapshot and saved atomically with world/history; backup/recovery and schema validation include it. Installed/observed metadata survives restart; ordinary residents, PID lifetimes, activity and resource readings are not restored. Last observation is catalog provenance, not proof of a launch or current installation. Entries missing from fresh discovery display Historical / unknown. Existing schema-v5-only statements below describe earlier milestones.
 
@@ -132,9 +132,9 @@ Section 2.2 now saves/restores world state and clock values, autosaves every 30 
 
 ## Verification
 
-- `dotnet test Grid7736.slnx --no-restore --verbosity minimal -p:NuGetAudit=false`: 140 passed, zero failed/skipped (Core 8, Simulation 93, Terminal 39). This adds 8 event-buffer cases and 15 terminal/live-view cases to the previous 117 tests.
+- `dotnet test Grid.AI.slnx --no-restore --verbosity minimal -p:NuGetAudit=false`: 140 passed, zero failed/skipped (Core 8, Simulation 93, Terminal 39). This adds 8 event-buffer cases and 15 terminal/live-view cases to the previous 117 tests.
 - Tests cover bounded retention/eviction, sequence ordering, coherent concurrent snapshots, actual transfers/edits, no-op/denial/cancellation behavior, idle truthfulness, rendering bounds, text sanitization, paging, changed snapshots, resize fallback, Q/Esc, return to commands, cancellation and scheduler-failure cleanup.
-- `dotnet build Grid7736.slnx --no-restore --verbosity minimal`: zero warnings/errors.
+- `dotnet build Grid.AI.slnx --no-restore --verbosity minimal`: zero warnings/errors.
 - Interactive console smoke checks verified live running ticks, return to commands, paused display and normal exit. TERM=dumb smoke verification produced a single fallback snapshot and accepted later commands. Automated injected-console tests cover resize and cancellation paths; this does not claim exhaustive validation of every terminal emulator.
 
 See [Master Development Checklist](Project_GRID_Master_Development_Checklist.md) and [Current Implementation Status](Project_GRID_Current_Implementation_Status.md) for broader scope and historical verification.

@@ -1,6 +1,6 @@
 # 6.10A — Terminal visual theme
 
-**2026-10-28 follow-up — GRID logo animation restored at user request:** Startup/login and shutdown show the supplied GRID7736 artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
+**2026-10-28 follow-up — GRID logo animation restored at user request:** Startup/login and shutdown show the supplied GRID.AI artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
 
 **Status: Implemented — 2026-10-28.** See [completion evidence and compatibility limits](Project_GRID_Terminal_Visual_Theme_Implementation.md). The original acceptance checklist below remains the unchanged user-provided specification; its verification mapping is recorded in the implementation document.
 

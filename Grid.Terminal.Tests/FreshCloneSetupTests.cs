@@ -11,7 +11,7 @@ public sealed class FreshCloneSetupTests
         public Clone()
         {
             var source = new DirectoryInfo(AppContext.BaseDirectory);
-            while (source is not null && !File.Exists(Path.Combine(source.FullName, "Grid7736.slnx"))) source = source.Parent;
+            while (source is not null && !File.Exists(Path.Combine(source.FullName, "Grid.AI.slnx"))) source = source.Parent;
             Assert.NotNull(source); Directory.CreateDirectory(Root);
             foreach (var file in new[] { "Setup-GridClone.ps1", "Start-GridClone.ps1", "Grid-Clone-Dependencies.json" }) File.Copy(Path.Combine(source!.FullName, file), Path.Combine(Root, file));
         }
@@ -35,7 +35,7 @@ public sealed class FreshCloneSetupTests
     public void TrackedModelManifestAndMetadataMatchRuntimePins()
     {
         var source = new DirectoryInfo(AppContext.BaseDirectory);
-        while (source is not null && !File.Exists(Path.Combine(source.FullName, "Grid7736.slnx"))) source = source.Parent;
+        while (source is not null && !File.Exists(Path.Combine(source.FullName, "Grid.AI.slnx"))) source = source.Parent;
         Assert.NotNull(source);
         using var dependencies = JsonDocument.Parse(File.ReadAllText(Path.Combine(source!.FullName, "Grid-Clone-Dependencies.json")));
         var model = dependencies.RootElement.GetProperty("Model");

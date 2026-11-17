@@ -1,6 +1,6 @@
 # 6.10A — Terminal visual theme implementation
 
-**2026-10-28 follow-up — GRID logo animation restored at user request:** Startup/login and shutdown show the supplied GRID7736 artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
+**2026-10-28 follow-up — GRID logo animation restored at user request:** Startup/login and shutdown show the supplied GRID.AI artwork when it fits. The five-second login transition progressively reveals the logo from left to right, retains skip/reduced-motion support, and enters the terminal automatically. Narrow windows keep the compact fallback. The new 6.10A colors and responsive help remain. This supersedes the compact-logo replacement described below; other screens retain compact headers.
 
 Implemented 2026-10-28. This is a presentation change; it adds no commands, agent permissions or automatic actions. The [user-supplied specification](Project_GRID_Terminal_Visual_Theme_Specification.md) remains the design reference. Phase 7 still requires 6.11–6.15.
 
@@ -16,7 +16,7 @@ Navy backgrounds apply to GRID-owned live rendering; header and section bands pa
 
 ## Verification
 
-`dotnet test Grid7736.slnx -c Release --no-restore`: **999 passed, 0 failed** (Core 14, Simulation 157, Persistence 99, Terminal 729). Ten new cases cover exact palette values, semantic feedback, RGB/reset/plain output, owned backgrounds, ANSI width, combining marks, CJK, emoji clusters, narrow tables and input navigation. Existing tests retain command, authentication, task and file-approval coverage; old artwork/color/help-format assertions were updated for the approved presentation change.
+`dotnet test Grid.AI.slnx -c Release --no-restore`: **999 passed, 0 failed** (Core 14, Simulation 157, Persistence 99, Terminal 729). Ten new cases cover exact palette values, semantic feedback, RGB/reset/plain output, owned backgrounds, ANSI width, combining marks, CJK, emoji clusters, narrow tables and input navigation. Existing tests retain command, authentication, task and file-approval coverage; old artwork/color/help-format assertions were updated for the approved presentation change.
 
 An isolated Windows ConPTY probe exercised the actual login and line editor without opening a user world. Login advanced after **5.125 seconds**; credentials were masked; expected RGB colors/backgrounds appeared; resizing from 120 to 60 columns and typing/deleting a wide character returned the correct input. Captured output includes all 13 RGB palette values. Local evidence: `%TEMP%\Grid610AConsoleProbe\report.json`, `console.txt`, `Program.cs`, `console_probe.py`; test log: `%TEMP%\grid-theme-tests-final.txt`.
 

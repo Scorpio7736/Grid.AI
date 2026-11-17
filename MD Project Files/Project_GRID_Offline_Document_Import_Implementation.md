@@ -44,7 +44,7 @@ The published extraction test application occupied 92,012,304 bytes at verificat
 - Coverage includes normal command import, saved-world reload, source hash/page provenance, mixed/empty pages, page limits, corrupt/signature-mismatched inputs, password protection, DOCX Unicode/tables/strict namespace/nested paragraphs, linked-body refusal, cancellation and atomic picker batches.
 - An initial full run exposed a process-exit race during working-set sampling. The race was repaired and the complete terminal suite passed afterward.
 - Self-contained Windows x64 publishing succeeded. PDF and DOCX worker checks passed from the published app with isolated PATH/profile settings and invalid global DOTNET_ROOT paths. The test uses a synthetic document and opens no user world.
-- Local deployment evidence is stored in `portable/GRID7736-615-documents/probe/report.json`. This is an extraction-only test build. A full refreshed GRID package is required for the second-PC AI/world tests.
+- Local deployment evidence is stored in `portable/GRID.AI-615-documents/probe/report.json`. This is an extraction-only test build. A full refreshed GRID package is required for the second-PC AI/world tests.
 - A physical second-PC, changed-drive-letter and network-blocked acceptance run remains pending. Phase 7 also requires completion of 6.16–6.31.
 
 ## Second-device acceptance

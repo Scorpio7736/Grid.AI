@@ -1,6 +1,6 @@
 # Project GRID — Master Overview
 
-**Planning update — 2026-11-04.** Planned architecture separates GRID-AI intelligence services, GRID-Agent identities/personas/memory/permissions/orchestration, and GRID7736 simulation/application operations. Sections 6.16–6.31 are required before Phase 7. The shared storage target is now 128 GB decimal for Flash and PC copies, with flash drives primary and installers/local PC copies supported. Specialist model choices await user research and evaluation. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
+**Planning update — 2026-11-04.** Planned architecture separates GRID-AI intelligence services, GRID-Agent identities/personas/memory/permissions/orchestration, and GRID.AI simulation/application operations. Sections 6.16–6.31 are required before Phase 7. The shared storage target is now 128 GB decimal for Flash and PC copies, with flash drives primary and installers/local PC copies supported. Specialist model choices await user research and evaluation. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
 
 **Pre-Phase-7 direction — planned 2026-10-27:** MCP means Master Control Program and will be the user’s digital helper with near-Master-Control delegated operational authority, human approvals, custom tasks and specialist invitations. Complete conversational CRUD, durable context, role-specific model profiles, a 20 GB base package and proven offline second-device operation before Phase 7. [Authoritative plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
 

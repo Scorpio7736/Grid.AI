@@ -56,7 +56,7 @@ request -> authorization/policy -> task classification
 
 ## Delegation and ownership
 
-The attachment calls for a deterministic GRID-AI .NET orchestrator. Within the approved three-layer architecture, GRID-Agent owns agent delegation policy and task orchestration, GRID-AI enforces inference scheduling/resource limits, and GRID7736's trusted host services authorize and execute application operations. This maps the supplied behavior onto the established ownership boundaries.
+The attachment calls for a deterministic GRID-AI .NET orchestrator. Within the approved three-layer architecture, GRID-Agent owns agent delegation policy and task orchestration, GRID-AI enforces inference scheduling/resource limits, and GRID.AI's trusted host services authorize and execute application operations. This maps the supplied behavior onto the established ownership boundaries.
 
 The model proposes delegation. Trusted .NET policy enforces the following requirements.
 

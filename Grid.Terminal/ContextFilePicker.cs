@@ -14,7 +14,7 @@ public static class ContextFilePicker
             $ErrorActionPreference = 'Stop'
             Add-Type -AssemblyName System.Windows.Forms
             $dialog = New-Object System.Windows.Forms.OpenFileDialog
-            $dialog.Title = 'GRID7736 // Select context files'
+            $dialog.Title = 'GRID.AI // Select context files'
             $dialog.Multiselect = $true
             $dialog.CheckFileExists = $true
             $dialog.Filter = 'Context files|*.txt;*.md;*.markdown;*.pdf;*.docx;*.cs;*.csproj;*.sln;*.py;*.js;*.ts;*.tsx;*.jsx;*.json;*.xml;*.yaml;*.yml;*.toml;*.ini;*.csv;*.sql;*.html;*.css;*.cpp;*.c;*.h;*.java;*.rs;*.go;*.ps1;*.sh|All files|*.*'

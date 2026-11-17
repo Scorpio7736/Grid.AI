@@ -1,6 +1,6 @@
 # Project GRID — 6.7 Login Animation and Terminal Palette
 
-**Implemented 2026-10-27.** The user-supplied block-letter GRID7736 banner replaces the earlier opening and closing artwork. Successful login now reveals it over five seconds and enters the terminal automatically, without the post-login Enter prompt. Welcome name and authority remain visible. The artwork uses Unicode box/block characters, as supplied; narrow windows use a compact text logo.
+**Implemented 2026-10-27.** The user-supplied block-letter GRID.AI banner replaces the earlier opening and closing artwork. Successful login now reveals it over five seconds and enters the terminal automatically, without the post-login Enter prompt. Welcome name and authority remain visible. The artwork uses Unicode box/block characters, as supplied; narrow windows use a compact text logo.
 
 ```text
 +======================================================================+

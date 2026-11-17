@@ -36,7 +36,7 @@ As Master Control, register a test project, using a fresh alias if this one alre
 
 ```text
 agents initialize
-maxis register coretests "C:\Users\jack\source\repos\Grid7736" "Grid.Core.Tests/Grid.Core.Tests.csproj"
+maxis register coretests "C:\path\to\Grid.AI" "Grid.Core.Tests/Grid.Core.Tests.csproj"
 mcp request "MAXIS: test coretests" phase57-tests-1
 tasks list
 ```

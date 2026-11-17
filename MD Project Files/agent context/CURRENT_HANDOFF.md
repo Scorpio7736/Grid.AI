@@ -1,12 +1,16 @@
 # GRID current handoff
 
-Updated 2026-11-16. Verify the working tree and checklist before starting work.
+Updated 2026-11-17. Verify the working tree and checklist before starting work.
 
 ## Working approach
 
 Follow the concise [repository working rules](../../AGENTS.md). Use targeted reads and tests, retain completion evidence, and link detailed documentation instead of repeating it. The [historical chat workflow](CHAT_WORKFLOW_AND_AGENT_HANDOFF.md) preserves earlier decisions.
 
 ## Current milestone
+
+Project rename completed 2026-11-17: active product branding, terminal artwork/titles, package and transfer defaults, Windows launcher/environment name, solution file, tests and maintained documentation now use **Grid.AI**. Legacy `Grid7736` launcher/environment identifiers remain compatibility-only; raw evidence, observed historical paths and GitHub URLs remain unchanged. Focused suite: **132 passed**. Renamed full solution: **1,466 passed, zero failed/skipped**. `git diff --check` passed. See [rename implementation](../Project_GRID_Rename_to_Grid_AI.md).
+
+6.35 reusable local skills implementation completed 2026-11-16. Declarative version-1 manifests support reviewed import/update, configuration/dependency checks, enable/revoke, plan-only invocation, uninstall and rollback. Third-party code/scripts never execute; every resolved step must be an existing specialist capability and becomes an unapproved task. Expanded focused suite: 56 passed. Full solution: **1,466 passed, zero failures/skips**. Physical removable-media/second-PC portability remains deferred. See [reusable skills](../Project_GRID_Reusable_Skills.md).
 
 6.34 local onboarding implementation updated 2026-11-16: reviewed offline/online installer, retained-file inventory and staging admission checks, explicit save-to-secure-login launch, first-run offer, identity/world-recovery guidance and capability revoke help. `--doctor-check <profile.json>` performs bounded storage/voice-inventory/synthetic-OCR/device-metadata/local-inference checks. All five passed on this Windows host; 53 focused tests passed; full suite **1,456 passed, zero failures/skips** and `git diff --check` passed. See [guided setup](../Project_GRID_Guided_Setup.md). Physical clean-user/PC2/removable-media/disconnected acceptance and Standard/Performance promotion remain open; do not count simulated tests as physical evidence. Next local implementation item is 6.35 when requested; earlier milestone entries below are historical.
 
@@ -34,7 +38,7 @@ Fresh clone path implemented: Setup-GridClone.ps1 -Download installs pinned depe
 
 6.27 portable deployment evidence and its remaining acceptance are in [Offline Portable Deployment](../Project_GRID_Offline_Portable_Deployment.md).
 
-The package is at `portable/GRID7736-6.27-20261112`. The complete footprint target is 128 GB decimal, with a 75 GB model/dependency/cache sub-limit and 256 MB reserve.
+The package is at `portable/GRID.AI-6.27-20261112`. The complete footprint target is 128 GB decimal, with a 75 GB model/dependency/cache sub-limit and 256 MB reserve.
 
 Local 6.31 saved-world preservation acceptance passed 2026-11-14: six populated-world scenarios verify backup recovery, version refusal, failed migration rollback and fresh approval after restore. See the integration reference for fixture limitations and the matching-package rollback procedure.
 
@@ -46,17 +50,19 @@ The reported demonstration/workspace mismatch and invalid main-terminal resume w
 
 ## Next work and open gates
 
+- 6.32 remains incomplete for the user's exact natural delegation sequence: a request to have an agent create Desktop `index.html`, followed by `plan it`/`approved`, routed incorrectly and proposed unrelated work. The user chose to continue; do not claim general conversation-first acceptance until that transcript is fixed and tested.
+- Next sequential local item after 6.35 is 6.36 app and service connections. Keep 6.35 physical portability acceptance open until the transfer device is ready.
 - User direction 2026-11-14: defer copy/transfer and second-PC acceptance until the transfer device is ready. Do not treat missing device evidence as passed or block unrelated local milestones on it.
 
 - The user confirmed on 2026-11-13 that an offline local agentic coding workflow is mandatory. MCP/MAXIS must actually edit repository files, run builds/tests, fix failures and report verified results through ordinary conversation. The master checklist now includes a disposable-checkout end-to-end acceptance gate before Phase 7. A reviewed disposable-project cycle is demonstrated; broader autonomous repair, Git-checkout/instruction handling, resume and disconnected-device gates remain open.
 
-- The 6.33 local implementation is complete; retain its manual window/physical-media acceptance item. Next sequential local implementation is 6.34 guided onboarding and hardware-aware setup. Carry outstanding 6.31 acceptance from the integration reference: general autonomous coding/resume, full meeting tool workflows, live release-model adoption and failing-instance/second-device evidence. The previous 14 terminal failures are resolved. Carry forward production model/corpus selection, QLoRA/GPU and portable-training acceptance. Specialist selection and external-device evidence require user input.
+- The 6.33/6.34 local implementations are complete for their documented scope; retain their physical-device acceptance items. Next sequential local implementation is 6.36 app and service connections. Carry outstanding 6.31 acceptance from the integration reference: general autonomous coding/resume, full meeting tool workflows, live release-model adoption and failing-instance/second-device evidence. The previous 14 terminal failures are resolved. Carry forward production model/corpus selection, QLoRA/GPU and portable-training acceptance. Specialist selection and external-device evidence require user input.
 - PC2 evidence received: required bundled AI assets are missing and inference is disabled; placeholder port 1 explains ConnectionRefused. Four tests failed creating symlinks without Windows privilege. [PC2 diagnosis and retained output](../Project_GRID_PC2_Diagnostics.md) records fixes and complete-package/provisioning steps. Successful offline PC2 retest remains open. Specialist/image assets and live catalog-to-agent adoption remain unselected/unverified.
 - Keep remaining Phase 7 prerequisites visible, including conversation-first routing acceptance under 6.31 and the newer terminal-first milestones 6.32-6.38. New GUI work in 6.39 is optional and non-blocking.
 - The working tree contains existing implementation and documentation changes. Inspect and preserve them.
 
 ## Suggested next-chat request
 
-Continue GRID with checklist item 6.35 while retaining open 6.33/6.34 physical-device acceptance checks. Copy/transfer acceptance is deferred until the user has the transfer device ready. Read AGENTS.md and the current handoff, verify current repository state, implement the item, and update its completion evidence. Keep output concise and preserve outstanding model/device acceptance gates.
+Continue GRID with checklist item 6.36 while retaining open 6.33–6.35 physical-device acceptance checks and the recorded 6.32 conversation-routing defect. Copy/transfer acceptance is deferred until the user has the transfer device ready. Read AGENTS.md and the current handoff, verify current repository state, implement the item, and update its completion evidence. Keep output concise and preserve outstanding model/device acceptance gates.
 
 MCP testing follow-up: five of six executable workflow checks passed; missing-workspace clarification returned Invalid clarification response. Interactive UI and Desktop HTML delivery remain unverified. See the integration acceptance reference, MCP executable testing follow-up.

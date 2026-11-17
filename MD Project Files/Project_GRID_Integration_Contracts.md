@@ -25,7 +25,7 @@ Core is the simulation domain model. AI is independently reusable and cannot ref
 
 Simulation, Persistence and Terminal now declare their direct AI/Agent/communication contract dependencies explicitly where applicable. The graph has no cycles. Moving an API into Agent must not introduce a reverse reference to Communication or Simulation; move a generic DTO down first or inject a host callback. Do not copy the implementation into a second service.
 
-The existing four test projects remain in Grid7736.slnx. Provider, policy and host integration tests currently run in Grid.Terminal.Tests; simulation and durable storage coverage remain in their respective test projects. Separate AI/Agent test projects can be extracted later without duplicating tests. IntegrationBoundaryTests checks compiled GRID assembly references against the layer allowlist, including detection of newly introduced host dependencies in AI/Agent.
+The existing four test projects remain in Grid.AI.slnx. Provider, policy and host integration tests currently run in Grid.Terminal.Tests; simulation and durable storage coverage remain in their respective test projects. Separate AI/Agent test projects can be extracted later without duplicating tests. IntegrationBoundaryTests checks compiled GRID assembly references against the layer allowlist, including detection of newly introduced host dependencies in AI/Agent.
 
 ## Stable integration surface
 
@@ -74,7 +74,7 @@ These rules define the next migration work; they do not substitute for migration
 Verification on 2026-11-13:
 
 - `dotnet test Grid.Terminal.Tests/Grid.Terminal.Tests.csproj --no-restore --filter "FullyQualifiedName~IntegrationBoundaryTests|FullyQualifiedName~ModelProviderTests|FullyQualifiedName~AgentMemoryMigrationTests|FullyQualifiedName~RequestAuthorityTests|FullyQualifiedName~AuthorizationRouteTests" --verbosity minimal`: 42 passed, zero failed. This includes seven new architecture checks and existing provider, memory and authorization tests.
-- `dotnet test Grid7736.slnx --no-restore --verbosity minimal`: 1,297 passed, 14 failed, zero skipped (Core 14 passed; Simulation 157 passed; Persistence 99 passed; Terminal 1,027 passed and 14 failed). All production projects and test projects compiled. The command returned exit code 1.
+- `dotnet test Grid.AI.slnx --no-restore --verbosity minimal`: 1,297 passed, 14 failed, zero skipped (Core 14 passed; Simulation 157 passed; Persistence 99 passed; Terminal 1,027 passed and 14 failed). All production projects and test projects compiled. The command returned exit code 1.
 - Failures are in terminal conversation/voice/attached-window expectations affected by the existing routing edits. Examples: a `remember this conversation` utterance is now intercepted as memory rather than stored dialogue; connected `voice listen`, `tasks approve`, `screen options` and `memory scope` inputs no longer dispatch as terminal commands. Existing exit/typewriter expectations also conflict with the revised connected-input route. These five pre-existing runtime files were not changed by this task. No clean-baseline comparison was run, so this is diagnosis from the failing assertions and existing diff, not a claim of a measured baseline pass.
 - Local links in this reference resolve and `git diff --check` passed. No database/schema/model changes were made and no live model or second-device acceptance was performed.
 

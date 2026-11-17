@@ -109,8 +109,8 @@ Scheduler, autosave, shutdown-save and top-level startup/session failures emit a
 
 ## Completion verification
 
-- `dotnet test Grid7736.slnx --no-restore --verbosity minimal`: **208 passed**, zero failed/skipped (Core 8, Simulation 93, Persistence 56, Terminal 51).
-- `dotnet build Grid7736.slnx --no-restore --verbosity minimal`: zero warnings/errors.
+- `dotnet test Grid.AI.slnx --no-restore --verbosity minimal`: **208 passed**, zero failed/skipped (Core 8, Simulation 93, Persistence 56, Terminal 51).
+- `dotnet build Grid.AI.slnx --no-restore --verbosity minimal`: zero warnings/errors.
 - Added eight cases covering history across repeated saves/reopen/recovery, entity/kind/time/paging queries, transaction failure and retry, backup failure deduplication, acknowledgement ordering, independent pending/live buffers and overflow warnings, populated v1 migration, inactive entity references and terminal argument validation.
 - Isolated terminal smoke: start/pause/step/exit, reopen the same world, query two saved Clock events, and verify no Tick records. No user default world was opened for this verification.
 

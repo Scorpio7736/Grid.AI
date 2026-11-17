@@ -1,4 +1,6 @@
-# GRID7736
+# GRID.AI
+
+**Project rename — 2026-11-17:** The product and solution are now named **Grid.AI**. Active terminal titles, artwork, transfer/package defaults, documentation, solution commands and the managed Windows launcher use the new name. Existing `Grid7736` user variables and managed launchers remain migration aliases so an installed copy is not stranded; raw verification logs, observed historical filesystem paths and GitHub URLs retain their original identifiers. [Implementation and verification](MD%20Project%20Files/Project_GRID_Rename_to_Grid_AI.md).
 
 ## Fresh clone: install a new GRID instance
 
@@ -23,7 +25,7 @@ Use `-Plan` for a read-only setup preview. For an incomplete runtime, close GRID
 
 **5.9 completed (2026-10-23):** `grid -start` initializes/resumes agents; `grid -pause` stops new agent activity and interrupts in-flight work. Identities/history persist; no tasks are replayed or approved on resume. Normal startup is paused. 672 tests passed. [Lifecycle and test commands](MD%20Project%20Files/Project_GRID_Agent_Lifecycle_Implementation.md).
 
-**4.2G completed (2026-10-23):** Use `grid -start` / `grid -pause`, `tasks -completed` / `tasks -list`, and `tasks deny <reference> "reason"`. Transfer roots and `-select` create a new GRID7736 child without overwriting existing files. Schema v21; 658 tests passed. [Commands and verification](MD%20Project%20Files/Project_GRID_Terminal_Controls_Implementation.md).
+**4.2G completed (2026-10-23):** Use `grid -start` / `grid -pause`, `tasks -completed` / `tasks -list`, and `tasks deny <reference> "reason"`. Transfer roots and `-select` create a new GRID.AI child without overwriting existing files. Schema v21; 658 tests passed. [Commands and verification](MD%20Project%20Files/Project_GRID_Terminal_Controls_Implementation.md).
 
 ## Fresh-clone runtime repair — 2026-10-23
 
@@ -193,41 +195,41 @@ Schema v7 preserves station assignments, remaining routes and edge timing in exi
 
 Use `jobs` for civic workstations and `activity` for measured host-application availability/working sets.
 
-## Bare Grid7736 command support - 2026-10-20
+## Bare Grid.AI command support - 2026-10-20
 
-Startup now also installs a managed `Grid7736.cmd` launcher in `%LOCALAPPDATA%\GRID\bin` and adds that directory to the Windows user PATH, preserving existing entries and avoiding duplicates. Type `Grid7736` directly in PowerShell or Command Prompt; arguments such as `--start` are forwarded. The persistent `Grid7736` environment variable remains supported. An existing unmanaged launcher is not overwritten. This extends the original variable-only 1.14 behavior.
+Startup now also installs a managed `Grid.AI.cmd` launcher in `%LOCALAPPDATA%\GRID\bin` and adds that directory to the Windows user PATH, preserving existing entries and avoiding duplicates. Type `Grid.AI` directly in PowerShell or Command Prompt; arguments such as `--start` are forwarded. The persistent `Grid.AI` environment variable remains supported. An existing unmanaged launcher is not overwritten. This extends the original variable-only 1.14 behavior.
 
 Restart the parent terminal app to inherit the new PATH. For the currently open PowerShell session, refresh it without closing the window:
 
 ```powershell
 $env:Path += ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
-Grid7736
+Grid.AI
 ```
 
 Verification: **89 terminal tests passed**. The bare command resolved to the installed launcher and successfully ran/exited with `--ephemeral --no-color`; no saved world was opened.
 
 ## Startup launcher environment variable - 1.14 (2026-10-20)
 
-**Implemented and verified.** On Windows startup, GRID ensures a persistent **user-scope** environment variable named `Grid7736` points to the terminal `.exe`. A missing, empty or broken path is registered using the current build's apphost; an existing valid absolute path is preserved, including another installed build. The current GRID process receives the same value. Values are stored without shell quotes, so paths with spaces remain usable. If no executable is available or Windows denies the environment update, startup reports a warning and GRID continues. Other platforms skip Windows registration. No administrator elevation, shell-profile changes or automatic simulation start are required. The follow-up above also adds a user-PATH launcher.
+**Implemented and verified.** On Windows startup, GRID ensures a persistent **user-scope** environment variable named `Grid.AI` points to the terminal `.exe`. A missing, empty or broken path is registered using the current build's apphost; an existing valid absolute path is preserved, including another installed build. The current GRID process receives the same value. Values are stored without shell quotes, so paths with spaces remain usable. If no executable is available or Windows denies the environment update, startup reports a warning and GRID continues. Other platforms skip Windows registration. No administrator elevation, shell-profile changes or automatic simulation start are required. The follow-up above also adds a user-PATH launcher.
 
 PowerShell launch (from a fresh environment):
 
 ```powershell
-& $env:Grid7736
+& ${env:Grid.AI}
 # Optional: begin simulation immediately
-& $env:Grid7736 --start
+& ${env:Grid.AI} --start
 ```
 
 Command Prompt launch:
 
 ```bat
-"%Grid7736%"
+"%Grid.AI%"
 ```
 
-The environment variable is a path value; the managed PATH launcher above separately provides the bare `Grid7736` command. Already-open shells do not inherit changes from GRID. Restart the parent terminal/IDE, or sign out/in if necessary. To refresh only the current PowerShell shell without restarting:
+The environment variable is a path value; the managed PATH launcher above separately provides the bare `Grid.AI` command. Already-open shells do not inherit changes from GRID. Restart the parent terminal/IDE, or sign out/in if necessary. To refresh only the current PowerShell shell without restarting:
 
 ```powershell
-$env:Grid7736 = [Environment]::GetEnvironmentVariable('Grid7736', 'User')
+${env:Grid.AI} = [Environment]::GetEnvironmentVariable('Grid.AI', 'User')
 ```
 
 A development-build path remains tied to that build's `.exe`; rebuild that target to pick up changes. Launching another build preserves a still-valid registered installation. If the target is removed, launching GRID directly registers the current available apphost again. This is a convenience launcher, not an installer or authentication mechanism.
@@ -240,17 +242,17 @@ A development-build path remains tied to that build's `.exe`; rebuild that targe
 
 Confirmed NGE stops/awaits scheduler, autosave and telemetry, serializes against in-flight saves, revalidates world/backup identity, then removes only the active database, rolling `.backup` and exact `-journal`, `-wal`, `-shm` paths. It retains the session lease through completion and refuses symbolic-link/junction targets. Historical legacy/damaged archives, staging artifacts of uncertain ownership, external copies, other worlds and PC applications remain; the warning explicitly states this scope. The harmless session `.lock` file may remain after release. Interrupted recovery must be resolved before NGE can be prepared.
 
-A flushed `.nullifying` marker is created before deletion. Partial failure retains that marker, blocks startup/save/recovery, reports remaining files and exits nonzero without a final save. **There is no automatic retry/resume command yet:** inspect the marker and remaining exact world artifacts before explicit manual cleanup; never remove the marker merely to bypass an unresolved operation. Successful NGE removes the marker and exits with the GRID7736 artwork and `GRID NULLIFIED // EXISTENCE TERMINATED`, never a saved-world claim. Next normal startup follows existing hardware-city creation; it does not reuse a managed backup. Independent historical/manual copies remain outside this deletion scope.
+A flushed `.nullifying` marker is created before deletion. Partial failure retains that marker, blocks startup/save/recovery, reports remaining files and exits nonzero without a final save. **There is no automatic retry/resume command yet:** inspect the marker and remaining exact world artifacts before explicit manual cleanup; never remove the marker merely to bypass an unresolved operation. Successful NGE removes the marker and exits with the GRID.AI artwork and `GRID NULLIFIED // EXISTENCE TERMINATED`, never a saved-world claim. Next normal startup follows existing hardware-city creation; it does not reuse a managed backup. Independent historical/manual copies remain outside this deletion scope.
 
 Verification: **306 Release tests passed** (14 Core, 127 Simulation, 83 Persistence, 82 Terminal). New coverage checks cancellation/blank/invalid/EOF input, uppercase confirmation, redirected/ephemeral rejection, worker shutdown before deletion, no final save on success/failure, owned-file deletion, unrelated-file preservation, rejected forged plans, blocked future writes/recovery, new identity after reopen and a Windows locked-file failure retaining the marker. All deletion tests use freshly created disposable worlds; no user save was deleted. Existing hardware-city creation tests cover the startup path; no manual destructive run against the user's world was performed. Visual Studio still owns its post-exit footer.
 
 ## Closing artwork and default color - 2026-10-19
 
-The farewell now uses the user's supplied large GRID7736 ASCII artwork and blank-line spacing. Successful persistent exits retain `Stopping GRID.`, `World saved.`, then the artwork and `WORLD SAVED // USER DISCONNECTED`. Error and ephemeral messages remain truthful. Consoles narrower than 78 columns use a compact GRID7736 farewell. Ordinary terminal output and input echo default to light blue (bright cyan / ConsoleColor.Cyan); status, warning and error accents remain. The prior shell foreground is restored on exit. `--no-color`, NO_COLOR, TERM=dumb and redirected output continue to disable application color changes. Terminal verification: **75 tests passed**; no claim of visual color matching across user console themes.
+The farewell now uses the user's supplied large GRID.AI ASCII artwork and blank-line spacing. Successful persistent exits retain `Stopping GRID.`, `World saved.`, then the artwork and `WORLD SAVED // USER DISCONNECTED`. Error and ephemeral messages remain truthful. Consoles narrower than 78 columns use a compact GRID.AI farewell. Ordinary terminal output and input echo default to light blue (bright cyan / ConsoleColor.Cyan); status, warning and error accents remain. The prior shell foreground is restored on exit. `--no-color`, NO_COLOR, TERM=dumb and redirected output continue to disable application color changes. Terminal verification: **75 tests passed**; no claim of visual color matching across user console themes.
 
 ## Terminal commands and shutdown complete - 1.12 (2026-10-19)
 
-Implemented grouped `help`, display-only `clear`, `programs -active`, `programs -possible`, `programs -sleeping`, and a GRID7736 ASCII farewell. Active selects fresh Running applications; sleeping selects fresh On call or Sleeping applications; possible includes current applications plus the saved known-application catalog. `ids` works with one filter. Unknown/stale observations are never classified as active or sleeping. Bare `programs` still includes agents and other residents.
+Implemented grouped `help`, display-only `clear`, `programs -active`, `programs -possible`, `programs -sleeping`, and a GRID.AI ASCII farewell. Active selects fresh Running applications; sleeping selects fresh On call or Sleeping applications; possible includes current applications plus the saved known-application catalog. `ids` works with one filter. Unknown/stale observations are never classified as active or sleeping. Bare `programs` still includes agents and other residents.
 
 **Schema v6** adds a separate ApplicationCatalog table (key, name, source, last catalog observation UTC). The catalog is captured with the simulation snapshot and saved atomically with world/history; backup/recovery and schema validation include it. Installed/observed metadata survives restart; ordinary residents, PID lifetimes, activity and resource readings are not restored. Last observation is catalog provenance, not proof of a launch or current installation. Entries missing from fresh discovery display Historical / unknown. Existing schema-v5-only statements below describe earlier milestones.
 
@@ -385,8 +387,8 @@ New world-changing commands should use validated engine operations that serializ
 ## Verify
 
 ```powershell
-dotnet test Grid7736.slnx
-dotnet build Grid7736.slnx
+dotnet test Grid.AI.slnx
+dotnet build Grid.AI.slnx
 ```
 
 Tests cover world ownership, clock behavior, engine updates and cancellation, terminal parsing and output, extension registration, snapshots, and session shutdown. See `MD Project Files/Project_GRID_Master_Development_Checklist.md` for completion evidence and remaining work. On 2026-10-17, all 117 tests passed: 8 Core, 85 Simulation (including 48 editing cases), and 24 Terminal.

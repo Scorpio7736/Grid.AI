@@ -6,7 +6,8 @@ public static class AttachedTerminal
 {
     public static async Task<int> RunAsync(string name, bool noColor = false)
     {
-        if (!name.StartsWith("GRID7736-", StringComparison.Ordinal) || !Guid.TryParseExact(name[9..], "N", out _))
+        const string prefix = "GRID.AI-";
+        if (!name.StartsWith(prefix, StringComparison.Ordinal) || !Guid.TryParseExact(name[prefix.Length..], "N", out _))
         { Console.Error.WriteLine("Invalid GRID attachment endpoint."); return 1; }
         using var stop = new CancellationTokenSource();
         ConsoleCancelEventHandler cancel = (_, e) => { e.Cancel = true; stop.Cancel(); };
@@ -28,7 +29,7 @@ public static class AttachedTerminal
                 await WindowProtocol.WriteAsync(pipe, request, timeout.Token); return await Receive(request.Kind == "command");
             }
             var reply = await Receive();
-            if (!Console.IsOutputRedirected) Console.Title = "GRID7736 // " + reply.Mode;
+            if (!Console.IsOutputRedirected) Console.Title = "GRID.AI // " + reply.Mode;
             await output.WriteLineAsync(reply.Text);
             if (reply.Closed) return 1;
             async Task<string?> Read(ConsoleTerminalInput input, string prompt)

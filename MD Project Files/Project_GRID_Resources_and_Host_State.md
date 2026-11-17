@@ -91,8 +91,8 @@ This API is tested but is not automatically assigned to existing citizens. The t
 
 ## Verification and remaining work
 
-- `dotnet test Grid7736.slnx --no-restore --verbosity minimal`: **223 passed**, zero failed/skipped (8 Core, 106 Simulation, 56 Persistence, 53 Terminal).
-- `dotnet build Grid7736.slnx --no-restore --verbosity minimal`: zero warnings/errors.
+- `dotnet test Grid.AI.slnx --no-restore --verbosity minimal`: **223 passed**, zero failed/skipped (8 Core, 106 Simulation, 56 Persistence, 53 Terminal).
+- `dotnet build Grid.AI.slnx --no-restore --verbosity minimal`: zero warnings/errors.
 - Fifteen added cases cover deterministic fake-provider capture, defensive copying, stale/future/unknown values, invalid metric/unit bounds, provenance and duplicate requirements, weakest-category scoring, smoothing/repeated samples, requirement changes, unavailable-provider handling, cancellation, terminal formatting and monitor failure/shutdown.
 - A hidden disposable terminal smoke on Windows read real RAM values, observed CPU transition from WarmingUp to Available, reported GPU as Unsupported, sampled while paused and left the simulation at tick zero. No default saved world was opened or modified.
 

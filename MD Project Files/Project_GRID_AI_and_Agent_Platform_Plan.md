@@ -18,7 +18,7 @@ The five stages are foundation (6.16–6.19), knowledge/memory (6.20–6.21), au
 |---|---|---|
 | GRID-AI, proposed C# project Grid.AI | Local inference, model registry/lifecycle, token/context budgeting, embeddings, generic retrieval, caching, benchmarking, training and model-level safeguards | Provider contracts and local runtime adapters |
 | GRID-Agent, proposed C# project Grid.Agent | Agent identities/personas/prompts, memory ownership, collection grants, tool selection, conversations, agent-to-agent communication, planning and approvals | GRID-AI contracts and typed application capability interfaces |
-| GRID7736, existing Grid.Core / Grid.Simulation / Grid.Persistence / Grid.Terminal | World, districts, programs, task execution, persisted application state and UI | GRID-Agent services adapted to authoritative GRID host services |
+| GRID.AI, existing Grid.Core / Grid.Simulation / Grid.Persistence / Grid.Terminal | World, districts, programs, task execution, persisted application state and UI | GRID-Agent services adapted to authoritative GRID host services |
 
 The API contracts may initially run in-process in the .NET solution. A separate network service or additional server installation requires a justified design decision. Keep contracts transport-independent and make caller authentication explicit. Define ownership of each state field during migration so one authoritative writer manages each agent, conversation, memory and task record.
 
@@ -49,11 +49,11 @@ The user updated the storage target on 2026-11-04 to 128 GB decimal (128,000,000
 | 1 | 6.16 | Model abstraction layer | GRID-AI |
 | 2 | 6.17 | Model registry and lifecycle | GRID-AI |
 | 3 | 6.18 | Persona and prompt management | GRID-Agent |
-| 4 | 6.19 | Observability and evaluation foundation | Both APIs and GRID7736 |
+| 4 | 6.19 | Observability and evaluation foundation | Both APIs and GRID.AI |
 | 5 | 6.20 | RAG pipeline | GRID-AI retrieval with GRID-Agent scope ownership |
 | 6 | 6.21 | Persistent memory | GRID-Agent ownership with generic GRID-AI services |
-| 7 | 6.22 | Identity and authorization | Both APIs with GRID7736 authoritative host checks |
-| 8 | 6.23 | Controlled tool gateway | GRID-Agent routing and GRID7736 execution |
+| 7 | 6.22 | Identity and authorization | Both APIs with GRID.AI authoritative host checks |
+| 8 | 6.23 | Controlled tool gateway | GRID-Agent routing and GRID.AI execution |
 | 9 | 6.24 | Layered guardrails | Both APIs and execution adapters |
 | 10 | 6.25 | Resilience and recovery | GRID-AI and GRID-Agent |
 | 11 | 6.26 | Performance optimization | GRID-AI with scope-aware GRID-Agent requests |

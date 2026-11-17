@@ -125,7 +125,7 @@ public sealed class BundledRuntimeTests
         {
             var app=Path.Combine(root,"app");Directory.CreateDirectory(app);File.WriteAllText(Path.Combine(root,GridTransfer.Marker),"{}");
             Assert.Equal(Path.Combine(root,"runtime"),BundledAiRuntime.FindRoot(app));
-            File.Delete(Path.Combine(root,GridTransfer.Marker));File.WriteAllText(Path.Combine(root,"Grid7736.slnx"),"");
+            File.Delete(Path.Combine(root,GridTransfer.Marker));File.WriteAllText(Path.Combine(root,"Grid.AI.slnx"),"");
             Assert.Equal(Path.Combine(root,".grid-runtime"),BundledAiRuntime.FindRoot(app));
         }
         finally { Directory.Delete(root,true); }

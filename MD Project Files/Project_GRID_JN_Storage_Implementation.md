@@ -86,7 +86,7 @@ The repository includes exactly three safe sample files in TestSupport/JN-Sample
 
 ```text
 agents initialize
-jn register jntest "C:\Users\jack\source\repos\Grid7736\TestSupport\JN-SampleFiles"
+jn register jntest "C:\path\to\Grid.AI\TestSupport\JN-SampleFiles"
 jn quota
 mcp request "JN: inventory jntest; JN: duplicates jntest; JN: cleanup jntest; JN: storage status" jn-test-1
 tasks list

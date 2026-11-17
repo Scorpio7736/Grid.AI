@@ -78,7 +78,7 @@ exit /b %errorlevel%
     }
     public static string? SourceRoot(string app)
     {
-        for(var dir=new DirectoryInfo(app);dir is not null;dir=dir.Parent) if(File.Exists(Path.Combine(dir.FullName,"Grid7736.slnx"))) return dir.FullName;
+        for(var dir=new DirectoryInfo(app);dir is not null;dir=dir.Parent) if(File.Exists(Path.Combine(dir.FullName,"Grid.AI.slnx"))) return dir.FullName;
         return null;
     }
     public static IEnumerable<string> SourceFiles(string root)

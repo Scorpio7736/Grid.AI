@@ -103,6 +103,7 @@ try
     var identities = new TerminalSessionRegistry(); identities.Add(identity);
     GridSimulationEngine engine;
     IWorldPersistenceSession? persistence = null;
+    LocalSkillCatalog? skillCatalog = null;
     if (options.Ephemeral) engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis(), editAuthorizer: identities);
     else
     {
@@ -132,6 +133,7 @@ try
         }
         startupMessages.Add($"World database: {store.DatabasePath}");
         persistence = new WorldPersistenceSession(store, info, engine);
+        skillCatalog = new LocalSkillCatalog(store.DatabasePath + ".skills");
     }
     if (store is not null) engine.ConfigureMaxisRuntime(store.DatabasePath + ".maxis-artifacts", Path.Combine(BundledAiRuntime.FindRoot(AppContext.BaseDirectory) ?? AppContext.BaseDirectory, "dotnet"));
     if (store is not null) engine.ConfigureJnRuntime(store.DatabasePath, packageRoot ?? AppContext.BaseDirectory);
@@ -178,6 +180,7 @@ try
         WorkspaceChangeCommands.Register(dispatcher, engine, session, localAi);
         MaxisCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         DeviceCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
+        SkillCommands.Register(dispatcher, engine, session, skillCatalog, persistence is null ? null : token => persistence.SaveAsync(token));
         TaskCommands.Register(dispatcher, engine, session, persistence is null ? null : token => persistence.SaveAsync(token));
         var chat = ChatCommands.Register(dispatcher, engine, session, localAi, persistence is null ? null : token => persistence.SaveAsync(token), aiWarning: () => aiWarning); ResourcesCommand.Register(dispatcher, engine);
         VoiceCommands.Register(dispatcher, engine, session, chat, save: persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult());

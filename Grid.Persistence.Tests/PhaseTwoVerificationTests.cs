@@ -20,7 +20,7 @@ public sealed class PhaseTwoVerificationTests : IDisposable
         if (output.Parent?.Name == "Grid.Persistence.Tests" && output.Parent.Parent?.Name == "bin")
             return Path.Combine(output.Parent.Parent.FullName, Path.GetFileName(project), output.Name, Path.GetFileName(project) + ".dll");
         var root = new DirectoryInfo(AppContext.BaseDirectory);
-        while (root is not null && !File.Exists(Path.Combine(root.FullName, "Grid7736.slnx"))) root = root.Parent;
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "Grid.AI.slnx"))) root = root.Parent;
         if (root is null) throw new DirectoryNotFoundException("Repository root not found.");
         var configuration = new DirectoryInfo(AppContext.BaseDirectory).Parent!.Name;
         return Path.Combine(root.FullName, project, "bin", configuration, "net10.0", Path.GetFileName(project) + ".dll");

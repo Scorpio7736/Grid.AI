@@ -61,7 +61,7 @@ public sealed class GridTransfer
         var destination = Path.TrimEndingDirectorySeparator(Path.GetFullPath(requested));
         // Roots are containers. Never publish files directly into a user's drive root.
         return destination.Equals(Path.GetPathRoot(destination), StringComparison.OrdinalIgnoreCase)
-            ? Path.Combine(destination, "GRID7736") : destination;
+            ? Path.Combine(destination, "GRID.AI") : destination;
     }
     public TransferPlan Prepare(TransferRequest request)
     {
@@ -117,6 +117,7 @@ public sealed class GridTransfer
             var dir = Path.GetDirectoryName(world)!; var name = Path.GetFileName(world);
             if (Directory.Exists(world + ".jn-artifacts")) Tree(world + ".jn-artifacts", Path.Combine("data", "world.db.jn-artifacts"));
             if (Directory.Exists(world + ".maxis-artifacts")) Tree(world + ".maxis-artifacts", Path.Combine("data", "world.db.maxis-artifacts"));
+            if (Directory.Exists(world + ".skills")) Tree(world + ".skills", Path.Combine("data", "world.db.skills"));
             foreach (var file in Directory.GetFiles(dir).Where(f => Path.GetFileName(f) == name || Path.GetFileName(f).StartsWith(name + ".", StringComparison.OrdinalIgnoreCase) || Path.GetFileName(f).StartsWith(name + "-", StringComparison.OrdinalIgnoreCase)))
                 Add(file, Path.Combine("data", "world.db" + Path.GetFileName(file)[name.Length..]));
         }
@@ -276,10 +277,19 @@ public sealed class GridTransfer
         var oldExe = Path.Combine(plan.ApplicationRoot, "Grid.Terminal.exe");
         var target = Path.Combine(plan.Destination, "app", "Grid.Terminal.exe");
         if (!File.Exists(target)) return;
-        if (Environment.GetEnvironmentVariable(TerminalEnvironment.VariableName, EnvironmentVariableTarget.User)?.Equals(oldExe, StringComparison.OrdinalIgnoreCase) != true) return;
-        Environment.SetEnvironmentVariable(TerminalEnvironment.VariableName, target, EnvironmentVariableTarget.User);
-        var launcher = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GRID", "bin", "Grid7736.cmd");
-        if (File.Exists(launcher) && File.ReadAllText(launcher).StartsWith("@rem GRID7736 managed launcher\r\n") && File.ReadAllText(launcher).Contains(oldExe.Replace("%", "%%"), StringComparison.OrdinalIgnoreCase))
-            File.WriteAllText(launcher, TerminalEnvironment.LauncherScript(target));
+        var current = Environment.GetEnvironmentVariable(TerminalEnvironment.VariableName, EnvironmentVariableTarget.User);
+        var legacy = Environment.GetEnvironmentVariable(TerminalEnvironment.LegacyVariableName, EnvironmentVariableTarget.User);
+        if (current?.Equals(oldExe, StringComparison.OrdinalIgnoreCase) != true && legacy?.Equals(oldExe, StringComparison.OrdinalIgnoreCase) != true) return;
+        if (current?.Equals(oldExe, StringComparison.OrdinalIgnoreCase) == true || string.IsNullOrWhiteSpace(current) || !File.Exists(current))
+            Environment.SetEnvironmentVariable(TerminalEnvironment.VariableName, target, EnvironmentVariableTarget.User);
+        if (legacy?.Equals(oldExe, StringComparison.OrdinalIgnoreCase) == true)
+            Environment.SetEnvironmentVariable(TerminalEnvironment.LegacyVariableName, target, EnvironmentVariableTarget.User);
+        var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GRID", "bin");
+        foreach (var item in new[] { ("Grid.AI.cmd", TerminalEnvironment.ManagedMarker), ("Grid7736.cmd", TerminalEnvironment.LegacyManagedMarker) })
+        {
+            var launcher = Path.Combine(folder, item.Item1);
+            if (File.Exists(launcher) && File.ReadAllText(launcher).StartsWith(item.Item2 + "\r\n") && File.ReadAllText(launcher).Contains(oldExe.Replace("%", "%%"), StringComparison.OrdinalIgnoreCase))
+                File.WriteAllText(launcher, TerminalEnvironment.LauncherScript(target, item.Item2));
+        }
     }
 }

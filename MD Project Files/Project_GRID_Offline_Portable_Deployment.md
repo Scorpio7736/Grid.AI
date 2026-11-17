@@ -23,7 +23,7 @@ Reproducibility is scoped to deterministic compilation and a checksummed invento
 All 1,254 solution tests passed on 2026-11-12, comprising Core 14, Simulation 157, Persistence 99 and Terminal 984. Eleven added/updated boundary cases cover the revised ceiling, legacy 20 GB boundary, total mutable/staged growth, the model sub-limit, retained model versions, .NET accounting and reserve-sensitive free space for Flash and PC.
 
 ```powershell
-dotnet test Grid7736.slnx --no-restore --verbosity minimal
+dotnet test Grid.AI.slnx --no-restore --verbosity minimal
 .\Build-GridPortable.ps1 -Destination "C:\path\to\new-package"
 .\Test-GridPortable.ps1 -PackageRoot "C:\path\to\new-package" -AssistanceOnly
 ```
@@ -37,7 +37,7 @@ The isolated local test removes global program/model lookup paths. Physical seco
 
 ### Built package
 
-The sealed package is at `portable/GRID7736-6.27-20261112`. Its measured footprint before the isolated runtime test was 10,048,689,662 bytes in 16,670 files. AI runtime/model dependencies occupied 8,597,526,860 bytes. Both budgets passed. The immutable inventory SHA256 is `54FE01F41C55110487C46005A49466D4703CF5E7C940F929D7B73A65DB4DEC63`.
+The sealed package is at `portable/GRID.AI-6.27-20261112`. Its measured footprint before the isolated runtime test was 10,048,689,662 bytes in 16,670 files. AI runtime/model dependencies occupied 8,597,526,860 bytes. Both budgets passed. The immutable inventory SHA256 is `54FE01F41C55110487C46005A49466D4703CF5E7C940F929D7B73A65DB4DEC63`.
 
 The package is a fresh installation containing the source/runtime snapshot captured by the build. Start `launch.cmd` to create a world, or use the existing transfer commands to package a selected saved world.
 

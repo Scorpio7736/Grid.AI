@@ -19,7 +19,7 @@ public static class SetupInstallation
     public static string? FindClone(string start)
     {
         for (var dir = new DirectoryInfo(start); dir is not null; dir = dir.Parent)
-            if (File.Exists(Path.Combine(dir.FullName, "Grid7736.slnx")) && File.Exists(Path.Combine(dir.FullName, "Setup-GridClone.ps1")))
+            if (File.Exists(Path.Combine(dir.FullName, "Grid.AI.slnx")) && File.Exists(Path.Combine(dir.FullName, "Setup-GridClone.ps1")))
                 return dir.FullName;
         return null;
     }

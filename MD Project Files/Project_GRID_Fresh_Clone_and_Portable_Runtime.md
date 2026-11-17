@@ -43,7 +43,7 @@ From a source checkout on a provisioning machine:
 dotnet run --project Grid.Terminal -- --verify-runtime
 dotnet run --project Grid.Terminal
 .\Build-GridPortable.ps1
-.\Test-GridPortable.ps1 -PackageRoot .\portable\GRID7736
+.\Test-GridPortable.ps1 -PackageRoot .\portable\GRID.AI
 ```
 
 `Prepare-GridRuntime.ps1` accepts explicit OllamaSource, ModelCache, DotnetSource, NugetCache and Destination paths. Defaults import existing assets once. It validates Qwen blob sizes/SHA256, copies the Ollama executable/libraries and only Qwen's referenced model blobs, copies the SDK and available NuGet cache, and records model manifest hash/runtime version in assets.json. It does not download a model or overwrite an existing runtime folder. If assets are unavailable, provision them during installation and rerun with their paths. Missing dependencies fail clearly instead of relying on an undocumented global server.
@@ -51,7 +51,7 @@ dotnet run --project Grid.Terminal
 The prepared runtime is `.grid-runtime/` in a source checkout. The package layout is:
 
 ```text
-GRID7736/
+GRID.AI/
   launch.cmd
   grid-package.json
   THIRD_PARTY_RUNTIME_NOTICES.md
