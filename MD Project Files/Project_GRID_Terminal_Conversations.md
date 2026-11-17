@@ -1,4 +1,4 @@
-# Project GRID - Terminal Conversations (4.2)
+# Project Grid.AI - Terminal Conversations (4.2)
 
 **6.12 completed — 2026-10-29:** MCP can recommend/invite registered specialists with human confirmation, show participants, accept direct specialist planning requests and display recorded MCP progress/results in the same window. Membership changes start a fresh saved history segment; earlier transcripts and private context are not automatically shared. Decline, removal, scope changes, restart and attached-window workflows are tested. **1,031 automated tests and six bundled-model checks passed.** See [workflow, privacy boundary and verification](Project_GRID_MCP_Specialist_Invitations_Implementation.md). Earlier statements that invitations are planned are historical; 6.13–6.15 still block Phase 7.
 
@@ -31,7 +31,7 @@ In-flight dialogue is cancelled and cannot commit across a pause/resume generati
 
 ## Fresh-clone runtime repair — 2026-10-23
 
-Implemented tracked runtime preparation, self-contained Windows package building and isolated verification. GRID now owns a bundled AI server/model cache and uses bundled MAXIS tooling; no personal Ollama service is required. Typewriter now works with fallback replies and inline/attached chat, with explicit on/off overriding the startup preference. **648 tests passed**, plus a real portable AI/chat probe with global runtime paths removed. Full two-PC/voice/device/installer acceptance remains planned. See [setup, package layout, evidence and limits](Project_GRID_Fresh_Clone_and_Portable_Runtime.md). Earlier global-runtime instructions below are historical.
+Implemented tracked runtime preparation, self-contained Windows package building and isolated verification. Grid.AI now owns a bundled AI server/model cache and uses bundled MAXIS tooling; no personal Ollama service is required. Typewriter now works with fallback replies and inline/attached chat, with explicit on/off overriding the startup preference. **648 tests passed**, plus a real portable AI/chat probe with global runtime paths removed. Full two-PC/voice/device/installer acceptance remains planned. See [setup, package layout, evidence and limits](Project_GRID_Fresh_Clone_and_Portable_Runtime.md). Earlier global-runtime instructions below are historical.
 
 
 ## Conversation readability follow-up — implemented 2026-10-22
@@ -61,7 +61,7 @@ Restart the updated host terminal before testing; previously open windows use th
 
 ## Shared local AI — 6.1 completed (2026-10-22)
 
-GRID now has a bounded shared local inference queue and a fixed-loopback Ollama adapter using installed Qwen3 4B. The dedicated server uses port 11435 with cloud disabled; the existing personal Ollama instance is unchanged. `ai status/test` provides original-host Master Control diagnostics and sampled CPU/memory/GPU allocation. **620 tests passed**; the real C# readiness probe returned GRID LOCAL READY in 3.232 seconds. Conversations remain deterministic until 6.2; no automatic task/tool execution, model context ingestion or schema change (v20). Runtime/model packaging inside Flash GRID remains planned; this installation uses the external Ollama cache. See [setup, licensing, limits and verification](Project_GRID_Shared_Local_AI_Implementation.md). Earlier milestone/schema/count statements below remain historical.
+Grid.AI now has a bounded shared local inference queue and a fixed-loopback Ollama adapter using installed Qwen3 4B. The dedicated server uses port 11435 with cloud disabled; the existing personal Ollama instance is unchanged. `ai status/test` provides original-host Master Control diagnostics and sampled CPU/memory/GPU allocation. **620 tests passed**; the real C# readiness probe returned Grid.AI LOCAL READY in 3.232 seconds. Conversations remain deterministic until 6.2; no automatic task/tool execution, model context ingestion or schema change (v20). Runtime/model packaging inside Flash Grid.AI remains planned; this installation uses the external Ollama cache. See [setup, licensing, limits and verification](Project_GRID_Shared_Local_AI_Implementation.md). Earlier milestone/schema/count statements below remain historical.
 
 
 ## Conversation windows — 4.2E delivered (2026-10-21)
@@ -71,7 +71,7 @@ Default `connect` and `resume` now open dedicated attached conversation windows.
 
 ## VOLT and RELAY — 5.6 completed (2026-10-21)
 
-VOLT now reports existing host telemetry and supports approved normal/eco/auto pacing of GRID's automatic simulation. Unknown/unsupported GPU data is preserved; Windows resources and manual tick behavior are unchanged. RELAY provides a saved local inbox, recorded-task briefings, human acknowledgements and explicitly approved offline speech with delivery/failure receipts. Schema v19 preserves mode and inbox history without automatic playback/replay. **551 tests passed** (14 Core, 157 Simulation, 97 Persistence, 283 Terminal). See [VOLT/RELAY implementation and acceptance test](Project_GRID_VOLT_RELAY_Implementation.md) for commands and boundaries. Next: **5.7 end-to-end verification**. Earlier milestone/schema/test statements below remain historical.
+VOLT now reports existing host telemetry and supports approved normal/eco/auto pacing of Grid.AI's automatic simulation. Unknown/unsupported GPU data is preserved; Windows resources and manual tick behavior are unchanged. RELAY provides a saved local inbox, recorded-task briefings, human acknowledgements and explicitly approved offline speech with delivery/failure receipts. Schema v19 preserves mode and inbox history without automatic playback/replay. **551 tests passed** (14 Core, 157 Simulation, 97 Persistence, 283 Terminal). See [VOLT/RELAY implementation and acceptance test](Project_GRID_VOLT_RELAY_Implementation.md) for commands and boundaries. Next: **5.7 end-to-end verification**. Earlier milestone/schema/test statements below remain historical.
 
 
 ## JN storage — 5.5 completed (2026-10-21)
@@ -129,7 +129,7 @@ Implemented explicit local `context add/list/read/revoke/remove` with project na
 
 **4.2B implemented - 2026-10-20.** GRID-REQ-006 provides dashed per-command option lists with usage/examples, bundled `help -md`, opening artwork, username/password setup when not configured, clear/welcome/authority/Enter after login, confirmed logout returning to welcome, a light-blue/white/yellow/red palette, and capability-aware Tab completion. The [Markdown help reference](Project_GRID_Terminal_Help.md) is bundled and displayed offline by `help -md`.
 
-GRID-REQ-007 requires a self-contained flash-drive package with portable identity and package-relative managed storage/dependencies. GRID-REQ-008 requires all GRID runtime tasks to work offline; only explicit installs/provisioning may use the internet. Portable password authentication is implemented; host-local storage and PATH registration still do not fulfill full package portability. Earlier optional-cloud/online runtime plans are superseded by this offline requirement. Preserve saved city and world history across host changes.
+GRID-REQ-007 requires a self-contained flash-drive package with portable identity and package-relative managed storage/dependencies. GRID-REQ-008 requires all Grid.AI runtime tasks to work offline; only explicit installs/provisioning may use the internet. Portable password authentication is implemented; host-local storage and PATH registration still do not fulfill full package portability. Earlier optional-cloud/online runtime plans are superseded by this offline requirement. Preserve saved city and world history across host changes.
 
 See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) and checklist 4.2B (implemented), 8.6 and 8.7 (planned). See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
 
@@ -178,12 +178,12 @@ A Local operator human UUID is derived from the saved world UUID and a versioned
 
 ## Deterministic replies and atomic turns
 
-- `status` returns **[VERIFIED GRID STATE at tick N]** with clock state, elapsed simulation time and district/resident counts from one consistent snapshot.
-- `who are you` (optionally with a question mark) returns labeled resident identity/kind/occupation and explicitly identifies the deterministic GRID adapter.
+- `status` returns **[VERIFIED Grid.AI STATE at tick N]** with clock state, elapsed simulation time and district/resident counts from one consistent snapshot.
+- `who are you` (optionally with a question mark) returns labeled resident identity/kind/occupation and explicitly identifies the deterministic Grid.AI adapter.
 - `help` supplies **[SIMULATED DIALOGUE]** describing supported questions and current limitations.
 - Other text receives **[SIMULATED DIALOGUE]** acknowledging storage and explicitly stating that no task was executed or delegated.
 
-Matching trims surrounding whitespace and ignores case. Replies never interpret arbitrary terminal commands or claim successful host tasks. The verified label refers to GRID's current snapshot, not external facts or freshness of every host measurement.
+Matching trims surrounding whitespace and ignores case. Replies never interpret arbitrary terminal commands or claim successful host tasks. The verified label refers to Grid.AI's current snapshot, not external facts or freshness of every host measurement.
 
 Engine Talk stages both the human message and generated reply, validates the human participant and live program recipient, checks two free message slots and cancellation, then commits both under the world lock. A full transcript/cancelled turn stores neither half. Reply origin is SystemEvent; input origin is Terminal. IDs and timestamps are generated metadata, while reply content for the same query/state is deterministic. DialogueTurnStored history contains metadata, not message bodies; CoordinatorCreated records the initial resident creation.
 
