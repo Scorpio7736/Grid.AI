@@ -1,4 +1,4 @@
-# Project GRID - Phase 4.5 Communications Verification
+# Project Grid.AI - Phase 4.5 Communications Verification
 
 ## Completed - 2026-10-21
 
@@ -18,7 +18,7 @@ The seven 4.5 checklist items are covered by automated verification across the c
 
 ## Results
 
-**455 tests passed:** 14 Core, 155 Simulation, 97 Persistence, 189 Terminal. No failures or skipped tests were reported on this Windows host. Commands ran sequentially with `dotnet test <project>/<project>.csproj -c Verification --no-restore`; test databases and context files were disposable fixtures. Existing saved worlds and running GRID instances were not used by these tests.
+**455 tests passed:** 14 Core, 155 Simulation, 97 Persistence, 189 Terminal. No failures or skipped tests were reported on this Windows host. Commands ran sequentially with `dotnet test <project>/<project>.csproj -c Verification --no-restore`; test databases and context files were disposable fixtures. Existing saved worlds and running Grid.AI instances were not used by these tests.
 
 The three new tests live in `Grid.Terminal.Tests/CommunicationVerificationTests.cs`. Existing coverage lives in `Grid.Simulation.Tests/CommunicationTests.cs`, `Grid.Persistence.Tests/CommunicationPersistenceTests.cs`, `Grid.Persistence.Tests/ContextPersistenceTests.cs`, and the terminal chat/context/identity/window/voice suites. Real-provider tests are platform/installed-language conditional; their Windows speech branches were available on this host. Passing on a machine without those prerequisites does not establish real-provider operation there.
 
