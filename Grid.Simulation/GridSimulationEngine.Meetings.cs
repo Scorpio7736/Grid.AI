@@ -11,11 +11,11 @@ public sealed partial class GridSimulationEngine
     private static string MeetingRole(AgentRole role) => role switch
     {
         AgentRole.MCP => "Master Control Program, your digital helper. I coordinate reviewed work and bring back recorded results.",
-        AgentRole.MAXIS => "GRID's software engineer. I help with code, debugging, builds and tests.",
-        AgentRole.JN => "GRID's file archivist. I help with file inventories, duplicates, backups and retention.",
-        AgentRole.SENTINEL => "GRID's security analyst. I help interpret Defender, firewall and security observations.",
-        AgentRole.VOLT => "GRID's resource steward. I help interpret hardware resources and GRID pacing.",
-        _ => "GRID's messenger. I handle local notifications and recorded-result briefings."
+        AgentRole.MAXIS => "Grid.AI's software engineer. I help with code, debugging, builds and tests.",
+        AgentRole.JN => "Grid.AI's file archivist. I help with file inventories, duplicates, backups and retention.",
+        AgentRole.SENTINEL => "Grid.AI's security analyst. I help interpret Defender, firewall and security observations.",
+        AgentRole.VOLT => "Grid.AI's resource steward. I help interpret hardware resources and Grid.AI pacing.",
+        _ => "Grid.AI's messenger. I handle local notifications and recorded-result briefings."
     };
     public IReadOnlyList<Recipient> MeetingParticipants(EditSessionReference session, IReadOnlyList<string> names)
     {

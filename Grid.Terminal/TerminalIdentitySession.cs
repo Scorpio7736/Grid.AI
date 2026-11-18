@@ -94,6 +94,106 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
             return "Logged in as Master Control using local credentials.";
         }
     }
+    public string ChallengeStatus()
+    {
+        lock (gate)
+        {
+            if (!IsMaster) return "Access denied. Challenge management requires authenticated Master Control.";
+            var set = Engine.GetSnapshot().Identities.ChallengeCredentials;
+            return set is null
+                ? "Challenge credentials: disabled or not enrolled. Password login is unchanged."
+                : $"Challenge credentials: enrolled | Version: {set.Version} | Challenges: {set.Challenges.Count} | Rotation time: not stored in contract v1 | Lockout: no local self-test lockout; remote challenge sessions are not implemented.\nPrompts, responses, salts and hashes are not displayed.";
+        }
+    }
+    public string OfflineRecoveryStatus()
+    {
+        lock (gate)
+        {
+            if (!IsMaster) return "Access denied. Offline recovery management requires authenticated Master Control.";
+            var recovery = Engine.GetSnapshot().Identities.OfflineRecovery;
+            return recovery is null
+                ? "Offline owner rescue: not enrolled. No universal recovery key exists."
+                : $"Offline owner rescue: enrolled | Contract: v{recovery.Version} | Key ID: {recovery.KeyId}. Plaintext key and file path are not stored in GRID.";
+        }
+    }
+
+    public string IssueOfflineRecoveryFile(string target)
+    {
+        lock (gate)
+        {
+            if (!IsMaster || IsAttachment) return "Access denied. Use authenticated Master Control in the original host terminal.";
+            if (PersistIdentity is null) return "Offline recovery enrollment requires a persistent world.";
+            var created = OfflineRecoveryKeyFile.Create(target, Engine.GetSnapshot().WorldId);
+            OfflineRecoveryCredential? previous = null;
+            var changed = false;
+            try
+            {
+                previous = Engine.SetOfflineRecoveryCredential(Reference, created.Verifier); changed = true;
+                PersistIdentity();
+                return $"Offline recovery file created: {created.Path}\nKey ID: {created.Document.KeyId}\n" +
+                    "Store this file separately from GRID. It is required for offline owner rescue. Rotation invalidates the prior file; there is no vendor or universal recovery key.";
+            }
+            catch (Exception original)
+            {
+                var rollbackPersisted = !changed;
+                if (changed)
+                {
+                    Engine.RestoreOfflineRecoveryCredential(Reference, created.Verifier, previous);
+                    try
+                    {
+                        PersistIdentity();
+                        rollbackPersisted = true;
+                    }
+                    catch
+                    {
+                        // The primary save may have committed before a backup refresh failed. In that
+                        // uncertain state the new key file is the only possible recovery material.
+                    }
+                }
+                if (rollbackPersisted)
+                {
+                    try { File.Delete(created.Path); } catch { }
+                    throw;
+                }
+                throw new IOException($"Offline recovery enrollment did not finish cleanly. The recovery file was retained at {created.Path} because the primary world may contain its verifier. Stop GRID and verify the world before changing or deleting that file.", original);
+            }
+        }
+    }
+    public IReadOnlyList<string> ChallengePrompts()
+    {
+        lock (gate)
+        {
+            if (!IsMaster) throw new UnauthorizedAccessException("Challenge self-test requires authenticated Master Control.");
+            return Engine.GetSnapshot().Identities.ChallengeCredentials?.Challenges.Select(c => c.Prompt).ToArray() ?? [];
+        }
+    }
+    public string TestChallenges(IReadOnlyList<string> responses)
+    {
+        lock (gate)
+        {
+            if (!IsMaster) return "Access denied. Challenge self-test requires authenticated Master Control.";
+            var set = Engine.GetSnapshot().Identities.ChallengeCredentials;
+            var passed = set is not null && responses is not null && responses.Count == set.Challenges.Count;
+            if (set is not null && responses is not null)
+                for (var index = 0; index < set.Challenges.Count; index++)
+                    passed &= index < responses.Count && set.Challenges[index].Verify(responses[index]);
+            Engine.AuditIdentity("ChallengeSelfTest", null, generation, passed);
+            return passed
+                ? "Challenge self-test passed. This verifies the enrolled responses only; it does not log in, approve work, recover a password, or create biometric identity."
+                : "Challenge self-test failed. No individual response result is disclosed; credentials and authority are unchanged.";
+        }
+    }
+    public string DisableChallenges()
+    {
+        lock (gate)
+        {
+            if (!IsMaster) return "Access denied. Disabling challenges requires authenticated Master Control.";
+            if (!Engine.DisableLocalChallenges()) return "Challenge credentials are already disabled or not enrolled. Password login is unchanged.";
+            PersistIdentity?.Invoke();
+            Engine.AuditIdentity("ChallengeDisable", null, generation, true);
+            return "Challenge credentials disabled. Password login is retained. Remote challenge verification remains unavailable until a complete new set is enrolled through credentials.";
+        }
+    }
     public Action? PersistIdentity { get; set; }
     private Guid? agent;
     public event Action? Changed;

@@ -29,7 +29,7 @@ All 1,230 tests passed, comprising Core 14, Simulation 157, Persistence 99 and T
 The full run also includes actual killed-writer SQLite recovery, interrupted task restoration, failed-save approval resets, exact file recovery, timeout/cancellation, partial-output rejection and receipt preservation. Existing test fixtures isolate temporary files and synthetic requests from user data.
 
 ```text
-dotnet test Grid7736.slnx --no-restore --verbosity minimal
+dotnet test Grid.AI.slnx --no-restore --verbosity minimal
 ```
 
 Physical model exhaustion and fallback between specialist checkpoints await installed candidates and device acceptance. Baseline HTTP failure injection verifies the implemented recovery path.

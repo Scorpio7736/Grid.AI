@@ -60,9 +60,9 @@ public sealed class CommandFollowupTests
         Assert.Equal(fails ? 1 : 0, await host.RunAsync());
         Assert.Equal(1, persistence.Saves);
         var text = output.ToString();
-        Assert.Contains("GRID7736", text);
+        Assert.Contains("GRID.AI", text);
         if (fails) { Assert.Contains("SHUTDOWN ERROR", text); Assert.DoesNotContain("WORLD SAVED", text); }
-        else Assert.True(text.IndexOf("World saved.", StringComparison.Ordinal) < text.IndexOf("GRID7736", StringComparison.Ordinal));
+        else Assert.True(text.IndexOf("World saved.", StringComparison.Ordinal) < text.LastIndexOf("GRID.AI", StringComparison.Ordinal));
         Assert.DoesNotContain("Press any key", text);
         Assert.DoesNotContain("______", TerminalPresentation.Farewell(true, false, 30));
     }

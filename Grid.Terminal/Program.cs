@@ -5,6 +5,13 @@ using Grid.Terminal;
 using Grid.Simulation.Resources;
 using Grid.Simulation.Applications;
 
+if (args.Length == 2 && args[0] == "--operator-rescue")
+{
+    var rescueCommands = new CommandDispatcher();
+    var rescueInput = new ConsoleTerminalInput(rescueCommands, TerminalTheme.Enabled(noColor: false));
+    var rescueOutput = new TerminalOutput(Console.Out, TerminalTheme.Enabled(noColor: false));
+    return await OfflineOwnerRescue.RunAsync(args[1], rescueInput, rescueOutput);
+}
 if (args.Length > 0 && args[0] is "--setup" or "--doctor") return await GuidedSetup.RunAsync(args, Console.In, Console.Out);
 if (args.Length > 0 && args[0].StartsWith("--dataset-", StringComparison.Ordinal)) return TrainingDatasetCommands.Run(args);
 if (args.Length > 0 && args[0].StartsWith("--finetune-", StringComparison.Ordinal)) return FineTuningCommands.Run(args);
@@ -53,6 +60,18 @@ if (args.SequenceEqual(new[] { "--verify-runtime" })) return await RuntimeVerifi
 if ((args.Length == 2 || args.Length == 3 && args[2] == "--no-color") && args[0] == "--attach") return await AttachedTerminal.RunAsync(args[1], args.Length == 3);
 if (args.SequenceEqual(new[] { "--finish-move" })) return await GridTransfer.FinishMoveAsync(AppContext.BaseDirectory);
 var packageRoot = GridTransfer.PackageRoot(AppContext.BaseDirectory);
+if (packageRoot is null && !await CloneRuntimeBootstrap.EnsureAsync(AppContext.BaseDirectory, Console.In, Console.Out,
+    !Console.IsInputRedirected, CancellationToken.None)) return 2;
+if (packageRoot is not null && PortableAssets.RequiresManifest(packageRoot))
+{
+    try { PortableAssets.Validate(packageRoot, hashes: false); }
+    catch (Exception e) when (e is IOException or InvalidDataException or UnauthorizedAccessException or System.Text.Json.JsonException)
+    {
+        Console.Error.WriteLine("Grid.AI package verification failed: " + e.Message);
+        Console.Error.WriteLine("Grid.AI was not started. Restore or recopy the complete package; the saved world was not opened.");
+        return 2;
+    }
+}
 if (packageRoot is not null && File.Exists(Path.Combine(packageRoot, "transfer-status.txt")) &&
     File.ReadAllText(Path.Combine(packageRoot, "transfer-status.txt")).Contains("pending", StringComparison.OrdinalIgnoreCase))
 { Console.Error.WriteLine("Move cleanup is pending. Check transfer-status.txt before launching."); return 1; }
@@ -127,6 +146,7 @@ try
     if (store is not null) engine.ConfigureMaxisRuntime(store.DatabasePath + ".maxis-artifacts", Path.Combine(BundledAiRuntime.FindRoot(AppContext.BaseDirectory) ?? AppContext.BaseDirectory, "dotnet"));
     if (store is not null) engine.ConfigureJnRuntime(store.DatabasePath, packageRoot ?? AppContext.BaseDirectory);
     if (store is not null) engine.ConfigureRelayVoice(new LocalRelayVoice());
+    var emergency = new EmergencyControlState();
     identity.Attach(engine);
     if (persistence is not null) identity.PersistIdentity = () => persistence.SaveAsync().GetAwaiter().GetResult();
     void StartGrid(TerminalIdentitySession session)
@@ -161,6 +181,7 @@ try
     CommandDispatcher CreateCommands(TerminalIdentitySession session)
     {
         var dispatcher = DefaultCommands.Create(engine);
+        dispatcher.EmergencySafeMode = () => emergency.SafeMode;
         if (!session.IsAttachment) LocalAiCommands.Register(dispatcher, session, localAi, aiBackend, () => "Startup: "+aiRuntime.Status, () => engine.TasksFor(session.Reference));
         CityCommand.Register(dispatcher, engine); BehaviorCommand.Register(dispatcher, engine);
         WorkplaceCommands.Register(dispatcher, engine); SocialCommand.Register(dispatcher, engine);
@@ -199,7 +220,13 @@ try
         showPrompt: terminalInput.Interactive, interactiveConfirmation: terminalInput.Interactive,
         liveTerminal: new ConsoleLiveTerminal(options.NoColor), persistence: persistence,
         telemetry: applications is null ? telemetry : new CombinedHostMonitor(telemetry, applications),
-        clearScreen: ClearScreen, sessionUi: sessionUi, stopAttachments: windows.StopAsync, transfer: store is null ? null : new GridTransfer(AppContext.BaseDirectory, store.DatabasePath)).RunAsync(shutdown.Token);
+        clearScreen: ClearScreen, sessionUi: sessionUi, stopAttachments: windows.StopAsync, transfer: store is null ? null : new GridTransfer(AppContext.BaseDirectory, store.DatabasePath),
+        lockedRecovery: new LockedRecoveryCommands(engine, identity, store, terminalInput.Interactive),
+        agentBreakGlass: new AgentBreakGlassCommands(engine, identity, terminalInput.Interactive,
+            persistence is null ? null : token => persistence.SaveAsync(token)),
+        masterBreakGlass: new MasterBreakGlassCommands(engine, identity, identities, store, persistence as IWorldRecoverySession,
+            emergency, terminalInput.Interactive, windows.StopAsync,
+            persistence is null ? null : token => persistence.SaveAsync(token))).RunAsync(shutdown.Token);
 }
 catch (OperationCanceledException) when (shutdown.IsCancellationRequested) { return 0; }
 catch (Exception exception)

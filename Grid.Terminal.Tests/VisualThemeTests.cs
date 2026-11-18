@@ -17,7 +17,7 @@ public sealed class VisualThemeTests
     {
         using var buffer = new StringWriter();
         var output = new TerminalOutput(buffer, true, new(TerminalColorMode.TrueColor));
-        const string text = "PROJECT GRID\nSIMULATION CONTROL\nCOMMAND | OPTIONS | DESCRIPTION\ngrid | -start | Resume simulation\nError: failure\nApplied file\nRisk: HIGH\nNotice\r\n";
+        const string text = "GRID.AI\nSIMULATION CONTROL\nCOMMAND | OPTIONS | DESCRIPTION\ngrid | -start | Resume simulation\nError: failure\nApplied file\nRisk: HIGH\nNotice\r\n";
         await output.WriteAsync(text);
         var rendered = buffer.ToString();
         Assert.Equal(text, TerminalLayout.Plain(rendered));

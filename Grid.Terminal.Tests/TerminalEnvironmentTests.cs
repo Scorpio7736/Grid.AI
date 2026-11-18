@@ -32,7 +32,8 @@ public sealed class TerminalEnvironmentTests
         var message = TerminalEnvironment.Ensure(target, () => user, value => user = value,
             value => process = value, path => path == target);
         Assert.Equal(target, user); Assert.Equal(target, process);
-        Assert.Contains("& $env:Grid7736", message);
+        Assert.Contains("& $env:GridAI", message);
+        Assert.StartsWith("@rem Grid.AI managed launcher", TerminalEnvironment.LauncherScript(target));
     }
 
     [Fact]

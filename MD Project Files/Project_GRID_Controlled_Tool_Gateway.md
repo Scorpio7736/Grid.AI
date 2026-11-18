@@ -46,7 +46,7 @@ On 2026-11-07, all 1,202 solution tests passed, comprising Core 14, Simulation 1
 The `--verify-generated-artifacts` diagnostic generated representative three-page DOCX/PDF reports in a temporary directory. Microsoft Word opened the DOCX and exported it to PDF for review. Poppler rendered both native PDF and Word-exported PDF. All six page images were inspected for complete text, wrapping, margins and clipping. Word was used only for this development check. Report generation itself uses bundled .NET/PdfPig components. Poppler reported missing fallback Symbol/ArialUnicode fonts during rendering, while the Courier sample text rendered legibly on all pages.
 
 ```text
-dotnet test Grid7736.slnx --no-restore --verbosity minimal
+dotnet test Grid.AI.slnx --no-restore --verbosity minimal
 Grid.Terminal.exe --verify-generated-artifacts
 ```
 

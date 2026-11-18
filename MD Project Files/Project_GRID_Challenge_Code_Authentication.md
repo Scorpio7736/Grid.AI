@@ -2,7 +2,7 @@
 
 ## Status and immediate goal
 
-**Local enrollment foundation implemented — 2026-11-17. Remote challenge sessions and voiceprint verification remain planned.**
+**Local enrollment, authenticated management and trusted-host challenge-session protocol implemented — 2026-11-17. Protected remote-client input, call UI integration and voiceprint verification remain planned.**
 
 Add three challenge prompt/response pairs to initial local-credential setup and authenticated credential maintenance. Their first use is a bounded knowledge-factor check when the user is speaking with GRID through an authenticated remote call. This extends the existing username/password identity; it does not replace the password, device pairing or session authorization.
 
@@ -62,9 +62,9 @@ Until a client can provide a protected secret-input path, verbal challenges must
 - Audit only content-free lifecycle events: enrollment/rotation, session issued, passed/failed/expired/locked/cancelled, endpoint, purpose and policy version.
 - Provide immediate authenticated rotation and a local Master Control disable switch. Suspected disclosure requires replacing all three responses.
 
-## Planned controls
+## Authenticated local controls
 
-Names are provisional and secret collection remains interactive:
+The following Master Control commands are implemented. Secret collection remains interactive and masked:
 
 ```text
 credentials challenges status
@@ -74,14 +74,14 @@ credentials challenges disable
 credentials challenges test
 ```
 
-The status command shows enrollment/version/last rotation and lockout status, never hashes or responses. Prompts appear only inside the authenticated management or verification flow. Setup and rotation require masked interactive input; redirected arguments and command history are refused.
+`status` shows enrollment, version, count and truthful v1 limitations, never prompts, hashes or responses. `setup` and `rotate` invoke the complete atomic username/password/challenge flow. `test` prompts for all three responses, checks them together and reports only passed/failed; it does not log in or grant authority. `disable` requires interactive y/N confirmation, removes only the challenge set and retains password login. Redirected test/disable and secrets in arguments are refused. Re-enrollment requires a complete new set through setup/rotation.
 
 ## Implementation stages
 
 1. Define and test the challenge credential contract, normalization, independent hashing, validation and atomic persistence migration.
 2. Extend new-user username/password setup to require all three challenges; add authenticated setup/rotation for existing users.
 3. Add a local interactive self-test that proves responses never appear in output, audit, save diagnostics or inference routes.
-4. Implement short-lived challenge sessions and purpose-bound claims at the trusted host boundary.
+4. **Implemented:** short-lived challenge sessions and purpose-bound claims at the trusted host boundary.
 5. Integrate protected typed entry with the paired remote client, then evaluate spoken capture with transcription suppression.
 6. Connect the result to remote-call identity display without granting command approval or account recovery.
 7. Separately evaluate opt-in voiceprint authentication for consent, local template storage, false accept/reject rates, replay/deepfake resistance, illness/noise and accessibility. Do not call challenge codes a voice signature.
@@ -114,10 +114,20 @@ Implemented normalization collapses surrounding/repeated whitespace, uses Unicod
 
 Verification passed **1,441 solution tests**: 14 Core, 157 Simulation, 99 Persistence and 1,171 Terminal, zero failed/skipped. Coverage includes atomic mismatch refusal, distinct salts, normalization, wrong responses, masked setup output, content-free audit, persistence, backup recovery and v23/v24 schema upgrades. The full run used isolated `TestResults/challenge-codes` build artifacts.
 
-Not implemented: `credentials challenges ...` subcommands, separate disable/self-test controls, remote challenge sessions, durable challenge rate limits, paired-client protected input, transcription suppression, call-bound claims, password recovery or biometric voiceprints. Current challenges are enrolled and rotated with the full `credentials` flow but are not accepted as login or action approval.
+Not implemented: paired-client protected secret entry, transcription-suppressed speech capture, remote call UI/gateway integration, password recovery or biometric voiceprints. Local challenges and remote claims are not accepted as login or action approval.
 
 ## Setup/login retry repair — 2026-11-17
 
 Credential setup now displays the complete 1..64-character prompt-and-response policy before collection. If password confirmation or final challenge validation fails, GRID states that no account was created or changed and asks the user to retry setup or remain logged out. It no longer silently returns to the command prompt in a state where the next `login` appears to create another account. After a successful atomic save, `login` follows the username/password path and never re-enters setup.
 
-Regression coverage reproduces a rejected empty challenge response, completes a controlled retry, then verifies ordinary password login. Boundary coverage accepts exact 1- and 64-character prompts/responses and rejects 0 and 65 characters. Focused verification passed 21 terminal UX tests and three persistence tests; the full solution passed **1,443 tests** (14 Core, 157 Simulation, 99 Persistence and 1,173 Terminal), with zero failures/skips.
+Regression coverage reproduces a rejected empty challenge response, completes a controlled retry, then verifies ordinary password login. Boundary coverage accepts exact 1- and 64-character prompts/responses and rejects 0 and 65 characters.
+
+Authenticated management completion adds content-free status, aggregate masked self-test, confirmed disable and setup/rotate aliases. Wrong-answer output does not identify the failed question; secrets do not appear in output or audit. Disable persists while the existing password remains valid. Redirected management is refused. Focused verification passed **23 terminal UX tests** and **4 identity-persistence tests**; the full solution passed **1,446 tests** (14 Core, 157 Simulation, 100 Persistence and 1,175 Terminal), with zero failures/skips.
+
+## Trusted-host session protocol completion — 2026-11-17
+
+Schema v26 persists bounded account and endpoint failure/cooldown state while active endpoint grants, attempts and claims remain memory-only and therefore die on host restart. An endpoint must present an opaque grant issued through an authenticated Master Control edit-authority lease; a caller cannot start a challenge by merely naming a phone. Grants are bound to the current host instance, saved world, challenge-authority generation and expiry, and can be revoked locally.
+
+Each attempt randomly selects two distinct enrolled challenges, exposes one prompt at a time, expires after two minutes and is bound to the credential user, host/world generation, granted endpoint, contact/call ID and exact purpose. Wrong, reordered, replayed, cross-call and expired submissions fail closed. Three failures within fifteen minutes lock both account and endpoint; repeated lockouts increase the cooldown up to one hour, and this bounded state survives database save/reload. A successful two-response attempt creates only a five-minute opaque claim. Claim validation requires the exact original binding and does not log in, pair a device, approve work or widen authority. Credential rotation/disable invalidates grants, attempts, claims and old cooldowns; host restart invalidates all non-durable authority.
+
+Focused verification passed **5 challenge-session tests** and **36 identity/schema persistence tests**. The full solution passed **1,452 tests** (14 Core, 162 Simulation, 101 Persistence and 1,175 Terminal), with zero failures/skips. Protected client input and transcription suppression remain required before spoken remote challenges can be enabled.

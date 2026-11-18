@@ -12,7 +12,15 @@ foreach($path in @($root,(Join-Path $root '.grid-app'),(Join-Path $root '.grid-d
         $current=[IO.Path]::GetDirectoryName($current)
     }
 }
-if(!(Test-Path -LiteralPath (Join-Path $root '.grid-app\clone-ready.json'))) { throw 'Run Setup-GridClone.ps1 first; a successful model conversation check is required.' }
+if(!(Test-Path -LiteralPath (Join-Path $root '.grid-app\clone-ready.json'))) {
+    Write-Output 'GRID.AI // FIRST-RUN LOCAL AI SETUP'
+    Write-Output 'Grid.AI requires its private offline AI runtime and model (about 6 GB for the current baseline).'
+    if([Console]::IsInputRedirected) { throw 'Interactive approval is required. Run .\Setup-GridClone.ps1 -Download, then .\Start-GridClone.ps1. Grid.AI was not started and no world was opened.' }
+    $answer=Read-Host 'Download, verify, build and test the required local AI assets now? [Y/n]'
+    if($answer.Trim().Equals('n',[StringComparison]::OrdinalIgnoreCase)) { throw 'Setup cancelled. Grid.AI was not started and no world was opened.' }
+    & (Join-Path $root 'Setup-GridClone.ps1') -Download
+    if($LASTEXITCODE -ne 0) { throw 'Grid.AI setup failed. Staged files were retained; no world was opened.' }
+}
 $readiness=Get-Content -LiteralPath (Join-Path $root '.grid-app\clone-ready.json') -Raw | ConvertFrom-Json
 if($readiness.version -ne 1 -or $readiness.ready -ne $true) { throw 'Clone setup is incomplete. Rerun Setup-GridClone.ps1; no world opened.' }
 $before=[Environment]::GetEnvironmentVariable('DOTNET_ROOT_X64')

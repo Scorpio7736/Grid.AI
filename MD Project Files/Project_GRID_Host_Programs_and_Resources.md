@@ -6,7 +6,7 @@
 
 GRID-REQ-007 requires a self-contained flash-drive package with portable identity and package-relative managed storage/dependencies. GRID-REQ-008 requires all GRID runtime tasks to work offline; only explicit installs/provisioning may use the internet. Portable password authentication is implemented; host-local storage and PATH registration still do not fulfill full package portability. Earlier optional-cloud/online runtime plans are superseded by this offline requirement. Preserve saved city and world history across host changes.
 
-See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) and checklist 4.2B (implemented), 8.6 and 8.7 (planned). See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
+See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md), checklist 4.2B (implemented), active Phase 7 and future plans B.6–B.7. See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
 
 ## Social civilization completion - 3.3 (2026-10-20)
 

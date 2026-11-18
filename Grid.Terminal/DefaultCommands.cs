@@ -8,6 +8,7 @@ public static class DefaultCommands
     public static CommandDispatcher Create(GridSimulationEngine engine)
     {
         ArgumentNullException.ThrowIfNull(engine);
+        DevelopmentBreakGlassRegistry.Validate();
         var dispatcher = new CommandDispatcher();
         void Add(string name, string description, Func<CommandResult> execute) =>
             dispatcher.Register(new(name, name, description, args =>

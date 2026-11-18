@@ -2,7 +2,9 @@
 
 # Project GRID — Master Development Checklist
 
-**Terminal-first roadmap placement correction — 2026-11-13.** Added assistant capability milestones **6.32–6.39 at the end of Phase 6**, after 6.31 and before Phase 7. Prioritize terminal-based action routing, local device integration, setup, skills, optional connections, scheduling and permission transparency (6.32–6.38). New GUI work (6.39) is optional and non-blocking. Preserve 6.31's existing acceptance requirements; complete the new core milestones before beginning Phase 7.
+**Cross-platform roadmap rebased — 2026-11-17.** Phase 7 is now Grid.Platform cross-platform compatibility, with a dedicated Android ARM64 host/storage adapter as the first target and Linux following the shared contracts. All former Phase 7 City and Phase 8 Integration items are preserved under [Backlog and Future Plans](#backlog-and-future-plans). This is a planning change, not an implementation claim. [Authoritative platform plan](Project_GRID_Cross_Platform_and_Android_Plan.md).
+
+**Terminal-first roadmap placement correction — 2026-11-13; sequencing amended 2026-11-17.** Assistant capability milestones 6.32–6.38 remain at the end of Phase 6. Prioritize terminal-based action routing, local device integration, setup, skills, optional connections, scheduling and permission transparency. The former 6.39 GUI work is optional and has moved to Future Plan C so Grid.Platform is implemented first. Preserve 6.31's existing acceptance requirements; complete the required core milestones before beginning Phase 7.
 
 **Model-handling planning update — 2026-11-04.** Added the supplied seven model candidates, hardware-aware Lite/Standard/Performance eligibility, cold/warm benchmarks, bounded fallback, deterministic delegation, validated artifact generation and offline manifests. Installed models have a 75 GB decimal sub-limit within the shared 128 GB Flash/PC target. All related acceptance remains required before Phase 7. [Model selection and handling plan](Project_GRID_Model_Selection_and_Handling_Plan.md).
 
@@ -72,8 +74,9 @@ Reviewed against the implemented modules, completion notes, source authorization
 | Phase 3 - First Programs | 3.1-3.4 implemented and verified |
 | Phase 4 - Communications | 4.1-4.5 and 4.2A-D/4.3A implemented for documented scope; 4.2D edition/disaster acceptance and physical voice checks remain outstanding |
 | Phase 5 - System Agents | 5.1 registry/task broker/queue complete for demonstration adapters; 5.2 coordination and real specialist execution remain planned |
-| Phases 6-7 - Intelligence and City | Planned; deterministic dialogue/context intake are not LLM analysis or a 3D viewer |
-| Phase 8 - Integration | Existing world loading, no offline catch-up, and world backup/recovery are complete foundations; full product integration/portable/offline release acceptance remains planned |
+| Phase 6 - Intelligence and terminal assistant | Partially implemented; remaining acceptance stays active before platform extraction |
+| Phase 7 - Grid.Platform | Planned next: preserve Windows, add Linux adapters and prioritize a dedicated Android ARM64 host/removable-storage flow |
+| Backlog - City and integration hardening | Former Phases 7-8 preserved as future plans; no longer the active next phase |
 
 **Reconciled completed entries:** 1.10 session visibility, 1.13 authenticated NGE, 2.4 application resource policy/no artificial drain, Phase 5 human-versus-agent authority separation, 8.1 saved-city loading and no offline catch-up, 8.3 world backup/recovery, and the post-Genesis login/editing and completion-note recommendations. Evidence includes `TerminalHost` live/deletion rechecks, `TerminalIdentitySession` capabilities, `ApplicationResidentTests.ConditionRequiresSourcedBudgetsAndAppEnergyDoesNotDrainOnTicks`, city persistence/recovery tests, and the 4.2A/4.5 verification notes.
 
@@ -95,7 +98,7 @@ Failures now report a bounded stage, exception type and HRESULT rather than hidi
 
 GRID-REQ-007 requires a self-contained flash-drive package with portable identity and package-relative managed storage/dependencies. GRID-REQ-008 requires all GRID runtime tasks to work offline; only explicit installs/provisioning may use the internet. Portable password authentication is implemented; host-local storage and PATH registration still do not fulfill full package portability. Earlier optional-cloud/online runtime plans are superseded by this offline requirement. Preserve saved city and world history across host changes.
 
-See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) and checklist 4.2B (implemented), 8.6 and 8.7 (planned). See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
+See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md), checklist 4.2B (implemented), active Phase 7, and future plans B.6–B.7. See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
 
 ## Program behavior completion - 2026-10-19
 
@@ -243,7 +246,7 @@ See [Current implementation and verification](Project_GRID_Current_Implementatio
 - `GridDistrict.ProgramIds` is read-only to callers, and `GridProgram.CurrentDistrictId` has an internal setter to prevent external placement changes.
 - `GridWorldFactory.CreateGenesis(seed)` creates five districts with four citizens each. Equal seeds reproduce IDs and placement in independent world instances.
 - Added `Grid.Core.Tests` to the solution. Eight automated tests cover initialization, seeded reproducibility, transfers and population totals, invalid requests, duplicate IDs, world ownership, and read-only membership access.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all eight tests. `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false` passed all eight tests. `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
 
 At section 1.4 completion, the terminal still used its original district demonstration; factory integration is now complete in section 1.7.
 
@@ -265,7 +268,7 @@ At section 1.4 completion, the terminal still used its original district demonst
 - Time advances only through explicit advancement calls; there are no Windows clock reads, background timers, or offline catch-up. Callers must use a single simulation thread.
 - Elapsed time uses exact TimeSpan ticks. Overflow is checked before either counter changes.
 - Added `Grid.Simulation.Tests` to the solution. All 13 clock test cases passed, covering defaults, invalid durations, exact fixed steps, repeated start/pause, resume, manual steps, and overflow.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 21 tests (13 simulation clock and eight World Management). `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false` passed all 21 tests (13 simulation clock and eight World Management). `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
 
 Automatic scheduling and world updates are now implemented in section 1.6; terminal clock commands are now implemented in section 1.7.
 
@@ -289,8 +292,8 @@ Automatic scheduling and world updates are now implemented in section 1.6; termi
 - `RunAsync(cancellationToken)` provides cancellable scheduling with at most one fixed simulation step per completed delay, without missed-time catch-up. Pause/resume invalidates a pending wait. Cancellation completes normally, pauses the clock, and releases scheduler ownership; other failures propagate after the same cleanup. Callers await the run task before releasing the world.
 - Duplicate schedulers and competing external `Tick()` calls during scheduling are rejected. Automatic scheduling accepts durations from 1 ms through 4294967294 ms; manual advancement supports the clock's wider positive TimeSpan range.
 - Scheduling uses an injectable `TimeProvider`; the engine has no AI, renderer, or host telemetry dependency. Tests control timer completion directly rather than sleeping.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 45 tests: eight World Management, 13 clock, and 24 engine cases. Coverage includes energy rules and bounds, genuine events, deterministic results, membership preservation, pause/resume, manual stepping, cancellation, scheduler exclusivity, invalid-state recovery, and overflow.
-- `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false` passed all 45 tests: eight World Management, 13 clock, and 24 engine cases. Coverage includes energy rules and bounds, genuine events, deterministic results, membership preservation, pause/resume, manual stepping, cancellation, scheduler exclusivity, invalid-state recovery, and overflow.
+- `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors.
 
 Terminal command integration is now complete in section 1.7. Persistence and durable event history remain in Phase 2.
 
@@ -315,8 +318,8 @@ Terminal command integration is now complete in section 1.7. Persistence and dur
 - Start enables the scheduler; pause stops automatic advancement; step/tick advances once while paused. Output reports actual simulation state and committed events. Idle citizens remain Idle rather than receiving fabricated activity.
 - Exit, EOF, and Ctrl+C cancel and await scheduler shutdown. Scheduler failures are reported with a nonzero process result. Console reads run off the control thread so blocked input cannot prevent shutdown; a pending background read can remain until input arrives or the process exits.
 - Added `Grid.Terminal.Tests` to the solution and a README with run instructions, command examples, lifecycle behavior, and the command extension pattern.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 69 tests (eight World Management, 37 clock/engine, and 24 terminal cases). Terminal coverage includes parsing, actual output, extension registration/help, snapshots, invalid input, exit, EOF, blocked-input cancellation, and scheduler failure.
-- `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors. Executable smoke checks verified help, status, district/program inspection, two manual steps, invalid-command recovery, and clean exit. A live redirected process advanced automatically to tick 2, paused, reported its real state, and exited successfully.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false` passed all 69 tests (eight World Management, 37 clock/engine, and 24 terminal cases). Terminal coverage includes parsing, actual output, extension registration/help, snapshots, invalid input, exit, EOF, blocked-input cancellation, and scheduler failure.
+- `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors. Executable smoke checks verified help, status, district/program inspection, two manual steps, invalid-command recovery, and clean exit. A live redirected process advanced automatically to tick 2, paused, reported its real state, and exited successfully.
 
 World state remains in memory; persistence is planned for Phase 2. The extension point is an in-process command registry, not a dynamic plugin loader. Genesis release is marked by the annotated v0.1.0-genesis tag.
 
@@ -417,8 +420,8 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - Added an injectable authorization lease contract with default-deny behavior. Trusted providers must verify authentication, current programs.edit capability and world scope, and hold authorization validity through commit. The engine also checks Master Control identity and session/world bindings. The test provider is compiled only into test projects.
 - Preview/apply check current authorization separately. Revoked sessions, agent sessions, changed session generations, foreign previews, replayed consumed previews, stale revisions and invalid values do not commit changes. Cancellation is honored before commit, never midway through a mutation.
 - Receipts carry request/operator/session identity, revisions, old/new values, simulation tick/time and UTC time for later audit integration; these receipts are not a durable audit log or live-event buffer.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed all 117 tests: eight World Management, 85 simulation (including 48 new editing cases), and 24 terminal cases. Tests cover validation, atomicity, no-ops, one-time behavior, membership, authorization, revocation/commit ordering, preview isolation, concurrency with ticks, and unchanged terminal behavior.
-- `dotnet build Grid7736.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors. The executable status/step/inspect/exit smoke check also passed.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false` passed all 117 tests: eight World Management, 85 simulation (including 48 new editing cases), and 24 terminal cases. Tests cover validation, atomicity, no-ops, one-time behavior, membership, authorization, revocation/commit ordering, preview isolation, concurrency with ticks, and unchanged terminal behavior.
+- `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` succeeded with zero warnings and zero errors. The executable status/step/inspect/exit smoke check also passed.
 - Login, credential verification, a production authenticated-session provider, terminal edit commands, persistence, and durable audit remain deferred. Existing Genesis commands keep their current behavior; newly added administrative APIs deny access by default.
 
 **Deferred implementation:** Actual login and credential handling, identity switching UI, saved roles, and durable audit history remain in the planned persistence/session/system-agent work. Sections 4.2A and 5.1 describe that later integration; do not mark those capabilities complete merely because these contracts or APIs exist.
@@ -450,7 +453,7 @@ World state remains in memory; persistence is planned for Phase 2. The extension
 - Added an atomic live snapshot and a bounded 256-event buffer (configurable 1-10,000), stable per-engine sequence IDs and explicit eviction count. Records actual tick/energy changes, clock transitions, direct world transfers and applied edit summaries. No-op/failed edits do not fabricate changes.
 - Shows real current statuses, energy, occupation, district and simulation time; Idle does not imply autonomous work. Prior LastTick and edit receipt contracts remain intact. Recent events are not durable history.
 - Redraw fits the console, updates only changed rows, restores the cursor and handles resize, cancellation and scheduler failure. Redirected/TERM=dumb/unsupported or too-small surfaces show one snapshot and return to commands. Text is sanitized to single-cell ASCII and clipping is marked.
-- Verification: `dotnet test Grid7736.slnx --no-restore --verbosity minimal -p:NuGetAudit=false` passed 140 tests (8 Core, 93 Simulation, 39 Terminal), zero failed/skipped. Added 23 event and live-view cases. Solution build succeeded with zero warnings/errors.
+- Verification: `dotnet test Grid.AI.slnx --no-restore --verbosity minimal -p:NuGetAudit=false` passed 140 tests (8 Core, 93 Simulation, 39 Terminal), zero failed/skipped. Added 23 event and live-view cases. Solution build succeeded with zero warnings/errors.
 - Interactive smoke checks verified running ticks, Q return, paused view and exit; TERM=dumb fallback also passed. Resize/cancellation and scheduler-failure paths have injected-console tests.
 - See [Terminal Live View](Project_GRID_Terminal_Live_View.md) for controls, architecture, limitations and verification details. Login visibility, persistence, autonomous actions and GRID-REQ-004 remain deferred; earlier completion notes remain historical.
 
@@ -543,12 +546,12 @@ See [NGE plan](Project_GRID_NGE_Nullify_Grid_Existence_Plan.md) for confirmation
 
 **Completion notes - 2026-10-18**
 
-- Replaced the empty Grid.Persistence scaffold with SqliteGridDatabase and GridSchema, retaining Microsoft.Data.Sqlite 10.0.13. Added persistence and its test project to Grid7736.slnx.
+- Replaced the empty Grid.Persistence scaffold with SqliteGridDatabase and GridSchema, retaining Microsoft.Data.Sqlite 10.0.13. Added persistence and its test project to Grid.AI.slnx.
 - Added STRICT schema v1 for Worlds, Districts, Programs, DistrictResources and SimulationStates, plus migration history. Composite keys enforce same-world membership; program district references are the single stored membership source.
 - Stores energy/status/revision and integer simulation clock values with constraints. Durable world identity is distinct from runtime instance/session identity. Seed/version provenance is optional; hardware profiles/layouts remain future migrations.
 - Explicit initialization creates schema only. OpenExisting refuses missing/uninitialized databases. Every managed connection enables foreign keys, FULL synchronization, private cache and a bounded busy timeout.
 - Migration metadata, DDL and version markers share an immediate transaction. Unknown/future/inconsistent databases are rejected; failed upgrades roll back. Tests cover concurrent initialization and synthetic next-version migration; only v1 ships.
-- Verification: 31 new persistence tests passed. Full solution `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false` passed 171 tests (8 Core, 93 Simulation, 39 Terminal, 31 Persistence), zero failed/skipped. Solution build passed with zero warnings/errors.
+- Verification: 31 new persistence tests passed. Full solution `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false` passed 171 tests (8 Core, 93 Simulation, 39 Terminal, 31 Persistence), zero failed/skipped. Solution build passed with zero warnings/errors.
 - Tests verify SQL row preservation, constraints, relationships, rollback and schema lifecycle. They do not claim engine save/load, crash recovery or power-loss verification. At that milestone, sections 2.2-2.6 and GRID-REQ-004 remained pending; the subsequent 2.2 completion is recorded below.
 - See [Persistence Architecture and Schema](Project_GRID_Persistence_Architecture.md) for tables, connection/migration policy, identity conventions and future audit/hardware integration.
 
@@ -569,7 +572,7 @@ See [NGE plan](Project_GRID_NGE_Nullify_Grid_Existence_Plan.md) for confirmation
 - Normal terminal startup creates and persists Genesis once, then restores the existing world paused unless --start is passed. No wall-clock catch-up occurs. Default storage is %LOCALAPPDATA%\GRID\world.db; --world selects another file and --ephemeral explicitly opts out of saving.
 - Autosave captures a consistent snapshot every 30 seconds without holding the engine lock during disk I/O. Exit, EOF and Ctrl+C await scheduler/autosave shutdown before a final save. Failures are visible and produce a nonzero result.
 - Saves roll back on SQL failure/cancellation before commit. A validated rolling .backup is published after each successful primary commit. --recover validates that backup and preserves damaged primary/sidecar files; interrupted recovery requires an explicit retry. Missing/corrupt saves are never silently regenerated. An exclusive session lease prevents competing GRID instances for one file.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal --no-restore` passed **200 tests** (8 Core, 93 Simulation, 50 Terminal, 49 Persistence), zero failed/skipped. `dotnet build Grid7736.slnx --no-restore --verbosity minimal` passed with zero warnings/errors. Added 29 cases covering world round trips, injected transaction failure, cancellation, invalid data, backup/recovery failures, periodic saving, ownership and terminal lifecycle.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal --no-restore` passed **200 tests** (8 Core, 93 Simulation, 50 Terminal, 49 Persistence), zero failed/skipped. `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` passed with zero warnings/errors. Added 29 cases covering world round trips, injected transaction failure, cancellation, invalid data, backup/recovery failures, periodic saving, ownership and terminal lifecycle.
 - Built-terminal smoke verification used an isolated temporary database: create, step twice, exit/save, reopen paused at tick 2 with the same identity, reject corruption, explicitly recover, and verify --ephemeral --start. No default user world was opened.
 - Limits: abrupt termination can lose work after the last committed snapshot; tests do not claim physical power-loss validation. Backups are one rolling snapshot, not historical retention. Durable events/audit (2.3), hardware-generated cities (2.6), login and Windows service integration remain pending. See [Persistence Architecture](Project_GRID_Persistence_Architecture.md).
 
@@ -629,7 +632,7 @@ See [Resources and Host State](Project_GRID_Resources_and_Host_State.md) for exa
 - Added a test-only subprocess that holds an uncommitted SQLite transaction with spilled pages. The parent terminates that child after a readiness handshake; reopening restores the last committed world/history, removes uncommitted schema/data, passes integrity_check and retains the backup unchanged. Existing injected-failure tests continue to verify production save/history transaction rollback and retry.
 - Verified restored world/program IDs, revisions, values, district membership/resources and clock state. Restoration starts paused with a fresh runtime identity, no stale host telemetry and no offline advancement; a manual step advances exactly once.
 - Headless terminal subprocesses operate with redirected streams and no viewer/model dependency. Tests use unique temporary worlds and never the user's default database. No production behavior changes were needed.
-- Verification: `dotnet test Grid7736.slnx --verbosity minimal` and final `--no-restore` run passed **231 tests** (8 Core, 106 Simulation, 64 Persistence, 53 Terminal), zero failed/skipped. `dotnet build Grid7736.slnx --no-restore --verbosity minimal` passed with zero warnings/errors.
+- Verification: `dotnet test Grid.AI.slnx --verbosity minimal` and final `--no-restore` run passed **231 tests** (8 Core, 106 Simulation, 64 Persistence, 53 Terminal), zero failed/skipped. `dotnet build Grid.AI.slnx --no-restore --verbosity minimal` passed with zero warnings/errors.
 - Scope: process-crash/journal recovery is tested, not physical power loss or exhaustive storage-failure coverage. Pending application-energy binding (2.4/2.7), hardware generation (2.6), and application-resident retrofit (2.7) remain pending.
 - See [Phase 2 Verification](Project_GRID_Phase_2_Verification.md) for the requirement-to-test mapping, helper isolation and limitations.
 
@@ -663,7 +666,7 @@ See [Resources and Host State](Project_GRID_Resources_and_Host_State.md) for exa
 - Real Windows disposable creation captured all six categories with CPU units and RAM/storage capacities; six districts, six streets and 56 lots reopened unchanged at tick 1, paused. The default world was not modified.
 - See [Hardware City Generation](Project_GRID_Hardware_City_Generation.md) for full implementation details and limits. Changes are local working-tree changes at verification, not a release or remote publication claim.
 
-**Later integration:** Phase 7 renders saved layouts; Phase 8 startup uses this same create/load decision. GPU or hardware capacity must not require graphics or AI for headless generation. Hardware details are provenance, not authentication; persisted world IDs do not preserve old session/preview validity after restart.
+**Later integration:** Active Phase 7 must preserve this same create/load decision across Windows, Linux and Android; the future City backlog may render saved layouts but never regenerate them. GPU or hardware capacity must not require graphics or AI for headless generation. Hardware details are provenance, not authentication; persisted world IDs do not preserve old session/preview validity after restart.
 
 ---
 
@@ -909,7 +912,7 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 - [x] Provide package-relative launch/default world and conditionally retarget an existing matching managed launcher after a move
 - [x] Add help/completion metadata and nine transfer regression tests
 - [x] Integrate 4.2C attachment shutdown/draining before transfer or NGE; keep these actions on the original host
-- [ ] Complete 8.6 PC/Flash edition migration/provisioning
+- [ ] Complete the active Phase 7 portable platform contract and reconcile future plan B.6 PC/Flash edition migration/provisioning
 - [ ] Add automatic interrupted-move recovery and exhaustive low-space, power-loss, drive-removal and physical cross-machine acceptance
 
 **Completion verification - 2026-10-20.** 377 tests passed (14 Core, 155 Simulation, 91 Persistence, 117 Terminal), including the actual cleanup helper on disposable files. Zero build warnings/errors. Current transfers require an available .NET 10 runtime. No user files were relocated during verification; remaining gates above are not claimed complete.
@@ -1452,9 +1455,13 @@ Verification: **976 automated tests passed** (14 Core, 157 Simulation, 99 Persis
 
 **Repair implemented; actual local copy/move and isolated-runtime verification passed. Second-PC acceptance pending user test — required before Phase 7.**
 
+**Release-blocking clean-install repair — 2026-11-18:** Normal source startup now performs a first-run runtime preflight before opening any world. Interactive clean clones offer one-time pinned download/hash verification/build/real-MCP testing; unattended clones stop with one concise setup command and never enter degraded chat or create/open a world. Current `grid -copyto`/`grid -transferto` refuse an incomplete source runtime, copy the complete destination-relative runtime/model/.NET inventory and independently hash every destination file before publication. Version-2 portable startup validates its sealed asset manifest before opening the saved world. Portable builds run a real bundled MCP conversation before publication. All user-facing startup, conversation, window, shutdown, picker, launcher and new root-destination branding is `Grid.AI`; legacy solution/pipe identifiers remain internal compatibility details only.
+
+**Verification — 2026-11-18:** **1,453 automated tests passed**, zero failed/skipped, through `Grid.AI.slnx`. Script syntax checks passed. The repaired source runtime passed real inline and attached MCP replies. A fresh sealed Windows x64 package was built at `TestResults/Grid.AI-portable-20261118`; its package-local runtime/model produced real inline and attached MCP replies before publication, without opening a user world. Physical second-PC/offline/removable-drive acceptance remains open and must not be inferred from same-PC package verification.
+
 - [x] Diagnose why the actual copied GRID fails to run AI on another device
 - [x] Copy/transfer and verify the full required asset/user-state manifest with destination-relative paths
-- [ ] Provide bundled runtime/models/extractors and CPU fallback without global AI/.NET/SDK or network dependencies
+- [x] Provide bundled runtime/models/extractors and CPU fallback without global AI/.NET/SDK or network dependencies
 - [ ] Verify actual copyto/transferto destinations on a second supported PC or clean VM offline, including restart and changed drive letter
 
 **Remaining acceptance:** user requested a package and instructions for their second PC. Do not check the second-device item based on local relocation alone. PDF/DOCX extraction and bundled parser assets are locally verified in 6.15. The refreshed complete package still requires second-device acceptance. See [repair and second-PC test](Project_GRID_Portable_Transfer_Repair_and_Second_PC_Test.md).
@@ -1758,7 +1765,7 @@ Connected user input now stays conversational; explicit command dispatch remains
 
 ## Terminal-first local AI and device integration — planned 2026-11-13
 
-**Priority and sequencing:** Complete the existing 6.31 prerequisites first. At the end of Phase 6, before starting Phase 7, focus on useful AI through the **existing GRID terminal**: natural-language tool use, local device capabilities, reliable model setup, skills, optional connectors, scheduled jobs, and transparent permissions. Reuse the existing host/agent/AI architecture. A new general-purpose GUI is optional future polish, **not a prerequisite for core assistant functionality, the terminal workflows, or core acceptance**. Phase 7 Godot city development begins after the required Phase 6 core acceptance; its visual scope is separate and retains its own scope. Validate cross-platform/offline release integration in Phase 8. Do not silently introduce cloud runtime dependencies. Design inspiration: [OpenJarvis](https://github.com/open-jarvis/OpenJarvis), not a code dependency.
+**Priority and sequencing:** Complete the existing 6.31 prerequisites first. At the end of Phase 6, before starting Phase 7, focus on useful AI through the **existing GRID terminal**: natural-language tool use, local device capabilities, reliable model setup, skills, optional connectors, scheduled jobs, and transparent permissions. Reuse the existing host/agent/AI architecture. A new general-purpose GUI is optional future polish, **not a prerequisite for core assistant functionality, the terminal workflows, or core acceptance**. The new Phase 7 then extracts Grid.Platform and delivers verified Windows/Linux/Android portability, with Android first. Godot city and later integration work are deferred under Backlog and Future Plans. Do not silently introduce cloud runtime dependencies. Design inspiration: [OpenJarvis](https://github.com/open-jarvis/OpenJarvis), not a code dependency.
 
 **Reuse, not replacement:** `Grid.AI` model/provider/hardware profile work (6.16–6.17A); `Grid.Agent` scoped memory/personas/delegation; 6.22–6.24 trusted authorization and tool gateway; 2.7.2 local app inventory; 6.3A screen assistance; 6.9 file operations; 6.20 retrieval; 6.27 and 8.6–8.9 offline/portable deployment. Existing partial implementations do not satisfy all new acceptance criteria.
 
@@ -1807,13 +1814,13 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 
 ## 6.34A Challenge-code enrollment and verbal authentication
 
-**Local enrollment foundation implemented — 2026-11-17; remote challenge use remains planned.** Add three user-created challenge prompt/response pairs after username/password setup, then use bounded challenge sessions as a knowledge factor for future authenticated remote calls. Both prompts and responses accept 1..64 printable characters. A spoken response is not a biometric voice signature, and a successful challenge must not approve work, reset a password or widen authority. Setup validation reports that no account was created, offers controlled retry/cancel and ensures successful setup makes the next `login` use username/password authentication. Full verification: **1,443 passed**, zero failed/skipped. [Setup flow, implementation evidence, storage boundary, call protocol and remaining acceptance](Project_GRID_Challenge_Code_Authentication.md).
+**Local enrollment, authenticated management and trusted-host session protocol implemented — 2026-11-17; protected remote input remains planned.** Three user-created challenge prompt/response pairs follow username/password setup. Authenticated status, setup/rotate, aggregate masked self-test and confirmed disable are implemented. The host protocol requires a Master-Control-issued endpoint grant, selects two random distinct prompts, binds attempts/claims to user, host/world generation, endpoint, call and purpose, expires/rejects replay, and persists bounded increasing account/endpoint cooldowns in schema v26. Claims are authentication-only and cannot log in, approve work, recover a password or widen authority. Full verification: **1,452 passed**, zero failed/skipped. [Implementation evidence, storage boundary, protocol and remaining client acceptance](Project_GRID_Challenge_Code_Authentication.md).
 
 - [x] Define a versioned three-challenge credential contract with distinct prompts, independently salted response verifiers, fixed-time comparison and atomic persistence/migration.
 - [x] Extend fresh credential setup to require all three challenges after password confirmation and make authenticated `credentials` rotation replace the complete password/challenge set atomically.
 - [x] Keep plaintext responses out of local setup output, history, audit and saved/backup identity state; store only prompts and salted verifiers. No response enters an inference or transcript path in the implemented local flow.
-- [ ] Add separate authenticated challenge status, disable and masked self-test controls for existing users.
-- [ ] Implement short-lived single-purpose challenge sessions bound to user, host/world generation, paired endpoint and contact/call ID, with randomized selection, expiry, replay defense and durable rate limits.
+- [x] Add separate authenticated challenge status, disable and masked self-test controls for existing users.
+- [x] Implement short-lived single-purpose challenge sessions bound to user, host/world generation, Master-Control-granted endpoint and contact/call ID, with randomized selection, expiry, replay defense and durable increasing rate limits.
 - [ ] Require protected client secret entry or transcription-suppressed speech capture; provide masked typed fallback and warn about speakerphone, recording and nearby listeners.
 - [ ] Make challenge success an authentication claim only—not password recovery, device pairing, task approval, contact-policy editing or proof of biometric voice identity.
 - [ ] Verify setup cancellation, migration, normalization, secret leakage, wrong/replayed/cross-call responses, lockout recovery, agent forgery, rotation, backup, copy/transfer and accessibility fallbacks.
@@ -1821,14 +1828,24 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 
 ## 6.34B Development-only break-glass terminal commands
 
-**User-requested planning framework — 2026-11-17. Not implemented.** Define exact terminal recovery/emergency operations that are omitted from ordinary help, completion, palettes, conversational routing and agent tools while still using real authorization—not secrecy—as the security boundary. Separate locked, registered-agent, human Master Control and offline owner-rescue authority. Existing visible `nge` and `--recover` remain authoritative until reviewed replacements/extensions exist. [Command inventory, nullification contract, safeguards and acceptance matrix](Project_GRID_Development_Break_Glass_Commands.md).
+**Foundation, locked-local, registered-agent, original-host Master Control and offline owner-rescue boundaries implemented — 2026-11-18.** The original interactive console supports bounded logged-out preparation, agent self-controls and two-step Master Control emergency plans. A separate pre-start rescue mode requires an exclusive stopped-world lease plus a world-bound user-held key and exposes only verification, local password reset or authenticated backup restoration. It starts before AI/runtime setup and has no conversation, agent, remote, shell or general filesystem route. Existing visible `nge` and startup `--recover` remain authoritative; hidden nullification is not implemented. [Command inventory, implementation boundary, nullification contract, safeguards and acceptance matrix](Project_GRID_Development_Break_Glass_Commands.md).
 
-- [ ] Inventory visible recovery/destructive paths and define a separate versioned hidden-command registry that cannot weaken or alias their safeguards.
-- [ ] Keep hidden names/counts out of normal discovery while documenting every command in development references, source inventory and tests; reject undocumented hidden commands at release review.
-- [ ] Permit locked/local state only bounded diagnosis, world verification, freeze request and recovery-challenge preparation—never identity reset, private-content access or destruction by command knowledge alone.
-- [ ] Limit registered-agent break-glass controls to self-status, self-cancellation, self-detach and bounded self-evidence with no Master Control transition or cross-agent effect.
-- [ ] Add original-host Master Control freeze, isolate, session revoke, remote disable, safe-mode, recovery and evidence-export plans with exact target binding, expiry, audit and fresh confirmation.
-- [ ] Design an exclusive offline owner-rescue entry point with user-held recovery material and no AI, remote, conversational, shell or general filesystem capability; do not create a universal backdoor key.
+- [x] Inventory visible recovery/destructive paths and define a separate versioned hidden-command registry that cannot weaken or alias their safeguards. `DevelopmentBreakGlassRegistry` v1 records visible protections and reviewed contracts but contains no executable handler.
+- [x] Keep hidden names/counts out of normal discovery while documenting every command in development references, source inventory and tests; reject undocumented hidden commands at release review. The ordinary dispatcher refuses the reserved namespace, conversations cannot route it to AI, and focused help/completion/denial tests pass.
+
+**Foundation verification — 2026-11-18:** Four focused registry/non-discovery tests and the complete `Grid.AI.slnx` suite passed at **1,457 passed, 0 failed, 0 skipped**.
+- [x] Permit locked/local state only bounded diagnosis, world verification, freeze request and recovery-challenge preparation—never identity reset, private-content access or destruction by command knowledge alone. The original interactive locked console provides content-free status, hash-preserving read-only primary/backup verification, simulation/agent pause, a two-minute process-local nonce with an explicit zero-authority warning, and cancellation. Authenticated, attached, redirected, malformed and conversational routes fail closed.
+
+**Locked-local completion verification — 2026-11-18:** Eleven focused 6.34B tests and the full solution pass: **1,464 passed, 0 failed, 0 skipped**. Primary and backup SHA-256 values remain unchanged across verification. Freeze leaves the session logged out. Recovery preparation expires without authenticating or changing credentials/world data.
+- [x] Limit registered-agent break-glass controls to self-status, self-cancellation, self-detach and bounded self-evidence with no Master Control transition or cross-agent effect. Original-host agent leases are independently revalidated in the engine; evidence exposes only the active agent's role/ID and at most 32 task IDs/statuses/attempt counts; abort changes only tasks targeted to that agent; detach logs out to `grid[locked]`.
+
+**Registered-agent completion verification — 2026-11-18:** Seventeen focused 6.34B tests and the full solution pass: **1,470 passed, 0 failed, 0 skipped**. A MAXIS self-abort leaves the JN task unchanged, saves cancellation state, and exposes no arguments/results/private context. Master Control, logged-out, attached, unattended, malformed and unknown routes fail closed with the same denial.
+- [x] Add original-host Master Control freeze, isolate, session revoke, remote disable, safe-mode, recovery and evidence-export plans with exact target binding, expiry, audit and fresh confirmation. Every mutation is a single-use two-step plan bound to session generation, world/instance, activity generation and exact target. Recovery validates primary/backup hashes again after shutdown and skips final save; evidence is bounded JSON; the external operator audit excludes nonces, targets and private content.
+
+**Master Control completion verification — 2026-11-18:** Twenty-seven focused 6.34B tests and the complete solution pass: **1,480 passed, 0 failed, 0 skipped**. Tests cover wrong/stale/replayed/session-invalidated plans, exact MAXIS/JN approval isolation, remote challenge revocation, attached-session shutdown, safe-mode command gating, new-file evidence export without secrets, recovery without final-save overwrite, changed-backup hash refusal and retained damaged-primary archives. No remote listener exists in this build; `disable-remote` establishes the host gate and revokes transient challenge endpoints/claims.
+- [x] Design and implement an exclusive offline owner-rescue entry point with user-held recovery material and no AI, remote, conversational, shell or general filesystem capability; do not create a universal backdoor key. Authenticated Master Control can create a new 256-bit world-bound recovery file at an explicit non-reparse path; GRID persists only a salted verifier and key ID. `--operator-rescue` runs before runtime/AI setup, requires interactive local input and an exclusive stopped-world lease, verifies exact world/key authority, and permits only read-only verification, local password reset or same-authority backup restoration. Password reset clears challenge credentials/rate limits but preserves agents, transcripts and world data. State-changing choices require exact world ID plus a fresh 128-bit nonce; audit records are bounded and content-free. Losing the only current file means no offline bypass exists.
+
+**Offline owner-rescue completion verification — 2026-11-18:** Seven focused tests and the complete solution pass: **1,487 passed, 0 failed, 0 skipped**. Tests cover plaintext/path exclusion from world state, overwrite refusal, key rotation, cross-world/wrong-key rejection, redirected-input denial, active-world exclusive-lock refusal, unenrolled-world denial, content-free audit, exact confirmation, password/challenge reset behavior, recovery-authority retention and matching-authority backup restore with displaced-primary archive. Recovery enrollment remains an explicit owner action rather than an automatic backdoor.
 - [ ] Implement recoverable world retirement before any managed-instance removal; require manifest-bounded paths, quarantine, external receipt and refusal of roots, repositories, reparse points, shared assets and active writers.
 - [ ] Keep irrecoverable purge separate and deferred; document that ordinary deletion cannot guarantee erasure from SSDs, snapshots, backups or synchronized copies.
 - [ ] Verify non-discovery, generic unauthorized denial, remote/agent/model refusal, replay/cross-world resistance, interrupted recovery/nullification and disposable-root deletion bounds.
@@ -1901,24 +1918,113 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 
 ---
 
-## 6.39 Optional unified desktop GUI — deferred, non-blocking enhancement
+## 6.39 Optional unified desktop GUI — moved to Future Plan C
 
-- [ ] When prioritized after core acceptance, define an optional user-facing shell for conversations, agent selection/meetings, task approvals, local files, activity, settings and city access; preserve the advanced terminal as a first-class option.
-- [ ] Integrate the Phase 7 Godot city as an optional navigable representation of actual agents, applications and verified activity, not a separate synthetic source of truth.
-- [ ] Provide persistent conversation and task navigation, search, readable citations/source boundaries, progress/cancellation indicators, and recovery of interrupted sessions.
-- [ ] Support accessible keyboard navigation, screen readers, reduced motion, high DPI, responsive/resizable layouts and a consistent visual theme.
-- [ ] Distinguish inferred AI suggestions, verified host observations, pending proposals, approved actions and completed results in every view.
-- [ ] If/when a GUI ships, verify GUI and terminal show the same underlying state; **terminal completion remains sufficient for core AI acceptance**.
+The GUI is no longer sequenced before platform compatibility. Its requirements are preserved under Future Plan C and may begin only after the active Grid.Platform phase is reviewed and the user explicitly reprioritizes it. Terminal completion remains sufficient for core AI acceptance.
 
-**Core terminal experience acceptance (6.32–6.38; required before Phase 7):** On a supported Windows PC, an authenticated user can configure local AI and grants, ask MCP for a multi-step device/file task in ordinary conversation, inspect a typed plan, approve consequential actions, view verified results, recover or cancel safely, and revoke access — **entirely through the existing GRID terminal** with no required cloud service. Test a prepared portable offline package on a second supported computer. Section 6.39's new GUI must not block this gate.
+**Core terminal experience acceptance (6.32–6.38; required before the cross-platform phase):** On a supported Windows PC, an authenticated user can configure local AI and grants, ask MCP for a multi-step device/file task in ordinary conversation, inspect a typed plan, approve consequential actions, view verified results, recover or cancel safely, and revoke access — **entirely through the existing GRID terminal** with no required cloud service. Test a prepared portable offline package on a second supported computer. Future Plan C must not block this gate.
 
 ---
 
-# Phase 7 — The City
+# Phase 7 — Cross-platform compatibility and Android portability
 
-**Entry gate updated 2026-11-04.** Complete mandatory sections 6.7–6.31 and review their acceptance evidence before Phase 7. This includes the full GRID-AI/GRID-Agent roadmap, migration, repeatable fine-tuning/evaluation, and actual copied/transferred GRID running AI offline on a second supported device. Specialist candidates are documented and await exact-artifact selection and measured evaluation.
+**New active next phase — planned 2026-11-17. No implementation is claimed by this planning update.** Introduce a typed `Grid.Platform` subsystem that isolates operating-system behavior from Grid.Core, Grid.Simulation, Grid.Persistence, Grid.AI, Grid.Agent and the terminal experience. Preserve separate native adapters rather than emulating Windows. Android ARM64 is the first priority, followed by Linux x64/ARM64 while retaining Windows behavior. [Architecture, USB layout, Android constraints and acceptance](Project_GRID_Cross_Platform_and_Android_Plan.md).
 
-## 7.1 Godot foundation
+## 7.1 Platform boundary and dependency inventory
+
+- [ ] Inventory direct Windows, registry, WMI/CIM, PowerShell, named-pipe, WinForms/WPF, System.Speech, process, path and drive assumptions across every project
+- [ ] Define which behavior is shared, platform-adapted, platform-optional or unsupported
+- [ ] Add architecture tests preventing new native dependencies in Grid.Core, Grid.Simulation and Grid.Persistence
+- [ ] Preserve observable Windows behavior while moving native calls behind adapters
+- [ ] Record the supported OS/version/architecture matrix; do not equate “all devices” with untested universal compatibility
+
+## 7.2 Grid.Platform contracts and capability model
+
+- [ ] Create `Grid.Platform` abstractions for detection, file systems, runtimes, processes, removable storage, resources, dependency checks and lifecycle
+- [ ] Represent `Available`, `PermissionRequired`, `TemporarilyUnavailable`, `Unsupported` and `Unknown` without simulated success
+- [ ] Provide deterministic fake adapters and contract suites for paths, permissions, failures, cancellation and capability changes
+- [ ] Keep task approval, identity and audit enforcement above platform adapters; an adapter cannot widen authority
+- [ ] Use typed operations instead of arbitrary shell-command concatenation
+
+## 7.3 Windows adapter extraction
+
+- [ ] Create `Grid.Platform.Windows` and migrate current Windows discovery, storage, process, runtime, telemetry, picker and lifecycle integrations
+- [ ] Retain current local credentials, world loading, terminal, AI, file/context, transfer and recovery behavior
+- [ ] Preserve explicit Windows-only features as capability results when no portable equivalent exists
+- [ ] Pass the existing full suite and real Windows smoke tests after extraction
+
+## 7.4 Linux adapters and host
+
+- [ ] Create `Grid.Platform.Linux` for x64 and ARM64 OS/architecture detection, XDG paths, permissions, processes, resources and removable storage
+- [ ] Replace PowerShell assumptions with direct process APIs or bounded Bash adapter operations where required
+- [ ] Define Linux runtime/self-contained publishing, app dependencies and offline launch scripts
+- [ ] Verify case-sensitive paths, mount changes, executable permissions, signals, suspend/resume and headless terminal behavior
+- [ ] Test disposable-world login, save/restart, context/file tasks and supported local inference on real Linux hosts
+
+## 7.5 Android ARM64 host and storage adapter
+
+- [ ] Create `Grid.Platform.Android` plus a dedicated `Grid.Host.Android`; do not treat Android as `linux-arm64`
+- [ ] Use the Android system folder/document picker and persisted user grants for removable Grid.AI data instead of unrestricted `/storage` or Termux access
+- [ ] Represent Android content/document handles without fabricating ordinary filesystem paths
+- [ ] Stage verified executable/runtime assets in app-private storage when Android forbids executing from USB, while retaining approved persistent data on removable storage
+- [ ] Add touch-friendly login, terminal/chat, approval, cancellation, file selection and diagnostics without duplicating world state
+- [ ] Handle foreground/background, suspension, process death, grant revocation, USB removal and app restart without silent world replacement
+- [ ] Request folder, microphone, notifications, network and screen/media permissions separately and only when the user selects the feature
+
+## 7.6 Portable world and USB contract
+
+- [ ] Publish separate `windows-x64`, `linux-x64`, `linux-arm64` and `android-arm64` artifacts with one versioned manifest/data contract
+- [ ] Share governed worlds, memory and configuration while keeping platform executables and native dependencies separate
+- [ ] Permit only one authoritative writer per world; add lease/lock, schema, backup, atomic-write and post-load identity checks before cross-platform writes
+- [ ] Reuse the saved world/city instead of regenerating after device change
+- [ ] Revoke or review device-bound paths, workspaces, credentials, remote pairings and permissions on a new device
+- [ ] Test read-only media, missing drive, changed mount/URI, low space, interrupted staging and incompatible package/schema versions
+
+## 7.7 Runtime, command and dependency adaptation
+
+- [ ] Detect or stage the correct self-contained .NET/application host for each supported target
+- [ ] Provide platform-specific launchers without making host PATH, environment variables or registry changes mandatory in portable mode
+- [ ] Map supported typed commands to direct APIs, PowerShell, Bash or Android host services and report unavailable operations honestly
+- [ ] Provide platform-specific health/repair guidance for runtime, storage, permissions, model and dependency failures
+- [ ] Keep ordinary runtime offline; installations/provisioning are the only permitted network-dependent stage
+
+## 7.8 AI and resource portability
+
+- [ ] Keep inference selection behind Grid.AI provider contracts; Ollama is not a universal platform requirement
+- [ ] Evaluate compatible offline Windows, Linux and Android backends, model formats, licenses and CPU/GPU/NPU support
+- [ ] Select the smallest measured profile that passes the task on the current device
+- [ ] Provide a phone-safe degraded mode for simulation, terminal, memory and deterministic tools when generative AI cannot run
+- [ ] Account for RAM, storage/staging, thermal throttling, battery and concurrency before model loading
+- [ ] Never silently download models or claim unavailable AI work succeeded
+
+## 7.9 Cross-platform security, lifecycle and diagnostics
+
+- [ ] Preserve Master Control, capability grants, reviewed actions and audit semantics across adapters
+- [ ] Save/recover safely across shutdown, signals, suspend, Android backgrounding/process death and removable-media loss
+- [ ] Keep permissions scoped and revocable; reopening a world does not imply OS permission on the new device
+- [ ] Provide one capability/health report showing platform, architecture, grants, limitations, runtime, storage and AI readiness
+- [ ] Verify that unsupported security, process, screen, voice or file features fail closed with useful alternatives
+
+## 7.10 Real-device release gate
+
+- [ ] Run the shared contract and full applicable regression suites on Windows x64, Linux x64, Linux ARM64 and at least one supported Android ARM64 device
+- [ ] On Android, install the host normally, select Grid.AI on USB/removable storage, save/restart/regrant, detach/reconnect and recover from revoked access
+- [ ] Move one disposable world between supported platforms without regeneration, concurrent writes or loss of portable identity/history
+- [ ] Verify essential offline workflows with network/DNS blocked and record which AI/profile is actually available on each device
+- [ ] Publish measured OS/API/ABI/hardware/backend support and known limitations before claiming a target supported
+- [ ] Obtain user review of the device matrix and evidence before advancing a future backlog item
+
+---
+
+# Backlog and Future Plans
+
+**Roadmap rebased 2026-11-17.** Everything below was formerly Phase 7 or later. It is preserved for future work but is no longer the active next phase, does not block planning/implementation of Grid.Platform, and must not be reported as implemented unless its own evidence exists. Completed historical checkboxes remain evidence of earlier work only.
+
+## Future Plan A — The City (formerly Phase 7)
+
+**Deferred backlog.** Godot city work begins only after the active cross-platform phase is reviewed and the user explicitly reprioritizes it. It must render authoritative saved state rather than becoming a competing simulation.
+
+### A.1 Godot foundation
 
 - [ ] Render the persisted GRID-REQ-004 city layout without regenerating or taking ownership of authoritative world state
 - [ ] Create Godot .NET viewer project
@@ -1928,7 +2034,7 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Implement entity positions and selection
 - [ ] Keep simulation running when viewer is closed
 
-## 7.2 First visual vertical slice
+### A.2 First visual vertical slice
 
 - [ ] Model one realistic European stone street
 - [ ] Add human-scale stone/brick facades and storefronts
@@ -1939,7 +2045,7 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Add warm street and window lighting
 - [ ] Add autumn trees, gentle wind and light haze
 
-## 7.3 Citizen and agent appearance
+### A.3 Citizen and agent appearance
 
 - [ ] Build shared humanoid character rig
 - [ ] Model light-gray civilian jacket and dark trousers
@@ -1950,7 +2056,7 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Create named system-agent uniform variations
 - [ ] Add walking, idle, working and talking animations
 
-## 7.4 Districts and architecture
+### A.4 Districts and architecture
 
 - [ ] Build five navigable districts
 - [ ] Add credible roads, courtyards and public spaces
@@ -1961,7 +2067,7 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Differentiate administrative and security architectural zones as world expands
 - [ ] Use restrained original signage and insignia
 
-## 7.5 World interaction
+### A.5 World interaction
 
 - [ ] Render the reconciled application population plus persistent residents from live simulation state; use twenty-resident fixtures only for tests
 - [ ] Animate movement and program activity
@@ -1971,7 +2077,7 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Show resources and district conditions when requested
 - [ ] Avoid invented on-screen events
 
-## 7.6 Visual quality and performance
+### A.6 Visual quality and performance
 
 **Edition requirement - planned, 2026-10-20:** [PC GRID versus Flash GRID](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) is selected during installation; visual fidelity must not alter world behavior.
 
@@ -1989,9 +2095,9 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 
 ---
 
-# Phase 8 — Integration
+## Future Plan B — Integration and release hardening (formerly Phase 8)
 
-## 8.1 Windows lifecycle
+### B.1 Windows lifecycle
 
 - [x] Integrate GRID-REQ-004 first creation versus saved-world loading; hardware changes and failed loads do not silently regenerate the city (2.2/2.6)
 - [ ] Run GRID headless at Windows sign-in if enabled
@@ -2002,7 +2108,7 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Coordinate local service startup order
 - [ ] Integrate optional remote-terminal gateway startup/shutdown, sleep/wake, network-change recovery and explicit remote-disable behavior without making Tailscale or any network service mandatory ([6.36A plan](Project_GRID_Remote_Terminal_Access.md))
 
-## 8.2 Resource and storage governance
+### B.2 Resource and storage governance
 
 - [ ] Enforce host resource consumption limits
 - [ ] Throttle simulation, AI and rendering appropriately
@@ -2012,7 +2118,7 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Approve quota increases through MCP → User
 - [ ] Prevent GRID from exhausting host disk free space
 
-## 8.3 Safety and reliability
+### B.3 Safety and reliability
 
 - [x] Implement recoverable world backups and explicit restore workflow (2.2; subsequent context/conversation/voice state covered through 4.5)
 - [ ] Audit all file-editing and host-task capabilities
@@ -2022,7 +2128,7 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Test task retry, cancellation and idempotency
 - [ ] Test agent restart and communication reconnection
 
-## 8.4 User experience and diagnostics
+### B.4 User experience and diagnostics
 
 - [ ] Create optional WPF control/dashboard interface
 - [ ] Show programs, tasks, health and permissions
@@ -2031,7 +2137,7 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Provide task history and change-review interface
 - [ ] Document setup, recovery, backup and uninstall procedures
 
-## 8.5 Release validation
+### B.5 Release validation
 
 - [ ] Run extended headless simulation
 - [ ] Perform end-to-end assistant workflows
@@ -2044,7 +2150,7 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 
 ---
 
-## 8.6 Installation editions and self-contained portable package (GRID-REQ-007)
+### B.6 Installation editions and self-contained portable package (GRID-REQ-007)
 
 **Planned - 2026-10-20.** One flash-drive folder should carry the complete prepared GRID installation and its state. [Shared contract](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md).
 
@@ -2064,7 +2170,7 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 
 - [ ] Integrate and verify 4.2D transfers with the implemented 4.2F `grid -transferto "location"` / `grid -copyto "location"` names for complete managed-file relocation/duplication across PC GRID and Flash GRID layouts
 
-### 8.6A Fresh-clone and bundled-runtime foundation — completed 2026-10-23
+#### B.6A Fresh-clone and bundled-runtime foundation — completed 2026-10-23
 
 - [x] Track reproducible runtime/model/SDK/cache preparation scripts and clearly distinguish a source clone from a prepared release
 - [x] Build a self-contained Windows x64 apphost and relative portable runtime/data layout without requiring installed .NET/Ollama or a user model cache for AI/chat
@@ -2073,9 +2179,9 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [x] Repair fallback/inline/attached typewriter rendering and explicit on/off behavior
 - [x] Add non-destructive runtime verification and test with restricted global paths and a fresh process profile
 
-**Verification:** 648 automated tests passed; private runtime and self-contained package both generated real MCP replies. Package verification used restricted PATH, fresh profile and invalid global runtime/cache paths. Schema v20 unchanged. Two-PC/clean-VM, voice/driver/media and full installer acceptance remain open under 8.6/8.7. [Implementation and limits](Project_GRID_Fresh_Clone_and_Portable_Runtime.md).
+**Verification:** 648 automated tests passed; private runtime and self-contained package both generated real MCP replies. Package verification used restricted PATH, fresh profile and invalid global runtime/cache paths. Schema v20 unchanged. Two-PC/clean-VM, voice/driver/media and full installer acceptance remain open under active Phase 7 and future plans B.6–B.7. [Implementation and limits](Project_GRID_Fresh_Clone_and_Portable_Runtime.md).
 
-## 8.7 Offline runtime acceptance (GRID-REQ-008)
+### B.7 Offline runtime acceptance (GRID-REQ-008)
 
 **Planned - 2026-10-20.** Every GRID task must be offline-capable; only explicit installations/provisioning may access the internet.
 
@@ -2087,18 +2193,30 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Record unavailable features honestly; do not substitute simulated success or stale facts for real offline execution
 - [ ] Make portable/offline acceptance a release gate before claiming plug-and-play completion
 
-## 8.8 Startup full-test gate — pending requirement restored 2026-10-23
+### B.8 Startup full-test gate — pending requirement restored 2026-10-23
 
 - [ ] Run and visibly display all required tests before normal owner startup; finish remaining suites after failures
 - [ ] Clear the screen and show normal startup only after all required tests pass
 - [ ] Otherwise display errors and `GRID was not started.`, then `Press Enter to close.`; missing/crashed/skipped required tests cannot count as passing
 - [ ] Bundle offline fixtures/runner, isolate user saves, prevent recursive probe launches and let attached terminals reuse the tested host
 
-## 8.9 Portable device-change recognition — pending requirement restored 2026-10-23
+### B.9 Portable device-change recognition — pending requirement restored 2026-10-23
 
 - [ ] Alert when the host device changes, discover its hardware, and ask `Save as another device` or `Use one time`
 - [ ] Persist an additional profile for save; keep one-time profile session-only; preserve existing profiles and saved city/world
 - [ ] Revalidate machine-bound paths/credentials/scopes without carrying task approvals or granting OS privileges; verify restart, repeat visit, partial discovery and offline behavior
+
+## Future Plan C — Optional unified GUI
+
+**Deferred until after Grid.Platform.** This was formerly section 6.39. It is optional, non-blocking and must use the same authoritative services and capability contracts as terminal and Android clients.
+
+- [ ] Define an optional user-facing shell for conversations, agent selection/meetings, task approvals, local files, activity, settings and future city access; preserve the advanced terminal as a first-class option
+- [ ] Build on Grid.Platform rather than introducing a new OS-specific authority or duplicate state owner
+- [ ] Integrate the future City backlog as an optional navigable representation of actual agents, applications and verified activity, not a separate synthetic source of truth
+- [ ] Provide persistent conversation/task navigation, search, readable source boundaries, progress/cancellation indicators and interrupted-session recovery
+- [ ] Support accessible keyboard navigation, screen readers, reduced motion, high DPI and responsive/resizable layouts on each claimed platform
+- [ ] Distinguish inferred AI suggestions, verified host observations, pending proposals, approved actions and completed results in every view
+- [ ] Verify GUI, terminal and Android host show the same underlying state and enforce the same permissions
 
 # Release Gates
 
@@ -2108,8 +2226,9 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 | **GRID Foundation** | Persistent civilization, autonomous activity, persistent communications |
 | **GRID Operator** | MCP delegates authorized PC tasks to specialist agents and reports verified results |
 | **GRID Assistant** *(proposed additional release gate)* | Grounded advice, supplied context, approved editing and task assistance |
-| **GRID City** | Interactive Godot 3D viewer displaying actual authoritative simulation state |
-| **GRID Terminal Assistant** *(new planned release gate)* | Existing terminal supports offline, approved natural-language device actions, guided setup, skills, optional connectors, scheduled workflows and auditable permissions (6.32–6.38), required before Phase 7; GUI (6.39) is optional and non-blocking |
+| **GRID Platform** *(next active release gate)* | Grid.Platform preserves shared behavior across verified Windows, Linux and Android adapters; Android can select governed removable data through its native host and safely reuse a saved world |
+| **GRID City** *(future backlog)* | Interactive Godot 3D viewer displaying actual authoritative simulation state |
+| **GRID Terminal Assistant** | Existing terminal supports offline, approved natural-language device actions, guided setup, skills, optional connectors, scheduled workflows and auditable permissions (6.32–6.38), required before cross-platform extraction; GUI (6.39) is optional and non-blocking |
 
 # Completed Genesis Steps
 
@@ -2133,11 +2252,11 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 
 # Current Next Steps
 
-**Updated planning items (2026-10-26):** 4.2H is implemented and console/test-verified; user desktop visual acceptance remains open. Defer the unified `talk` rework in 6.6 until the remaining AI-agent features and their verification are complete.
+**Roadmap update — 2026-11-17:** Complete the remaining active Phase 6 acceptance, then begin Phase 7 Grid.Platform with Android ARM64 as the first priority and Linux following the shared contracts. The former City and Integration phases are in Backlog and Future Plans. Do not begin them without explicit reprioritization.
 
 1. [x] Complete 5.1: named system-agent/task contracts, durable task queue and capability-scoped demonstration broker.
 2. [ ] Begin 5.2: MCP task coordination and delegation.
 3. [ ] Perform physical voice capture/playback/headset-disconnection acceptance; automated recognition fixtures passed in 4.4/4.5.
-4. [ ] Continue tracking the open extension items under 2.4, 2.7.2 and 4.2D, and the installation/offline acceptance gates under 8.6-8.7.
+4. [ ] Continue tracking the open extension items under 2.4, 2.7.2 and 4.2D; reconcile relevant portable/offline requirements from future plans B.6–B.7 into the active Grid.Platform contracts where necessary.
 
-**Note:** This checklist reproduces the full eight-phase planning scope as of this conversation. Completion indicators should be updated after each repository review; generated code and documentation are not evidence that a test has passed.
+**Note:** This checklist preserves completed history plus the active Phase 7 cross-platform roadmap and deferred future plans. Completion indicators should be updated after each repository review; generated code and documentation are not evidence that a test has passed.

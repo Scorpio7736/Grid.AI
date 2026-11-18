@@ -2,6 +2,7 @@ using System.Globalization;
 using Grid.Core;
 using Grid.Simulation;
 using Microsoft.Data.Sqlite;
+using System.Security.Cryptography;
 
 namespace Grid.Persistence;
 
@@ -169,6 +170,41 @@ public sealed partial class WorldStore : IDisposable
         lock (gate)
         {
             ObjectDisposedException.ThrowIf(disposed, this);
+            RecoverCore();
+        }
+    }
+
+    private WorldRecoveryPlan? issuedRecovery;
+    public WorldRecoveryPlan PrepareRecovery(Guid expectedWorld)
+    {
+        lock (gate)
+        {
+            ObjectDisposedException.ThrowIf(disposed, this);
+            EnsureNotRecovering();
+            var report = VerifyReadOnly(expectedWorld);
+            if (report.Primary.Status != "Valid" || report.Backup.Status != "Valid")
+                throw new InvalidDataException("Recovery requires valid matching primary and backup worlds.");
+            return issuedRecovery = new(expectedWorld, DatabasePath, Hash(DatabasePath), Hash(BackupPath));
+        }
+    }
+
+    public void Recover(WorldRecoveryPlan plan)
+    {
+        lock (gate)
+        {
+            ObjectDisposedException.ThrowIf(disposed, this);
+            if (!ReferenceEquals(plan, issuedRecovery))
+                throw new InvalidOperationException("Recovery requires this session's fresh validated plan.");
+            if (plan.WorldId != Read(DatabasePath).Info.Id || plan.DatabasePath != DatabasePath ||
+                plan.PrimarySha256 != Hash(DatabasePath) || plan.BackupSha256 != Hash(BackupPath))
+                throw new InvalidOperationException("Recovery target or file hashes changed; create a new plan.");
+            issuedRecovery = null;
+            RecoverCore();
+        }
+    }
+
+    private void RecoverCore()
+    {
             if (nullificationStarted || File.Exists(NullificationMarker)) throw new IOException("NGE interruption requires manual review; recovery is blocked.");
             var staged = DatabasePath + ".recover-" + Guid.NewGuid().ToString("N");
             CopyValidated(BackupPath, staged);
@@ -183,7 +219,12 @@ public sealed partial class WorldStore : IDisposable
                 File.Delete(RecoveryMarker);
             }
             finally { if (File.Exists(staged)) File.Delete(staged); }
-        }
+    }
+
+    private static string Hash(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        return Convert.ToHexString(SHA256.HashData(stream));
     }
 
     private static void CopyValidated(string source, string destination)

@@ -23,7 +23,7 @@ Reproducibility is scoped to deterministic compilation and a checksummed invento
 All 1,254 solution tests passed on 2026-11-12, comprising Core 14, Simulation 157, Persistence 99 and Terminal 984. Eleven added/updated boundary cases cover the revised ceiling, legacy 20 GB boundary, total mutable/staged growth, the model sub-limit, retained model versions, .NET accounting and reserve-sensitive free space for Flash and PC.
 
 ```powershell
-dotnet test Grid7736.slnx --no-restore --verbosity minimal
+dotnet test Grid.AI.slnx --no-restore --verbosity minimal
 .\Build-GridPortable.ps1 -Destination "C:\path\to\new-package"
 .\Test-GridPortable.ps1 -PackageRoot "C:\path\to\new-package" -AssistanceOnly
 ```

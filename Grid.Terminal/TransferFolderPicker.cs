@@ -13,7 +13,7 @@ public static class TransferFolderPicker
             $ProgressPreference = 'SilentlyContinue'
             Add-Type -AssemblyName System.Windows.Forms
             $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-            $dialog.Description = 'GRID7736 // GRID will create a new GRID7736 folder inside this location.'
+            $dialog.Description = 'Grid.AI will create a new Grid.AI folder inside this location.'
             try {
                 $files = $null
                 if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { $files = $dialog.SelectedPath }

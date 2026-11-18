@@ -139,7 +139,7 @@ public sealed class TerminalUxTests
         identity.Logout(); Assert.Empty(CommandHelp.Complete("ed", commands.Commands));
         Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Name | Value")); Assert.Equal(ConsoleColor.DarkCyan, TerminalTheme.Color("---+---"));
         Assert.Equal(ConsoleColor.Red, TerminalTheme.Color("Access denied")); Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Welcome"));
-        Assert.Contains("GRID7736", TerminalSessionUi.Opening(30));
+        Assert.Contains("GRID.AI", TerminalSessionUi.Opening(30));
         Assert.Contains("OFFLINE MARKDOWN HELP", commands.Execute("help -md").Text);
         Assert.Contains("# Grid.AI", commands.Execute("help -md").Text);
     }
@@ -212,6 +212,59 @@ public sealed class TerminalUxTests
         Assert.True(await ui.HandleAsync(commands.Execute("login"), default));
         Assert.True(identity.IsMaster);
         Assert.DoesNotContain("Create local credentials", output.ToString()[output.ToString().LastIndexOf("Username:", StringComparison.Ordinal)..]);
+    }
+    [Fact]
+    public async Task AuthenticatedChallengeStatusSelfTestAndDisableAreSecretAndPasswordSafe()
+    {
+        var (engine, identity, commands) = Fixture();
+        Assert.Contains("saved", identity.ConfigureCredentials("Owner", "Ab1!xy", "Ab1!xy",
+            [("Family", "violet river", "violet river"),
+             ("Travel", "silver compass", "silver compass"),
+             ("Memory", "winter lantern", "winter lantern")]));
+        Assert.Contains("Logged in", identity.LoginPassword("Owner", "Ab1!xy"));
+        var status = commands.Execute("credentials challenges status").Text;
+        Assert.Contains("enrolled", status); Assert.Contains("Version: 1", status);
+        Assert.DoesNotContain("violet river", status); Assert.DoesNotContain("Salt", status); Assert.DoesNotContain("Hash", status);
+
+        var output = new StringWriter(); var saves = 0;
+        identity.PersistIdentity = () => saves++;
+        var input = new Input("violet river", "silver compass", "winter lantern", "n", "y");
+        var ui = new TerminalSessionUi(identity, input, output);
+        Assert.True(await ui.HandleAsync(commands.Execute("credentials challenges test"), default));
+        Assert.Contains("self-test passed", output.ToString()); Assert.Equal(3, input.SecretReads.Count(secret => secret));
+        Assert.DoesNotContain("violet river", output.ToString());
+        Assert.DoesNotContain(engine.CaptureHistory().Events, e => e.Detail.Contains("violet river") || e.ContextJson.Contains("violet river"));
+
+        Assert.True(await ui.HandleAsync(commands.Execute("credentials challenges disable"), default));
+        Assert.NotNull(engine.GetSnapshot().Identities.ChallengeCredentials);
+        Assert.True(await ui.HandleAsync(commands.Execute("credentials challenges disable"), default));
+        Assert.Null(engine.GetSnapshot().Identities.ChallengeCredentials); Assert.Equal(1, saves);
+        Assert.Contains("disabled", commands.Execute("credentials challenges status").Text);
+        Assert.True(identity.IsMaster); identity.Logout();
+        Assert.Contains("Logged in", identity.LoginPassword("Owner", "Ab1!xy"));
+    }
+    [Fact]
+    public async Task ChallengeSelfTestFailureIsGenericAndRedirectedManagementChangesNothing()
+    {
+        var (engine, identity, commands) = Fixture();
+        identity.ConfigureCredentials("Owner", "Ab1!xy", "Ab1!xy",
+            [("A", "x", "x"), ("B", "y", "y"), ("C", "z", "z")]);
+        identity.LoginPassword("Owner", "Ab1!xy");
+        var output = new StringWriter();
+        var ui = new TerminalSessionUi(identity, new Input("wrong", "y", "z"), output);
+        Assert.True(await ui.HandleAsync(commands.Execute("credentials challenges test"), default));
+        Assert.Contains("self-test failed", output.ToString());
+        Assert.DoesNotContain("Challenge 1 failed", output.ToString());
+
+        var redirected = new Input { Interactive = false }; var redirectedOutput = new StringWriter();
+        var redirectedUi = new TerminalSessionUi(identity, redirected, redirectedOutput);
+        Assert.True(await redirectedUi.HandleAsync(commands.Execute("credentials challenges disable"), default));
+        Assert.NotNull(engine.GetSnapshot().Identities.ChallengeCredentials);
+        Assert.Contains("refused", redirectedOutput.ToString());
+        Assert.Empty(redirected.SecretReads);
+        Assert.True(commands.Execute("credentials challenges setup").SetupRequested);
+        Assert.True(commands.Execute("credentials challenges rotate").SetupRequested);
+        Assert.Contains("Usage", commands.Execute("credentials challenges test secret").Text);
     }
     [Theory]
     [InlineData(25)]

@@ -1,5 +1,7 @@
 # Fresh clone and prepared portable runtime
 
+**Clean-install and branding hardening — 2026-11-18:** Clean source launches now provision or repair the private pinned runtime before opening a world, and non-interactive missing-runtime starts fail closed instead of opening simulated conversations. Portable builds require the full runtime/model/.NET inventory, seal it, and pass a real MCP reply check before publication. Current copy/move flows refuse incomplete sources and independently hash the complete destination. Version-2 packages validate their manifest at startup before loading a world. New packages, root-drive destinations, terminal banners, conversation windows and launch helpers use `Grid.AI`; old solution/pipe names are compatibility-only internals.
+
 **6.17 registry foundation — 2026-11-04.** Versioned model manifests, checksum verification, retained-revision rollback, shared-asset accounting, candidate tracking, persistent force-Lite and device diagnostics are implemented. 1,109 solution tests and live baseline inventory verification passed. Exact specialist artifacts, device benchmarks and automatic profile promotion remain pending. Running chat remains on the pinned Qwen3 baseline. [Implementation and commands](Project_GRID_Model_Registry_Implementation.md).
 
 **6.15 import implementation — 2026-11-04.** Offline PDF text extraction and DOCX body paragraph/table import are locally verified. The bundled parser uses bounded worker processes, page/paragraph provenance and explicit empty/scanned/encrypted/corrupt-file outcomes. 1,073 regression tests passed across current suites, with standalone PDF/DOCX deployment checks. Second-device acceptance and the final 6.7–6.31 gate remain pending. [Implementation, scope and verification](Project_GRID_Offline_Document_Import_Implementation.md).
@@ -43,7 +45,7 @@ From a source checkout on a provisioning machine:
 dotnet run --project Grid.Terminal -- --verify-runtime
 dotnet run --project Grid.Terminal
 .\Build-GridPortable.ps1
-.\Test-GridPortable.ps1 -PackageRoot .\portable\GRID7736
+.\Test-GridPortable.ps1 -PackageRoot ".\portable\Grid.AI"
 ```
 
 `Prepare-GridRuntime.ps1` accepts explicit OllamaSource, ModelCache, DotnetSource, NugetCache and Destination paths. Defaults import existing assets once. It validates Qwen blob sizes/SHA256, copies the Ollama executable/libraries and only Qwen's referenced model blobs, copies the SDK and available NuGet cache, and records model manifest hash/runtime version in assets.json. It does not download a model or overwrite an existing runtime folder. If assets are unavailable, provision them during installation and rerun with their paths. Missing dependencies fail clearly instead of relying on an undocumented global server.
@@ -51,7 +53,7 @@ dotnet run --project Grid.Terminal
 The prepared runtime is `.grid-runtime/` in a source checkout. The package layout is:
 
 ```text
-GRID7736/
+Grid.AI/
   launch.cmd
   grid-package.json
   THIRD_PARTY_RUNTIME_NOTICES.md
@@ -90,6 +92,6 @@ Unavailable AI replies previously explicitly removed animation metadata. Fallbac
 
 A self-contained package was built and Test-GridPortable.ps1 passed with PATH restricted to System32, a fresh USERPROFILE/HOME/LOCALAPPDATA, invalid global DOTNET_ROOT and an empty external model-cache path. The packaged runtime/model still returned Grid.AI LOCAL READY and an actual MCP answer. This verifies independence from those global paths on this PC; it is not a fresh Windows VM, a second physical PC, or a firewall-isolated network test. The tests do not establish model factual accuracy.
 
-Windows x64, supported hardware drivers and Windows facilities remain platform requirements. Speech recognizers/voices, security services, alternate hardware, read-only/unplugged media, PC/Flash installer choice, credential/device migration and full offline feature acceptance remain under 8.6/8.7 and the restored planning sections. Do not label all of Grid.AI fully plug-and-play yet. No schema change (v20) or user-world migration occurred.
+Windows x64, supported hardware drivers and Windows facilities remain requirements of this completed historical package. Speech recognizers/voices, security services, alternate hardware, read-only/unplugged media, PC/Flash installer choice, credential/device migration and full offline feature acceptance now belong to active Phase 7 where cross-platform, with remaining edition hardening retained in future plans B.6–B.7. Do not label all of Grid.AI fully plug-and-play yet. No schema change (v20) or user-world migration occurred.
 
 Final package observation: 9,872,514,113 bytes (about 9.9 GB) including the provisioned SDK/cache. No GRID-owned Ollama/llama-server processes remained after verification. Final focused runtime/typewriter rerun: 11 tests passed; self-contained publish completed successfully.

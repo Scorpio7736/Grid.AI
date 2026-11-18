@@ -110,5 +110,5 @@ try {
     & (Join-Path $app 'Grid.Terminal.exe') --verify-chat-runtime
     if ($LASTEXITCODE -ne 0) { throw 'Local-model conversation verification failed; installation not marked ready. Preserve the printed runtime error.' }
     Set-Content -LiteralPath (Join-Path $app 'clone-ready.json') -Value (@{version=1; ready=$true; verifiedUtc=[DateTime]::UtcNow.ToString('O'); world='.grid-data/world.db'} | ConvertTo-Json) -Encoding UTF8
-    Write-Output 'Fresh clone ready. Run .\Start-GridClone.ps1 for this clone-local world and new credential setup. Existing worlds remain untouched.'
+    Write-Output 'Grid.AI clean clone ready. Run .\Start-GridClone.ps1 for this clone-local world and credential setup. Existing worlds remain untouched.'
 } finally { foreach ($name in $names) { [Environment]::SetEnvironmentVariable($name,$previous[$name],'Process') } }

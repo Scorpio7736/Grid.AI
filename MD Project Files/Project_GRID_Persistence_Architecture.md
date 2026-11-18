@@ -1,5 +1,7 @@
 # Project Grid.AI - Persistence architecture and schema history
 
+**Challenge authentication persistence — 2026-11-17.** Schema v25 stores challenge prompts plus independently salted response verifiers inside local identity state; schema v26 persists only bounded account/endpoint failure and increasing cooldown state. Plaintext responses, active endpoint grants, attempts and claims are never saved. Host restart therefore invalidates all active remote challenge authority while retaining abuse resistance. **1,452 tests passed**, zero failed/skipped. [Protocol and remaining protected-client work](Project_GRID_Challenge_Code_Authentication.md).
+
 **6.21 agent memory migration — 2026-11-05.** Memory records, grants and recall policy now belong to Grid.Agent, with generic lexical/extractive helpers in Grid.AI. Existing conversation storage, schema v24, permissions, correction/expiry and source revocation remain compatible. 1,180 tests and six live copied-database memory checks passed. No new model or memory database is required. [Implementation and verification](Project_GRID_Agent_Memory_Migration.md).
 
 **Planning update — 2026-11-04.** Plan a single authoritative owner for each existing agent, conversation, memory, grant and task record during GRID-Agent extraction. Preserve identities, history, provenance, approval binding and recovery receipts through versioned, backed-up migrations with tested rollback. Generic retrieval storage begins with SQLite and a selected offline vector capability. Sections 6.21 and 6.31 define migration acceptance before Phase 7. Managed persistent data counts toward the new shared 128 GB Flash/PC target. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
@@ -92,7 +94,7 @@ See [edition details](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) 
 
 GRID-REQ-007 requires a self-contained flash-drive package with portable identity and package-relative managed storage/dependencies. GRID-REQ-008 requires all Grid.AI runtime tasks to work offline; only explicit installs/provisioning may use the internet. Portable password authentication is implemented; host-local storage and PATH registration still do not fulfill full package portability. Earlier optional-cloud/online runtime plans are superseded by this offline requirement. Preserve saved city and world history across host changes.
 
-See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) and checklist 4.2B (implemented), 8.6 and 8.7 (planned). See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
+See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md), checklist 4.2B (implemented), active Phase 7 and future plans B.6–B.7. See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
 
 ## Local login and identity completion - 4.2A (2026-10-20)
 
@@ -267,8 +269,8 @@ History validation is not a full schema-tamper detector. Section 2.2 adds integr
 On 2026-10-18:
 
 - `dotnet test Grid.Persistence.Tests/Grid.Persistence.Tests.csproj --verbosity minimal -p:NuGetAudit=false`: 31 passed.
-- `dotnet test Grid7736.slnx --verbosity minimal -p:NuGetAudit=false`: 171 passed, zero failed/skipped (Core 8, Simulation 93, Terminal 39, Persistence 31).
-- `dotnet build Grid7736.slnx --no-restore --verbosity minimal`: zero warnings/errors.
+- `dotnet test Grid.AI.slnx --verbosity minimal -p:NuGetAudit=false`: 171 passed, zero failed/skipped (Core 8, Simulation 93, Terminal 39, Persistence 31).
+- `dotnet build Grid.AI.slnx --no-restore --verbosity minimal`: zero warnings/errors.
 
 Tests use isolated temporary file-backed databases. Coverage includes initialization/reopen without row loss, per-connection foreign keys, stored-value constraints, same-world membership, cascades, caller rollback, failed initial/upgrade migration rollback, synthetic upgrade idempotence, missing/empty/foreign/future/invalid files, history disagreement, foreign-key violations and concurrent initialization. These 2.1 row round trips were SQL-level checks; the subsequent 2.2 verification below covers engine save/load.
 
@@ -303,7 +305,7 @@ After each commit, SQLite's backup API creates a standalone staged copy. Grid.AI
 
 ### Completion verification
 
-On 2026-10-18, `dotnet test Grid7736.slnx --verbosity minimal --no-restore` passed **200 tests**, zero failed/skipped: Core 8, Simulation 93, Terminal 50, Persistence 49. The final solution build also passed with zero warnings/errors. This adds 18 persistence cases and 11 terminal cases to the 171-test 2.1 baseline. Coverage includes real world round trips, revisions/resources/memberships/clock, rollback after an injected mid-transaction SQL failure, cancellation, corruption rejection, backup refresh failure, explicit recovery and damaged-file preservation, interrupted-recovery markers, exclusive sessions, periodic saves, shutdown ordering and visible failure results.
+On 2026-10-18, `dotnet test Grid.AI.slnx --verbosity minimal --no-restore` passed **200 tests**, zero failed/skipped: Core 8, Simulation 93, Terminal 50, Persistence 49. The final solution build also passed with zero warnings/errors. This adds 18 persistence cases and 11 terminal cases to the 171-test 2.1 baseline. Coverage includes real world round trips, revisions/resources/memberships/clock, rollback after an injected mid-transaction SQL failure, cancellation, corruption rejection, backup refresh failure, explicit recovery and damaged-file preservation, interrupted-recovery markers, exclusive sessions, periodic saves, shutdown ordering and visible failure results.
 
 A built-terminal smoke test against an isolated temporary database created Genesis, stepped to tick 2, exited, reopened the same world paused at tick 2, rejected injected corruption, and recovered the same world/tick using --recover. --ephemeral --start also reported Running. The user's default world was not opened by this test. These checks do not simulate physical power loss, exhaustive filesystem failure, or promise preservation of changes after the last committed snapshot.
 

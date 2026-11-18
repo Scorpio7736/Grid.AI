@@ -76,7 +76,7 @@ Full solution: **1,416 passed, zero failed/skipped** (Core 14, Simulation 157, P
 
 ```powershell
 dotnet test Grid.Terminal.Tests/Grid.Terminal.Tests.csproj --artifacts-path TestResults/device-integration -p:NuGetAudit=false -p:RestoreIgnoreFailedSources=true --filter "FullyQualifiedName~DeviceCapabilityTests|FullyQualifiedName~IntegrationBoundaryTests|FullyQualifiedName~IdentitySessionTests|FullyQualifiedName~TaskBrokerTests" --verbosity minimal
-dotnet test Grid7736.slnx --artifacts-path TestResults/device-integration -p:NuGetAudit=false -p:RestoreIgnoreFailedSources=true --verbosity quiet --logger "trx;LogFileName=device-integration.trx"
+dotnet test Grid.AI.slnx --artifacts-path TestResults/device-integration -p:NuGetAudit=false -p:RestoreIgnoreFailedSources=true --verbosity quiet --logger "trx;LogFileName=device-integration.trx"
 ```
 
 ## Remaining real-device acceptance

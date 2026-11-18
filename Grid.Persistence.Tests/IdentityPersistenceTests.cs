@@ -92,4 +92,59 @@ public sealed class IdentityPersistenceTests
         }
         finally { Directory.Delete(directory, true); }
     }
+    [Fact]
+    public void DisabledChallengesRemainDisabledAfterSaveWhilePasswordRemainsValid()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "GridChallengeDisable-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path = Path.Combine(directory, "world.db");
+            var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
+            var credential = Grid.Communication.PasswordCredential.Create("Owner", "Ab1!xy");
+            var challenges = Grid.Communication.ChallengeCredentialSet.Create(
+                [("A", "x"), ("B", "y"), ("C", "z")], "Owner", "Ab1!xy");
+            engine.SetLocalCredentials(credential, challenges);
+            var info = new WorldInfo(engine.GetSnapshot().WorldId, "Credential", DateTimeOffset.UtcNow);
+            using var store = new WorldStore(path);
+            store.Create(info, engine.GetSnapshot());
+            Assert.True(engine.DisableLocalChallenges());
+            store.Save(info, engine.GetSnapshot());
+            var restored = store.Load().State.Identities;
+            Assert.Null(restored.ChallengeCredentials);
+            Assert.NotNull(restored.Credential);
+            Assert.True(restored.Credential!.Verify("Owner", "Ab1!xy"));
+        }
+        finally { Directory.Delete(directory, true); }
+    }
+    [Fact]
+    public void ChallengeCooldownSurvivesDatabaseSaveAndReload()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "GridChallengeCooldown-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path = Path.Combine(directory, "world.db");
+            var authority = new TestAuthority();
+            var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis(), editAuthorizer: authority);
+            var challenges = Grid.Communication.ChallengeCredentialSet.Create(
+                [("A", "x"), ("B", "y"), ("C", "z")], "Owner", "Ab1!xy");
+            engine.SetLocalCredentials(Grid.Communication.PasswordCredential.Create("Owner", "Ab1!xy"), challenges);
+            var endpoint = engine.PairChallengeEndpoint(authority.Reference, "phone");
+            for (var attempt = 0; attempt < 3; attempt++)
+            {
+                var issued = engine.BeginRemoteChallenge(endpoint, "call-" + attempt, "remote-identity");
+                Assert.Equal(Grid.Communication.ChallengeSessionStatus.Failed,
+                    engine.SubmitRemoteChallenge(issued.NextPrompt!.SessionId, issued.Binding!, issued.NextPrompt.ChallengeId, "wrong").Status);
+            }
+            var info = new WorldInfo(engine.GetSnapshot().WorldId, "Credential", DateTimeOffset.UtcNow);
+            using var store = new WorldStore(path);
+            store.Create(info, engine.GetSnapshot());
+            var restored = GridSimulationEngine.Restore(store.Load().State, editAuthorizer: authority);
+            var restoredEndpoint = restored.PairChallengeEndpoint(authority.Reference, "different-phone");
+            Assert.Equal(Grid.Communication.ChallengeSessionStatus.Locked,
+                restored.BeginRemoteChallenge(restoredEndpoint, "new-call", "remote-identity").Status);
+        }
+        finally { Directory.Delete(directory, true); }
+    }
 }

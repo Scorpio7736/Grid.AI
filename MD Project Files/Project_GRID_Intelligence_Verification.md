@@ -31,7 +31,7 @@ Completed 2026-10-27. This milestone verifies the existing intelligence features
 Run these from PowerShell in the repository, not at the `grid>` prompt:
 
 ```powershell
-dotnet test Grid7736.slnx -c Release
+dotnet test Grid.AI.slnx -c Release
 dotnet test Grid.Terminal.Tests/Grid.Terminal.Tests.csproj -c Release --filter "Phase=6.5"
 .\Test-GridPortable.ps1 -PackageRoot .\portable\GRID7736-standalone -IntelligenceOnly
 ```

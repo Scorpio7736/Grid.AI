@@ -61,7 +61,7 @@ public sealed class GridTransfer
         var destination = Path.TrimEndingDirectorySeparator(Path.GetFullPath(requested));
         // Roots are containers. Never publish files directly into a user's drive root.
         return destination.Equals(Path.GetPathRoot(destination), StringComparison.OrdinalIgnoreCase)
-            ? Path.Combine(destination, "GRID7736") : destination;
+            ? Path.Combine(destination, GridBrand.PortableFolder) : destination;
     }
     public TransferPlan Prepare(TransferRequest request)
     {
@@ -278,8 +278,8 @@ public sealed class GridTransfer
         if (!File.Exists(target)) return;
         if (Environment.GetEnvironmentVariable(TerminalEnvironment.VariableName, EnvironmentVariableTarget.User)?.Equals(oldExe, StringComparison.OrdinalIgnoreCase) != true) return;
         Environment.SetEnvironmentVariable(TerminalEnvironment.VariableName, target, EnvironmentVariableTarget.User);
-        var launcher = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GRID", "bin", "Grid7736.cmd");
-        if (File.Exists(launcher) && File.ReadAllText(launcher).StartsWith("@rem GRID7736 managed launcher\r\n") && File.ReadAllText(launcher).Contains(oldExe.Replace("%", "%%"), StringComparison.OrdinalIgnoreCase))
+        var launcher = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GRID", "bin", "GridAI.cmd");
+        if (File.Exists(launcher) && File.ReadAllText(launcher).StartsWith("@rem Grid.AI managed launcher\r\n") && File.ReadAllText(launcher).Contains(oldExe.Replace("%", "%%"), StringComparison.OrdinalIgnoreCase))
             File.WriteAllText(launcher, TerminalEnvironment.LauncherScript(target));
     }
 }

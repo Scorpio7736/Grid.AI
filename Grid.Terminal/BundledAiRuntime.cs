@@ -17,7 +17,7 @@ public sealed class BundledAiRuntime : IAsyncDisposable
         var packaged = Path.GetFullPath(Path.Combine(start, "..", "runtime"));
         if (File.Exists(Path.Combine(start,"..",GridTransfer.Marker))) return packaged;
         for (var dir = new DirectoryInfo(start); dir is not null; dir = dir.Parent)
-            if (File.Exists(Path.Combine(dir.FullName,"Grid7736.slnx"))) return Path.Combine(dir.FullName,".grid-runtime");
+            if (File.Exists(Path.Combine(dir.FullName,GridBrand.Solution)) || File.Exists(Path.Combine(dir.FullName,GridBrand.LegacySolution))) return Path.Combine(dir.FullName,".grid-runtime");
         return null;
     }
     public static async Task<BundledAiRuntime> StartAsync(string? root, CancellationToken token = default)
@@ -28,8 +28,8 @@ public sealed class BundledAiRuntime : IAsyncDisposable
         var required = new[] { "assets.json", Path.Combine("ollama", "ollama.exe"), Path.Combine("models", "manifests", "registry.ollama.ai", "library", "qwen3", "4b") };
         var missing = root is null ? required : required.Where(path => !File.Exists(Path.Combine(root, path))).ToArray();
         if (root is null || missing.Length > 0)
-        { runtime.Status = "Local AI assets missing. Runtime root: " + (root ?? "not located") + "\nMissing: " + string.Join(", ", missing) +
-            "\nA source clone alone does not include bundled runtime/model assets. In PowerShell at the repository root, run .\\Setup-GridClone.ps1 -Download, then .\\Start-GridClone.ps1. For an incomplete existing runtime, close GRID and use -Download -RepairRuntime; previous runtime files are retained. Offline: use Prepare-GridRuntime.ps1 with verified local assets, or a complete portable package's launch.cmd. No global Ollama fallback."; return runtime; }
+        { runtime.Status = "Grid.AI private local-AI runtime is incomplete. Runtime root: " + (root ?? "not located") + "\nMissing: " + string.Join(", ", missing) +
+            "\nNormal clean-clone startup provisions this before opening a world. Repair from the repository root with .\\Setup-GridClone.ps1 -Download -RepairRuntime, or restore a complete portable Grid.AI package. No global Ollama fallback."; return runtime; }
         try
         {
             PackageBudget.VerifyModel(root, hashes: false);

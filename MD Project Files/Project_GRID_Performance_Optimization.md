@@ -30,7 +30,7 @@ The pinned Qwen baseline remains the available runtime model. Multi-model select
 The full solution passed 1,243 tests on 2026-11-12, comprising Core 14, Simulation 157, Persistence 99 and Terminal 973. Thirteen new cases cover cache hits, TTL, clock rollback, capacity, model/persona version changes, scope/source separation, revoked access through the normal connected-agent route and fresh memory measurements. The normal-route test verifies captured private content disappears from the subsequent prompt after grant revocation.
 
 ```text
-dotnet test Grid7736.slnx --no-restore --verbosity quiet
+dotnet test Grid.AI.slnx --no-restore --verbosity quiet
 Grid.Terminal.exe --verify-inference-cache
 ```
 

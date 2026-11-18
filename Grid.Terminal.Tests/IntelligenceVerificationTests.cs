@@ -100,7 +100,7 @@ public sealed class IntelligenceVerificationTests : IDisposable
         var local = DefaultCommands.Create(engine); ChatCommands.Register(local, engine, owner, service); local.UseIdentity(owner);
         local.Execute("connect MCP -inline");
         var reply = await local.Execute("talk status").BrokerOperation!(default);
-        Assert.Contains("VERIFIED GRID STATE", reply.Text);
+        Assert.Contains("VERIFIED GRID.AI STATE", reply.Text);
         var advice = await local.Execute("assist advice explain status").BrokerOperation!(default);
         Assert.Contains("unavailable", advice.Text, StringComparison.OrdinalIgnoreCase);
         Assert.Empty(engine.GetSnapshot().Tasks.Records);

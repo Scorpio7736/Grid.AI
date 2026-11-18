@@ -10,6 +10,7 @@ public sealed class CommandDispatcher
     public Func<IReadOnlyList<string>, CommandResult>? OpenConversation { get; set; }
     public Func<bool>? ConversationConnected { get; set; }
     public Func<string, bool>? ConversationParticipant { get; set; }
+    public Func<bool>? EmergencySafeMode { get; set; }
     public string Prompt => identity?.Prompt ?? "grid> ";
     public bool Typewriter { get; set; } = !string.Equals(Environment.GetEnvironmentVariable("GRID_TYPEWRITER"), "off", StringComparison.OrdinalIgnoreCase);
     public long? IdentityGeneration => identity?.Generation;
@@ -37,6 +38,8 @@ public sealed class CommandDispatcher
         ArgumentNullException.ThrowIfNull(command);
         if (string.IsNullOrWhiteSpace(command.Name) || command.Name.Any(char.IsWhiteSpace))
             throw new ArgumentException("Command names must be a single word.");
+        if (DevelopmentBreakGlassRegistry.IsReservedInput(command.Name))
+            throw new ArgumentException("Reserved operator-recovery commands cannot be registered as ordinary terminal commands.");
         ArgumentNullException.ThrowIfNull(command.Execute);
         if (!commands.TryAdd(command.Name, command))
             throw new ArgumentException($"Command already registered: {command.Name}.");
@@ -64,6 +67,9 @@ public sealed class CommandDispatcher
         if (text.Equals("/close", StringComparison.OrdinalIgnoreCase)) return ["exit"];
         if (ConversationConnected?.Invoke() != true) return ParseInput(line);
         if (text.Length == 0) return [];
+        var boundary = text.IndexOfAny([' ', '\t', '\r', '\n']);
+        var name = boundary < 0 ? text : text[..boundary];
+        if (DevelopmentBreakGlassRegistry.IsReservedInput(name)) return Parse(line);
         if (text.Equals("/terminal", StringComparison.OrdinalIgnoreCase) ||
             text.Equals("return to terminal", StringComparison.OrdinalIgnoreCase) ||
             text.Equals("leave conversation", StringComparison.OrdinalIgnoreCase) ||
@@ -79,6 +85,7 @@ public sealed class CommandDispatcher
         if (IsFence(text)) return [];
         var boundary = text.IndexOfAny([' ', '\t', '\r', '\n']);
         var name = boundary < 0 ? text : text[..boundary];
+        if (DevelopmentBreakGlassRegistry.IsReservedInput(name)) return Parse(line);
         if (name.Equals("talk", StringComparison.OrdinalIgnoreCase))
             return boundary < 0 ? ["talk"] : ["talk", text[(boundary + 1)..].Trim()];
         if (ConversationConnected?.Invoke() == true && ConversationParticipant?.Invoke(name) == true)
@@ -99,6 +106,10 @@ public sealed class CommandDispatcher
         try
         {
             if (tokens.Count == 0) return new("");
+            if (DevelopmentBreakGlassRegistry.IsReservedInput(tokens[0]))
+                return new(DevelopmentBreakGlassRegistry.GenericDenial);
+            if (EmergencySafeMode?.Invoke() == true && tokens[0].ToLowerInvariant() is not ("help" or "clear" or "exit" or "login" or "logout"))
+                return new("GRID safe mode is active. Only help, clear, login, logout, exit and reviewed operator-recovery controls are available until restart.");
             // Route meeting shorthand before the generic connect window launcher.
             if (tokens.Count > 1 && tokens[0].Equals("connect", StringComparison.OrdinalIgnoreCase) && tokens[1].Equals("meetings", StringComparison.OrdinalIgnoreCase))
                 tokens = new[] { "agent" }.Concat(tokens.Skip(1)).ToArray();

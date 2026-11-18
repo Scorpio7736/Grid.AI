@@ -2,6 +2,10 @@
 
 A repository clone is a new Grid.AI instance; `grid -copyto` transfers an existing instance. These are different workflows. Binary runtimes and model weights are not stored in Git.
 
+**First-run repair — 2026-11-18:** `Start-GridClone.ps1` now detects an unprepared clean clone before any world is opened, explains the approximately 6 GB baseline, and offers to run the pinned download, hash verification, build and real MCP conversation test automatically. Direct interactive source launches use the same preflight. Non-interactive launches never fall through into misleading simulated chat: they stop with the exact setup command and state that no world was opened. A corrupt partial runtime selects the retained-file `-RepairRuntime` path. Explicit `GRID_AI_DISABLED=1` remains the only opt-out for a deliberately AI-disabled session.
+
+Verification passed all **1,453 solution tests** through `Grid.AI.slnx`. The source runtime produced real inline and attached MCP replies. A newly built sealed package at `TestResults/Grid.AI-portable-20261118` independently produced both real replies from its destination-local runtime/model before publication. This proves current same-PC provisioning and package completeness, not physical second-device compatibility.
+
 ## PC2: new instance from the repository
 
 After pulling this revision, open 64-bit PowerShell in the cloned repository:
@@ -23,7 +27,7 @@ Layout:
 - `.grid-data/world.db`: this clone's world, identity and history, created only on first launch. First launch uses normal local credential setup. No PC1 world or shared LocalAppData world is imported.
 - `.grid-install-*`: retained download/staging directories. Failures do not erase these or overwrite worlds. These directories and private data are ignored by Git and excluded from portable source gathering.
 
-Always use `Start-GridClone.ps1` for this instance. Ordinary `dotnet run` retains its historical shared-user default world path. Restarting the clone launcher resumes the same clone world; setup is not a reset command. Existing PC2 data remains where it was. No automatic grant/credential migration occurs.
+Use `Start-GridClone.ps1` for this clone-local instance. It now provisions missing verified assets interactively on first run. Ordinary `dotnet run` uses its historical shared-user default world path but performs the same runtime preflight before opening it. Restarting the clone launcher resumes the same clone world; setup is not a reset command. Existing PC2 data remains where it was. No automatic grant/credential migration occurs.
 
 ## Offline inputs and failures
 
@@ -39,7 +43,7 @@ On the user's PC2 clone, `Setup-GridClone.ps1 -Download` completed the full onli
 
 This establishes online installation and actual inference on PC2, not compatibility with every machine. Supported baseline remains Windows x64, sufficient storage/memory, and Internet for first installation. Physical conversation windows, first credential setup and disconnected operation on PC2 remain open acceptance checks. Earlier development-PC evidence below is historical.
 
-Verification after the follow-up changes: `dotnet test Grid7736.slnx --verbosity quiet -p:NuGetAudit=false` exited 0: **1,434 passed, zero failed, four skipped** (symbolic-link fixtures require privileges unavailable on this account). Seven fresh-clone cases passed, including partial-runtime repair guidance, offline repair refusal/file preservation and corrupt-model refusal. The Windows PowerShell child test environment now initializes its own module paths instead of inheriting PowerShell 7 paths. `git diff --check` passed. Full online replacement of a deliberately damaged runtime was not repeated; successful online installation above used an absent runtime.
+Verification after the follow-up changes: `dotnet test Grid.AI.slnx --verbosity quiet -p:NuGetAudit=false` exited 0: **1,434 passed, zero failed, four skipped** (symbolic-link fixtures require privileges unavailable on this account). Seven fresh-clone cases passed, including partial-runtime repair guidance, offline repair refusal/file preservation and corrupt-model refusal. The Windows PowerShell child test environment now initializes its own module paths instead of inheriting PowerShell 7 paths. `git diff --check` passed. Full online replacement of a deliberately damaged runtime was not repeated; successful online installation above used an absent runtime.
 
 ## AI readiness alerts (2026-11-15)
 

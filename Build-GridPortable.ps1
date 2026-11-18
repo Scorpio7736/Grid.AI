@@ -1,4 +1,4 @@
-param([string]$Destination = (Join-Path $PSScriptRoot 'portable\GRID7736'), [string]$RuntimeSource = (Join-Path $PSScriptRoot '.grid-runtime'))
+param([string]$Destination = (Join-Path $PSScriptRoot 'portable\Grid.AI'), [string]$RuntimeSource = (Join-Path $PSScriptRoot '.grid-runtime'))
 $ErrorActionPreference = 'Stop'
 if (Test-Path -LiteralPath $Destination) { throw "Destination exists: $Destination. Select a new folder; existing worlds/packages are never overwritten." }
 if (!(Test-Path -LiteralPath (Join-Path $RuntimeSource 'assets.json'))) { throw 'Run Prepare-GridRuntime.ps1 first or supply a prepared -RuntimeSource.' }
@@ -42,6 +42,8 @@ function Copy-GridSource([string]$From, [string]$To) {
 Copy-GridSource $PSScriptRoot $sourceTarget
 & (Join-Path $app 'Grid.Terminal.exe') --seal-portable-assets $Destination
 if ($LASTEXITCODE -ne 0) { throw 'Package exceeds the base budget or has invalid model assets; package remains incomplete.' }
+& (Join-Path $app 'Grid.Terminal.exe') --verify-chat-runtime
+if ($LASTEXITCODE -ne 0) { throw 'Real local-AI conversation verification failed; package remains incomplete and was not published.' }
 Set-Content -LiteralPath (Join-Path $Destination 'transfer-status.txt') -Value 'Package ready.' -Encoding UTF8
 if (([IO.DriveInfo]::new([IO.Path]::GetPathRoot($Destination))).AvailableFreeSpace -lt 256000000L) { throw 'Package staging consumed the required free-space reserve.' }
 [IO.Directory]::Move($Destination, $publishDestination)

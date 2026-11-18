@@ -29,7 +29,7 @@ The full solution passed 1,225 tests on 2026-11-12, comprising Core 14, Simulati
 Existing suites run jointly with these cases and cover unauthorized retrieval, revoked grants, stale sessions, forged identities, quotas, malformed outputs, command-shaped model answers, exact approval binding, concurrent destination changes, failed-save retries and recovered receipts. The hostile-document tests assert that the injected text actually reached the captured prompt before checking refusal and absence of tasks.
 
 ```text
-dotnet test Grid7736.slnx --no-restore --verbosity minimal
+dotnet test Grid.AI.slnx --no-restore --verbosity minimal
 ```
 
 Tests use synthetic credentials and controlled model responses for reproducible boundary checks. They establish host behavior for the tested routes. Model factual accuracy and specialist-model acceptance continue under their evaluation milestones. Conversation-only chat and meeting acceptance remains scheduled under 6.31.

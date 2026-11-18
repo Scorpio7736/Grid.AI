@@ -1,5 +1,7 @@
 # Project GRID — Master Overview
 
+**Roadmap rebased — 2026-11-17.** The next active phase is cross-platform compatibility through `Grid.Platform`, preserving Windows while adding Linux adapters and prioritizing a dedicated Android ARM64 host with native removable-folder access. The former City, Integration and optional GUI work is retained as backlog/future plans rather than deleted; Grid.Platform comes before new GUI work. [Cross-platform and Android architecture](Project_GRID_Cross_Platform_and_Android_Plan.md) and [master checklist](Project_GRID_Master_Development_Checklist.md#phase-7--cross-platform-compatibility-and-android-portability).
+
 **Planning update — 2026-11-04.** Planned architecture separates GRID-AI intelligence services, GRID-Agent identities/personas/memory/permissions/orchestration, and GRID7736 simulation/application operations. Sections 6.16–6.31 are required before Phase 7. The shared storage target is now 128 GB decimal for Flash and PC copies, with flash drives primary and installers/local PC copies supported. Specialist model choices await user research and evaluation. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
 
 **Pre-Phase-7 direction — planned 2026-10-27:** MCP means Master Control Program and will be the user’s digital helper with near-Master-Control delegated operational authority, human approvals, custom tasks and specialist invitations. Complete conversational CRUD, durable context, role-specific model profiles, a 20 GB base package and proven offline second-device operation before Phase 7. [Authoritative plan](Project_GRID_Pre_Phase_7_Readiness_Plan.md).
@@ -81,7 +83,7 @@ See [edition details](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) 
 
 GRID-REQ-007 requires a self-contained flash-drive package with portable identity and package-relative managed storage/dependencies. GRID-REQ-008 requires all GRID runtime tasks to work offline; only explicit installs/provisioning may use the internet. Portable password authentication is implemented; host-local storage and PATH registration still do not fulfill full package portability. Earlier optional-cloud/online runtime plans are superseded by this offline requirement. Preserve saved city and world history across host changes.
 
-See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) and checklist 4.2B (implemented), 8.6 and 8.7 (planned). See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
+See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md), checklist 4.2B (implemented), active Phase 7 and future plans B.6–B.7. See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
 
 ## Local login and identity completion - 4.2A (2026-10-20)
 

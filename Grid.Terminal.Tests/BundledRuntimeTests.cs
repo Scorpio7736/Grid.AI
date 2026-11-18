@@ -7,15 +7,32 @@ namespace Grid.Terminal.Tests;
 public sealed class BundledRuntimeTests
 {
     [Fact]
+    public async Task CleanClonePreflightRefusesDegradedStartupWithoutInteractiveProvisioning()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "GridAiBootstrap-" + Guid.NewGuid());
+        var app = Path.Combine(root, "Grid.Terminal", "bin");
+        Directory.CreateDirectory(app);
+        File.WriteAllText(Path.Combine(root, GridBrand.Solution), "");
+        File.WriteAllText(Path.Combine(root, "Setup-GridClone.ps1"), "throw 'must not run'");
+        try
+        {
+            var output = new StringWriter();
+            Assert.False(await CloneRuntimeBootstrap.EnsureAsync(app, new StringReader(""), output, interactive: false));
+            Assert.Contains("FIRST-RUN LOCAL AI SETUP", output.ToString());
+            Assert.Contains("Grid.AI was not started. No world was opened.", output.ToString());
+            Assert.False(Directory.Exists(Path.Combine(root, ".grid-data")));
+        }
+        finally { Directory.Delete(root, true); }
+    }
+    [Fact]
     public async Task MissingRuntimeWarnsBeforeFirstMessageAndOnResume()
     {
         await using var runtime = await BundledAiRuntime.StartAsync(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
         var warning = AiReadinessNotice.Format(runtime.Ready, runtime.Status);
-        Assert.StartsWith("WARNING: AI unavailable", warning);
-        Assert.Contains("Setup-GridClone.ps1 -Download", warning);
-        Assert.Contains("only basic fallback replies", warning);
+        Assert.StartsWith("WARNING: Grid.AI local AI unavailable", warning);
+        Assert.Contains("limited fallback mode", warning);
         Assert.Contains("ai status", warning);
-        Assert.Contains("\nMissing:", warning);
+        Assert.DoesNotContain("\nMissing:", warning);
         Assert.Equal("", AiReadinessNotice.Format(true, "ready"));
         var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis()).PrepareChatFixture();
         var identity = new TerminalIdentitySession(() => "test"); identity.Attach(engine); identity.Login();
@@ -31,7 +48,7 @@ public sealed class BundledRuntimeTests
     [Fact]
     public async Task AttachedConversationWarnsInParentAndInitialWindowReply()
     {
-        const string warning = "WARNING: AI unavailable — setup or repair required.\n";
+        const string warning = "WARNING: Grid.AI local AI unavailable.\n";
         var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis()).PrepareChatFixture();
         var registry = new TerminalSessionRegistry();
         var owner = new TerminalIdentitySession(() => "test"); registry.Add(owner); owner.Attach(engine); owner.Login();
@@ -125,7 +142,7 @@ public sealed class BundledRuntimeTests
         {
             var app=Path.Combine(root,"app");Directory.CreateDirectory(app);File.WriteAllText(Path.Combine(root,GridTransfer.Marker),"{}");
             Assert.Equal(Path.Combine(root,"runtime"),BundledAiRuntime.FindRoot(app));
-            File.Delete(Path.Combine(root,GridTransfer.Marker));File.WriteAllText(Path.Combine(root,"Grid7736.slnx"),"");
+            File.Delete(Path.Combine(root,GridTransfer.Marker));File.WriteAllText(Path.Combine(root,"Grid.AI.slnx"),"");
             Assert.Equal(Path.Combine(root,".grid-runtime"),BundledAiRuntime.FindRoot(app));
         }
         finally { Directory.Delete(root,true); }

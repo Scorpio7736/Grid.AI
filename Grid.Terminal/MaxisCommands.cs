@@ -20,7 +20,7 @@ public static class MaxisCommands
                 {
                     engine.RevokeDevelopmentWorkspace(identity.Reference,args[1]); save(CancellationToken.None).GetAwaiter().GetResult(); return new("Workspace revoked; pending tasks cannot start and running work receives cancellation.");
                 }
-                return new("Usage:\n  maxis workspaces\n  maxis register <alias> \"absolute-root\" \"relative/project.csproj\"\n  maxis revoke <alias>\nExample: maxis register grid \"C:\\Users\\jack\\source\\repos\\Grid7736\" \"Grid.Core/Grid.Core.csproj\"");
+                return new("Usage:\n  maxis workspaces\n  maxis register <alias> \"absolute-root\" \"relative/project.csproj\"\n  maxis revoke <alias>\nExample: maxis register grid \"C:\\Users\\jack\\source\\repos\\Grid AI\" \"Grid.Core/Grid.Core.csproj\"");
             }
             catch (Exception e) when (e is ArgumentException or InvalidOperationException or IOException or UnauthorizedAccessException or System.Data.Common.DbException)
             { return new("MAXIS error: " + e.Message + (e is IOException or System.Data.Common.DbException ? " In-memory changes may remain if saving failed; resolve storage before continuing." : "")); }

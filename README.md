@@ -6,7 +6,11 @@ Grid.AI is an offline-capable, multi-agent system built with **C# and .NET**. It
 
 The project is designed around a straightforward principle: **AI should be able to help you do real work on your own computer without requiring cloud inference or giving a language model unrestricted control of the machine.**
 
-Grid.AI originated as **GRID7736**. Some source identifiers, commands, filenames, and packaging conventions retain the original name for compatibility.
+Grid.AI is the current product name. A small number of internal solution/database/protocol identifiers remain unchanged solely for backward compatibility; they are not user-facing branding.
+
+## Next roadmap phase: cross-platform and Android
+
+The next planned phase introduces `Grid.Platform` so shared simulation, persistence, agents and AI do not directly depend on one operating system. Android ARM64 is the first priority through a dedicated native host and system folder/document access for removable Grid.AI data; Linux x64/ARM64 follows while current Windows behavior is preserved. Separate platform builds share a governed data/manifest contract. The former Godot City, later integration and optional desktop GUI work are retained as backlog/future plans. This is planned work, not a current support claim. [Architecture and acceptance plan](MD%20Project%20Files/Project_GRID_Cross_Platform_and_Android_Plan.md).
 
 ## Overview
 
@@ -171,7 +175,7 @@ Development plans, milestone evidence, test reports, and known limitations are m
 ## Repository
 
 **Project:** Grid.AI  
-**Original project name:** GRID7736  
+**Project name:** Grid.AI
 **Technology:** C# / .NET, SQLite, local AI inference  
 **Primary platform:** Windows x64  
 **Repository:** [github.com/Scorpio7736/Grid.AI](https://github.com/Scorpio7736/Grid.AI)

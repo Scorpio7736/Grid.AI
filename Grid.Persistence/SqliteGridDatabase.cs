@@ -34,6 +34,26 @@ public sealed class SqliteGridDatabase
         catch { connection.Dispose(); throw; }
     }
 
+    /// <summary>Opens an existing database without creating or migrating it. Intended for bounded diagnostics.</summary>
+    public SqliteConnection OpenReadOnly()
+    {
+        var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = DatabasePath, Mode = SqliteOpenMode.ReadOnly, ForeignKeys = true,
+            Pooling = false, Cache = SqliteCacheMode.Private, DefaultTimeout = 5
+        }.ToString());
+        try
+        {
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA query_only = ON; PRAGMA foreign_keys;";
+            if (Convert.ToInt64(command.ExecuteScalar()) != 1)
+                throw new InvalidOperationException("SQLite foreign-key enforcement is required.");
+            return connection;
+        }
+        catch { connection.Dispose(); throw; }
+    }
+
     private SqliteConnection Open(SqliteOpenMode mode)
     {
         var connection = new SqliteConnection(new SqliteConnectionStringBuilder

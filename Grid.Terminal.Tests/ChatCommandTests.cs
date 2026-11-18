@@ -21,7 +21,7 @@ public sealed class ChatCommandTests
         var (engine, commands) = Fixture();
         Assert.Contains(engine.GetSnapshot().Programs, p => p.Name == "MCP");
         Assert.Contains("Connected to MCP", commands.Execute("connect").Text);
-        Assert.Contains("VERIFIED GRID STATE", commands.Execute("talk status").Text);
+        Assert.Contains("VERIFIED GRID.AI STATE", commands.Execute("talk status").Text);
         Assert.Contains("MCP", commands.Execute("talk who are you").Text);
         Assert.Contains("SIMULATED DIALOGUE", commands.Execute("talk delete my files").Text);
         engine.Pause(); commands.Execute("step"); engine.Start(); Assert.Equal(1, engine.TickCount);

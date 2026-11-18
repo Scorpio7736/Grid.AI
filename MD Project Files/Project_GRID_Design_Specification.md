@@ -1,5 +1,7 @@
 # Project GRID
 
+**Cross-platform architecture update — planned 2026-11-17:** Grid.AI will isolate native behavior behind `Grid.Platform`, retain Windows through `Grid.Platform.Windows`, add Linux x64/ARM64 adapters and prioritize a dedicated `Grid.Host.Android`/`Grid.Platform.Android` target. Android uses native folder grants and lifecycle handling rather than being treated as generic Linux. Current implementation remains predominantly Windows; this is a roadmap/architecture update, not a portability completion claim. The former City and Integration phases are deferred to backlog. [Full platform plan and acceptance](Project_GRID_Cross_Platform_and_Android_Plan.md).
+
 **6.15 import implementation — 2026-11-04.** Offline PDF text extraction and DOCX body paragraph/table import are locally verified. The bundled parser uses bounded worker processes, page/paragraph provenance and explicit empty/scanned/encrypted/corrupt-file outcomes. 1,073 regression tests passed across current suites, with standalone PDF/DOCX deployment checks. Second-device acceptance and the final 6.7–6.31 gate remain pending. [Implementation, scope and verification](Project_GRID_Offline_Document_Import_Implementation.md).
 
 **Model-handling planning update — 2026-11-04.** Use hardware-aware model eligibility and task-specific smallest-passing-model selection. GRID-Agent owns deterministic delegation policy and approvals, GRID-AI owns model/inference resource handling, and GRID7736 executes approved operations. This maps the supplied orchestrator requirement onto the existing three-layer architecture. Model storage is planned at 75 GB within the shared 128 GB target. [Model selection and handling plan](Project_GRID_Model_Selection_and_Handling_Plan.md).
@@ -144,7 +146,7 @@ See [edition details](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) 
 
 GRID-REQ-007 requires a self-contained flash-drive package with portable identity and package-relative managed storage/dependencies. GRID-REQ-008 requires all GRID runtime tasks to work offline; only explicit installs/provisioning may use the internet. Portable password authentication is implemented; host-local storage and PATH registration still do not fulfill full package portability. Earlier optional-cloud/online runtime plans are superseded by this offline requirement. Preserve saved city and world history across host changes.
 
-See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) and checklist 4.2B (implemented), 8.6 and 8.7 (planned). See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
+See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md), checklist 4.2B (implemented), active Phase 7 and future plans B.6–B.7. See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
 
 ## Local login and identity completion - 4.2A (2026-10-20)
 
@@ -266,7 +268,7 @@ Generation must honor the existing architecture, readable streets, human-scale n
 - Test partial discovery, unsupported APIs, multiple components, hardware changes, corrupt saves, failed writes and simultaneous initialization.
 - Exact discovery APIs, field schema, component deduplication, fallback UX, scale limits and mapping algorithms remain decisions to implement and verify.
 
-The existing fixed Genesis factory remains the implemented baseline and a useful test fixture. Grid.Persistence now provides the section 2.1 SQLite schema and migration foundation; section 2.2 now saves and reuses fixed Genesis worlds. Hardware discovery and hardware-derived generation remain planned. Checklist 2.6 tracks implementation; Phase 7 renders the saved result and Phase 8 integrates lifecycle behavior.
+The existing fixed Genesis factory remains the implemented baseline and a useful test fixture. Grid.Persistence now provides the section 2.1 SQLite schema and migration foundation; section 2.2 now saves and reuses fixed Genesis worlds. Hardware discovery and hardware-derived generation remain planned. Checklist 2.6 tracks implementation; active Phase 7 must make the saved result portable without regeneration, while rendering and broader integration remain future backlog work.
 
 ## Implementation status - 2026-10-17
 
@@ -720,17 +722,21 @@ A cinematic full-screen startup sequence **after Windows login** is practical. R
 
 ## 9. Architecture and Technology Stack
 
-**Primary recommendation:** C#/.NET for the core, interfaces, telemetry, and task services; Godot .NET for 3D; WPF for native Windows controls; SQLite for durable records.
+**Primary recommendation:** C#/.NET for shared core, platform contracts and task services; separate Windows, Linux and Android adapters/hosts; SQLite for portable durable records. Godot .NET and desktop GUI technologies remain future backlog clients rather than architectural owners.
 
 | Subsystem | Candidate technology | Notes |
 |---|---|---|
 | World simulation | C# / .NET | Independent of UI or game engine |
-| 3D world | Godot .NET | City, camera, animated agents, environmental effects |
-| Desktop controls | WPF | Dashboard, voice settings, approvals, task details |
+| Platform contracts | C# / .NET | Typed detection, files, processes, runtime, removable storage, resources and lifecycle |
+| Windows adapter | Native .NET / approved Windows APIs | Preserve current capabilities behind Grid.Platform.Windows |
+| Linux adapter | Native .NET / bounded native APIs | x64/ARM64 paths, processes, mounts, resources and lifecycle |
+| Android host | .NET Android application host | ARM64 lifecycle, touch UI, permissions and system folder/document picker |
+| 3D world | Godot .NET | Future backlog city client; never owns simulation state |
+| Desktop controls | Platform-appropriate optional shell | Future backlog dashboard, approvals and settings |
 | Terminal | .NET CLI | Commands, conversations, status and audit |
 | Persistence | SQLite | World state, tasks, communication and histories |
-| Interprocess transport | Named pipes (Windows) | Local IPC, scoped access; optional local WebSocket for viewer integration |
-| Telemetry | Supported Windows APIs | Resource sampling; approved process and security information |
+| Interprocess transport | Platform adapter | Scoped native IPC selected per host; protocol semantics remain shared |
+| Telemetry | Platform resource adapter | Units/freshness/unknown states; no invented cross-platform equivalence |
 | Audio capture | NAudio or equivalent | Push-to-talk and microphone device management |
 | Offline STT | whisper.cpp | Local speech-to-text candidate |
 | Initial TTS | Windows `System.Speech` | Simple initial synthesis |
@@ -744,23 +750,17 @@ A cinematic full-screen startup sequence **after Windows login** is practical. R
 GRID/
 ├── Grid.Core/                   # World objects, resource rules, agent states
 ├── Grid.Simulation/             # World clock, ticks, autonomous decision systems
-├── Grid.Host/                   # Windows telemetry and event translation
 ├── Grid.Persistence/            # SQLite schema, snapshots, event history
-├── Grid.Agents/                 # Agent registry, memory, decision engine, scheduler
-├── Grid.SystemPrograms/
-│   ├── Sentinel/
-│   ├── Archon/
-│   ├── Archivist/
-│   ├── Forge/
-│   ├── Volt/
-│   └── Relay/
+├── Grid.AI/                     # Model/provider/retrieval intelligence services
+├── Grid.Agent/                  # Agent registry, personas, memory and orchestration
 ├── Grid.Communication/          # Message hub, routing, sessions, dialogue
-├── Grid.Audio/                  # STT/TTS providers, voice profiles, playback
 ├── Grid.Terminal/               # CLI commands and interactive chats
-├── Grid.Viewer/                 # Godot 3D city and in-world conversations
-├── Grid.Control/                # WPF settings, task and agent dashboard
-├── Grid.Security/               # Capability broker, policy and approvals
-└── Grid.Tests/                  # Unit/integration/acceptance tests
+├── Grid.Platform/               # Native capability contracts and detection
+├── Grid.Platform.Windows/       # Windows implementations
+├── Grid.Platform.Linux/         # Linux x64/ARM64 implementations
+├── Grid.Platform.Android/       # Android storage/capability implementations
+├── Grid.Host.Android/           # Native Android lifecycle and touch host
+└── TestSupport/                 # Unit/integration/acceptance fixtures
 ```
 
 ### 9.2 Execution boundaries
@@ -768,9 +768,9 @@ GRID/
 - **World engine:** Owns simulated resources, time, identities and world events.
 - **Communication hub:** Owns message routing and conversation sessions.
 - **Task broker:** Sole supported path from agent requests to host actions.
-- **Tool adapters:** Implement approved operations; validate inputs and host permissions.
+- **Platform adapters:** Implement approved native operations; validate inputs and host permissions without widening authority.
 - **Persistence:** Provides durable commits and recovery semantics.
-- **Clients:** Terminal, WPF voice console, and Godot viewer are views/controllers, not independent authorities.
+- **Clients:** Terminal, Android host and future GUI/Godot clients are views/controllers, not independent authorities.
 
 The communication hub belongs to the always-running Grid host, **not** to the viewer. Closing the viewer should not end the world or erase conversations.
 

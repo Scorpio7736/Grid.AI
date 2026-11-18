@@ -4,6 +4,8 @@ public sealed record LocalIdentityState(string? OwnerSubject, IReadOnlyList<Guid
 {
     public PasswordCredential? Credential { get; init; }
     public ChallengeCredentialSet? ChallengeCredentials { get; init; }
+    public OfflineRecoveryCredential? OfflineRecovery { get; init; }
+    public ChallengeRateLimitState ChallengeRateLimits { get; init; } = ChallengeRateLimitState.Empty;
     public static LocalIdentityState Empty => new(null, []);
     public static void Validate(LocalIdentityState state)
     {
@@ -18,5 +20,11 @@ public sealed record LocalIdentityState(string? OwnerSubject, IReadOnlyList<Guid
             if (state.Credential is null) throw new InvalidDataException("Challenge credentials require a password credential.");
             ChallengeCredentialSet.Validate(challenges);
         }
+        if (state.OfflineRecovery is { } recovery)
+        {
+            if (state.Credential is null) throw new InvalidDataException("Offline recovery requires a password credential.");
+            OfflineRecoveryCredential.Validate(recovery);
+        }
+        ChallengeRateLimitState.Validate(state.ChallengeRateLimits);
     }
 }

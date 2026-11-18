@@ -159,13 +159,13 @@ grid
     - grid -pause
       # USAGE: Pause simulation and agent activity; in-flight work settles cooperatively.
     - grid -copyto -select
-      # USAGE: Pick a container for a new GRID7736 copy; review and confirm y/n.
+      # USAGE: Pick a container for a new Grid.AI copy; review and confirm y/n.
     - grid -transferto -select
-      # USAGE: Pick a container for a new GRID7736 move; review and confirm y/n.
+      # USAGE: Pick a container for a new Grid.AI move; review and confirm y/n.
     - grid -copyto "E:\"
-      # USAGE: Copy to E:\GRID7736; refuse an existing target and preserve other drive files.
+      # USAGE: Copy to E:\Grid.AI; refuse an existing target and preserve other drive files.
     - grid -transferto "E:\"
-      # USAGE: Move to E:\GRID7736 using the verified transfer and cleanup flow.
+      # USAGE: Move to E:\Grid.AI using the verified transfer and cleanup flow.
     # EXAMPLE: grid -copyto -select
 
 tasks
@@ -315,7 +315,17 @@ login
 credentials
     - credentials
       # USAGE: Master Control creates/replaces the username, password, and three challenge codes using masked prompts; sign in again afterward.
-    # EXAMPLE: credentials
+    - credentials challenges status
+      # USAGE: Show enrollment/version/count and local limitations without displaying prompts or secret material.
+    - credentials challenges setup
+      # USAGE: Run the complete masked credential/challenge setup flow.
+    - credentials challenges rotate
+      # USAGE: Replace username, password, and the complete three-challenge set atomically.
+    - credentials challenges test
+      # USAGE: Enter all three responses through masked prompts and receive only an aggregate passed/failed result.
+    - credentials challenges disable
+      # USAGE: Confirm removal of challenge credentials while retaining password login.
+    # EXAMPLE: credentials challenges status
 ```
 
 ```text
@@ -657,7 +667,7 @@ grid
       # USAGE: Copy the GRID application and selected save inventory after preview and y/n confirmation; keep the original.
     - grid -transferto "location"
       # USAGE: Move the GRID application and selected save inventory after preview and y/n confirmation; source cleanup runs after exit.
-    # EXAMPLE: grid -copyto "E:\GRID7736 Copy"
+    # EXAMPLE: grid -copyto "E:\Grid.AI Copy"
 ```
 
 Supply one operation and one destination; quote paths with spaces. Switches are case-insensitive. `copexist` and `tranexist` only show the new syntax and perform no transfer. Attached terminals and conversation windows must use the original host for transfers.

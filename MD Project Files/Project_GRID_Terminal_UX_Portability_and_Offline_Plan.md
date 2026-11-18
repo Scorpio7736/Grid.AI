@@ -1,5 +1,7 @@
 # Project Grid.AI - Terminal UX, Portability and Offline Operation
 
+**Cross-platform roadmap update — 2026-11-17.** Portable operation will use separate Windows, Linux and Android builds over one governed data/manifest contract. Android receives a dedicated host and native folder-access adapter; it is not treated as generic Linux and may stage executable assets in app-private storage while retaining approved data on removable media. The former Phase 8 packaging items are preserved in future plans and relevant requirements are now driven by active Phase 7. [Cross-platform and Android plan](Project_GRID_Cross_Platform_and_Android_Plan.md).
+
 **Planning update — 2026-11-04.** Flash drives are the primary planned deployment, with installers and local-only PC copies supported. Both Flash Grid.AI and PC copies target 128 GB decimal of managed installation storage. Preserve edition-specific rendering plans while introducing common capacity/free-space/reserve accounting and configuration migration in 6.27. The full GRID-AI/GRID-Agent integration and second-device acceptance must pass before Phase 7. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
 
 **6.7 completed — 2026-10-27:** The supplied banner, five-second login reveal, skip/static modes and new palette are implemented and console/test-verified. This supersedes earlier login Enter gating and red-error colors. Portability repair and other 6.8–6.15 requirements remain planned. [Evidence](Project_GRID_Login_Animation_and_Colors.md).
@@ -166,7 +168,7 @@ Separate installer network permissions from normal runtime capabilities. Define 
 3. Implement the PC Grid.AI / Flash Grid.AI installation choice, edition-specific viewer profiles, package-relative portable storage/dependency provisioning and launch without host integration side effects.
 4. Validate relocation, recovery and all supported runtime tasks offline; update release gates with measured evidence.
 
-Track completed terminal work in 4.2B and remaining package/offline acceptance in 8.6 and 8.7.
+Track completed terminal work in 4.2B, active cross-platform package/offline acceptance in Phase 7, and deferred edition hardening in future plans B.6–B.7.
 
 ## Optional remote terminal extension — planned 2026-11-17
 

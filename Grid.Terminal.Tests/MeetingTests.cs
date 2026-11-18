@@ -83,7 +83,7 @@ public sealed class MeetingTests
         Assert.Equal("MAXIS", f.Engine.GetConversation(id).Messages.Last().Sender.Name);
         Assert.Contains("AUTHORITATIVE PARTICIPANTS", f.Ai.Prompt);
         Assert.Contains("MCP: Master Control Program", f.Ai.Prompt);
-        Assert.Contains("JN: GRID's file archivist", f.Ai.Prompt);
+        Assert.Contains("JN: Grid.AI's file archivist", f.Ai.Prompt);
         Assert.Contains("respond only as MAXIS", f.Ai.Prompt);
     }
     [Fact]

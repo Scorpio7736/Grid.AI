@@ -7,7 +7,7 @@ namespace Grid.Terminal;
 /// <summary>Owns input/output and scheduler lifetime; commands are independently registered and tested.</summary>
 public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher commands,
     TextReader input, TextWriter output, bool showPrompt = true, ILiveTerminal? liveTerminal = null, IWorldPersistenceSession? persistence = null,
-    IHostTelemetryMonitor? telemetry = null, Func<bool>? clearScreen = null, bool interactiveConfirmation = false, TerminalSessionUi? sessionUi = null, GridTransfer? transfer = null, Func<Task>? stopAttachments = null, Func<CancellationToken, Task<string[]>>? contextPicker = null, Func<CancellationToken, Task<string?>>? transferPicker = null)
+    IHostTelemetryMonitor? telemetry = null, Func<bool>? clearScreen = null, bool interactiveConfirmation = false, TerminalSessionUi? sessionUi = null, GridTransfer? transfer = null, Func<Task>? stopAttachments = null, Func<CancellationToken, Task<string[]>>? contextPicker = null, Func<CancellationToken, Task<string?>>? transferPicker = null, LockedRecoveryCommands? lockedRecovery = null, AgentBreakGlassCommands? agentBreakGlass = null, MasterBreakGlassCommands? masterBreakGlass = null)
 {
     public async Task<int> RunAsync(CancellationToken cancellationToken = default)
     {
@@ -17,11 +17,12 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
         var monitoring = telemetry?.RunAsync(shutdown.Token) ?? Task.Delay(Timeout.Infinite, shutdown.Token);
         var exitCode = 0;
         NullificationPlan? nullification = null;
+        WorldRecoveryRequest? worldRecovery = null;
         TransferPlan? transferPlan = null;
         try
         {
             if (sessionUi is not null && !await sessionUi.StartAsync(shutdown.Token)) shutdown.Cancel();
-            await output.WriteLineAsync("PROJECT GRID");
+            await output.WriteLineAsync("GRID.AI");
             await output.WriteLineAsync(persistence is null ? "Type help for commands. This session is in memory; exit does not save the world." : "Type help for commands. Autosave every 30 seconds; exit saves after the clock stops.");
             if (commands.LoginRequired && sessionUi is null) await output.WriteLineAsync("Login required: login master authenticates the current Windows account.");
             await output.WriteLineAsync("Navigation: live opens dashboard | Esc/Q returns to commands | exit or Ctrl+C shuts down GRID.");
@@ -40,7 +41,14 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 var line = await read;
                 if (line is null) break;
                 if (sessionUi is not null) await sessionUi.RefreshAsync();
-                var result = commands.ExecuteUserInput(line);
+                CommandResult result;
+                if (commands.ConversationConnected?.Invoke() != true && lockedRecovery?.TryExecute(line, out var recoveryResult) == true)
+                    result = recoveryResult;
+                else if (commands.ConversationConnected?.Invoke() != true && agentBreakGlass?.TryExecute(line, out var agentResult) == true)
+                    result = agentResult;
+                else if (commands.ConversationConnected?.Invoke() != true && masterBreakGlass?.TryExecute(line, out var masterResult) == true)
+                    result = masterResult;
+                else result = commands.ExecuteUserInput(line);
                 if (result.ConfirmTaskBatch is { } confirmBatch)
                 {
                     if (!interactiveConfirmation) result = new("Bulk approval/clear requires interactive confirmation in the original host. Nothing changed.");
@@ -134,6 +142,11 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                         TypewriterRenderer.SkipRequested,
                         () => { if (result.AnimateFrom is not null && (!commands.IsAllowed("talk") || commands.IdentityGeneration != generation)) throw new OperationCanceledException("Conversation session revoked."); return Task.CompletedTask; }, shutdown.Token, presentation: result.Presentation);
                 }
+                if (result.WorldRecovery is { } requestedRecovery)
+                {
+                    worldRecovery = requestedRecovery;
+                    break;
+                }
                 if (result.Transfer is { } request)
                 {
                     if (transfer is null || persistence is null) await output.WriteLineAsync("Transfer unavailable: a persistent world is required.");
@@ -157,7 +170,7 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                                 var selected = await pick;
                                 if (!commands.IsAllowed("grid") || commands.IdentityGeneration != generation) throw new UnauthorizedAccessException("Transfer session changed while selecting a folder.");
                                 if (selected is null) { await output.WriteLineAsync("Transfer cancelled. Files unchanged."); continue; }
-                                request = request with { Destination = Path.Combine(selected, "GRID7736") };
+                                request = request with { Destination = Path.Combine(selected, GridBrand.PortableFolder) };
                             }
                             var plan = transfer.Prepare(request);
                             await output.WriteLineAsync(GridTransfer.Preview(plan)); await output.FlushAsync();
@@ -288,7 +301,28 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                 await DiagnosticLog.ErrorAsync(output, "host-telemetry", exception, engine.GetSnapshot().WorldId);
                 exitCode = 1;
             }
-            if (nullification is not null)
+            if (worldRecovery is not null)
+            {
+                if (exitCode == 0)
+                {
+                    try
+                    {
+                        if (!worldRecovery.StillAuthorized()) throw new UnauthorizedAccessException("Recovery authorization expired or was revoked.");
+                        if (persistence is not IWorldRecoverySession recoverer) throw new InvalidOperationException("Persistent recovery session unavailable.");
+                        await recoverer.RecoverAsync(worldRecovery.Plan);
+                        try { worldRecovery.Report?.Invoke("RecoveryCompleted", true); }
+                        catch (IOException auditError) { await output.WriteLineAsync("Recovery completed, but operator-audit completion failed: " + auditError.Message); exitCode = 1; }
+                        await output.WriteLineAsync("Validated backup restored. Restart Grid.AI to load the recovered world.");
+                    }
+                    catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException)
+                    {
+                        try { worldRecovery.Report?.Invoke("RecoveryFailed", false); } catch (IOException) { }
+                        await output.WriteLineAsync("Recovery incomplete/refused: " + ex.Message); exitCode = 1;
+                    }
+                }
+                else await output.WriteLineAsync("Recovery aborted because a worker failed. No final save was performed.");
+            }
+            else if (nullification is not null)
             {
                 if (exitCode == 0)
                 {
@@ -324,6 +358,8 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
         var farewell = TerminalPresentation.Farewell(exitCode == 0, persistence is not null);
         if (nullification is not null)
             farewell = farewell.Replace("WORLD SAVED // USER DISCONNECTED", "GRID NULLIFIED // EXISTENCE TERMINATED\nNext startup creates a new world.");
+        else if (worldRecovery is not null)
+            farewell = farewell.Replace("WORLD SAVED // USER DISCONNECTED", "WORLD RECOVERED // RESTART REQUIRED");
         await output.WriteLineAsync(farewell);
         return exitCode;
     }

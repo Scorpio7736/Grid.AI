@@ -28,6 +28,7 @@ public static class CommandHelp
         "help" => ["help", "help -md"],
         "context" => ["context search \"project\" \"query\"", "context add \"file\" <temporary|persistent> \"project\" [registered-agent-id|name]", "context list [project]", "context add -search [temporary|persistent \"project\" [agent]]", "context select <id|name> [id|name ...]", "context select clear", "context read [id|name ...|-selected]", "context revoke <id|name>", "context remove <id|name>"],
         "login" => ["login", "login master"],
+        "credentials" => ["credentials", "credentials challenges status", "credentials challenges setup", "credentials challenges rotate", "credentials challenges test", "credentials challenges disable", "credentials recovery status", "credentials recovery setup \"absolute-new-file.grid-recovery.json\""],
         "programs" => ["programs", "programs -active", "programs -possible", "programs -sleeping", "programs ids"],
         "districts" => ["districts", "districts ids"],
         "resources" => ["resources", "resources details"],
@@ -76,9 +77,9 @@ public static class CommandHelp
         "changes" => "changes list",
         "screen" => "screen options",
         "programs" => "programs -active ids", "inspect" => "inspect program MCP", "talk" => "talk status",
-        "edit" => "edit MCP occupation \"Local coordinator\"", "switch" => "switch master", "login" => "login",
-        "grid" => "grid -copyto \"E:\\GRID7736 Copy\"",
-        "tranexist" => "grid -transferto \"E:\\GRID7736\"", "copexist" => "grid -copyto \"E:\\GRID7736 Copy\"",
+        "edit" => "edit MCP occupation \"Local coordinator\"", "switch" => "switch master", "login" => "login", "credentials" => "credentials challenges status",
+        "grid" => "grid -copyto \"E:\\Grid.AI Copy\"",
+        "tranexist" => "grid -transferto \"E:\\Grid.AI\"", "copexist" => "grid -copyto \"E:\\Grid.AI Copy\"",
         "context" => "context list", "connect" => "connect MCP", "history" => "history kind=Edit limit=20", _ => c.Usage
     };
     public static string Markdown()

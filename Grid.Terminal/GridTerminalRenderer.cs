@@ -30,7 +30,7 @@ public static class GridTerminalRenderer
         {
             var line = lines[i]; var trimmed = line.Trim();
             if(GridTerminalTheme.IsSection(trimmed)) Segment(output, line, TerminalRole.Input, capabilities, TerminalRole.Section);
-            else if(trimmed.StartsWith("PROJECT GRID")) Segment(output, line, TerminalRole.Title, capabilities, TerminalRole.Header);
+            else if(trimmed.StartsWith("GRID.AI")) Segment(output, line, TerminalRole.Title, capabilities, TerminalRole.Header);
             else if(line.Contains(" | "))
             {
                 var cells = line.Split(" | ");

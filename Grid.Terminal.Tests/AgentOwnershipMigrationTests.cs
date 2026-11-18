@@ -200,8 +200,8 @@ public sealed class AgentOwnershipMigrationTests
             }
             else if (recovery is "schema-upgrade" or "failed-schema-upgrade")
             {
-                // v25 is a metadata-only migration. Preserve rich payloads while exercising its real upgrade path.
-                Sql("DELETE FROM SchemaMigrations WHERE Version = 25; PRAGMA user_version = 24;");
+                // v25-v26 are metadata-only migrations. Preserve rich payloads while exercising their real upgrade path.
+                Sql("DELETE FROM SchemaMigrations WHERE Version >= 25; PRAGMA user_version = 24;");
                 if (recovery == "failed-schema-upgrade")
                 {
                     Sql("CREATE TRIGGER BlockUpgrade BEFORE INSERT ON SchemaMigrations BEGIN SELECT RAISE(ABORT, 'Injected migration interruption'); END;");
@@ -211,7 +211,7 @@ public sealed class AgentOwnershipMigrationTests
                     {
                         connection.Open(); using var command = connection.CreateCommand();
                         command.CommandText = "PRAGMA user_version;"; Assert.Equal(24L, command.ExecuteScalar());
-                        command.CommandText = "SELECT COUNT(*) FROM SchemaMigrations WHERE Version = 25;";
+                        command.CommandText = "SELECT COUNT(*) FROM SchemaMigrations WHERE Version >= 25;";
                         Assert.Equal(0L, command.ExecuteScalar());
                     }
                     Assert.Equal(backupBytes, File.ReadAllBytes(store.BackupPath));

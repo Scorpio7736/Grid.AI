@@ -12,7 +12,7 @@ public static class TerminalPresentation
             ("CONVERSATIONS", ["assist", "memory", "agent", "connect", "talk", "conversations", "transcript", "resume", "disconnect"]),
             ("SYSTEM & TERMINAL", ["clear", "help", "nge", "exit"])
         };
-        var lines = new List<string> { "PROJECT GRID TERMINAL", "COMMAND REFERENCE", new('=', Math.Min(68, TerminalTable.Width)) };
+        var lines = new List<string> { "GRID.AI TERMINAL", "COMMAND REFERENCE", new('=', Math.Min(68, TerminalTable.Width)) };
         var listed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var group in groups)
         {
@@ -43,7 +43,6 @@ public static class TerminalPresentation
         var status = !success ? "SHUTDOWN ERROR - review diagnostics above." :
             persistent ? "WORLD SAVED // USER DISCONNECTED" : "EPHEMERAL SESSION // NOT SAVED";
         var banner = GridBanner.Render(width ?? TerminalTable.Width);
-        if (banner == "GRID7736 // WELCOME") banner = "GRID7736";
-        return "\n" + banner + "\n\nGRID7736 // DISCONNECTED\n\n" + status;
+        return "\n" + banner + "\n\nGRID.AI // DISCONNECTED\n\n" + status;
     }
 }

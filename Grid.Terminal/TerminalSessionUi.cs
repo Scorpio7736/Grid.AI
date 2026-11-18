@@ -88,6 +88,8 @@ public sealed class TerminalSessionUi(TerminalIdentitySession identity, ITermina
     }
     public async Task<bool> HandleAsync(CommandResult result, CancellationToken token)
     {
+        if (result.RecoveryKeyTarget is { } recoveryTarget) return await HandleRecoveryKey(recoveryTarget, token);
+        if (result.ChallengeAction is { } challengeAction) return await HandleChallenge(challengeAction, token);
         if (result.SetupRequested) return await Setup(token);
         if (result.LoginRequested)
         {
@@ -126,5 +128,63 @@ public sealed class TerminalSessionUi(TerminalIdentitySession identity, ITermina
             }
         }
         return true;
+    }
+    private async Task<bool> HandleRecoveryKey(string target, CancellationToken token)
+    {
+        if (!input.Interactive)
+        {
+            await output.WriteLineAsync("Offline recovery enrollment requires interactive confirmation in the original terminal. Nothing changed.");
+            return true;
+        }
+        await output.WriteLineAsync($"Create a new user-held offline recovery file at:\n{TerminalTable.Safe(target)}\nThe existing recovery file, if any, will become invalid after a successful save. GRID cannot recover a lost key.");
+        var answer = await Read("Create and enroll this recovery file? [y/N] ", false, token);
+        if (!string.Equals(answer?.Trim(), "y", StringComparison.OrdinalIgnoreCase))
+        { await output.WriteLineAsync("Offline recovery enrollment cancelled. Nothing changed."); return true; }
+        try { await output.WriteLineAsync(identity.IssueOfflineRecoveryFile(target)); }
+        catch (Exception error) when (error is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException or ArgumentException or System.Data.Common.DbException)
+        { await output.WriteLineAsync("Offline recovery enrollment failed: " + error.Message + " No recovery file was enrolled."); }
+        return true;
+    }
+    private async Task<bool> HandleChallenge(ChallengeUiAction action, CancellationToken token)
+    {
+        if (!input.Interactive)
+        {
+            await output.WriteLineAsync("Challenge management requires interactive masked input; redirected input is refused. Nothing changed.");
+            return true;
+        }
+        if (action == ChallengeUiAction.Disable)
+        {
+            while (true)
+            {
+                var answer = await Read("Disable all challenge credentials while retaining password login? [y/N] ", false, token);
+                if (answer is null) return false;
+                if (string.IsNullOrWhiteSpace(answer) || answer.Trim().Equals("n", StringComparison.OrdinalIgnoreCase))
+                { await output.WriteLineAsync("Challenge disable cancelled. Nothing changed."); return true; }
+                if (answer.Trim().Equals("y", StringComparison.OrdinalIgnoreCase))
+                { await output.WriteLineAsync(identity.DisableChallenges()); return true; }
+                await output.WriteLineAsync("Enter y to disable challenges or n to keep them.");
+            }
+        }
+        var prompts = identity.ChallengePrompts();
+        if (prompts.Count == 0)
+        {
+            await output.WriteLineAsync("Challenge credentials are disabled or not enrolled. Use credentials challenges setup.");
+            return true;
+        }
+        var responses = new string[prompts.Count];
+        try
+        {
+            await output.WriteLineAsync("Masked local self-test. All responses are checked together; no per-question result is disclosed or saved.");
+            for (var index = 0; index < prompts.Count; index++)
+            {
+                await output.WriteLineAsync($"Challenge {index + 1} of {prompts.Count}: {TerminalTable.Safe(prompts[index])}");
+                var response = await Read("Response: ", true, token);
+                if (response is null) return false;
+                responses[index] = response;
+            }
+            await output.WriteLineAsync(identity.TestChallenges(responses));
+            return true;
+        }
+        finally { Array.Fill(responses, ""); }
     }
 }

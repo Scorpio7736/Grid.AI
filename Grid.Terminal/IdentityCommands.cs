@@ -10,8 +10,26 @@ public static class IdentityCommands
         commands.Register(new("login", "login [master]", "Authenticate the world owner using the current Windows identity.", a =>
             a.Count > 1 || a.Count == 1 && !a[0].Equals("master", StringComparison.OrdinalIgnoreCase) ? new("Usage: login [master]. Never put credentials in command arguments.") : interactiveUi ? new("", LoginRequested: true) : new(session.Login())) { Capability = "public" });
         commands.Register(new("logout", "logout", "Revoke the session and clear active context.", a => a.Count != 0 ? new("Usage: logout") : interactiveUi ? new("", LogoutRequested: true) : new(session.Logout())) { Capability = "public" });
-        commands.Register(new("credentials", "credentials", "Master Control: interactively set or rotate local username, password, and three challenge codes.", a =>
-            a.Count != 0 ? new("Usage: credentials. Secrets must never be command arguments.") : new("", SetupRequested: true)) { Capability = "programs.edit" });
+        commands.Register(new("credentials", "credentials [challenges <status|setup|rotate|test|disable> | recovery <status|setup \"absolute-new-file.grid-recovery.json\">]", "Master Control: manage local credentials and user-held offline recovery.", a =>
+        {
+            if (a.Count == 0) return new("", SetupRequested: true);
+            if (a[0].Equals("recovery", StringComparison.OrdinalIgnoreCase))
+            {
+                if (a.Count == 2 && a[1].Equals("status", StringComparison.OrdinalIgnoreCase)) return new(session.OfflineRecoveryStatus());
+                if (a.Count == 3 && a[1].Equals("setup", StringComparison.OrdinalIgnoreCase)) return new("", RecoveryKeyTarget: a[2]);
+                return new("Usage: credentials recovery status | credentials recovery setup \"absolute-new-file.grid-recovery.json\". The generated secret never belongs in command arguments.");
+            }
+            if (a.Count != 2 || !a[0].Equals("challenges", StringComparison.OrdinalIgnoreCase))
+                return new("Usage: credentials [challenges <status|setup|rotate|test|disable> | recovery <status|setup \"absolute-new-file.grid-recovery.json\">]. Secrets must never be command arguments.");
+            return a[1].ToLowerInvariant() switch
+            {
+                "status" => new(session.ChallengeStatus()),
+                "setup" or "rotate" => new("", SetupRequested: true),
+                "test" => new("", ChallengeAction: ChallengeUiAction.Test),
+                "disable" => new("", ChallengeAction: ChallengeUiAction.Disable),
+                _ => new("Usage: credentials challenges <status|setup|rotate|test|disable>. Secrets must never be command arguments.")
+            };
+        }) { Capability = "programs.edit" });
         commands.Register(new("whoami", "whoami", "Show authenticated operator, active identity and capabilities.", a => new(a.Count == 0 ? session.Describe() : "Usage: whoami")) { Capability = "public" });
         commands.Register(new("switch", "switch <master|agent-id|name>", "Select Master Control or a registered agent identity.", a => new(a.Count > 0 ? session.Switch(string.Join(" ", a)) : "Usage: switch <master|agent-id|name>")) { Capability = "session" });
         commands.Register(new("register-agent", "register-agent <id|name>", "Master Control: register an existing Agent for identity switching.", a => {

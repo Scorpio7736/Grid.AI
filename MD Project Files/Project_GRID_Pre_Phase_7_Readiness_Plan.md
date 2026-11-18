@@ -1,5 +1,7 @@
 # Project GRID — Required Work Before Phase 7
 
+**Roadmap clarification — 2026-11-17.** Phase 7 now means the active Grid.Platform cross-platform/Android phase, not the Godot city. Existing readiness requirements remain useful prerequisites for extracting stable behavior across operating systems. The former City and Integration phases are preserved under Backlog and Future Plans in the master checklist. [New Phase 7 plan](Project_GRID_Cross_Platform_and_Android_Plan.md).
+
 **6.27 storage/package baseline implemented — 2026-11-12.** Package validation now applies a 128,000,000,000-byte complete-footprint target, 75,000,000,000-byte model/dependency/cache sub-limit, and the existing 256,000,000-byte reserve. Transfer checks include saved data and staging. The builder publishes a verified sibling staging folder atomically and sorts the hash inventory. All 1,254 tests passed. A self-contained Windows x64 package was built, sealed and passed isolated local AI/advice/context/task-draft tests with global lookup paths and the user model cache removed from its test environment. Second-PC/network-blocked acceptance, specialist/image optional installs and repeat-build comparison remain open. [Implementation and acceptance](Project_GRID_Offline_Portable_Deployment.md).
 
 **6.26 performance baseline implemented — 2026-11-12.** Scoped advice/document analysis now uses a 30-second exact cache capped at 64 entries and 512 KiB of response content. Keys include identity, source revisions and model/persona settings, with live access checks. The terminal rechecks physical RAM before inference. All 1,243 tests passed. This PC passed the live Qwen benchmark with a 36.492-second first answer and ten cache hits each below one millisecond. Semantic caching, smallest-specialist selection and the full device benchmark matrix remain open. [Implementation, thresholds and evidence](Project_GRID_Performance_Optimization.md).
@@ -194,7 +196,7 @@ Phase 7 is blocked until 6.7–6.31 are complete and documented. Replay the exac
 6. Complete the document acceptance in 6.15, then implement the GRID-AI/GRID-Agent roadmap in 6.16–6.30, using stable core contracts to develop the Agent API.
 7. Complete migration and all 12 production-readiness checks in 6.31, including joint authorization/tool/guardrail tests, repeatable fine-tuning and second-PC offline acceptance. Review the evidence before Phase 7.
 
-Existing Phase 8 packaging, installation, storage and device-handling headings remain useful for later hardening. Any portion required for this pre-Phase-7 acceptance is brought forward here and cannot be postponed to Phase 8.
+Former Phase 8 packaging, installation, storage and device-handling headings remain preserved as future plans B.6–B.9. Any portion required to establish stable behavior before platform extraction remains active and cannot be postponed merely because its original heading moved to backlog.
 
 
 ### Conversation-first acceptance — clarified 2026-11-07

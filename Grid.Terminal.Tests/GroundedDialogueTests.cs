@@ -81,7 +81,7 @@ public sealed class GroundedDialogueTests
     public async Task DisabledOrUnavailableModelUsesDeterministicFacts()
     {
         var f = new Fixture(new Inference((_,_)=>Task.FromResult(new InferenceReply(false,"","disabled"))));
-        Assert.Contains("VERIFIED GRID STATE",(await f.Talk("status")).Text);
+        Assert.Contains("VERIFIED GRID.AI STATE",(await f.Talk("status")).Text);
         Assert.Equal(2,f.Engine.GetConversation(f.Chat.ActiveConversation!.Value).Messages.Count);
     }
     [Fact]

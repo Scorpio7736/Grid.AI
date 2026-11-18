@@ -6,7 +6,7 @@
 
 GRID-REQ-007 requires a self-contained flash-drive package with portable identity and package-relative managed storage/dependencies. GRID-REQ-008 requires all Grid.AI runtime tasks to work offline; only explicit installs/provisioning may use the internet. Portable password authentication is implemented; host-local storage and PATH registration still do not fulfill full package portability. Earlier optional-cloud/online runtime plans are superseded by this offline requirement. Preserve saved city and world history across host changes.
 
-See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md) and checklist 4.2B (implemented), 8.6 and 8.7 (planned). See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
+See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md), checklist 4.2B (implemented), active Phase 7 and future plans B.6–B.7. See the 4.2B completion notes for verification; earlier dated implementation notes retain their historical scope.
 
 ## Local login and identity completion - 4.2A (2026-10-20)
 
@@ -132,9 +132,9 @@ Section 2.2 now saves/restores world state and clock values, autosaves every 30 
 
 ## Verification
 
-- `dotnet test Grid7736.slnx --no-restore --verbosity minimal -p:NuGetAudit=false`: 140 passed, zero failed/skipped (Core 8, Simulation 93, Terminal 39). This adds 8 event-buffer cases and 15 terminal/live-view cases to the previous 117 tests.
+- `dotnet test Grid.AI.slnx --no-restore --verbosity minimal -p:NuGetAudit=false`: 140 passed, zero failed/skipped (Core 8, Simulation 93, Terminal 39). This adds 8 event-buffer cases and 15 terminal/live-view cases to the previous 117 tests.
 - Tests cover bounded retention/eviction, sequence ordering, coherent concurrent snapshots, actual transfers/edits, no-op/denial/cancellation behavior, idle truthfulness, rendering bounds, text sanitization, paging, changed snapshots, resize fallback, Q/Esc, return to commands, cancellation and scheduler-failure cleanup.
-- `dotnet build Grid7736.slnx --no-restore --verbosity minimal`: zero warnings/errors.
+- `dotnet build Grid.AI.slnx --no-restore --verbosity minimal`: zero warnings/errors.
 - Interactive console smoke checks verified live running ticks, return to commands, paused display and normal exit. TERM=dumb smoke verification produced a single fallback snapshot and accepted later commands. Automated injected-console tests cover resize and cancellation paths; this does not claim exhaustive validation of every terminal emulator.
 
 See [Master Development Checklist](Project_GRID_Master_Development_Checklist.md) and [Current Implementation Status](Project_GRID_Current_Implementation_Status.md) for broader scope and historical verification.
