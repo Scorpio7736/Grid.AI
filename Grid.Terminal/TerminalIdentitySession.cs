@@ -50,6 +50,30 @@ public sealed class TerminalIdentitySession(Func<string?> verifiedOsSubject, Tim
             return "Local credentials saved. Log in with your username and password; Windows-owner bypass is disabled.";
         }
     }
+    public string ConfigureCredentials(string username, string password, string confirmation,
+        IReadOnlyList<(string Prompt, string Response, string Confirmation)> challenges)
+    {
+        lock (gate)
+        {
+            if (IsAttachment) return "Access denied. Change credentials in the original host terminal.";
+            if (!NeedsSetup && !IsMaster) return "Access denied. Authenticate the existing owner as Master Control before configuring credentials.";
+            if (password != confirmation) return "Error: passwords do not match.";
+            if (challenges is null || challenges.Count != ChallengeCredentialSet.RequiredCount)
+                return $"Error: exactly {ChallengeCredentialSet.RequiredCount} challenges are required.";
+            foreach (var challenge in challenges)
+            {
+                if (!string.Equals(ChallengeCredentialSet.NormalizeResponse(challenge.Response),
+                        ChallengeCredentialSet.NormalizeResponse(challenge.Confirmation), StringComparison.Ordinal))
+                    return "Error: challenge responses do not match.";
+            }
+            var credential = PasswordCredential.Create(username, password);
+            var challengeSet = ChallengeCredentialSet.Create(
+                challenges.Select(c => (c.Prompt, c.Response)).ToArray(), username, password);
+            authenticated = false; agent = null; authenticatedCredential = null; Reset();
+            Engine.SetLocalCredentials(credential, challengeSet); PersistIdentity?.Invoke();
+            return "Local credentials and three challenge codes saved. Log in with your username and password; Windows-owner bypass is disabled.";
+        }
+    }
     public string LoginPassword(string username, string password)
     {
         lock (gate)

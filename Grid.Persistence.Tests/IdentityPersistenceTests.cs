@@ -67,7 +67,10 @@ public sealed class IdentityPersistenceTests
             engine.BindLocalOwner("original-owner");
             var agent = engine.CreateRunningCoordinator(); engine.RegisterAgentIdentity(agent.Id);
             var credential = Grid.Communication.PasswordCredential.Create("Owner", "test-password-only-123");
-            engine.SetLocalCredential(credential);
+            var challenges = Grid.Communication.ChallengeCredentialSet.Create(
+                [("Family", "violet river"), ("Travel", "silver compass"), ("Memory", "winter lantern")],
+                "Owner", "test-password-only-123");
+            engine.SetLocalCredentials(credential, challenges);
             using (var store = new WorldStore(path))
                 store.Create(new(engine.GetSnapshot().WorldId, "Credential", DateTimeOffset.UtcNow), engine.GetSnapshot());
             using (var store = new WorldStore(path))
@@ -75,10 +78,16 @@ public sealed class IdentityPersistenceTests
                 var state = store.Load().State;
                 Assert.Equal(credential, state.Identities.Credential);
                 Assert.True(state.Identities.Credential!.Verify("Owner", "test-password-only-123"));
+                Assert.Equal(challenges.Version, state.Identities.ChallengeCredentials!.Version);
+                Assert.Equal(challenges.Challenges, state.Identities.ChallengeCredentials.Challenges);
+                Assert.True(state.Identities.ChallengeCredentials!.Challenges[0].Verify("VIOLET RIVER"));
                 Assert.Equal("original-owner", state.Identities.OwnerSubject);
                 Assert.Contains(agent.Id, state.Identities.RegisteredAgents);
                 File.WriteAllText(path, "damaged"); store.Recover();
                 Assert.Equal(credential, store.Load().State.Identities.Credential);
+                var recovered = store.Load().State.Identities.ChallengeCredentials!;
+                Assert.Equal(challenges.Version, recovered.Version);
+                Assert.Equal(challenges.Challenges, recovered.Challenges);
             }
         }
         finally { Directory.Delete(directory, true); }

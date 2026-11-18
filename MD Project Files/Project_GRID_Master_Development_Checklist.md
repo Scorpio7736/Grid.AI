@@ -1805,6 +1805,34 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Provide one-command local AI, voice, storage, screen and capability health diagnostics with actionable repair messages and rollback.
 - [ ] Test clean-user first runs, low-end hardware, unavailable GPU, limited space, drive-letter changes, second PC and network-blocked installation/runtime paths.
 
+## 6.34A Challenge-code enrollment and verbal authentication
+
+**Local enrollment foundation implemented — 2026-11-17; remote challenge use remains planned.** Add three user-created challenge prompt/response pairs after username/password setup, then use bounded challenge sessions as a knowledge factor for future authenticated remote calls. Both prompts and responses accept 1..64 printable characters. A spoken response is not a biometric voice signature, and a successful challenge must not approve work, reset a password or widen authority. Setup validation reports that no account was created, offers controlled retry/cancel and ensures successful setup makes the next `login` use username/password authentication. Full verification: **1,443 passed**, zero failed/skipped. [Setup flow, implementation evidence, storage boundary, call protocol and remaining acceptance](Project_GRID_Challenge_Code_Authentication.md).
+
+- [x] Define a versioned three-challenge credential contract with distinct prompts, independently salted response verifiers, fixed-time comparison and atomic persistence/migration.
+- [x] Extend fresh credential setup to require all three challenges after password confirmation and make authenticated `credentials` rotation replace the complete password/challenge set atomically.
+- [x] Keep plaintext responses out of local setup output, history, audit and saved/backup identity state; store only prompts and salted verifiers. No response enters an inference or transcript path in the implemented local flow.
+- [ ] Add separate authenticated challenge status, disable and masked self-test controls for existing users.
+- [ ] Implement short-lived single-purpose challenge sessions bound to user, host/world generation, paired endpoint and contact/call ID, with randomized selection, expiry, replay defense and durable rate limits.
+- [ ] Require protected client secret entry or transcription-suppressed speech capture; provide masked typed fallback and warn about speakerphone, recording and nearby listeners.
+- [ ] Make challenge success an authentication claim only—not password recovery, device pairing, task approval, contact-policy editing or proof of biometric voice identity.
+- [ ] Verify setup cancellation, migration, normalization, secret leakage, wrong/replayed/cross-call responses, lockout recovery, agent forgery, rotation, backup, copy/transfer and accessibility fallbacks.
+- [ ] Evaluate opt-in local voiceprint verification later as a separate factor with consent, revocation, replay/deepfake, false-match, noise/illness and accessibility evidence.
+
+## 6.34B Development-only break-glass terminal commands
+
+**User-requested planning framework — 2026-11-17. Not implemented.** Define exact terminal recovery/emergency operations that are omitted from ordinary help, completion, palettes, conversational routing and agent tools while still using real authorization—not secrecy—as the security boundary. Separate locked, registered-agent, human Master Control and offline owner-rescue authority. Existing visible `nge` and `--recover` remain authoritative until reviewed replacements/extensions exist. [Command inventory, nullification contract, safeguards and acceptance matrix](Project_GRID_Development_Break_Glass_Commands.md).
+
+- [ ] Inventory visible recovery/destructive paths and define a separate versioned hidden-command registry that cannot weaken or alias their safeguards.
+- [ ] Keep hidden names/counts out of normal discovery while documenting every command in development references, source inventory and tests; reject undocumented hidden commands at release review.
+- [ ] Permit locked/local state only bounded diagnosis, world verification, freeze request and recovery-challenge preparation—never identity reset, private-content access or destruction by command knowledge alone.
+- [ ] Limit registered-agent break-glass controls to self-status, self-cancellation, self-detach and bounded self-evidence with no Master Control transition or cross-agent effect.
+- [ ] Add original-host Master Control freeze, isolate, session revoke, remote disable, safe-mode, recovery and evidence-export plans with exact target binding, expiry, audit and fresh confirmation.
+- [ ] Design an exclusive offline owner-rescue entry point with user-held recovery material and no AI, remote, conversational, shell or general filesystem capability; do not create a universal backdoor key.
+- [ ] Implement recoverable world retirement before any managed-instance removal; require manifest-bounded paths, quarantine, external receipt and refusal of roots, repositories, reparse points, shared assets and active writers.
+- [ ] Keep irrecoverable purge separate and deferred; document that ordinary deletion cannot guarantee erasure from SSDs, snapshots, backups or synchronized copies.
+- [ ] Verify non-discovery, generic unauthorized denial, remote/agent/model refusal, replay/cross-world resistance, interrupted recovery/nullification and disposable-root deletion bounds.
+
 ## 6.35 Reusable skills and integration system
 
 - [ ] Define a versioned skill manifest and typed invocation contract compatible with existing GRID-Agent tool scopes, model capabilities and host authorization.
@@ -1822,6 +1850,33 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Keep reading, drafting and committing external changes separate; require confirmation for sending, deleting, scheduling or other consequential writes.
 - [ ] Surface sync status, staleness, offline state and source citations rather than presenting cached content as live.
 - [ ] Verify revoked credentials, cross-agent privacy, disconnected networks, data deletion and connector failure recovery.
+
+## 6.36A Optional remote terminal access over private networks
+
+**User-requested planning addition — 2026-11-17. Not implemented and not a Phase 6 completion claim.** Use the existing single authoritative host/attached-terminal architecture with an optional private transport. Tailscale is the initial candidate because the user already uses its commands and endpoints; a phone or wearable relay such as the user's Even Realities G2 workflow should be supportable as a narrow text client without receiving implicit authority. [Architecture, commands, security boundaries and acceptance plan](Project_GRID_Remote_Terminal_Access.md).
+
+- [ ] Define a versioned, bounded remote-session protocol that attaches to the running host without exposing the database, model server, named pipe or an arbitrary shell.
+- [ ] Add reviewed private Tailscale endpoint discovery/configuration with local-only defaults; do not install/sign in, change tailnet policy, bind all LAN interfaces or enable public Funnel automatically.
+- [ ] Require GRID authentication or short-lived pairing in addition to tailnet transport; default new devices to conversation/read-only access and keep original-host-only controls local.
+- [ ] Provide `remote status/options/plan/enable/disable/sessions/revoke/doctor` controls with exact bind/port/capability preview, immediate revocation and content-free audit.
+- [ ] Preserve typed plans, grants and confirmations for remote actions; reconnects, duplicated messages and conversation text must never approve or replay work.
+- [ ] Disable listeners and discard active/machine-bound sessions on copy/transfer; revalidate endpoint, device, identity and saved preference at every startup.
+- [ ] Test second-device private access, non-tailnet/public refusal, Tailscale unavailable/disconnected/address changes, pairing abuse, rate limits, multiple clients, sleep/wake, restart and emergency disable.
+- [ ] Run a low-bandwidth narrow-display client exercise representative of a phone/wearable relay; do not claim native Even Realities integration without a separately verified client.
+
+## 6.36B Remote contact, ping and voice calls
+
+**User-requested planning addition — 2026-11-17. Not implemented.** Plan a private data-based way for MCP to coordinate pings/call invitations to the user's approved phone, with RELAY owning delivery/media receipts and agent voice joining only after answer. Wi-Fi/Internet transport avoids ordinary carrier voice minutes but does not guarantee zero data, relay, provider or roaming cost. [Protocol, roles, mobile wake-up constraint, privacy and acceptance plan](Project_GRID_Remote_Contact_and_Voice_Calls.md).
+
+- [ ] Implement a manual foreground self-test ping through an authenticated paired client before enabling proactive contact.
+- [ ] Define user-owned contact policies with exact triggers, allowed MCP/RELAY/agent roles, endpoint, quiet hours, urgency, rate/retry limits, expiration and immediate pause/revoke.
+- [ ] Define capability-backed primary/local and dynamic/delegated contact classes: the designated primary MCP may use only explicit standing policies, while every dynamic-agent attempt requires exact per-call approval and cannot become standing authority.
+- [ ] Add an idempotent proposed/authorized/delivering/ringing/accepted/connected/ended state machine with durable receipts and no replay after restart/reconnect.
+- [ ] Evaluate WebRTC versus a bounded tailnet audio stream; measure latency, encryption, codec, reconnect, firewall, licensing and resource behavior before selecting a provider.
+- [ ] Keep microphone access answer-bound and recording off by default; use local STT/agent inference/TTS with visible text fallback and no spoken command execution.
+- [ ] Select and disclose a foreground/background mobile ringing strategy; Tailscale alone does not guarantee wake-up, while APNs/FCM introduces an optional cloud dependency.
+- [ ] Preserve original-host policy administration, endpoint revocation, content minimization and copy/transfer re-pairing; never treat a tailnet address as identity.
+- [ ] Verify policy escape, false urgency, duplicate signaling, quiet hours, rate limits, device loss, network loss, background suspension, audio failure and phone/wearable relay limitations.
 
 ## 6.37 Scheduled and persistent assistant workflows
 
@@ -1945,6 +2000,7 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 - [ ] Handle clean shutdown and unexpected termination
 - [x] Resume saved state without offline simulation catch-up (2.2/3.1; simulation advances only while running)
 - [ ] Coordinate local service startup order
+- [ ] Integrate optional remote-terminal gateway startup/shutdown, sleep/wake, network-change recovery and explicit remote-disable behavior without making Tailscale or any network service mandatory ([6.36A plan](Project_GRID_Remote_Terminal_Access.md))
 
 ## 8.2 Resource and storage governance
 

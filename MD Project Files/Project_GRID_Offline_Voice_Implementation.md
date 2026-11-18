@@ -75,7 +75,7 @@ Read-only real-provider inventory on this machine found the offline `en-US` reco
 
 ## Planned extensions
 
-Whisper.cpp/Piper provider adapters and asset installation, attached-client voice, output-device selection, configurable quiet hours, pitch/style controls, confidence metadata and wake-word mode remain future work. These are not implied by the 4.4 Windows MVP completion.
+Whisper.cpp/Piper provider adapters and asset installation, attached-client voice, output-device selection, configurable quiet hours, pitch/style controls, confidence metadata and wake-word mode remain future work. Private phone ping/call invitations and answer-bound remote audio are separately planned in [Remote Contact and Voice Calls](Project_GRID_Remote_Contact_and_Voice_Calls.md); they are not implied by the 4.4 Windows MVP completion.
 
 ## Provider references
 

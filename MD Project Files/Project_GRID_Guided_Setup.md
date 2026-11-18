@@ -21,4 +21,6 @@ Missing assets require the existing explicit `Prepare-GridRuntime.ps1` provision
 
 Remaining: integrated first-run identity/recovery management, direct reviewed installer integration, complete installation-space accounting, active voice/screen/storage repair diagnostics, and clean-user/read-only-media/network-blocked/second-PC physical acceptance. Current health output explicitly labels unprobed capabilities. No full 6.34 completion is claimed.
 
+The local foundation for [three-challenge enrollment and verbal authentication](Project_GRID_Challenge_Code_Authentication.md) is implemented in interactive world credential setup: it follows username/password confirmation, saves all three entries atomically and keeps challenge responses outside profiles, transcripts and inference. The separate `--setup` deployment-profile flow still contains no secrets. Remote challenge sessions and voice verification remain planned.
+
 Fresh-clone provisioning and world-isolation follow-up: [fresh clone installation](Project_GRID_Fresh_Clone_Installation.md). The explicit installer now covers dependency acquisition; complete online PC2 and broader hardware/permission acceptance remain open. Latest full suite: 1,437 passed.

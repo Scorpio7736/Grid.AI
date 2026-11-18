@@ -32,14 +32,59 @@ public sealed class TerminalSessionUi(TerminalIdentitySession identity, ITermina
     {
         if (!input.Interactive) { await output.WriteLineAsync("Error: credential setup requires interactive masked input; redirected setup is refused."); return true; }
         if (!identity.NeedsSetup && !identity.IsMaster) { await output.WriteLineAsync("Access denied. Authenticate the current owner before credential migration."); return true; }
+        while (true)
+        {
+            var saved = await SetupAttempt(token);
+            if (saved is null) return false;
+            if (saved.Value) { await RefreshAsync(); return true; }
+            while (true)
+            {
+                var retry = await Read("Account was not created. Try setup again? [Y/n] ", false, token);
+                if (retry is null) return false;
+                retry = retry.Trim();
+                if (retry.Length == 0 || retry.Equals("y", StringComparison.OrdinalIgnoreCase)) break;
+                if (retry.Equals("n", StringComparison.OrdinalIgnoreCase)) return true;
+                await output.WriteLineAsync("Enter y to retry setup or n to remain logged out.");
+            }
+        }
+    }
+    private async Task<bool?> SetupAttempt(CancellationToken token)
+    {
         await output.WriteLineAsync($"Create local credentials. Existing owner/agent identities and transcripts are preserved. Password: {Grid.Communication.PasswordCredential.MinimumPasswordLength}..{Grid.Communication.PasswordCredential.MaximumPasswordLength} characters. Uppercase, lowercase, numbers and symbols are allowed; no mixture is required.");
-        var name = await Read("Username: ", false, token); if (name is null) return false;
-        var password = await Read("Password: ", true, token); if (password is null) return false;
-        var confirm = await Read("Confirm password: ", true, token); if (confirm is null) return false;
-        try { await output.WriteLineAsync(identity.ConfigureCredentials(name, password, confirm)); }
-        catch (ArgumentException e) { await output.WriteLineAsync("Error: " + e.Message); }
-        finally { password = ""; confirm = ""; } // No secret history/completion/logging; managed strings remain GC-owned.
-        await RefreshAsync(); return true;
+        var name = await Read("Username: ", false, token); if (name is null) return null;
+        var password = await Read("Password: ", true, token); if (password is null) return null;
+        var confirm = await Read("Confirm password: ", true, token); if (confirm is null) return null;
+        if (password != confirm)
+        {
+            await output.WriteLineAsync("Error: passwords do not match. No account was created or changed.");
+            password = ""; confirm = "";
+            return false;
+        }
+        var challenges = new List<(string Prompt, string Response, string Confirmation)>();
+        await output.WriteLineAsync($"Create three private challenge codes for future identity checks. Prompts and responses must each contain {Grid.Communication.ChallengeCredentialSet.MinimumPromptLength}..{Grid.Communication.ChallengeCredentialSet.MaximumPromptLength} printable characters. Prompts are visible; responses are secret. Prompts and responses must be distinct; responses cannot match the username or password. Avoid public facts, names, and reused passwords.");
+        for (var index = 1; index <= Grid.Communication.ChallengeCredentialSet.RequiredCount; index++)
+        {
+            await output.WriteLineAsync($"Challenge {index} of {Grid.Communication.ChallengeCredentialSet.RequiredCount}");
+            var prompt = await Read("Prompt: ", false, token); if (prompt is null) return null;
+            var response = await Read("Response: ", true, token); if (response is null) return null;
+            var responseConfirmation = await Read("Confirm response: ", true, token); if (responseConfirmation is null) return null;
+            challenges.Add((prompt, response, responseConfirmation));
+        }
+        var saved = false;
+        try
+        {
+            var response = identity.ConfigureCredentials(name, password, confirm, challenges);
+            saved = response.StartsWith("Local credentials", StringComparison.Ordinal);
+            await output.WriteLineAsync(response);
+            if (!saved) await output.WriteLineAsync("No account was created or changed.");
+        }
+        catch (ArgumentException e) { await output.WriteLineAsync("Error: " + e.Message + " No account was created or changed."); }
+        finally
+        {
+            password = ""; confirm = "";
+            for (var index = 0; index < challenges.Count; index++) challenges[index] = (challenges[index].Prompt, "", "");
+        } // No secret history/completion/logging; managed strings remain GC-owned.
+        return saved;
     }
     public async Task<bool> HandleAsync(CommandResult result, CancellationToken token)
     {

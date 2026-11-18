@@ -108,14 +108,14 @@ public sealed class ConversationMemoryTests
                 command.CommandText = "SELECT StateJson FROM WorldCommunications";
                 var json = System.Text.Json.Nodes.JsonNode.Parse((string)command.ExecuteScalar()!)!;
                 foreach(var entry in json["Memories"]!.AsArray()) { entry!.AsObject().Remove("Grants"); entry.AsObject().Remove("Provenance"); entry.AsObject().Remove("ExpiresAtUtc"); }
-                command.CommandText = "UPDATE WorldCommunications SET StateJson=$json; DELETE FROM SchemaMigrations WHERE Version=24; PRAGMA user_version=23;";
+                command.CommandText = "UPDATE WorldCommunications SET StateJson=$json; DELETE FROM SchemaMigrations WHERE Version>=24; PRAGMA user_version=23;";
                 command.Parameters.AddWithValue("$json", json.ToJsonString()); command.ExecuteNonQuery();
             }
             using var upgraded = new WorldStore(path); var state = upgraded.Load().State;
             Assert.Equal("Release codename is Moonstone.", Assert.Single(state.Communications.Memories).Content);
             Assert.Empty(state.Communications.Memories[0].Grants);
             using var check = new SqliteConnection("Data Source=" + path); check.Open(); using var version = check.CreateCommand(); version.CommandText = "PRAGMA user_version";
-            Assert.Equal(24L, (long)version.ExecuteScalar()!);
+            Assert.Equal((long)GridSchema.CurrentVersion, (long)version.ExecuteScalar()!);
         }
         finally { SqliteConnection.ClearAllPools(); Directory.Delete(folder, true); }
     }

@@ -168,6 +168,10 @@ Separate installer network permissions from normal runtime capabilities. Define 
 
 Track completed terminal work in 4.2B and remaining package/offline acceptance in 8.6 and 8.7.
 
+## Optional remote terminal extension — planned 2026-11-17
+
+Remote attachment through a user-managed private network is optional connected functionality, not an exception to mandatory local/offline operation. The planned Tailscale transport must attach a bounded client to the one authoritative host, remain disabled by default, avoid public Funnel/broad LAN exposure, require GRID authentication beyond tailnet membership and discard active/machine-bound sessions during copy or transfer. Local terminal, AI and task workflows must continue when Tailscale or all networking is unavailable. See [Remote Terminal Access](Project_GRID_Remote_Terminal_Access.md) and checklist 6.36A for the authoritative plan and acceptance gates.
+
 ## Additional windows - planned 4.2C (2026-10-20)
 
 **Implemented in 4.2C.** The original requirements below are fulfilled by local scoped attachments; see [implementation and completion evidence](Project_GRID_Shared_Terminal_Windows_Implementation.md). The requested spelling `-opninwin` is retained.

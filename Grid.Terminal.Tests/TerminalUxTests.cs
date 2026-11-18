@@ -25,7 +25,11 @@ public sealed class TerminalUxTests
     {
         var (engine, identity, commands) = Fixture();
         const string password = "test-only-passphrase";
-        var input = new Input("Jack", password, password, "Jack", password, "n", "invalid", "y");
+        var input = new Input("Jack", password, password,
+            "Family", "violet river", "violet river",
+            "Travel", "silver compass", "silver compass",
+            "Memory", "winter lantern", "winter lantern",
+            "Jack", password, "n", "invalid", "y");
         var output = new StringWriter(); var clears = 0; var ui = new TerminalSessionUi(identity, input, output, () => { clears++; return true; });
         Assert.True(await ui.StartAsync(default)); Assert.False(identity.IsAuthenticated); Assert.True(identity.UsesPassword);
         Assert.True(await ui.HandleAsync(commands.Execute("login"), default)); Assert.True(identity.IsMaster);
@@ -33,7 +37,9 @@ public sealed class TerminalUxTests
         Assert.True(await ui.HandleAsync(commands.Execute("logout"), default)); Assert.True(identity.IsMaster);
         Assert.True(await ui.HandleAsync(commands.Execute("logout"), default)); Assert.False(identity.IsAuthenticated);
         Assert.True(clears >= 3); Assert.DoesNotContain(password, output.ToString());
-        Assert.Equal(3, input.SecretReads.Count(s => s));
+        Assert.Equal(9, input.SecretReads.Count(s => s));
+        Assert.Equal(3, engine.GetSnapshot().Identities.ChallengeCredentials!.Challenges.Count);
+        Assert.DoesNotContain("violet river", output.ToString(), StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain(engine.CaptureHistory().Events, e => e.Detail.Contains(password) || e.ContextJson.Contains(password));
     }
     [Fact]
@@ -74,6 +80,51 @@ public sealed class TerminalUxTests
         Assert.Contains("Wait 30 seconds", identity.LoginPassword("User", "test-only-passphrase"));
     }
     [Fact]
+    public void ChallengeCredentialsAreDistinctSaltedNormalizedAndAtomic()
+    {
+        var set = ChallengeCredentialSet.Create(
+            [("Family", "Violet   River"), ("Travel", "Silver Compass"), ("Memory", "Winter Lantern")],
+            "Owner", "test-only-passphrase");
+        Assert.Equal(3, set.Challenges.Count);
+        Assert.Equal(3, set.Challenges.Select(c => c.Salt).Distinct().Count());
+        Assert.True(set.Challenges[0].Verify("  violet river  "));
+        Assert.False(set.Challenges[0].Verify("silver compass"));
+        Assert.Throws<ArgumentException>(() => ChallengeCredentialSet.Create(
+            [("Same", "Violet River"), ("same", "Silver Compass"), ("Memory", "Winter Lantern")],
+            "Owner", "test-only-passphrase"));
+
+        var (engine, identity, _) = Fixture();
+        var result = identity.ConfigureCredentials("Owner", "test-only-passphrase", "test-only-passphrase",
+            [("Family", "Violet River", "Violet River"),
+             ("Travel", "Silver Compass", "wrong response"),
+             ("Memory", "Winter Lantern", "Winter Lantern")]);
+        Assert.Contains("do not match", result);
+        Assert.Null(engine.GetSnapshot().Identities.Credential);
+        Assert.Null(engine.GetSnapshot().Identities.ChallengeCredentials);
+    }
+    [Fact]
+    public void ChallengeQuestionsAndAnswersAcceptOneToSixtyFourPrintableCharacters()
+    {
+        var minimum = ChallengeCredentialSet.Create(
+            [("A", "x"), ("B", "y"), ("C", "z")], "Owner", "Ab1!xy");
+        Assert.True(minimum.Challenges[0].Verify("x"));
+
+        var maximum = ChallengeCredentialSet.Create(
+            [(new string('A', 64), new string('x', 64)),
+             (new string('B', 64), new string('y', 64)),
+             (new string('C', 64), new string('z', 64))], "Owner", "Ab1!xy");
+        Assert.True(maximum.Challenges[2].Verify(new string('z', 64)));
+
+        Assert.Throws<ArgumentException>(() => ChallengeCredentialSet.Create(
+            [("", "x"), ("B", "y"), ("C", "z")], "Owner", "Ab1!xy"));
+        Assert.Throws<ArgumentException>(() => ChallengeCredentialSet.Create(
+            [(new string('A', 65), "x"), ("B", "y"), ("C", "z")], "Owner", "Ab1!xy"));
+        Assert.Throws<ArgumentException>(() => ChallengeCredentialSet.Create(
+            [("A", ""), ("B", "y"), ("C", "z")], "Owner", "Ab1!xy"));
+        Assert.Throws<ArgumentException>(() => ChallengeCredentialSet.Create(
+            [("A", new string('x', 65)), ("B", "y"), ("C", "z")], "Owner", "Ab1!xy"));
+    }
+    [Fact]
     public void HelpCompletionAndPaletteFollowCapabilitiesAndNeverSuggestSecrets()
     {
         var (_, identity, commands) = Fixture();
@@ -90,7 +141,7 @@ public sealed class TerminalUxTests
         Assert.Equal(ConsoleColor.Red, TerminalTheme.Color("Access denied")); Assert.Equal(ConsoleColor.Yellow, TerminalTheme.Color("Welcome"));
         Assert.Contains("GRID7736", TerminalSessionUi.Opening(30));
         Assert.Contains("OFFLINE MARKDOWN HELP", commands.Execute("help -md").Text);
-        Assert.Contains("# GRID7736", commands.Execute("help -md").Text);
+        Assert.Contains("# Grid.AI", commands.Execute("help -md").Text);
     }
 
     [Theory]
@@ -122,13 +173,45 @@ public sealed class TerminalUxTests
     public async Task SixCharacterSetupDisplaysNewPolicyAndMismatchDoesNotCreateCredential()
     {
         var (_, identity, commands) = Fixture(); var output = new StringWriter();
-        var ui = new TerminalSessionUi(identity, new Input("Owner", "Ab1!xy", "Ab1!xz", "Owner", "Ab1!xy", "Ab1!xy"), output);
+        var ui = new TerminalSessionUi(identity, new Input(
+            "Owner", "Ab1!xy", "Ab1!xz",
+            "y",
+            "Owner", "Ab1!xy", "Ab1!xy",
+            "Family", "violet river", "violet river",
+            "Travel", "silver compass", "silver compass",
+            "Memory", "winter lantern", "winter lantern"), output);
         await ui.StartAsync(default);
-        Assert.True(identity.NeedsSetup); Assert.Contains("passwords do not match", output.ToString());
-        await ui.HandleAsync(commands.Execute("login"), default);
+        Assert.False(identity.NeedsSetup); Assert.Contains("passwords do not match", output.ToString());
+        Assert.Contains("Account was not created", output.ToString());
         Assert.True(identity.UsesPassword); Assert.Contains("Password: 6..24", output.ToString());
+        Assert.NotNull(identity.Engine.GetSnapshot().Identities.ChallengeCredentials);
         Assert.Contains("Logged in", identity.LoginPassword("Owner", "Ab1!xy"));
         Assert.DoesNotContain("Ab1!xy", output.ToString());
+    }
+    [Fact]
+    public async Task InvalidChallengeCannotFallThroughIntoAnAmbiguousLoginSetupLoop()
+    {
+        var (_, identity, commands) = Fixture(); var output = new StringWriter();
+        var ui = new TerminalSessionUi(identity, new Input(
+            "Owner", "Ab1!xy", "Ab1!xy",
+            "Family", "", "",
+            "Travel", "silver compass", "silver compass",
+            "Memory", "winter lantern", "winter lantern",
+            "y",
+            "Owner", "Ab1!xy", "Ab1!xy",
+            "Family", "violet river", "violet river",
+            "Travel", "silver compass", "silver compass",
+            "Memory", "winter lantern", "winter lantern",
+            "Owner", "Ab1!xy"), output);
+
+        Assert.True(await ui.StartAsync(default));
+        Assert.False(identity.NeedsSetup);
+        Assert.Contains("No account was created or changed", output.ToString());
+        Assert.Contains("1..64 printable characters", output.ToString());
+
+        Assert.True(await ui.HandleAsync(commands.Execute("login"), default));
+        Assert.True(identity.IsMaster);
+        Assert.DoesNotContain("Create local credentials", output.ToString()[output.ToString().LastIndexOf("Username:", StringComparison.Ordinal)..]);
     }
     [Theory]
     [InlineData(25)]

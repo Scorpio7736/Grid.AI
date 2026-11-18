@@ -300,7 +300,7 @@ MAXIS now supports registered-workspace inspection, fixed .NET build/test execut
 
 **Implemented - 4.2B, 2026-10-20.** This bundled reference is available offline through `help -md`, which displays its path and Markdown in the terminal. Live `help` and Tab suggestions are capability-scoped; this full manual does not grant command access.
 
-New worlds prompt for a username and masked password (6..24 characters), then use `login`. Existing Windows-owned worlds use `login master`, then `credentials` to migrate or rotate credentials as Master Control. Passwords are entered only at masked prompts, never as command arguments. Password login/setup refuse redirected input. Examples containing placeholders require actual values; `nge` deletes the selected world after confirmation.
+New worlds prompt for a username, masked password (6..24 characters), and exactly three user-created challenge prompts with masked responses; both challenge prompts and responses accept 1..64 printable characters. Existing Windows-owned worlds use `login master`, then `credentials` to migrate or rotate the password and all three challenges as Master Control. Passwords and challenge responses are entered only at masked prompts, never as command arguments. Password login/setup refuse redirected input. Challenge responses are a future knowledge factor, not password recovery, task approval, or biometric voice recognition. Examples containing placeholders require actual values; `nge` deletes the selected world after confirmation.
 
 ## Login and identity
 
@@ -314,7 +314,7 @@ login
 ```text
 credentials
     - credentials
-      # USAGE: Master Control creates/replaces local credentials using masked prompts; sign in again afterward.
+      # USAGE: Master Control creates/replaces the username, password, and three challenge codes using masked prompts; sign in again afterward.
     # EXAMPLE: credentials
 ```
 

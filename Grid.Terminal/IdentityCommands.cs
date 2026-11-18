@@ -10,7 +10,7 @@ public static class IdentityCommands
         commands.Register(new("login", "login [master]", "Authenticate the world owner using the current Windows identity.", a =>
             a.Count > 1 || a.Count == 1 && !a[0].Equals("master", StringComparison.OrdinalIgnoreCase) ? new("Usage: login [master]. Never put credentials in command arguments.") : interactiveUi ? new("", LoginRequested: true) : new(session.Login())) { Capability = "public" });
         commands.Register(new("logout", "logout", "Revoke the session and clear active context.", a => a.Count != 0 ? new("Usage: logout") : interactiveUi ? new("", LogoutRequested: true) : new(session.Logout())) { Capability = "public" });
-        commands.Register(new("credentials", "credentials", "Master Control: interactively set or migrate local username/password credentials.", a =>
+        commands.Register(new("credentials", "credentials", "Master Control: interactively set or rotate local username, password, and three challenge codes.", a =>
             a.Count != 0 ? new("Usage: credentials. Secrets must never be command arguments.") : new("", SetupRequested: true)) { Capability = "programs.edit" });
         commands.Register(new("whoami", "whoami", "Show authenticated operator, active identity and capabilities.", a => new(a.Count == 0 ? session.Describe() : "Usage: whoami")) { Capability = "public" });
         commands.Register(new("switch", "switch <master|agent-id|name>", "Select Master Control or a registered agent identity.", a => new(a.Count > 0 ? session.Switch(string.Join(" ", a)) : "Usage: switch <master|agent-id|name>")) { Capability = "session" });

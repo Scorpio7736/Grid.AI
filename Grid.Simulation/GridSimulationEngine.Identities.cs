@@ -23,8 +23,25 @@ public sealed partial class GridSimulationEngine
         lock (gate)
         {
             PasswordCredential.Validate(credential);
-            identities = identities with { OwnerSubject = identities.OwnerSubject ?? "local-credential-v1", Credential = credential };
+            identities = identities with { OwnerSubject = identities.OwnerSubject ?? "local-credential-v1", Credential = credential, ChallengeCredentials = null };
             RecordEvent("CredentialConfigured", LocalOperator.Id, null, "Local password credential configured; no credential material recorded in audit.");
+        }
+    }
+    public void SetLocalCredentials(PasswordCredential credential, ChallengeCredentialSet challenges)
+    {
+        lock (gate)
+        {
+            PasswordCredential.Validate(credential);
+            ChallengeCredentialSet.Validate(challenges);
+            identities = identities with
+            {
+                OwnerSubject = identities.OwnerSubject ?? "local-credential-v1",
+                Credential = credential,
+                ChallengeCredentials = challenges
+            };
+            LocalIdentityState.Validate(identities);
+            RecordEvent("CredentialConfigured", LocalOperator.Id, null,
+                "Local password and challenge credentials configured; no credential material recorded in audit.");
         }
     }
     public void RegisterAgentIdentity(Guid id)

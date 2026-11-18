@@ -115,15 +115,20 @@ The guided Lite mode uses conservative eligibility checks, including at least 8 
 
 ### Install a fresh instance
 
-Clone the repository and open **64-bit PowerShell** in its root:
+Clone the repository into a direct child of the standard repositories folder, then open **64-bit PowerShell** in its root. The explicit destination prevents Git or an IDE from introducing an owner folder such as `Scorpio7736\Grid.AI`:
 
 ```powershell
-git clone https://github.com/Scorpio7736/Grid.AI.git
-cd Grid.AI
+$gridReposRoot = Join-Path ([Environment]::GetFolderPath('UserProfile')) 'source\repos'
+New-Item -ItemType Directory -Path $gridReposRoot -Force | Out-Null
+Set-Location -LiteralPath $gridReposRoot
+git clone https://github.com/Scorpio7736/Grid.AI.git 'Grid AI'
+Set-Location -LiteralPath (Join-Path $gridReposRoot 'Grid AI')
 .\Setup-GridClone.ps1 -Plan -Download
 .\Setup-GridClone.ps1 -Download
 .\Start-GridClone.ps1
 ```
+
+The resulting checkout is `%USERPROFILE%\source\repos\Grid AI`. When cloning through Visual Studio instead, set the Clone Repository **Path** to that exact location before starting the clone. Visual Studio owns its default clone-location setting; repository contents cannot override a different path selected by the IDE.
 
 The setup preview is read-only. The explicit installer downloads and verifies the pinned dependencies, builds the application, and checks real local-model conversation readiness.
 
