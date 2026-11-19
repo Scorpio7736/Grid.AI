@@ -1925,15 +1925,145 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 
 ## 6.38 Trust, personalization and usability acceptance
 
-- [ ] Provide one human-readable terminal activity view (optional future GUI dashboard) for active agents, chosen models, tool calls, resource use, task progress, approvals, cancellations and durable audit history.
-- [ ] Provide personal preference/persona settings and scoped memory review, correction, expiry, forget and export controls; preserve existing cross-agent isolation.
-- [ ] Introduce permission profiles for common workflows with individual grant review and immediate revocation; do not implement unrestricted global auto-approval.
-- [ ] Offer optional, user-enabled contextual suggestions tied to explicit local goals, without covert background surveillance or compulsive notifications.
-- [ ] Evaluate first-task completion, setup friction, time to actionable response, error recovery, accessibility and discoverability with representative users of the terminal-first experience.
-- [ ] Run Windows terminal interaction, multi-device portability, memory/scope isolation, security and offline acceptance tests across supported hardware profiles.
-- [ ] Update the user guide, onboarding, permission explanations, safe uninstall/export and troubleshooting documentation before claiming release readiness.
+- [x] Provide one human-readable `trust activity` terminal view for active agents, chosen model profiles, content-free model requests, task/tool progress, approval/cancellation counts, resource samples, scheduler state and durable task audit. Detailed commands remain available for source evidence; no cross-source correlation is invented.
+- [x] Consolidate existing personal preference/persona and scoped memory review/correction/expiry/forget/grant/revoke controls; add a reviewed, session/revision-bound, new-file-only JSON memory export while preserving agent/project labels and grants.
+- [x] Introduce three disabled immutable Trust Center profiles for goal advice, reviewed workspace proposals and task coordination. Individual grants require exact review; revocation is immediate. These templates never grant OS access or replace the separate authoritative skill/context/device/file/task controls, and no global auto-approval exists.
+- [x] Add optional goal-bound suggestions. Suggestions, profiles, agent grants and goals are all disabled by default; output occurs only on explicit `trust suggest`, uses no surveillance/background inference and cannot create, approve or execute work.
+- [ ] Evaluate first-task completion, setup friction, time to actionable response, error recovery, accessibility and discoverability with representative users of the terminal-first experience. The repeatable study protocol and `trust acceptance` boundary report are ready; no representative-user session has been claimed.
+- [ ] Run physical Windows terminal interaction, multi-device portability, security and offline acceptance across supported hardware profiles. Automated memory/scope/profile tampering and offline deterministic tests pass; second-device/Flash testing remains deferred per the user's device availability.
+- [x] Update terminal help and the trust/user guide with activity, personalization, permission boundaries, safe export/removal, troubleshooting and manual acceptance instructions. Release readiness remains blocked by the two manual items above and the experience gate below.
 
-**Experience release gate:** A new user on a supported Windows PC can install or launch a prepared GRID edition, set up a local model and grants, request a realistic multi-step file or application task conversationally, review/approve it, observe grounded agent progress, recover from a failure, and revoke access — using the GUI, with no required cloud service. Repeat essential workflows from a verified offline Flash GRID package on a second supported machine. Preserve simulation integrity, capability scoping and auditable Master Control authority throughout.
+**6.38 terminal-foundation notes — 2026-11-19:** Added durable `TrustCenter` policy state, the Master Control `trust` command, unified evidence view, two-step private memory export, immutable deny-first profiles, individually reviewed agent grants, immediate revocation, explicit local goals and on-demand deterministic suggestions. No AI/tool execution or new host authority was attached to these profiles. See [trust controls, safety boundaries and manual protocol](Project_GRID_Trust_Personalization_and_Acceptance.md).
+
+**6.38 automated verification — 2026-11-19:** Five focused Trust Center cases and the complete solution pass: **1,551 passed, 0 failed, 0 skipped** (Core 14, Simulation 163, Persistence 107, Terminal 1,267). Automated coverage is not substituted for the two unchecked representative-user and physical-device acceptance items.
+
+## Pre-Phase-7 closure queue — authoritative execution order
+
+**Organized 2026-11-19.** This queue orders the existing unchecked requirements from Phase 1 through 6.38 without duplicating them as new checkboxes. The canonical checkboxes remain in their original sections so implementation history and exact acceptance language are preserved. Completing a queue gate means satisfying and checking the linked original items, not adding a second completion mark here.
+
+### Current closure inventory
+
+| Checklist range | Completed | Open | Status |
+| --- | ---: | ---: | --- |
+| Phase 1 | 140 | 0 | Complete |
+| Phase 2 | 79 | 2 | Two platform/telemetry enhancements |
+| Phase 3 | 26 | 0 | Complete |
+| Phase 4 | 121 | 3 | Transfer recovery and visual acceptance |
+| Phase 5 | 69 | 2 | Manual-session/autonomous-task coordination |
+| Phase 6 through 6.38 | 255 | 65 | Model, integration, security, portability and manual acceptance |
+| **Total before Phase 7** | **690** | **72** | **90.6% complete** |
+
+The 72 boxes are not 72 independent engineering jobs. Twenty-one are the 6.17A model-handling roll-up; ten are the 6.31 integration/release roll-up; and several repeat the same second-PC, offline-package or final-review outcome. Work them through the gates below rather than line order.
+
+### Gate 0 — Freeze the first-release scope (NEXT)
+
+Make these decisions before downloading models or changing platform code:
+
+| Decision | Recommended first-release treatment | Affected canonical items |
+| --- | --- | --- |
+| Text/delegation model | Retain the verified Qwen3 4B baseline; select at most one additional Standard text model only if measured need justifies it | 6.17, 6.17A, 6.19, 6.26, 6.30 |
+| Coding model | Select and provision one small coding specialist before evaluating heavyweight coordinator upgrades | 6.17/6.17A, 6.25–6.27, 6.31 |
+| Image models | Recommended deferral unless local image generation is a required first-release outcome; SDXL/FLUX acceptance otherwise blocks many model boxes | 6.16, 6.17A, 6.19, 6.25–6.27, 6.30 |
+| Semantic embeddings | Recommended deferral unless learned semantic retrieval is required beyond the implemented lexical baseline | 6.20 |
+| Remote voice/wearables | Recommended Future Plan placement; retain foreground text/private-network foundations without making voice transport a core gate | 6.36A–6.36B |
+| Voiceprint authentication | Keep optional and future; challenge codes remain knowledge-based authentication, never biometric proof | 6.34A |
+| Platform-dependent Phase 4 item | Move the requirement to the matching Phase 7 portability gate; it cannot logically require completion of Phase 7 before Phase 7 begins | 4.2D |
+| Phase 2 telemetry/application breadth | Carry into Grid.Platform capability/adaptor work unless it is required for the selected release models | 2.4, 2.7.2 |
+
+Deferral candidates remain unchecked until their move is explicitly accepted and recorded in both their original section and the appropriate Future Plan/Phase 7 section. Deferral is a sequencing decision, not a false completion claim.
+
+**Gate 0 exit:** the checklist names the exact first-release models/features, every optional item has an approved destination, and no pre-Phase-7 item depends circularly on Phase 7.
+
+### Gate 1 — Complete the ordinary-language MCP workflow
+
+This is the highest-priority implementation gate because it is the central Grid.AI product requirement.
+
+1. Resolve “approve that,” “cancel it,” “revise it,” and “ask MAXIS to do it” against the exact current reviewed operation; clarify ambiguity.
+2. Join MCP coordination, MAXIS execution, progress, cancellation, file receipts, builds/tests and final briefing without requiring task IDs or terminal syntax.
+3. Preserve useful conversation/task/file state across interruption and restart without duplicate execution.
+4. Route named-agent and group requests correctly in inline chat, attached chat and meetings while preserving private grants.
+5. Run one complete local coding task with the network unavailable and locally provisioned dependencies.
+
+**Canonical boxes closed by this gate:** 5.1 manual/autonomous coordination and attribution; the open conversation-first, resumability, offline workflow and meeting items in 6.31.
+
+**Gate 1 exit:** a user can ask MCP in normal language to make and test a bounded repository change, approve/revise/cancel conversationally, receive verified results and resume safely after restart.
+
+### Gate 2 — Finalize the local model/runtime release set
+
+Work only the candidates retained by Gate 0:
+
+1. Pin exact revisions, licenses, quantizations, templates/tokenizers and runtime compatibility.
+2. Finish RAM/VRAM/backend/disk discovery needed by the chosen profiles.
+3. Benchmark cold/warm latency, throughput, memory, structured/tool behavior and failure fallback on supported hardware.
+4. Route to the smallest eligible installed model and recheck resources before load.
+5. Verify unload/reload reclamation, cancellation, corrupt/missing asset, unsupported backend and over-budget behavior.
+6. Produce one checksummed licensed manifest, atomic install/rollback path and network-blocked acceptance evidence.
+7. Retain the 75 GB installed-model sub-limit inside the 128 GB Grid.AI package limit.
+
+**Canonical boxes closed by this gate:** retained requirements in 6.16–6.17A, 6.19–6.20, 6.25–6.30 and the model/profile portions of 6.31. Deferred candidates move through Gate 0 rather than being checked as implemented.
+
+**Gate 2 exit:** every shipped model is installed from a pinned manifest, passes its role/device/offline acceptance, fails safely and can roll back without cloud fallback.
+
+### Gate 3 — Close security and recovery boundaries
+
+1. Verify challenge-code setup cancellation, normalization, replay/cross-call failure, lockout, rotation, migration, backup/copy behavior, accessibility and secret leakage protections.
+2. Confirm challenge success is only an authentication claim—not recovery, pairing, biometric identity, task approval or contact-policy authority.
+3. Complete recoverable world retirement with bounded quarantine/receipt behavior and refusal of roots, repositories, reparse points, shared assets and active writers.
+4. Complete break-glass non-discovery, unauthorized/remote/agent/model denial, replay/cross-world resistance and interrupted-operation tests.
+5. Verify clear degradation for inaccessible applications, OS restrictions, read-only media and changed devices on real Windows.
+
+**Canonical boxes closed by this gate:** retained 6.34A items, 6.34B and 6.33. Optional voiceprint work follows Gate 0 disposition.
+
+**Gate 3 exit:** no model, conversation, agent, attached terminal or remote client can widen authentication, approval, recovery or destructive authority.
+
+### Gate 4 — Build and prove one complete portable offline package
+
+Begin only after Gates 1–3 fix the code, model inventory and security contract that must be packaged.
+
+1. Build the complete checksummed package and verify actual size, staging reserve, free space and rollback assets.
+2. Exercise copy and transfer interruption recovery, low-space refusal, drive removal and changed drive letters.
+3. Launch on the second supported Windows PC or clean VM with networking unavailable.
+4. Verify login, world identity, bundled AI, selected models, memory/grants, PDF/DOCX extraction, MCP/MAXIS workflow, restart, update and rollback.
+5. Retain exact `ai status`, `ai test`, package audit, workflow receipts and failure/recovery evidence.
+
+**Canonical boxes closed by this gate:** 4.2D transfer acceptance not moved by Gate 0; 6.14–6.15; portability portions of 6.27 and 6.31; clean-device items in 6.34; physical/offline portions of 6.38.
+
+**Gate 4 exit:** the copied Grid.AI package works offline on the second machine from its destination, with no personal/global runtime dependency and no regenerated world.
+
+### Gate 5 — Run physical UX and representative-user acceptance
+
+1. Confirm main terminal, detached conversation and meeting appearance, colors and typewriter behavior.
+2. Test one non-sensitive physical monitor capture plus unplug/reconnect.
+3. Run the documented first-task study with representative users: setup friction, discoverability, time to actionable response, task completion, error recovery, keyboard/readability accessibility and grant revocation.
+4. Record limitations and screenshots/transcripts without private content.
+
+**Canonical boxes closed by this gate:** 4.2H, 6.3A and the representative-user/manual 6.38 item. Optional remote phone/wearable work follows Gate 0 disposition.
+
+**Gate 5 exit:** the terminal-first workflow is usable without developer coaching and its remaining accessibility limitations are recorded.
+
+### Gate 6 — Evidence reconciliation and user release review
+
+1. Re-run the complete functional, adversarial, regression, performance and compatibility suites against the exact packaged revision.
+2. Reconcile all roll-up boxes so 6.17A, 6.30 and 6.31 cite the same model/device/package evidence rather than duplicating claims.
+3. Review all 12 production-readiness checks: offline inference, selected models, identity/memory isolation, retrieval provenance, unauthorized operations, recovery, diagnostics, performance/storage, evaluations, rollback, portability and repeatable training disposition.
+4. Record the final supported hardware/model/feature matrix and every explicit deferral.
+5. Obtain user review of the evidence before beginning Phase 7 implementation.
+
+**Canonical boxes closed by this gate:** 6.15 consolidated acceptance, 6.17A/6.30 review items, the three top-level 6.31 release-gate boxes and any remaining evidence-only boxes from earlier gates.
+
+**Gate 6 exit:** every pre-Phase-7 checkbox is either completed with linked evidence or explicitly moved with user approval; no item is silently ignored or marked complete from planning alone.
+
+### Stop rules
+
+- Do not start a later gate when an earlier gate would change its packaged code, selected assets or authorization contract.
+- Do not use a passing unit suite as evidence for a physical device, disconnected network, visual appearance, power-loss or representative-user requirement.
+- Do not download every listed model before Gate 0 chooses the release set.
+- Do not count optional GUI work as a terminal-first release blocker.
+- Phase 7 architecture investigation may inform Gate 0, but Phase 7 implementation does not begin until Gate 6 review unless this checklist is explicitly re-sequenced by the user.
+
+**Recommended next implementation item:** Gate 1, beginning with the open 6.31 conversational-reference and MCP-to-MAXIS delegation flow. It provides the most direct progress toward the required local agentic coding experience and does not depend on the unavailable transfer device.
+
+**Experience release gate:** A new user on a supported Windows PC can install or launch a prepared Grid.AI edition, set up the selected local model and grants, request a realistic multi-step file or application task conversationally, review/approve it, observe grounded agent progress, recover from a failure and revoke access through the terminal with no required cloud service. Repeat essential workflows from a verified offline Flash Grid.AI package on a second supported machine. Preserve simulation integrity, capability scoping and auditable Master Control authority throughout. The optional GUI is not part of this gate.
 
 ---
 

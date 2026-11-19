@@ -8,7 +8,7 @@ public static class TerminalPresentation
             ("SIMULATION CONTROL", ["grid", "step", "tick"]),
             ("WORLD & POPULATION", ["status", "city", "districts", "programs", "inspect", "jobs"]),
             ("MONITORING & ANALYTICS", ["live", "behaviors", "activity", "social", "resources", "history", "schedule"]),
-            ("IDENTITY & ADMINISTRATION", ["login", "credentials", "logout", "whoami", "switch", "self", "register-agent", "edit", "apply-edit", "cancel-edit"]),
+            ("IDENTITY & ADMINISTRATION", ["login", "credentials", "logout", "whoami", "trust", "switch", "self", "register-agent", "edit", "apply-edit", "cancel-edit"]),
             ("CONVERSATIONS", ["assist", "memory", "agent", "connect", "talk", "conversations", "transcript", "resume", "disconnect"]),
             ("SYSTEM & TERMINAL", ["clear", "help", "nge", "exit"])
         };

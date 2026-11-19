@@ -160,6 +160,7 @@ try
     if (persistence is not null) identity.PersistIdentity = () => persistence.SaveAsync().GetAwaiter().GetResult();
     var contactService = store is null ? null : new RemoteContactService(store.DatabasePath + ".contacts.json");
     var workflowService = store is null ? null : new ScheduledWorkflowService(store.DatabasePath + ".jobs.json", engine.LocalOperator.Id, engine);
+    var trustCenter = store is null ? null : new TrustCenter(store.DatabasePath + ".trust.json");
     await using var remoteGateway = new RemoteTerminalGateway(engine, contactService);
     void StartGrid(TerminalIdentitySession session)
     {
@@ -214,6 +215,7 @@ try
         if (!session.IsAttachment && contactService is not null) ContactCommands.Register(dispatcher, session, remoteGateway,
             contactService, !Console.IsInputRedirected && !Console.IsOutputRedirected);
         if (!session.IsAttachment && workflowService is not null) ScheduledWorkflowCommands.Register(dispatcher, engine, session, workflowService);
+        if (!session.IsAttachment && trustCenter is not null) TrustCommands.Register(dispatcher, engine, session, trustCenter, localAi, workflowService);
         IdentityCommands.Register(dispatcher, engine, session, interactiveUi: true);
         GridTransfer.Register(dispatcher, engine, !session.IsAttachment, () => StartGrid(session), () => {
             contactService?.SetPaused(true); workflowService?.SetPaused(true); remoteGateway.DisableAsync().GetAwaiter().GetResult(); });
