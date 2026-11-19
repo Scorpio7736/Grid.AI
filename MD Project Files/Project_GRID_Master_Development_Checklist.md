@@ -1855,59 +1855,73 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 
 ## 6.35 Reusable skills and integration system
 
-**First local increment verified 2026-11-18:** [Declarative skills catalog](Project_GRID_Local_Skills.md) provides reviewed hash-bound JSON import/update, explicit enable/disable, fixed read-only status invocation, one-revision rollback, removal and bounded durable receipts. Original Master Control only; changed machine/path/world/credentials disable imported authority. Nine focused tests pass. Broader scoped agent invocation, configurable integrations and executable sandboxing remain open, so the full items below are not marked complete.
+**Completed 2026-11-19:** [Declarative skills catalog](Project_GRID_Local_Skills.md) provides versioned, hash-reviewed JSON import/update, explicit enable/disable, typed dependency reporting, bounded configuration, exact-revision registered-agent grants, one-revision rollback, removal and durable content-free receipts. Untrusted manifests are interpreted through two fixed read-only actions; executable scripts/plugins, model instructions, arbitrary paths/arguments, processes and direct networking are rejected rather than given ambient authority. Thirteen focused tests and the complete solution pass at **1,523 passed, 0 failed, 0 skipped**. Physical PC2/removable-device testing remains a separate overall portability gate.
 
-- [ ] Define a versioned skill manifest and typed invocation contract compatible with existing GRID-Agent tool scopes, model capabilities and host authorization.
-- [ ] Implement a terminal-accessible local skills catalog for discovery, enable/disable, per-skill configuration, dependency checks and clear capability descriptions.
-- [ ] Support explicit import/install of locally bundled or user-selected community skills with origin/version/hash/license metadata and review of required permissions; never auto-trust third-party content.
-- [ ] Sandbox untrusted skill execution; constrain filesystem/network/process access, runtime and resources, and protect against instructions in retrieved skill/tool content.
-- [ ] Keep skills offline-operational after provisioning where their declared capabilities permit; label network-dependent integrations as optional and unavailable offline.
-- [ ] Validate install/update/revoke/uninstall, incompatible versions, malicious manifests, access denial, rollback and portability between devices.
+- [x] Define a versioned skill manifest and typed invocation contract compatible with existing GRID-Agent role scopes and host authorization. Version 1 remains Master-only; version 2 declares eligible registered-agent roles and exact dependencies. Each invocation binds skill ID, revision, actor, allowlisted action and output limit; no model output can add authority.
+- [x] Implement a terminal-accessible local skills catalog for discovery, enable/disable, bounded per-skill output configuration, dependency checks and clear capability descriptions. Agents see only exact enabled revisions granted to their role, and paused agents cannot invoke them.
+- [x] Support explicit import/install of local or user-selected community manifests with origin/version/source hash/canonical revision hash/license metadata and review of required permissions; never auto-trust publisher claims or third-party content. Two-minute session-bound review and exact-byte installation remain required.
+- [x] Constrain untrusted skill execution through a denial-based typed interpreter: no executable content, prompt instructions, general filesystem, direct network, process, shell or arbitrary arguments; at most four fixed reads and bounded output. Arbitrary executable plugins are deliberately unsupported rather than falsely described as safely sandboxed.
+- [x] Keep supported skills offline-operational after provisioning. Built-in world/resource dependencies report available; declared network dependency reports optional/unavailable and blocks enable/run instead of silently connecting or degrading.
+- [x] Validate install/update/grant/revoke/disable/rollback/remove, incompatible versions, unknown fields/actions/dependencies, malicious instruction text, access denial, interrupted/failed attempts without replay, catalog tampering and logical device portability. Changed machine/path/world/credentials disable skills and clear grants; destination use requires explicit review/enable/grant. Physical device acceptance remains tracked separately.
+
+**6.35 completion verification — 2026-11-19:** Thirteen focused skill cases and the full solution pass: **1,523 passed, 0 failed, 0 skipped** (Core 14, Simulation 163, Persistence 107, Terminal 1,239). No schema migration, cloud dependency, model call, background task or executable plugin was added.
 
 ## 6.36 App and service connections
 
-- [ ] Provide discoverable terminal connection-management commands for supported local app adapters and opt-in external services such as calendar, email, tasks and browser data.
-- [ ] Define connector-specific scopes, account isolation, credential storage, consent/refresh/revocation and reliable disclosure of what is shared with agents.
-- [ ] Prioritize locally available data/interfaces; treat remote services as opt-in and never as dependencies for GRID's mandatory offline runtime.
-- [ ] Keep reading, drafting and committing external changes separate; require confirmation for sending, deleting, scheduling or other consequential writes.
-- [ ] Surface sync status, staleness, offline state and source citations rather than presenting cached content as live.
-- [ ] Verify revoked credentials, cross-agent privacy, disconnected networks, data deletion and connector failure recovery.
+**Completed offline-first foundation — 2026-11-19:** [Local app and service connections](Project_GRID_Local_Connections.md) adds a real bounded `local-task-board` adapter and a provider catalog that honestly marks calendar, email, external-task and browser-data services unavailable until optional reviewed adapters are installed. This completes the shared connection-management/security workflow without introducing a cloud dependency or pretending unconfigured accounts are connected. Six focused tests and the complete solution pass at **1,529 passed, 0 failed, 0 skipped**.
+
+- [x] Provide discoverable `connections providers/list/show/status/plan/add/enable/disable/grant/revoke/remove/read/draft-add/approve/commit/history` commands. The supported local task adapter is functional; optional calendar/email/tasks/browser provider classes disclose unavailable status rather than silently connecting.
+- [x] Define connector-specific scopes, source/account isolation, credential policy, consent, revocation and agent disclosure. The local adapter declares `tasks.read`, `tasks.draft`, `tasks.commit`, stores no credentials and grants agents read-only access by exact registered role. Future account providers must supply their own reviewed credential/refresh implementation before becoming available.
+- [x] Prioritize local data and keep remote services opt-in. Local task boards operate entirely offline; unavailable service providers make no network call and are not mandatory GRID dependencies.
+- [x] Keep reading, drafting, approving and committing separate. Task additions use a two-minute session-bound preview, explicit approval, stale-source hash recheck, retained before-image and atomic replace. Agents cannot draft or commit. Email sending, deletion and calendar scheduling remain unavailable rather than bypassing this boundary.
+- [x] Surface transport, observation time, exact source, current hash, freshness/change/error status and item citations. Local reads reopen the source and never present a content cache as live.
+- [x] Verify grant revocation, cross-agent privacy, paused/device-rebound authority removal, offline operation, non-destructive metadata removal, missing/corrupt/oversized sources, stale writes and retained recovery artifacts. Live cloud-account and physical second-device exercises remain provider/device acceptance, not evidence claimed by this local foundation.
+
+**6.36 completion verification — 2026-11-19:** Six focused connection cases and the full suite pass: **1,529 passed, 0 failed, 0 skipped** (Core 14, Simulation 163, Persistence 107, Terminal 1,245). No schema migration, cloud SDK, token, background synchronization or model authority was added.
 
 ## 6.36A Optional remote terminal access over private networks
 
-**User-requested planning addition — 2026-11-17. Not implemented and not a Phase 6 completion claim.** Use the existing single authoritative host/attached-terminal architecture with an optional private transport. Tailscale is the initial candidate because the user already uses its commands and endpoints; a phone or wearable relay such as the user's Even Realities G2 workflow should be supportable as a narrow text client without receiving implicit authority. [Architecture, commands, security boundaries and acceptance plan](Project_GRID_Remote_Terminal_Access.md).
+**Bounded gateway foundation implemented — 2026-11-19.** A process-local v1 gateway now supports reviewed loopback or observed local-Tailscale binding, one-time GRID pairing and strictly read-only status. It never changes Tailscale/firewall/Funnel/DNS settings and persists no endpoint/device credential. Five focused tests and the full suite pass at **1,534 passed, 0 failed, 0 skipped**. Remote conversations/actions and physical Tailscale/phone/wearable acceptance remain open. [Architecture, commands, implemented boundary and acceptance plan](Project_GRID_Remote_Terminal_Access.md).
 
-- [ ] Define a versioned, bounded remote-session protocol that attaches to the running host without exposing the database, model server, named pipe or an arbitrary shell.
-- [ ] Add reviewed private Tailscale endpoint discovery/configuration with local-only defaults; do not install/sign in, change tailnet policy, bind all LAN interfaces or enable public Funnel automatically.
-- [ ] Require GRID authentication or short-lived pairing in addition to tailnet transport; default new devices to conversation/read-only access and keep original-host-only controls local.
-- [ ] Provide `remote status/options/plan/enable/disable/sessions/revoke/doctor` controls with exact bind/port/capability preview, immediate revocation and content-free audit.
-- [ ] Preserve typed plans, grants and confirmations for remote actions; reconnects, duplicated messages and conversation text must never approve or replay work.
-- [ ] Disable listeners and discard active/machine-bound sessions on copy/transfer; revalidate endpoint, device, identity and saved preference at every startup.
+- [x] Define a versioned bounded JSON-lines protocol attached to the authoritative running host. It exposes only typed help/status/disconnect—not the database, model server, named pipe, shell or ordinary terminal dispatcher.
+- [x] Add reviewed private endpoint discovery/configuration with loopback default testing and local Tailscale-range validation. GRID never installs/signs into Tailscale, changes policy/firewall/DNS, binds all LAN interfaces or enables Funnel.
+- [x] Require a random single-use two-minute GRID pairing code in addition to transport. Sessions are read-only, five-minute/process-local and cannot invoke original-host controls. Remote conversation is deliberately still unavailable.
+- [x] Provide `remote status/options/plan/enable/disable/sessions/revoke/pairing/doctor/audit` with exact bind/port/capability preview, two-minute plan nonce, immediate revocation and bounded content-free audit.
+- [x] Reject duplicate request IDs, unknown actions and reconnect reuse. No remote approval/action route exists yet, so conversation text cannot approve or replay work.
+- [x] Disable listener, sessions and pairing before copy/transfer and at host shutdown. Startup is always disabled and revalidates the current endpoint through a new local plan; no endpoint/device credential is copied.
 - [ ] Test second-device private access, non-tailnet/public refusal, Tailscale unavailable/disconnected/address changes, pairing abuse, rate limits, multiple clients, sleep/wake, restart and emergency disable.
 - [ ] Run a low-bandwidth narrow-display client exercise representative of a phone/wearable relay; do not claim native Even Realities integration without a separately verified client.
 
+**6.36A foundation verification — 2026-11-19:** Five focused gateway cases and the full suite pass: **1,534 passed, 0 failed, 0 skipped** (Core 14, Simulation 163, Persistence 107, Terminal 1,250). Physical second-device/Tailscale and narrow-display acceptance remain explicitly incomplete.
+
 ## 6.36B Remote contact, ping and voice calls
 
-**User-requested planning addition — 2026-11-17. Not implemented.** Plan a private data-based way for MCP to coordinate pings/call invitations to the user's approved phone, with RELAY owning delivery/media receipts and agent voice joining only after answer. Wi-Fi/Internet transport avoids ordinary carrier voice minutes but does not guarantee zero data, relay, provider or roaming cost. [Protocol, roles, mobile wake-up constraint, privacy and acceptance plan](Project_GRID_Remote_Contact_and_Voice_Calls.md).
+**Foreground text-contact foundation implemented — 2026-11-19.** User-owned policies and fresh locally approved pings now travel through the authenticated 6.36A gateway to a matching foreground client, with durable idempotent states and no replay after restart. Audio, background mobile wake-up and physical phone/wearable acceptance remain open. Five focused cases and the full suite pass at **1,539 passed, 0 failed, 0 skipped**. [Protocol, implemented boundary and remaining acceptance](Project_GRID_Remote_Contact_and_Voice_Calls.md).
 
-- [ ] Implement a manual foreground self-test ping through an authenticated paired client before enabling proactive contact.
-- [ ] Define user-owned contact policies with exact triggers, allowed MCP/RELAY/agent roles, endpoint, quiet hours, urgency, rate/retry limits, expiration and immediate pause/revoke.
-- [ ] Define capability-backed primary/local and dynamic/delegated contact classes: the designated primary MCP may use only explicit standing policies, while every dynamic-agent attempt requires exact per-call approval and cannot become standing authority.
-- [ ] Add an idempotent proposed/authorized/delivering/ringing/accepted/connected/ended state machine with durable receipts and no replay after restart/reconnect.
+- [x] Implement a manual foreground text self-test ping through an authenticated paired client. The host prepares and locally approves it; only the policy's stable device label may poll/accept/end it. Physical phone/Tailscale delivery remains an acceptance item below.
+- [x] Define user-owned policies with exact triggers, allowed agent roles, stable endpoint label, UTC quiet hours, daily limit, expiration, disabled-by-default lifecycle and immediate pause/disable/remove cancellation. Urgency/retry automation is not inferred or enabled.
+- [x] Enforce a capability-backed authority foundation stricter than the planned classes: MCP, RELAY and every other eligible agent remain constrained by policy and every attempt requires fresh exact human approval. No agent receives standing autonomous contact authority before 6.37/6.38.
+- [x] Add durable idempotent proposed/authorized/delivering/ringing/accepted/connected/ended plus decline/cancel/interrupted states and bounded receipts. Deduplication returns the original attempt; restart interrupts active attempts and never replays them.
 - [ ] Evaluate WebRTC versus a bounded tailnet audio stream; measure latency, encryption, codec, reconnect, firewall, licensing and resource behavior before selecting a provider.
 - [ ] Keep microphone access answer-bound and recording off by default; use local STT/agent inference/TTS with visible text fallback and no spoken command execution.
-- [ ] Select and disclose a foreground/background mobile ringing strategy; Tailscale alone does not guarantee wake-up, while APNs/FCM introduces an optional cloud dependency.
-- [ ] Preserve original-host policy administration, endpoint revocation, content minimization and copy/transfer re-pairing; never treat a tailnet address as identity.
+- [x] Select and disclose the current strategy as foreground polling only. Background wake-up is unavailable; Tailscale alone is not claimed to provide it, and no APNs/FCM/cloud dependency was introduced.
+- [x] Preserve original-host-only policy/approval administration, stable device labels rather than IP identity, minimal text reasons and transfer pause/re-pairing. No private keys, microphone data or raw audio are stored.
 - [ ] Verify policy escape, false urgency, duplicate signaling, quiet hours, rate limits, device loss, network loss, background suspension, audio failure and phone/wearable relay limitations.
+
+**6.36B foundation verification — 2026-11-19:** Five focused cases and the complete suite pass: **1,539 passed, 0 failed, 0 skipped** (Core 14, Simulation 163, Persistence 107, Terminal 1,255). Physical/private-network, background mobile, audio/WebRTC/STT/TTS and wearable tests remain explicitly incomplete.
 
 ## 6.37 Scheduled and persistent assistant workflows
 
-- [ ] Add human-configured one-time, recurring and conditional jobs using a durable local scheduler; persist ownership, scope, schedule, last run, results and cancellation state.
-- [ ] Define explicit enable/disable, quiet hours, notifications and expiration; never start proactive monitoring based only on a conversation suggestion.
-- [ ] Revalidate permissions, availability, resources and deadlines before each run; gate consequential writes/actions with contemporaneous approval.
-- [ ] Provide a terminal inbox of completed jobs, exceptions, pending approvals and verified agent activity with retry controls and traceable receipts.
-- [ ] Distinguish ongoing host services from simulated city ticks; prevent automatic offline catch-up, duplicate execution, infinite loops and unbounded agent spending.
-- [ ] Test restart, power loss, late wake, disconnected devices, canceled schedules and offline-only execution.
+- [x] Add human-configured one-time, recurring and conditional jobs using a durable local scheduler; persist ownership, scope, schedule, last run, results and cancellation state.
+- [x] Define explicit enable/disable, quiet hours, notifications and expiration; never start proactive monitoring based only on a conversation suggestion.
+- [x] Revalidate ownership, world binding, enabled/cancelled state, condition, quiet hours and deadline before each run. The implemented action catalog is read-only/local-notification only; consequential actions remain unavailable and therefore cannot bypass their contemporaneous approval paths.
+- [x] Provide a terminal inbox of completed jobs and exceptions, manual retry for failed/interrupted work and bounded traceable receipts. Pending approvals and agent activity remain in their existing task/activity views because this scheduler does not execute agents or create approvals.
+- [x] Distinguish the 30-second host service from simulated city ticks; cap each pass at eight due jobs, schedule late recurring work forward once, persist a pre-execution marker and prohibit automatic replay, catch-up loops, AI/model work and agent spending.
+- [x] Test durable restart/interruption recovery, no replay, late wake, conditions, quiet hours, expiration, cancellation, explicit retry and offline-only execution. The interruption fixture models abrupt loss after the durable start marker; a physical power-cut test remains release/second-device acceptance rather than an automated-unit claim.
+
+**6.37 completion notes — 2026-11-19:** Added the durable `ScheduledWorkflowService`, original-host Master Control `schedule` command, atomic bounded state/inbox/receipts, explicit disabled-first lifecycle and terminal-host background loop. The existing `jobs` command remains the civic-workstation listing. Supported scheduled actions are `world.status`, `resources.status` and local `notify`; no model, agent, file, process, network or automatic approval authority was added. See [scheduled workflow behavior and commands](Project_GRID_Scheduled_Workflows.md).
+
+**6.37 verification — 2026-11-19:** Seven focused scheduler cases pass. The complete solution passes **1,546 tests, 0 failed, 0 skipped** (Core 14, Simulation 163, Persistence 107, Terminal 1,262). The initial full run exposed a command-name collision with the existing civic `jobs` view; the scheduler was renamed to `schedule`, preserving both features, and the complete suite then passed.
 
 ## 6.38 Trust, personalization and usability acceptance
 

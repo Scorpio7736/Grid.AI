@@ -2,7 +2,7 @@
 
 ## Status and goal
 
-**Planned — 2026-11-17. No phone notification, background mobile client, call signaling, remote microphone stream or agent-initiated call is implemented by this document.**
+**Foreground text-contact foundation implemented — 2026-11-19.** GRID now supports user-owned contact policies, fresh locally approved text-ping attempts, durable idempotent states and retrieval/accept/end through an authenticated foreground remote client. No phone notification service, background wake-up, audio/WebRTC, remote microphone, PSTN/SMS or agent-autonomous call is implemented.
 
 The user wants Grid.AI—primarily MCP—to be able to ping the user's phone or invite the user into a voice conversation over Wi-Fi/private Internet data. Once remote agent voice is ready, an accepted call should carry a live conversation between the user and MCP or another clearly identified agent. The first target is contact with the user's own approved device, not arbitrary third-party calling.
 
@@ -131,6 +131,10 @@ contact doctor
 
 The first implementation should support a manual self-test ping before proactive policies. Test calls must state that they will ring/play audio and require explicit confirmation. `contact doctor` should report remote gateway, Tailscale reachability, client foreground/background capability, signaling, microphone/speaker permission state, local STT/TTS availability and expected fallback without exposing secrets.
 
+Implemented controls are `contact status/policies/policy plan/policy add/policy enable/policy disable/policy remove/ping plan/ping approve/attempts/inspect/cancel/pause/resume/doctor`. Policy plans bind a stable client device label (never its IP), exact agent roles and triggers, UTC quiet hours, maximum attempts per day and expiry. Policies install disabled. Every ping—including MCP—still requires a fresh original-host Master Control approval; this is intentionally stricter than future standing proactive authority.
+
+An approved attempt is retrieved only when the matching authenticated foreground client sends `contact-poll`. Retrieval records `Delivering` then `Ringing`; explicit client actions move to `Accepted`/`Connected`, `Declined` or `Ended`. Duplicate deduplication keys return the original attempt. Restart marks every active attempt `Interrupted`, and polling never replays it. Pause, policy disable/removal, transfer and device/session revocation cancel active work.
+
 ## Persistence, safety and recovery
 
 - Persist policies, paired-device public identity, attempts, acknowledgements and bounded receipts locally. Keep private keys/tokens in the host/device secret stores.
@@ -161,3 +165,5 @@ Before claiming the feature works:
 ## Dependencies and sequencing
 
 This work depends on the authenticated remote gateway in 6.36A, persistent/scheduled policies in 6.37, trust/activity controls in 6.38 and remote-capable voice provider work building on 4.4. A sensible order is: manual foreground ping -> paired foreground call invitation -> accepted text session -> accepted voice stream -> bounded proactive policies -> optional background wake-up. PSTN/SIP and third-party calling remain separate later decisions.
+
+**Automated evidence — 2026-11-19:** Five focused cases and the complete solution pass at **1,539 passed, 0 failed, 0 skipped**. Tests cover policy escape, exact trigger/agent/device, daily limits, pause/disable, deduplication, local authorization, durable state receipts, restart interruption/no replay, real paired loopback polling, accept/connect/end and doctor disclosure. This is protocol-level foreground text evidence—not a physical phone/Tailscale, background notification, audio, WebRTC, STT/TTS or wearable test.

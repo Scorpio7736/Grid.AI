@@ -57,7 +57,8 @@ public sealed class IntelligenceVerificationTests : IDisposable
         var split = content.IndexOf("[AI SUGGESTION", StringComparison.Ordinal);
         Assert.True(split > 0);
         Assert.Contains("; districts " + before.Districts.Count, content[..split]);
-        Assert.DoesNotContain("999", content[..split]);
+        // Random resident/world identifiers can legitimately contain the digits 999.
+        Assert.DoesNotContain("districts 999", content[..split], StringComparison.OrdinalIgnoreCase);
         Assert.Contains("unverified; no action executed", content[split..]);
         Assert.Equal(before.WorldId, engine.GetSnapshot().WorldId);
         Assert.Equal(before.Districts.Count, engine.GetSnapshot().Districts.Count);

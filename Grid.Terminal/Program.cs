@@ -158,6 +158,9 @@ try
     var emergency = new EmergencyControlState();
     identity.Attach(engine);
     if (persistence is not null) identity.PersistIdentity = () => persistence.SaveAsync().GetAwaiter().GetResult();
+    var contactService = store is null ? null : new RemoteContactService(store.DatabasePath + ".contacts.json");
+    var workflowService = store is null ? null : new ScheduledWorkflowService(store.DatabasePath + ".jobs.json", engine.LocalOperator.Id, engine);
+    await using var remoteGateway = new RemoteTerminalGateway(engine, contactService);
     void StartGrid(TerminalIdentitySession session)
     {
         engine.StartAgents(session.Reference);
@@ -205,8 +208,15 @@ try
         ContextCommands.Register(dispatcher, engine, session, persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult(), shutdown.Token);
         if (store is not null) HistoryCommand.Register(dispatcher, store);
         if (store is not null && !session.IsAttachment) SkillCommands.Register(dispatcher, engine, session, store.DatabasePath + ".skills.json");
+        if (store is not null && !session.IsAttachment) ConnectionCommands.Register(dispatcher, engine, session, store.DatabasePath + ".connections.json");
+        if (!session.IsAttachment) RemoteCommands.Register(dispatcher, engine, session, remoteGateway,
+            !Console.IsInputRedirected && !Console.IsOutputRedirected);
+        if (!session.IsAttachment && contactService is not null) ContactCommands.Register(dispatcher, session, remoteGateway,
+            contactService, !Console.IsInputRedirected && !Console.IsOutputRedirected);
+        if (!session.IsAttachment && workflowService is not null) ScheduledWorkflowCommands.Register(dispatcher, engine, session, workflowService);
         IdentityCommands.Register(dispatcher, engine, session, interactiveUi: true);
-        GridTransfer.Register(dispatcher, engine, !session.IsAttachment, () => StartGrid(session));
+        GridTransfer.Register(dispatcher, engine, !session.IsAttachment, () => StartGrid(session), () => {
+            contactService?.SetPaused(true); workflowService?.SetPaused(true); remoteGateway.DisableAsync().GetAwaiter().GetResult(); });
         if (session.IsAttachment) foreach (var command in new[] { "login", "credentials", "nge" }) dispatcher.Remove(command);
         dispatcher.UseIdentity(session); return dispatcher;
     }
@@ -226,17 +236,23 @@ try
     var output = new TerminalOutput(Console.Out, TerminalTheme.Enabled(options.NoColor));
     var terminalInput = new ConsoleTerminalInput(commands, TerminalTheme.Enabled(options.NoColor));
     var sessionUi = new TerminalSessionUi(identity, terminalInput, output, ClearScreen);
-    return await new TerminalHost(engine, commands, Console.In, output,
-        showPrompt: terminalInput.Interactive, interactiveConfirmation: terminalInput.Interactive,
-        liveTerminal: new ConsoleLiveTerminal(options.NoColor), persistence: persistence,
-        telemetry: applications is null ? telemetry : new CombinedHostMonitor(telemetry, applications),
-        clearScreen: ClearScreen, sessionUi: sessionUi, stopAttachments: windows.StopAsync, transfer: store is null ? null : new GridTransfer(AppContext.BaseDirectory, store.DatabasePath),
-        lockedRecovery: new LockedRecoveryCommands(engine, identity, store, terminalInput.Interactive),
-        agentBreakGlass: new AgentBreakGlassCommands(engine, identity, terminalInput.Interactive,
-            persistence is null ? null : token => persistence.SaveAsync(token)),
-        masterBreakGlass: new MasterBreakGlassCommands(engine, identity, identities, store, persistence as IWorldRecoverySession,
-            emergency, terminalInput.Interactive, windows.StopAsync,
-            persistence is null ? null : token => persistence.SaveAsync(token))).RunAsync(shutdown.Token);
+    using var workflowStop = CancellationTokenSource.CreateLinkedTokenSource(shutdown.Token);
+    var workflowTask = workflowService?.RunAsync(workflowStop.Token) ?? Task.CompletedTask;
+    try
+    {
+        return await new TerminalHost(engine, commands, Console.In, output,
+            showPrompt: terminalInput.Interactive, interactiveConfirmation: terminalInput.Interactive,
+            liveTerminal: new ConsoleLiveTerminal(options.NoColor), persistence: persistence,
+            telemetry: applications is null ? telemetry : new CombinedHostMonitor(telemetry, applications),
+            clearScreen: ClearScreen, sessionUi: sessionUi, stopAttachments: windows.StopAsync, transfer: store is null ? null : new GridTransfer(AppContext.BaseDirectory, store.DatabasePath),
+            lockedRecovery: new LockedRecoveryCommands(engine, identity, store, terminalInput.Interactive),
+            agentBreakGlass: new AgentBreakGlassCommands(engine, identity, terminalInput.Interactive,
+                persistence is null ? null : token => persistence.SaveAsync(token)),
+            masterBreakGlass: new MasterBreakGlassCommands(engine, identity, identities, store, persistence as IWorldRecoverySession,
+                emergency, terminalInput.Interactive, windows.StopAsync,
+                persistence is null ? null : token => persistence.SaveAsync(token))).RunAsync(shutdown.Token);
+    }
+    finally { workflowStop.Cancel(); await workflowTask; }
 }
 catch (OperationCanceledException) when (shutdown.IsCancellationRequested) { return 0; }
 catch (Exception exception)

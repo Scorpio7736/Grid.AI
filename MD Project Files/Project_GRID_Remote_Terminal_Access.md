@@ -2,7 +2,7 @@
 
 ## Status and intent
 
-**Planned — 2026-11-17. No remote listener, Tailscale control, public endpoint or glasses integration is implemented by this document.**
+**Bounded gateway foundation implemented — 2026-11-19.** GRID now has a process-local version-1 text gateway with reviewed loopback or observed local-Tailscale binding, single-use pairing and read-only `help`/`status` access. It never configures Tailscale, Funnel, firewall, DNS or LAN exposure. Remote conversation, durable devices, approvals/actions, real second-device Tailscale acceptance and wearable-relay testing remain open.
 
 The user wants to reach a running Grid.AI host remotely through the existing terminal experience. The initial transport candidate is Tailscale because the user already operates Tailscale commands and endpoints. A user-authored startup command may be the first manual entry point; later Grid.AI releases should provide reviewed built-in discovery, enable/disable, session and diagnostic controls.
 
@@ -68,6 +68,12 @@ remote pairing cancel
 remote doctor
 ```
 
+These controls are implemented as `remote status/options/plan/enable/disable/sessions/revoke/pairing/doctor/audit`. Administration requires interactive original-host Master Control. `remote plan loopback [port]` is the safe local test path; `remote plan tailscale [port]` succeeds only when GRID observes exactly one local address in Tailscale's private ranges. The plan shows exact bind, transport, bounds, authentication and capabilities plus a 128-bit nonce. Enable consumes that exact two-minute plan.
+
+The listener starts disabled after every process restart. `remote pairing create` emits one 128-bit code that is single-use and expires in two minutes; pairing codes are never audited. A session lasts at most five minutes, permits at most 20 requests, uses 4 KiB requests/2 KiB replies and is limited to `help`, read-only world `status` and `disconnect`. Duplicate request IDs, unknown actions and revoked sessions fail closed. At most eight sessions are admitted and pairing failures are bounded. This is a narrow protocol exercise, not yet the full remote conversation experience.
+
+Transfer/copy request creation disables the listener and revokes sessions/pairing before the transfer preview proceeds. Host exit/disposal does the same. No endpoint or device credential persists into a copied world.
+
 `remote plan` must show the resolved bind address, port, transport, authentication mode, allowed capabilities, lifetime, firewall/listener implications and rollback before anything listens. `remote enable` consumes that exact review. Status must identify private/listening/offline/stale states without printing secrets. Disable/revoke must stop new requests promptly, invalidate pairing material and preserve an audit receipt.
 
 ## Persistence, portability and recovery
@@ -93,5 +99,7 @@ Before claiming remote access is available:
 9. Record endpoint exposure with OS/Tailscale inspection and confirm no public Funnel, broad LAN listener, raw model port or database port is reachable.
 
 Remote access is an optional connected capability and cannot satisfy or weaken Grid.AI's mandatory offline/local acceptance. Local terminal use must remain fully functional when every network interface is unavailable.
+
+**Automated evidence — 2026-11-19:** Five focused cases and the full solution pass at **1,534 passed, 0 failed, 0 skipped**. Tests exercise exact-plan enablement, wrong nonce, real loopback TCP pairing/status, single-use pairing, duplicate request replay, forbidden actions, host revocation, listener shutdown, local-world continuity, noninteractive denial and broad-bind refusal. Tailscale discovery/configuration is read-only and was not physically exercised from a second device. Items 1–6 below are implemented foundations; physical/device items 7–9 and remote conversation/action approval remain acceptance work.
 
 Agent-initiated pings and accepted voice sessions are a separate layer above this gateway. See [Remote Contact and Voice Calls](Project_GRID_Remote_Contact_and_Voice_Calls.md) and checklist 6.36B; enabling remote terminal access alone must not enable calls, background notifications or microphone access.

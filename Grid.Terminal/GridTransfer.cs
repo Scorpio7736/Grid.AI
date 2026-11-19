@@ -16,7 +16,7 @@ public sealed class GridTransfer
     public GridTransfer(string applicationRoot,string worldPath) : this(applicationRoot,worldPath,false) { }
     internal GridTransfer(string applicationRoot,string worldPath,bool skipRuntimeValidation) { this.applicationRoot=applicationRoot;this.worldPath=worldPath;this.skipRuntimeValidation=skipRuntimeValidation; }
     public const string Marker = "grid-package.json";
-    public static void Register(CommandDispatcher commands, Grid.Simulation.GridSimulationEngine? engine = null, bool allowTransfer = true, Action? startAgents = null)
+    public static void Register(CommandDispatcher commands, Grid.Simulation.GridSimulationEngine? engine = null, bool allowTransfer = true, Action? startAgents = null, Action? beforeTransfer = null)
     {
         commands.Remove("grid");
         commands.Register(new("grid", "grid <-start|-pause|-copyto|-transferto> [location|-select]", "Master Control: start/pause simulation, or copy/move GRID after preview and confirmation.", args =>
@@ -32,6 +32,7 @@ public sealed class GridTransfer
                 !(args[0].Equals("-copyto", StringComparison.OrdinalIgnoreCase) || args[0].Equals("-transferto", StringComparison.OrdinalIgnoreCase)) ||
                 args[1].StartsWith('-') && !args[1].Equals("-select", StringComparison.OrdinalIgnoreCase))
                 return new("Usage: grid -start | grid -pause | grid -copyto <location|-select> | grid -transferto <location|-select>. Choose exactly one operation.");
+            beforeTransfer?.Invoke();
             return new("", Transfer: new(args[1], args[0].Equals("-transferto", StringComparison.OrdinalIgnoreCase)));
         }));
         // Do not execute old names silently: make the migration explicit before any confirmation/transfer.
