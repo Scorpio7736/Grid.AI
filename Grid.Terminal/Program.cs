@@ -12,7 +12,7 @@ if (args.Length == 2 && args[0] == "--operator-rescue")
     var rescueOutput = new TerminalOutput(Console.Out, TerminalTheme.Enabled(noColor: false));
     return await OfflineOwnerRescue.RunAsync(args[1], rescueInput, rescueOutput);
 }
-if (args.Length > 0 && args[0] is "--setup" or "--doctor") return await GuidedSetup.RunAsync(args, Console.In, Console.Out);
+if (args.Length > 0 && args[0] is "--setup" or "--doctor" or "--doctor-check") return await GuidedSetup.RunAsync(args, Console.In, Console.Out);
 if (args.Length > 0 && args[0].StartsWith("--dataset-", StringComparison.Ordinal)) return TrainingDatasetCommands.Run(args);
 if (args.Length > 0 && args[0].StartsWith("--finetune-", StringComparison.Ordinal)) return FineTuningCommands.Run(args);
 if (args.Length > 0 && args[0].StartsWith("--release-", StringComparison.Ordinal)) return await ReleaseCommands.RunAsync(args);
@@ -75,6 +75,15 @@ if (packageRoot is not null && PortableAssets.RequiresManifest(packageRoot))
 if (packageRoot is not null && File.Exists(Path.Combine(packageRoot, "transfer-status.txt")) &&
     File.ReadAllText(Path.Combine(packageRoot, "transfer-status.txt")).Contains("pending", StringComparison.OrdinalIgnoreCase))
 { Console.Error.WriteLine("Move cleanup is pending. Check transfer-status.txt before launching."); return 1; }
+var defaultWorld = packageRoot is null
+    ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GRID", "world.db")
+    : Path.Combine(packageRoot, "data", "world.db");
+if (GuidedSetup.OfferFirstRun(args, !Console.IsInputRedirected, defaultWorld))
+{
+    Console.WriteLine("First run: type setup to review PC/Flash storage, local AI and permissions, or press Enter to continue with default storage and secure identity setup.");
+    if (Console.ReadLine()?.Trim().Equals("setup", StringComparison.OrdinalIgnoreCase) == true)
+        return await GuidedSetup.RunAsync(["--setup"], Console.In, Console.Out);
+}
 using var shutdown = new CancellationTokenSource();
 ConsoleCancelEventHandler cancel = (_, eventArgs) => { eventArgs.Cancel = true; shutdown.Cancel(); };
 Console.CancelKeyPress += cancel;
@@ -195,6 +204,7 @@ try
         VoiceCommands.Register(dispatcher, engine, session, chat, save: persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult());
         ContextCommands.Register(dispatcher, engine, session, persistence is null ? null : () => persistence.SaveAsync().GetAwaiter().GetResult(), shutdown.Token);
         if (store is not null) HistoryCommand.Register(dispatcher, store);
+        if (store is not null && !session.IsAttachment) SkillCommands.Register(dispatcher, engine, session, store.DatabasePath + ".skills.json");
         IdentityCommands.Register(dispatcher, engine, session, interactiveUi: true);
         GridTransfer.Register(dispatcher, engine, !session.IsAttachment, () => StartGrid(session));
         if (session.IsAttachment) foreach (var command in new[] { "login", "credentials", "nge" }) dispatcher.Remove(command);

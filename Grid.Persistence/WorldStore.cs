@@ -205,6 +205,7 @@ public sealed partial class WorldStore : IDisposable
 
     private void RecoverCore()
     {
+            if (File.Exists(RetirementMarker)) throw new IOException("World retired or retirement interrupted; inspect the quarantine receipt. Recovery is blocked.");
             if (nullificationStarted || File.Exists(NullificationMarker)) throw new IOException("NGE interruption requires manual review; recovery is blocked.");
             var staged = DatabasePath + ".recover-" + Guid.NewGuid().ToString("N");
             CopyValidated(BackupPath, staged);
@@ -359,6 +360,7 @@ public sealed partial class WorldStore : IDisposable
         DateTimeStyles.None, out var value) && value.Offset == TimeSpan.Zero ? value : throw new InvalidDataException("Invalid UTC timestamp.");
     private void EnsureNotRecovering()
     {
+        if (File.Exists(RetirementMarker)) throw new IOException("World retired or retirement interrupted; inspect the .retired marker and quarantine receipt. Startup/save/recovery is blocked.");
         if (nullificationStarted || File.Exists(NullificationMarker))
             throw new IOException("World nullification started. Startup/save/recovery is blocked; inspect the .nullifying marker and remaining files before explicit cleanup.");
         if (File.Exists(RecoveryMarker)) throw new IOException("An interrupted recovery must be completed with --recover.");

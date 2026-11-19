@@ -42,7 +42,7 @@ Challenge records travel with an explicitly authenticated world/credential trans
 
 ## Challenge session protocol
 
-Every verification uses a short-lived, single-purpose server-created session bound to the user, host/world generation, authenticated paired endpoint, contact/call ID and requested assurance purpose.
+Every verification uses a short-lived, single-purpose server-created session bound to the user, host/world generation, authenticated paired endpoint, contact/call ID and requested assurance purpose. The supported purpose is exactly `remote-call-identity`; task approval, pairing, recovery, contact-policy and voiceprint purposes are rejected. Reissuing on an endpoint invalidates its outstanding attempts. Active attempts and claims are each bounded to 128. Local masked self-test warns against listeners, speakerphones, recordings and transcription; remote speech stays unavailable without a protected client.
 
 1. The trusted host randomly selects challenges without revealing all three at once. Initial policy should require two distinct correct responses from the enrolled set of three.
 2. The speaking agent reads the host-supplied prompt. The client marks the following utterance as secret challenge input and sends it directly to the host verifier outside ordinary transcription/inference.

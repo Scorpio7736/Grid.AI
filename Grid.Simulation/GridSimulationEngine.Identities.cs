@@ -150,6 +150,8 @@ public sealed partial class GridSimulationEngine
     {
         lock (gate)
         {
+            // Only this assurance purpose exists. A client cannot mint an approval/recovery claim by naming it.
+            if (purpose != "remote-call-identity") return new(ChallengeSessionStatus.Cancelled);
             var now = timeProvider.GetUtcNow();
             PurgeExpiredChallengeAuthority(now);
             var set = identities.ChallengeCredentials;
@@ -165,6 +167,11 @@ public sealed partial class GridSimulationEngine
                 AuditChallenge("ChallengeSessionLocked", binding, false);
                 return new(ChallengeSessionStatus.Locked);
             }
+            if (activeChallengeSessions.Count >= 128 || activeChallengeClaims.Count >= 128)
+                return new(ChallengeSessionStatus.Cancelled);
+            // Reconnect/reissue replaces this endpoint's outstanding attempts, never resumes a secret exchange.
+            foreach (var prior in activeChallengeSessions.Where(p => p.Value.Binding.EndpointId == binding.EndpointId).Select(p => p.Key).ToArray())
+                activeChallengeSessions.Remove(prior);
             var selected = set.Challenges.OrderBy(_ => System.Security.Cryptography.RandomNumberGenerator.GetInt32(int.MaxValue)).Take(2).ToArray();
             var id = Guid.NewGuid();
             var expires = now.Add(ChallengeSessionLifetime);

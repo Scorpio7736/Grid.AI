@@ -112,14 +112,14 @@ public sealed class MasterBreakGlassCommandsTests
         using var fixture = new Fixture();
         var endpoint = fixture.Engine.PairChallengeEndpoint(fixture.Identity.Reference, "test-endpoint");
         Assert.Equal(Grid.Communication.ChallengeSessionStatus.Pending,
-            fixture.Engine.BeginRemoteChallenge(endpoint, "contact", "status").Status);
+            fixture.Engine.BeginRemoteChallenge(endpoint, "contact", "remote-call-identity").Status);
 
         var result = fixture.Commit("disable-remote", fixture.Plan("disable-remote"));
 
         Assert.True(fixture.Emergency.RemoteDisabled);
         Assert.Contains("Remote acceptance disabled", result.Text);
         Assert.Equal(Grid.Communication.ChallengeSessionStatus.Cancelled,
-            fixture.Engine.BeginRemoteChallenge(endpoint, "contact", "status").Status);
+            fixture.Engine.BeginRemoteChallenge(endpoint, "contact", "remote-call-identity").Status);
     }
 
     [Fact]

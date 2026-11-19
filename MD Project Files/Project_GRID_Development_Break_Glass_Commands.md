@@ -207,7 +207,17 @@ There is no universal vendor recovery key. Losing all enrolled owner/recovery ma
 7. Consider managed-instance removal and credential destruction only after manifest/path/reparse/partial-failure acceptance.
 8. Keep irrecoverable purge deferred until storage-specific guarantees and limitations are reviewed.
 
-Steps 1–5 plus the locked-local, agent-self, original-host Master Control and offline owner-rescue portions are implemented. The next boundary is recoverable world retirement. Hidden nullification/removal remains unavailable; knowing inventoried names grants no authority.
+Steps 1–6 are implemented for the bounded offline retirement path below. Hidden nullification and managed-instance removal remain unavailable; knowing inventoried names grants no authority.
+
+## Recoverable database retirement — 2026-11-18
+
+Close all world hosts, then use the existing interactive `--operator-rescue <absolute-world-path>` route and the separately enrolled world-bound recovery file. Choice 4 previews exact primary/backup paths, byte counts and SHA-256 hashes. Confirm the world ID and fresh nonce to move only these files into a new same-volume quarantine directory outside the world directory. No application, runtime, shared model, catalog, audit or unrelated file is deleted or moved.
+
+The plan is process-local, expires in two minutes and is single-use. Recheck world identity, hashes, local paths and SQLite sidecars before mutation. Root/profile targets, direct repository-root targets, reparse paths, existing destinations, cross-world plans and active world leases are refused. The quarantine receipt is flushed before a source `.retired` tombstone, and the tombstone is flushed before any database move. Success or interruption blocks startup, regeneration, save, automatic backup recovery and offline rescue at the source. Never remove the marker merely to get startup working.
+
+If interrupted, close all hosts and inspect `retirement.json` plus the source marker. Compare every listed hash against the remaining source and quarantine files. Restore verified files to their exact original source paths before archiving the marker. Preserve all evidence if bytes differ; no automatic retry or purge exists. No recursive directory deletion is used. This is database retirement, not complete managed-instance removal or secure erasure; ordinary deletion cannot guarantee erasure from SSDs, backups, snapshots or synchronized copies.
+
+Disposable-world regressions cover unchanged bytes, copied-plan rejection, changed destinations, interrupted backup move, active leases, unsafe paths, cross-world refusal, SQLite sidecars before/after review and startup/recovery refusal after restart. Physical power-loss/removable-media acceptance and broader managed-instance removal remain open.
 
 ## Acceptance matrix
 

@@ -174,7 +174,7 @@ public sealed class TerminalSessionUi(TerminalIdentitySession identity, ITermina
         var responses = new string[prompts.Count];
         try
         {
-            await output.WriteLineAsync("Masked local self-test. All responses are checked together; no per-question result is disclosed or saved.");
+            await output.WriteLineAsync("Masked local self-test. All responses are checked together; no per-question result is disclosed or saved. Use typed input privately: do not speak responses near listeners, speakerphones, recording or transcription services. Remote speech remains disabled until a protected client path is verified.");
             for (var index = 0; index < prompts.Count; index++)
             {
                 await output.WriteLineAsync($"Challenge {index + 1} of {prompts.Count}: {TerminalTable.Safe(prompts[index])}");

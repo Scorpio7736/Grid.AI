@@ -11,7 +11,7 @@ public sealed partial class WorldStore
     {
         lock (gate)
         {
-            ObjectDisposedException.ThrowIf(disposed, this);
+            ObjectDisposedException.ThrowIf(disposed, this); EnsureNotRecovering();
             var path = source ?? DatabasePath;
             if (!File.Exists(path)) throw new IOException("World file is missing.");
             using var connection = new SqliteGridDatabase(path).OpenReadOnly();
@@ -43,7 +43,7 @@ public sealed partial class WorldStore
     {
         lock (gate)
         {
-            ObjectDisposedException.ThrowIf(disposed, this);
+            ObjectDisposedException.ThrowIf(disposed, this); EnsureNotRecovering();
             PasswordCredential.Validate(replacement); OfflineRecoveryCredential.Validate(expectedRecovery);
             var saved = Read(DatabasePath);
             if (saved.Info.Id != expectedWorld || saved.State.Identities.OfflineRecovery != expectedRecovery)

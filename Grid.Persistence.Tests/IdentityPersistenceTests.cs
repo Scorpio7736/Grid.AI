@@ -133,7 +133,7 @@ public sealed class IdentityPersistenceTests
             var endpoint = engine.PairChallengeEndpoint(authority.Reference, "phone");
             for (var attempt = 0; attempt < 3; attempt++)
             {
-                var issued = engine.BeginRemoteChallenge(endpoint, "call-" + attempt, "remote-identity");
+                var issued = engine.BeginRemoteChallenge(endpoint, "call-" + attempt, "remote-call-identity");
                 Assert.Equal(Grid.Communication.ChallengeSessionStatus.Failed,
                     engine.SubmitRemoteChallenge(issued.NextPrompt!.SessionId, issued.Binding!, issued.NextPrompt.ChallengeId, "wrong").Status);
             }
@@ -143,7 +143,7 @@ public sealed class IdentityPersistenceTests
             var restored = GridSimulationEngine.Restore(store.Load().State, editAuthorizer: authority);
             var restoredEndpoint = restored.PairChallengeEndpoint(authority.Reference, "different-phone");
             Assert.Equal(Grid.Communication.ChallengeSessionStatus.Locked,
-                restored.BeginRemoteChallenge(restoredEndpoint, "new-call", "remote-identity").Status);
+                restored.BeginRemoteChallenge(restoredEndpoint, "new-call", "remote-call-identity").Status);
         }
         finally { Directory.Delete(directory, true); }
     }

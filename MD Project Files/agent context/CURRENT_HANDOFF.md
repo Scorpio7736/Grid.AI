@@ -1,5 +1,13 @@
 # Grid.AI current handoff
 
+## Latest verified batch — 2026-11-18
+
+Integrated the prior 6.34 onboarding/health implementation into current master while preserving runtime preflight, challenge enrollment and offline owner rescue. Fixed source-clone detection for `Grid.AI.slnx` and corrected recovery guidance. Hardened 6.34A to allow only authentication-purpose claims and invalidate reissued attempts. Added 6.34B recoverable primary/backup retirement via offline rescue choice 4, with quarantine receipt, durable tombstone and interruption protection. Added the first 6.35 [local declarative skills catalog](../Project_GRID_Local_Skills.md): reviewed imports, enable/disable, fixed read-only actions, rollback/removal and content-free receipts.
+
+Full solution verification: **1,519 passed, 0 failed, 0 skipped** (Core 14, Simulation 163, Persistence 107, Terminal 1,235), isolated outputs `TestResults/prephase7`, per-project `prephase7.trx`. Nine skill cases and six retirement cases pass. Historical results below belong to their earlier checkpoints; they are not new physical-device evidence.
+
+Next work: extend 6.35 scoped invocation/configuration/dependencies, then 6.36 connectors, 6.37 durable scheduler and 6.38 unified activity/preferences. Those larger sections remain open. Retain protected remote-client, physical power-loss, PC2/offline/removable-media and representative-user gates. No running Grid service was restarted or local-model session switched by this batch.
+
 - Release-blocking repair 2026-11-18: clean source starts now provision/repair the private local-AI runtime before opening a world; non-interactive missing-runtime launches fail closed instead of entering simulated chat. Setup and portable builds run real MCP verification. Current copyto/transferto refuses incomplete runtime sources, copies and independently hashes the complete private runtime/model/.NET inventory, and v2 package startup validates its sealed manifest before world load. User-visible branding, solution (`Grid.AI.slnx`), attached conversation headers, launch command and new root destinations are `Grid.AI`/`GridAI`; only legacy named-pipe recognition remains internal. All 1,453 tests passed. Source and fresh sealed `TestResults/Grid.AI-portable-20261118` runtimes passed real inline/attached MCP replies. Second-PC offline acceptance is still required.
 
 Updated 2026-11-18 for the Grid.AI product, solution and runtime-preflight repair. Historical milestone evidence remains intact; the legacy attachment prefix is accepted internally for compatibility. Verify the working tree and checklist before starting work.
@@ -9,6 +17,8 @@ Updated 2026-11-18 for the Grid.AI product, solution and runtime-preflight repai
 Follow the concise [repository working rules](../../AGENTS.md). Use targeted reads and tests, retain completion evidence, and link detailed documentation instead of repeating it. The [historical chat workflow](CHAT_WORKFLOW_AND_AGENT_HANDOFF.md) preserves earlier decisions.
 
 ## Current milestone
+
+6.34 local onboarding implementation updated 2026-11-16: reviewed offline/online installer, retained-file inventory and staging admission checks, explicit save-to-secure-login launch, first-run offer, identity/world-recovery guidance and capability revoke help. `--doctor-check <profile.json>` performs bounded storage/voice-inventory/synthetic-OCR/device-metadata/local-inference checks. All five passed on this Windows host; 53 focused tests passed; full suite **1,456 passed, zero failures/skips** and `git diff --check` passed. See [guided setup](../Project_GRID_Guided_Setup.md). Physical clean-user/PC2/removable-media/disconnected acceptance and Standard/Performance promotion remain open; do not count simulated tests as physical evidence. Next local implementation item is 6.35 when requested; earlier milestone entries below are historical.
 
 AI readiness alerts added 2026-11-15: immediate host startup and post-login warning plus inline/resume/meeting and attached opening notices retain cause and explain fallback-only operation. Actual disabled ephemeral terminal and attached-protocol regressions passed. Full suite 1,436 passed, zero failed, four symbolic-link privilege skips. See [alert evidence/limits](../Project_GRID_Fresh_Clone_Installation.md#ai-readiness-alerts-2026-11-15). This reports startup availability, not continuous backend monitoring.
 

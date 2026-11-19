@@ -43,13 +43,14 @@ public static class OfflineOwnerRescue
             }
             WriteAudit(store, state.WorldId, "KeyAccepted", true);
             await output.WriteLineAsync("Recovery material verified. It authenticates this rescue session only; it does not start GRID or grant a shell.\n" +
-                "1. Verify and exit\n2. Reset local username/password\n3. Restore validated backup\nChoose 1, 2 or 3:");
+                "1. Verify and exit\n2. Reset local username/password\n3. Restore validated backup\n4. Retire world to recoverable quarantine\nChoose 1, 2, 3 or 4:");
             var choice = await Read(input, output, "> ", false, token);
             return choice?.Trim() switch
             {
                 "1" => await VerifyOnly(output, store, state),
                 "2" => await ResetPassword(input, output, store, state, token),
                 "3" => await RestoreBackup(input, output, store, state, token),
+                "4" => await RetireWorld(input, output, store, state, token),
                 _ => await Refused(output, store, state.WorldId, "InvalidChoice", "Invalid rescue choice. Nothing changed.")
             };
         }
@@ -60,6 +61,19 @@ public static class OfflineOwnerRescue
                 " No automatic retry was performed.");
             return 2;
         }
+    }
+
+    private static async Task<int> RetireWorld(ITerminalInput input, TextWriter output, WorldStore store, OfflineRescueState state, CancellationToken token)
+    {
+        var destination = await Read(input, output, "New same-volume quarantine directory (outside world directory): ", false, token);
+        if (destination is null) return 2;
+        var plan = store.PrepareRetirement(state.WorldId, destination);
+        await output.WriteLineAsync("Recoverable retirement: only these database files move; application/runtime files remain. No purge.\n" +
+            string.Join("\n", plan.Files.Select(f => $"{f.Source} -> {Path.Combine(plan.Destination, f.Name)} | {f.Bytes} bytes | SHA256 {f.Sha256}")));
+        if (!await Confirm(input, output, state.WorldId, "Retire this stopped world to " + plan.Destination, token)) return 2;
+        var receipt = store.Retire(plan);
+        await output.WriteLineAsync("World retired. Source startup is blocked by its .retired marker. Verified file inventory and manual restore instructions: " + receipt);
+        return 0;
     }
 
     private static async Task<int> VerifyOnly(TextWriter output, WorldStore store, OfflineRescueState state)

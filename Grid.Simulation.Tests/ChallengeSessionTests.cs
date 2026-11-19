@@ -29,6 +29,18 @@ public sealed class ChallengeSessionTests
     }
 
     [Fact]
+    public void ReissueInvalidatesPriorAttemptAndApprovalPurposesCannotBeIssued()
+    {
+        var (engine, _, answers, endpoint, _) = Fixture();
+        foreach (var purpose in new[] { "task-approval", "password-recovery", "device-pairing", "contact-policy", "voiceprint" })
+            Assert.Equal(ChallengeSessionStatus.Cancelled, engine.BeginRemoteChallenge(endpoint, "call", purpose).Status);
+        var first = engine.BeginRemoteChallenge(endpoint, "call", "remote-call-identity");
+        var next = engine.BeginRemoteChallenge(endpoint, "call", "remote-call-identity");
+        Assert.Equal(ChallengeSessionStatus.Pending, next.Status);
+        Assert.Equal(ChallengeSessionStatus.Expired, engine.SubmitRemoteChallenge(first.NextPrompt!.SessionId,
+            first.Binding!, first.NextPrompt.ChallengeId, answers[first.NextPrompt.ChallengeId]).Status);
+    }
+    [Fact]
     public void TwoDistinctResponsesCreateOnlyAnExactShortLivedClaim()
     {
         var (engine, clock, answers, endpoint, _) = Fixture();
