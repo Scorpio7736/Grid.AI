@@ -93,6 +93,14 @@ Malformed main-terminal `resume` arguments are validated before opening an attac
 
 Full verification passed 1,361 tests (14 Core, 157 Simulation, 99 Persistence, 1,091 Terminal) using `dotnet test --artifacts-path TestResults/resume-fix --no-restore --verbosity quiet`. The user's running Grid.AI locked the normal executable, so verification used isolated outputs. Process-based persistence tests now locate either conventional or isolated build outputs. The running process was not stopped or replaced; close it normally and rebuild before retrying the updated normal executable.
 
+## Gate 1 conversational references — 2026-11-19
+
+Direct human control phrases now resolve before intent interpretation. If a file request, reviewed plan, unsubmitted draft or interpreted request competes for the reference, GRID asks the user to identify it without approving, cancelling or executing anything. An unspecified revision asks what should change and retains the review.
+
+`ask MAXIS to do it` targets only a uniquely selected plan whose tasks are all MAXIS capabilities. It uses the existing current-scope and approval checks, never reassigns work, grants approval or replays completed tasks. `how is it going?`, `show its progress` and `show the results` refresh the uniquely selected plan from actual task records without inference or execution. Logout clears the selection. Attached-meeting tests exercise natural approval, MAXIS execution, cancellation and duplicate-run refusal through the real named-pipe protocol.
+
+Verification: **194 focused tests passed; 1,562 full-solution tests passed, zero failures/skips**, using `TestResults/gate1`. These are bounded improvements within Gate 1, not completion of its broader multi-step coding, group coordination, revision/resumption or network-blocked real-model acceptance. No new physical-device or offline real-model run is claimed.
+
 ## MCP executable testing follow-up - 2026-11-14
 
 The bundled-model `--verify-mcp-workflow` run completed five of six checks. Local Qwen startup, multi-specialist draft, denial before approval, approved VOLT/RELAY execution, and SQLite evidence retention passed. Missing-workspace clarification failed with `Assistance refused: Invalid clarification response.` This remains an open model-response/clarification defect; do not mark MCP acceptance complete.

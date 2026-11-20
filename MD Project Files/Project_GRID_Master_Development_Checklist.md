@@ -1976,6 +1976,8 @@ Deferral candidates remain unchecked until their move is explicitly accepted and
 
 ### Gate 1 — Complete the ordinary-language MCP workflow
 
+**Verified increment — 2026-11-19:** Ambiguous references across reviewed plans/drafts/files/interpretations now require clarification before mutation. A uniquely selected MAXIS plan supports `ask MAXIS to do it` under existing approvals; natural progress/results read actual task records. Inline and attached-meeting coverage passes; full solution **1,562 passed, zero failed/skipped**. [Evidence and remaining boundaries](Project_GRID_Integration_Acceptance.md#gate-1-conversational-references--2026-11-19). The canonical roll-up items remain open pending the rest of this gate.
+
 This is the highest-priority implementation gate because it is the central Grid.AI product requirement.
 
 1. Resolve “approve that,” “cancel it,” “revise it,” and “ask MAXIS to do it” against the exact current reviewed operation; clarify ambiguity.

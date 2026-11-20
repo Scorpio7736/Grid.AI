@@ -37,6 +37,7 @@ public sealed partial class ChatCommands
         var id = active!.Value;
         engine.RequireAgentActivity();
         var input = text.Trim();
+        if (ResolveOperationReference(ref input) is { } referenceReply) return referenceReply;
         try { if (identity?.IsMaster == true && IntentControl(input, out var intentControl)) return intentControl; }
         catch (Exception intentError) when (intentError is IOException or UnauthorizedAccessException)
         { return Explain("Request refused: " + TerminalTable.Safe(intentError.Message) + " Nothing executed."); }

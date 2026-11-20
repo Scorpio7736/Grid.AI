@@ -50,6 +50,70 @@ public sealed class UnifiedTalkTests : IDisposable
     private static string Intent(string kind = "CreateFile", string target = "welcome.txt", string scope = "demo", string text = "") =>
         JsonSerializer.Serialize(new { version = 1, kind, scope, target, text });
 
+    [Theory]
+    [InlineData("approve that")]
+    [InlineData("cancel it")]
+    [InlineData("revise it")]
+    [InlineData("ask MAXIS to do it")]
+    [InlineData("how is it going?")]
+    [InlineData("show the results")]
+    public async Task VagueControlCannotChooseBetweenReviewedPlanAndNewDraft(string phrase)
+    {
+        await Input("connect MCP -inline");
+        await Input("MAXIS demonstrate first"); await Input("submit plan");
+        await Input("MAXIS demonstrate second");
+        var calls = ai.Calls;
+        Assert.Contains("More than one", (await Input(phrase)).Text);
+        Assert.Equal(calls, ai.Calls);
+        var task = Assert.Single(engine.GetSnapshot().Tasks.Records);
+        Assert.Equal(Grid.Simulation.Tasks.TaskStatus.AwaitingApproval, task.Status);
+        Assert.Equal(0, task.Attempts);
+    }
+
+    [Fact]
+    public async Task MaxisReferenceUsesReviewedPlanWithoutApprovingOrReplaying()
+    {
+        await Input("connect MCP -inline");
+        await Input("MAXIS demonstrate reference-proof"); await Input("submit plan");
+        await Input("ask MAXIS to do it");
+        Assert.Equal(0, Assert.Single(engine.GetSnapshot().Tasks.Records).Attempts);
+        await Input("approve that");
+        Assert.Contains("Completed", (await Input("ask MAXIS to do it")).Text);
+        await Input("ask MAXIS to do it");
+        Assert.Equal(1, Assert.Single(engine.GetSnapshot().Tasks.Records).Attempts);
+    }
+
+    [Theory]
+    [InlineData("how is it going?")]
+    [InlineData("show the results")]
+    [InlineData("show its progress")]
+    public async Task ProgressAndResultsComeFromSelectedTaskRecordsWithoutInferenceOrExecution(string phrase)
+    {
+        await Input("connect MCP -inline");
+        await Input("MAXIS demonstrate receipt-proof"); await Input("submit plan");
+        Assert.Contains("AwaitingApproval", (await Input(phrase)).Text);
+        await Input("approve that"); await Input("ask MAXIS to do it");
+        var calls = ai.Calls;
+        var result = await Input(phrase);
+        Assert.Contains("Completed", result.Text);
+        Assert.Contains("receipt-proof", result.Text);
+        Assert.Equal(calls, ai.Calls);
+        Assert.Equal(1, Assert.Single(engine.GetSnapshot().Tasks.Records).Attempts);
+    }
+
+    [Fact]
+    public async Task RevisionWithoutInstructionsPreservesReviewedPlanAndAsksForDetails()
+    {
+        await Input("connect MCP -inline");
+        await Input("MAXIS demonstrate original"); await Input("submit plan");
+        var calls = ai.Calls;
+        Assert.Contains("What should change", (await Input("revise it")).Text);
+        Assert.Equal(calls, ai.Calls);
+        Assert.Equal(Grid.Simulation.Tasks.TaskStatus.AwaitingApproval, Assert.Single(engine.GetSnapshot().Tasks.Records).Status);
+        owner.Logout(); owner.Login(); await Input("connect MCP -inline");
+        Assert.Contains("Which operation", (await Input("ask MAXIS to do it")).Text);
+    }
+
     [Fact]
     public async Task InterpretedRequestRequiresReviewThenSeparateHashBoundApproval()
     {
