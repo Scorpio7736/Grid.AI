@@ -9,6 +9,13 @@ public sealed record InferenceTrace(Guid Id, DateTimeOffset RecordedUtc, string 
     string? Model, string? ModelRevision, string? PromptVersion, InferenceOutcome Outcome,
     long QueueMilliseconds, long RunMilliseconds, int Attempts, long? OutputTokens, long? GenerationNanoseconds)
 {
+    // Null means the local provider did not supply this measurement. Times cover all attempts.
+    public long? ModelLoadMilliseconds { get; init; }
+    public long? PromptEvaluationMilliseconds { get; init; }
+    public long? PromptTokens { get; init; }
+    public long? ProviderTotalMilliseconds { get; init; }
+    public long? FirstVisibleTokenMilliseconds { get; init; } // Buffered generation cannot measure this.
+    public long EndToEndMilliseconds => QueueMilliseconds + RunMilliseconds;
     public double? TokensPerSecond => OutputTokens is { } count && GenerationNanoseconds is > 0
         ? count * 1e9 / GenerationNanoseconds.Value : null;
 }
@@ -49,7 +56,7 @@ public sealed class InferenceSpan : IDisposable
     private string? model, revision, prompt;
     private int attempts;
     private int measuredAttempts;
-    private long? tokens = 0, duration = 0;
+    private long? tokens = 0, duration = 0, loadDuration = 0, promptTokens = 0, promptDuration = 0, providerDuration = 0;
     private InferenceOutcome outcome = InferenceOutcome.Unavailable;
     private bool disposed;
     internal InferenceSpan(InferenceDiagnostics owner, Guid id, string agent, InferenceKind kind, long queuedAt)
@@ -71,15 +78,26 @@ public sealed class InferenceSpan : IDisposable
         static long? Sum(long? a, long? b) => a is >= 0 && b is >= 0 && a <= long.MaxValue - b ? a + b : null;
         tokens = Sum(tokens, result.OutputTokens);
         duration = Sum(duration, result.GenerationNanoseconds);
+        loadDuration = Sum(loadDuration, result.LoadNanoseconds);
+        promptTokens = Sum(promptTokens, result.PromptTokens);
+        promptDuration = Sum(promptDuration, result.PromptEvaluationNanoseconds);
+        providerDuration = Sum(providerDuration, result.TotalNanoseconds);
     }
     public void Complete(InferenceOutcome result) => outcome = result;
     public void Dispose()
     {
         if (disposed) return; disposed = true;
         current.Value = previous;
+        var complete = attempts != 0 && measuredAttempts == attempts;
+        static long? Milliseconds(long? nanoseconds) => nanoseconds is >= 0 ? nanoseconds.Value / 1_000_000 : null;
         owner.Add(new(id, default, agent, kind, model, revision, prompt, outcome, queue,
             (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds, attempts,
-            attempts == 0 || measuredAttempts != attempts ? null : tokens,
-            attempts == 0 || measuredAttempts != attempts ? null : duration));
+            complete ? tokens : null, complete ? duration : null)
+        {
+            ModelLoadMilliseconds = complete ? Milliseconds(loadDuration) : null,
+            PromptEvaluationMilliseconds = complete ? Milliseconds(promptDuration) : null,
+            PromptTokens = complete ? promptTokens : null,
+            ProviderTotalMilliseconds = complete ? Milliseconds(providerDuration) : null
+        });
     }
 }
