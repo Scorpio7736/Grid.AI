@@ -71,16 +71,32 @@ public sealed class McpWorkflowTests
         await Run("mcp run " + plan.Id);
         Assert.All(engine.GetSnapshot().Tasks.Records.Where(t => plan.TaskIds.Contains(t.Id)), t => Assert.Equal(1, t.Attempts));
     }
-    [Fact]
-    public async Task ClarificationRetainsRequestAndCannotApproveOrExecute()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ClarificationRetainsRequestAndCannotApproveOrExecute(bool versioned)
     {
-        model.Reply = "{\"question\":\"Which resource observation do you need?\"}";
+        model.Reply = "{" + (versioned ? "\"version\":1," : "") + "\"question\":\"Which resource observation do you need?\"}";
         Assert.Contains("Which resource", (await Run("mcp plan review the machine")).Text);
         Assert.Contains("clarification first", (await Run("talk approve this")).Text);
         model.Reply = "{\"steps\":[{\"agent\":\"VOLT\",\"capability\":\"volt.status\",\"argument\":\"current\"}]}";
         Assert.Contains("DRAFT ONLY", (await Run("talk Current hardware resources")).Text);
         Assert.Contains("review the machine", model.Prompt); Assert.Contains("Current hardware resources", model.Prompt);
         await Run("talk cancel"); Assert.Contains("No draft", (await Run("talk submit plan")).Text);
+        Assert.Empty(engine.GetSnapshot().Tasks.Records);
+    }
+    [Theory]
+    [InlineData("{\"version\":2,\"question\":\"Which workspace?\"}")]
+    [InlineData("{\"version\":\"1\",\"question\":\"Which workspace?\"}")]
+    [InlineData("{\"question\":\"Which workspace?\",\"approved\":true}")]
+    [InlineData("{\"question\":\"Which workspace?\",\"steps\":[]}")]
+    [InlineData("{\"question\":\"First?\",\"question\":\"Second?\"}")]
+    [InlineData("{\"question\":\" \"}")]
+    public async Task InvalidClarificationCannotCreateDraftOrGrantAuthority(string response)
+    {
+        model.Reply = response;
+        Assert.Contains("Invalid clarification", (await Run("mcp plan build a project")).Text);
+        Assert.Contains("No draft", (await Run("talk submit plan")).Text);
         Assert.Empty(engine.GetSnapshot().Tasks.Records);
     }
     [Fact]

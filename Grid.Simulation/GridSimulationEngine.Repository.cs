@@ -41,7 +41,7 @@ public sealed partial class GridSimulationEngine
         lock (gate) return RepositoryInspection.Instructions(DevelopmentTarget("maxis.build", alias).Root, relative);
     }
 
-    public string ReadDevelopmentFailure(EditSessionReference session, string alias)
+    public string ReadDevelopmentFailure(EditSessionReference session, string alias, Guid? expectedTaskId = null)
     {
         using var lease = TaskLease(session, true);
         lock (gate)
@@ -51,6 +51,8 @@ public sealed partial class GridSimulationEngine
                 t.Argument.Equals(alias, StringComparison.OrdinalIgnoreCase) && t.Capability is "maxis.build" or "maxis.test" && t.Attempts > 0)
                 .OrderBy(t => t.Audit.LastOrDefault()?.AtUtc).LastOrDefault()
                 ?? throw new InvalidOperationException("Run and review a build or test for this workspace first.");
+            if (expectedTaskId is { } expected && task.Id != expected)
+                throw new InvalidOperationException("A different build/test now owns the latest failure evidence. Review that result before requesting repair.");
             if (task.Status is not (Grid.Simulation.Tasks.TaskStatus.Failed or Grid.Simulation.Tasks.TaskStatus.TimedOut))
                 throw new InvalidOperationException("The latest build/test is not a recorded failure. No repair inferred.");
             var output = maxisRuntime!.AttemptDirectory(task with { Attempts = task.Attempts - 1 });

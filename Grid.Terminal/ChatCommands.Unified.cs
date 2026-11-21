@@ -37,6 +37,9 @@ public sealed partial class ChatCommands
         var id = active!.Value;
         engine.RequireAgentActivity();
         var input = text.Trim();
+        if (ReplaceSavedPlan(input) is { } planReplacement) return planReplacement;
+        if (ReviseTaskDraft(input) is { } draftRevision) return draftRevision;
+        if (RepairReviewedFailure(input) is { } failureRepair) return failureRepair;
         if (ResolveOperationReference(ref input) is { } referenceReply) return referenceReply;
         try { if (identity?.IsMaster == true && IntentControl(input, out var intentControl)) return intentControl; }
         catch (Exception intentError) when (intentError is IOException or UnauthorizedAccessException)
@@ -88,6 +91,9 @@ public sealed partial class ChatCommands
             // A different sentence replaces the pending request; it is never coerced into a target or consent.
 
         }
+        input = Regex.Replace(input,
+            @"^(?:hey|hi|hello|greetings)(?:\s+there)?[,.!]?[ ]+(?=(?:can|could|would)\s+you\b|please\b|I (?:want|need)\b)",
+            "", RegexOptions.IgnoreCase).Trim();
         input = Regex.Replace(input, @"^(?:(?:can|could|would) you\s+|please\s+|I (?:want|need) you to\s+)+", "", RegexOptions.IgnoreCase).Trim();
         // Directed meeting turns retain the established participant/recall routing.
         var directedPlan = Regex.Match(input, @"^@?(MCP|MAXIS|JN|VOLT|SENTINEL|RELAY)[,:]?\s+(plan|propose)\b(.*)$", RegexOptions.IgnoreCase);
@@ -204,6 +210,10 @@ public sealed partial class ChatCommands
             return Explain("Which operation and target do you mean? I can plan a task or draft a file edit. Approval needs an exact ID: talk approve task <id> or talk approve edit <id>. Nothing executed.");
         if (Starts(input, @"^(how (do|can|should|would|to)|advice\b|help me (understand|learn)|explain\b|what is (the best|a good))"))
             return Send(id, input, MessageOrigin.Terminal);
+        if (Starts(input, @"^(?:task|ask|have|assign)\b.{0,120}\b(?:agent|agents|MAXIS|JN|VOLT|SENTINEL|RELAY)\b.{0,80}\b(?:to|with)\b"))
+            return InterpretAction(input);
+        if (Starts(input, @"^(?:I\s+)?(?:need|want|would like)\b[\s\S]*\b(?:file|document|folder|task|agent|created|made|written|updated|deleted|searched|built|tested|saved|copied|moved)\b"))
+            return InterpretAction(input);
         if (Starts(input, @"^(make|write|save|put|change|update|look for|locate|search|organize|check|inspect|prepare|help me (build|test|create|write))\b"))
             return InterpretAction(input);
         return Send(id, input, MessageOrigin.Terminal);

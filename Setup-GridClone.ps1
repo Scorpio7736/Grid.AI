@@ -103,7 +103,9 @@ try {
     $config=Join-Path $app 'Clone.NuGet.Config'
     $sources=if($Download) {'<add key="nuget.org" value="https://api.nuget.org/v3/index.json" />'} else {''}
     Set-Content -LiteralPath $config -Value ('<configuration><packageSources><clear />'+$sources+'</packageSources></configuration>') -Encoding UTF8
-    & $dotnet restore (Join-Path $root 'Grid.Terminal\Grid.Terminal.csproj') --configfile $config -p:NuGetAudit=false
+    # Restore the entire pinned solution so the private package cache also supports
+    # offline MAXIS build/test work and the agentic-coding acceptance verifier.
+    & $dotnet restore (Join-Path $root 'Grid.AI.slnx') --configfile $config -p:NuGetAudit=false --disable-build-servers
     if ($LASTEXITCODE -ne 0) { throw 'Restore failed. Offline setup needs a populated runtime/nuget cache; use -Download to allow package restore.' }
     & $dotnet build (Join-Path $root 'Grid.Terminal\Grid.Terminal.csproj') -c Release --no-restore -o $app
     if ($LASTEXITCODE -ne 0) { throw 'GRID build failed; installation not marked ready.' }

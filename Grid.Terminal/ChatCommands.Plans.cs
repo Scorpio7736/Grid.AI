@@ -16,21 +16,42 @@ public sealed partial class ChatCommands
             @"^(resume my work|show unfinished plans|continue my work)[.!]?$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         var selection = System.Text.RegularExpressions.Regex.Match(input, @"^(?:resume|review) plan ([0-9]+)[.!]?$",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        if (!list && !selection.Success) return null;
+        var description = System.Text.RegularExpressions.Regex.Match(input, @"^(?:resume|review) (?:the )?plan (?:about|for) (.+)$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (!list && !selection.Success && !description.Success) return null;
         if (identity?.IsMaster != true) return Explain("Only Master Control can review saved operator plans.");
         if (Find(active!.Value).IsMeeting) return Explain("Review saved operator plans in a one-to-one conversation; their requests may contain private information.");
         var state = engine.TasksFor(identity.Reference);
+        bool Unfinished(Grid.Simulation.Tasks.CoordinationPlan p) => p.OperatorId == engine.LocalOperator.Id && p.SubmittedAsAgent is null &&
+            p.TaskIds.Any(id => state.Records.Any(t => t.Id == id && !t.Archived && t.Status is not (Status.Completed or Status.Cancelled or Status.Denied)));
+        if (description.Success)
+        {
+            // Search saved operator requests as data; never interpret the query as instructions or authorization.
+            reviewedPlan = null; savedPlanChoices = null;
+            var query = description.Groups[1].Value.Trim().Trim('"');
+            if (string.IsNullOrWhiteSpace(query) || query.Length > 256)
+                return Explain("Give 1–256 characters from the saved plan's description. Nothing executed.");
+            var matches = state.Plans.Where(p => Unfinished(p) && p.Request.Contains(query, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(p => p.CreatedUtc).ThenBy(p => p.Id).ToArray();
+            if (matches.Length == 0) return Explain("No unfinished operator plan matches that description. Say resume my work to see available plans. Nothing executed.");
+            if (matches.Length > 1)
+            {
+                savedPlanChoices = new(Pending("saved-plan-selection", input), matches.Select(p => p.Id).ToArray());
+                return Explain("More than one unfinished plan matches. Give a more specific description or say resume plan followed by a listed number:\n" +
+                    string.Join("\n", matches.Select((p, i) => $"{i + 1}. {TerminalTable.Safe(p.Request)}")) + "\nNothing approved or executed.");
+            }
+            return new("Saved plan selected by description for fresh review. No approval or execution was restored.\n" + FocusPlan(matches[0].Id));
+        }
         if (list)
         {
             reviewedPlan = null;
-            var plans = state.Plans.Where(p => p.OperatorId == engine.LocalOperator.Id && p.SubmittedAsAgent is null &&
-                p.TaskIds.Any(id => state.Records.Any(t => t.Id == id && !t.Archived && t.Status is not (Status.Completed or Status.Cancelled or Status.Denied))))
+            var plans = state.Plans.Where(Unfinished)
                 .OrderByDescending(p => p.CreatedUtc).ThenBy(p => p.Id).ToArray();
             savedPlanChoices = new(Pending("saved-plan-selection", input), plans.Select(p => p.Id).ToArray());
             if (plans.Length == 0) return Explain("There are no unfinished saved operator plans. Nothing executed.");
             return Explain("Saved operator plans across conversations (private chat context is not restored):\n" +
                 string.Join("\n", plans.Select((p, i) => $"{i + 1}. {TerminalTable.Safe(p.Request)}")) +
-                "\nSay resume plan followed by its number to review current tasks and results. Nothing is approved or executed by selecting a plan.");
+                "\nSay resume the plan about <description>, or resume plan followed by its number, to review current tasks and results. Nothing is approved or executed by selecting a plan.");
         }
         if (savedPlanChoices is not { } choices || !Current(choices.Scope))
         {
@@ -39,13 +60,22 @@ public sealed partial class ChatCommands
         }
         if (!int.TryParse(selection.Groups[1].Value, out var number) || number < 1 || number > choices.Ids.Count)
             return Explain("Choose a number from the saved-plan list, or say resume my work to refresh it.");
-        var selected = state.Plans.SingleOrDefault(p => p.Id == choices.Ids[number - 1] && p.OperatorId == engine.LocalOperator.Id && p.SubmittedAsAgent is null);
+        var selected = state.Plans.SingleOrDefault(p => p.Id == choices.Ids[number - 1] && Unfinished(p));
         if (selected is null) return Explain("That saved plan is no longer available. Say resume my work to refresh the list.");
         return new("Saved plan selected for review. No approval or execution was restored.\n" + FocusPlan(selected.Id));
     }
 
     private CommandResult? DirectDevelopmentPlan(string input)
     {
+        var delegated = System.Text.RegularExpressions.Regex.Match(input, @"^ask MAXIS to (.+)$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (delegated.Success)
+        {
+            var conversation = Find(active!.Value);
+            if (conversation.IsMeeting && !conversation.Participants.Any(p => p.Name.Equals("MAXIS", StringComparison.OrdinalIgnoreCase)))
+                return Explain("MAXIS is not in this meeting. Invite MAXIS first, then repeat the request. Nothing created or executed.");
+            input = delegated.Groups[1].Value.Trim();
+        }
         var demonstration = System.Text.RegularExpressions.Regex.Match(input,
             @"^(?:plan to (?:have )?)?MAXIS demonstrate (?:the message )?(.+)$",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
@@ -64,9 +94,19 @@ public sealed partial class ChatCommands
         var match = System.Text.RegularExpressions.Regex.Match(input,
             @"^(?:plan to )?(build|test|run tests for) (?:the )?(?:workspace |project )?([A-Za-z0-9._-]+)[.!]?$",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        if (!match.Success) return null;
+        if (!match.Success)
+        {
+            if (!delegated.Success) return null;
+            if (System.Text.RegularExpressions.Regex.IsMatch(input,
+                    @"^(?:build|test|run tests?\b|run powershell\b|run (?:cmd|bash|shell)\b|nge\b|transfer\b|copy\b|grant\b|revoke\b)",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                return Explain("For direct MAXIS build/test work, name a registered workspace. Shell, authority, transfer and destructive control requests are not inferred here. Nothing created or executed.");
+            return InterpretAction(delegated.Value);
+        }
         var workspace = engine.TasksFor(identity!.Reference).Workspaces.SingleOrDefault(w => w.Enabled && w.Name.Equals(match.Groups[2].Value.TrimEnd('.'), StringComparison.OrdinalIgnoreCase));
-        if (workspace is null) return null;
+        if (workspace is null) return delegated.Success
+            ? Explain("That workspace is unavailable or not registered. Name an enabled workspace for MAXIS; no path or grant is inferred. Nothing created or executed.")
+            : null;
         var capability = match.Groups[1].Value.Equals("build", StringComparison.OrdinalIgnoreCase) ? "maxis.build" : "maxis.test";
         var proposal = new AssistanceProposal([new(AgentRole.MAXIS, capability, workspace.Name)]);
         var guard = new AssistanceGuard(active!.Value, engine.ActivityGeneration, engine.ContextRevision, engine.ConversationMemoryRevision);

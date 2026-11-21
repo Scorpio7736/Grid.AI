@@ -144,6 +144,7 @@ public sealed class ConversationalFileTests : IDisposable
         Assert.Contains("Change: " + draft.FileChange.Id, list.Text); Assert.Contains("State: Approved", list.Text);
         terminal.Execute("apply this change"); Assert.Contains("<!doctype html>", File.ReadAllText(path));
     }
+
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public async Task ContentDescriptionDraftsHtmlUnlessExplicitlyLiteral(bool literal)

@@ -15,6 +15,20 @@ public sealed partial class ChatCommands
     private sealed record Draft(AssistanceProposal Proposal,AssistanceGuard Guard,Grid.Simulation.Editing.EditSessionReference Session,string Key);
     private Draft? assistanceDraft;
     private int assistanceRequest;
+    private static string? ClarificationQuestion(string json)
+    {
+        using var response = JsonDocument.Parse(json);
+        var root = response.RootElement;
+        if (root.ValueKind != JsonValueKind.Object || !root.TryGetProperty("question", out var question)) return null;
+        var properties = root.EnumerateObject().ToArray();
+        if (properties.Any(p => p.Name is not ("question" or "version")) ||
+            properties.Select(p => p.Name).Distinct(StringComparer.Ordinal).Count() != properties.Length ||
+            root.TryGetProperty("version", out var version) && (version.ValueKind != JsonValueKind.Number || !version.TryGetInt32(out var v) || v != 1) ||
+            question.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(question.GetString()) ||
+            !CommunicationState.ValidContent(question.GetString()!) || question.GetString()!.Length > 600)
+            throw new ArgumentException("Invalid clarification response.");
+        return question.GetString();
+    }
     private CommandResult Assist(IReadOnlyList<string> args, bool repairFormat = false)
     {
         const string usage="Usage: assist advice <request> | assist analyze <request> | assist propose <request> | assist submit | assist discard. Proposals require submission, approval, then separate dispatch.";
@@ -90,13 +104,9 @@ public sealed partial class ChatCommands
                     {
                         try
                         {
-                            using var response = JsonDocument.Parse(reply.Text);
-                            if (response.RootElement.ValueKind == JsonValueKind.Object && response.RootElement.TryGetProperty("question", out var question))
+                            if (ClarificationQuestion(reply.Text) is { } question)
                             {
-                                if (response.RootElement.EnumerateObject().Count() != 1 || question.ValueKind != JsonValueKind.String ||
-                                    !CommunicationState.ValidContent(question.GetString()!) || question.GetString()!.Length > 600)
-                                    throw new ArgumentException("Invalid clarification response.");
-                                return Ask("task-clarification", input, question.GetString()! + "\nNo tasks created. Answer the question, or say cancel.", target: question.GetString()!);
+                                return Ask("task-clarification", input, question + "\nNo tasks created. Answer the question, or say cancel.", target: question);
                             }
                         }
                         catch (JsonException) when (repairFormat) { /* The bounded proposal-format retry below handles malformed JSON. */ }
@@ -106,11 +116,13 @@ public sealed partial class ChatCommands
                         {
                             // Retry the original request once; never execute or repair model text as commands.
                             if(!Current()) return new("Assistance expired; nothing created.");
-                            var retry=inference.ForAgent(mode == "propose" ? "MCP" : agent.Name).GenerateStructuredAsync(prompt.ToString()+"\nThe previous JSON was invalid. Retry once. Root has ONLY steps. Each step has ONLY agent, capability, argument. No explanation, approvals, content or other fields. Use only the exact catalog above.",ProposalSchema,stop.Token);
+                            var retry=inference.ForAgent(mode == "propose" ? "MCP" : agent.Name).GenerateStructuredAsync(prompt.ToString()+"\nThe previous JSON was invalid. Retry once. Return a question-only object if information is missing, or version:1 and steps. Each step has ONLY agent, capability, argument. No approvals, content or other fields. Use only the exact catalog above.",ProposalSchema,stop.Token);
                             while(!retry.IsCompleted) { await Task.WhenAny(retry,Task.Delay(50,stop.Token)); if(token.IsCancellationRequested||!Current()||!authorization.IsCurrent) {stop.Cancel();break;} }
                             var corrected=await retry;
                             if(token.IsCancellationRequested||!Current()||!authorization.IsCurrent) return new("Assistance cancelled or scope changed; nothing created.");
                             if(!corrected.Available) return new("AI proposal retry unavailable/rejected; no action created. "+corrected.Reason);
+                            if (ClarificationQuestion(corrected.Text) is { } correctedQuestion)
+                                return Ask("task-clarification", input, correctedQuestion + "\nNo tasks created. Answer the question, or say cancel.", target: correctedQuestion);
                             proposal=AssistanceProposal.Parse(corrected.Text);
                         }
                         var key=Guid.NewGuid().ToString("N");

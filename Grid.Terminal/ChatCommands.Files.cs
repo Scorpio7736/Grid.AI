@@ -179,6 +179,13 @@ public sealed partial class ChatCommands
             {
                 if (Starts(text, @"^(approve|apply|review|undo|rollback)\b"))
                 { result = Explain("Your pending file change is retained. Use review, approve this change (or approve high-risk), apply this change, or undo this change. Nothing executed."); return true; }
+                if (p.Step is "review" or "approved")
+                {
+                    if (text.EndsWith('?') && Starts(text, @"^(?:how|why|who|what (?:is|are))\b"))
+                        return false;
+                    result = InterpretReviewedFileReply(p, input);
+                    return true;
+                }
                 return false;
             }
             var tokens = new List<string> { "changes", action, p.Change!.Id.ToString() };

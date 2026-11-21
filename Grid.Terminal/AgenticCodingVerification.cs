@@ -52,10 +52,13 @@ public static class AgenticCodingVerification
             await File.WriteAllTextAsync(Path.Combine(source, "unrelated-user-note.txt"), "Preserve this uncommitted user file.\n");
             var expectedTests = await File.ReadAllTextAsync(Path.Combine(source, "CalculatorTests.cs"));
             var restore = new ProcessStartInfo(Path.Combine(sdk, "dotnet.exe")) { WorkingDirectory = source, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
-            foreach (var arg in new[] { "restore", project, "--packages", Path.Combine(runtimeRoot, "nuget"), "--configfile", Path.Combine(source, "NuGet.Config"), "-p:NuGetAudit=false", "--verbosity", "minimal" }) restore.ArgumentList.Add(arg);
+            foreach (var arg in new[] { "restore", project, "--packages", Path.Combine(runtimeRoot, "nuget"), "--configfile", Path.Combine(source, "NuGet.Config"), "-p:NuGetAudit=false", "--disable-build-servers", "--verbosity", "minimal" }) restore.ArgumentList.Add(arg);
             restore.Environment["DOTNET_ROOT"] = sdk;
             restore.Environment["DOTNET_CLI_HOME"] = Path.Combine(runtimeRoot, "home");
             restore.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
+            restore.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
+            restore.Environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
+            restore.Environment["MSBUILDDISABLENODEREUSE"] = "1";
             using (var process = Process.Start(restore) ?? throw new IOException("SDK could not start."))
             {
                 var stdout = process.StandardOutput.ReadToEndAsync();

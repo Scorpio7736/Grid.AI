@@ -17,12 +17,13 @@ public sealed class FreshCloneSetupTests
         }
         public async Task<(int Exit, string Output)> Run(string script, params string[] args)
         {
-            var start = new ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true, WorkingDirectory = Root };
+            var start = new ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = true, RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true, WorkingDirectory = Root };
             foreach (var arg in new[] { "-NoProfile", "-NonInteractive", "-File", Path.Combine(Root, script) }.Concat(args)) start.ArgumentList.Add(arg);
             start.Environment.Remove("GRID_AI_DISABLED");
             // PowerShell 7's inherited module paths can hide Windows PowerShell's built-in modules.
             start.Environment.Remove("PSModulePath");
             using var process = Process.Start(start)!;
+            process.StandardInput.Close();
             var output = process.StandardOutput.ReadToEndAsync(); var errors = process.StandardError.ReadToEndAsync();
             using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(30));
             try { await process.WaitForExitAsync(deadline.Token); }
@@ -44,6 +45,16 @@ public sealed class FreshCloneSetupTests
         Assert.Equal("359D7DD4BCDAB3D86B87D73AC27966F4DBB9F5EFDFCC75D34A8764A09474FAE7", GridTransfer.Hash(Path.Combine(source.FullName, model.GetProperty("MetadataBlob").GetString()!)));
         using var parsed = JsonDocument.Parse(File.ReadAllText(manifest));
         Assert.Contains(parsed.RootElement.GetProperty("layers").EnumerateArray(), layer => layer.GetProperty("digest").GetString() == "sha256:3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f");
+    }
+    [Fact]
+    public void SetupPopulatesOfflineCacheForTheEntireSolution()
+    {
+        var source = new DirectoryInfo(AppContext.BaseDirectory);
+        while (source is not null && !File.Exists(Path.Combine(source.FullName, "Grid.AI.slnx"))) source = source.Parent;
+        Assert.NotNull(source);
+        var script = File.ReadAllText(Path.Combine(source!.FullName, "Setup-GridClone.ps1"));
+        Assert.Contains("& $dotnet restore (Join-Path $root 'Grid.AI.slnx')", script, StringComparison.Ordinal);
+        Assert.Contains("--disable-build-servers", script, StringComparison.Ordinal);
     }
     [Theory]
     [InlineData(false)]
