@@ -2,6 +2,70 @@
 
 # Project GRID — Master Development Checklist
 
+## 6.39 — Experience, Agent Reliability & Connected Devices (active requirements, 2026-11-21)
+
+**Status: planned; all acceptance items below are open.** User priority is dependable everyday operation: responsive local AI, completed tasks, understandable conversational UX, Even G2 terminal access, Wi-Fi-preferred phone contact and approvals, reliable autonomous coding, and task automation. **Hard invariant:** GRID initiates no work, network contact, call, glasses session, notification, or scheduled action unless the authoritative GRID host is running. Persist only inert settings, task state and audit/history after shutdown. This milestone takes priority over Phase 7 Grid.Platform/Android portability and optional GUI pending explicit re-prioritization; the former GUI section 6.39 remains **Future Plan C**, not part of this milestone.
+
+### 6.39A — Baseline and responsive inference (P0)
+
+- [ ] Instrument end-to-end request timings: admission/queue wait, cold/warm model load, prompt processing, first visible token when supported, generation, tool execution and finished result; correlate by scoped task/request ID, redact prompts and secrets.
+- [ ] Benchmark real owner workflows on target 32 GB RAM/8 GB VRAM Windows PC: simple chat, follow-up, intent parsing, MAXIS coding and concurrent messages; report p50/p95, tokens/s and context size before changing policies.
+- [ ] Keep deterministic reads/status, cancellations, help and unambiguous intents off the inference queue; replace avoidable repeated model classification with validated deterministic dispatch.
+- [ ] Evaluate streaming to existing Terminal/Even clients and fair priority-aware local inference scheduling; ensure that long MAXIS requests cannot starve short conversations or evade existing authorization/rate limits.
+- [ ] Compare locally runnable model profiles against the bundled Qwen baseline for latency, comprehension, code repairs and memory pressure; never silently download a model, bypass sealed runtime checks or assume a larger model will be faster.
+- [ ] Add timeout, cancellation, queue-full, concurrent-agent and offline regression coverage. Set performance thresholds only after baseline measurements.
+
+### 6.39B — Durable task completion and MAXIS coding (P0)
+
+- [ ] Extend existing MCP coordination/TaskState and MAXIS, not a parallel task queue: request -> grounded plan -> scoped authorization -> execute -> observe -> verify -> bounded repair/retry -> completed/blocked/failed receipt.
+- [ ] Preserve work across conversations and process restarts as inert checkpoints, with exact step IDs, outcome evidence and safe idempotency checks; never replay an approval, side-effecting step or stale file mutation on restart.
+- [ ] Execute coding in a registered, isolated Git worktree with relevant repository instructions, hash/path policy and controlled build/test subprocesses. Preserve user worktrees, uncommitted edits, and unrelated files.
+- [ ] Allow repeat diagnosis and repair within an explicitly approved scope/attempt budget; require exact-content review for file mutations and fresh authority for steps exceeding scope. Do not grant arbitrary shell, auto-commit, push, deploy or delete.
+- [ ] Verify real compiler/test outcomes and changed-file diffs, then summarize what completed, what failed and how to resume. Exhausted retries, unclear requirements and revoked grants yield actionable blocked states, not fabricated success.
+- [ ] Introduce optional **Codex cloud escalation** only on explicit user opt-in after cost/privacy disclosure and exact data-sharing preview; defaults stay local/offline, and cloud is impossible while GRID is stopped. Measure completion on repeatable realistic multi-file tasks.
+
+### 6.39C — Conversational and terminal UX (P0/P1)
+
+- [ ] Present one user request as one tracked workflow; avoid repeated 'submit/review/approve/run' conversational ceremony where deterministic safe continuation is possible, while retaining exact risk-tier and mutation approvals.
+- [ ] Differentiate queueing, generating, running, verifying, awaiting approval, blocked and finished from authoritative host state; show step counters, elapsed time, concise receipts, live cancel/pause and optional diagnostics; never invent progress percentages.
+- [ ] Support clear natural follow-ups ('continue', 'what happened?', 'fix that failure') bound to a uniquely identified fresh task; request clarification only for genuine ambiguity. Keep private-meeting boundaries and explicit user control.
+- [ ] Test keyboard/navigation, small/narrow terminals, attached windows and disrupted/reconnected sessions. Avoid duplicate task execution and spurious authorizations after reconnect.
+- [ ] Maintain a benchmark of real failed user requests, labeled expected intent, resolution steps, response accuracy, manual interaction count and task-completion outcomes; use it as an acceptance gate alongside unit tests.
+
+### 6.39D — Even G2 terminal access (P1)
+
+- [ ] Reuse the user's existing Even Terminal + Tailscale/PowerShell setup; verify actual Even G2 transport, prompt/response, streaming, status, interruption and approval capabilities before choosing a supported bridge. Do not assume the G2 SDK or Even Terminal APIs expose undocumented functionality.
+- [ ] Implement a single authenticated, revocable connected-client adapter into the active GRID host, without a second agent authority, task owner, or persistent remote worker. Remote clients may submit requests and inspect authorized results.
+- [ ] Map task progress, follow-ups, questions and allowed review actions to readable glasses output; high-risk approvals must pass through the established authenticated host authorization boundary and may require original-host/phone confirmation.
+- [ ] Disconnect immediately on host shutdown, host lease expiry, session revocation or loss of trusted transport. Verify device reconnect never restores stale execution grants or task approvals.
+- [ ] Perform real G2/phone-pairing acceptance, including Tailscale connection, network loss, cancellation and task resumption; label any untested glasses capability as unverified.
+
+### 6.39E — Wi-Fi-first Android phone communication (P1)
+
+- [ ] Prototype a host-controlled Android companion for incoming **app-based VoIP** calls over local Wi-Fi or authenticated Tailscale; distinguish this from carrier/PSTN telephone calling. Validate signaling, Android call/notification permissions and background/locked-phone restrictions on a real Pixel device.
+- [ ] Use RELAY for user-configured questions, task follow-ups, important alerts and approval requests. Apply opt-in, quiet-hours/cooldown/rate controls and privacy-safe caller descriptions; no unsolicited calling by default.
+- [ ] Support two-way speech and text fallback for questions and follow-ups, with an authenticated screen-based approval confirmation for sensitive changes. Spoken acknowledgment alone cannot authorize high-risk operations; retain exact-scope binding, expiry, revoke and host-side auditing.
+- [ ] Require an active GRID host lease for call initiation, session signaling and action execution. When GRID stops, calls end and no companion/cloud worker processes GRID tasks. Record unavoidable provider/OS notification delivery limits honestly.
+- [ ] Verify same-Wi-Fi, remote Tailscale, phone asleep/locked, missed call, transport loss and host shutdown behavior on real hardware; no claim of guaranteed mobile call delivery without these tests.
+
+### 6.39F — Host-bound scheduler and automations (P1)
+
+- [ ] Add one-time, scheduled, recurring and explicitly registered event-triggered workflows using the existing task/approval/persistence infrastructure, not Windows Task Scheduler, external always-on cloud workers or separate host-independent daemons.
+- [ ] Store definitions and audit history durably; acquire fresh active-host execution leases and validate workspace/device permissions, due time and execution policy at each run. Apply per-workflow concurrency limits, cancellation and duplicate-run guards.
+- [ ] Default missed schedules during host downtime to **recorded/skipped, not retroactively executed**. Offer optional manual review/run after GRID restarts; never silently replay sensitive work.
+- [ ] On graceful shutdown cancel or checkpoint jobs, terminate outbound communication and revoke host/client leases. After crashes/power loss, recovered jobs remain inert until explicitly re-authorized where required.
+- [ ] Test shutdown, crash, missed schedules, clock changes, duplicate timers, stale tokens, revoked grants, lost network and resumed world; require zero post-stop GRID-initiated actions.
+
+### 6.39G — Security and real-device release gates (required)
+
+- [ ] Preserve Grid.Agent contracts, simulation single-writer state, SQLite durability, workspace grants, exact file-hash reviews, risk-tiered permission model, audit history, original-host privileged boundaries and existing security tests.
+- [ ] Treat remote phone and glasses as authenticated clients, not independent authorities. Bind every operation to an active authoritative-host lease; fail closed after termination and never share private workspace content with cloud Codex without explicit, scoped consent.
+- [ ] Run focused/full regression suites plus actual end-to-end owner scenarios. Record measured latency, comprehension accuracy, task success, required user interactions, and real coding build/test evidence; separate simulated fixtures from physical G2/Android/offline acceptance.
+- [ ] No release claim until representative multi-step coding, live Even G2 interaction, genuine Wi-Fi voice follow-up/approval, scheduled work while running, and verified absence of actions after host stop all pass. Document unsupported/offline states and rollback.
+
+**Implementation order:** 6.39A baseline -> 6.39B durable work/MAXIS -> 6.39C terminal UX (overlap permitted) -> 6.39D Even G2 -> 6.39E phone calling -> 6.39F automations -> 6.39G acceptance. P0 work is required before expanding the platform, and no checkbox should be marked complete without test evidence.
+
+
 **Conversation-window close lifecycle completed — 2026-11-21.** Closing a dedicated conversation or meeting window now ends its host conversation and clears pending per-window authorization/intent state while retaining the transcript. `/close`, title-bar/window-process close and pipe loss share the same host-side cleanup. A new `connect` starts cleanly; ended conversations cannot resume. Ordinary attached terminals/data windows still only detach. All **1,623 solution tests passed**, including 36 attached-window cases. Earlier 4.2D notes describing conversation close as detach-only are superseded. [Current contract and evidence](Project_GRID_Terminal_Conversations.md).
 
 **Dynamic access paths and remembered permissions implemented — 2026-11-21.** MCP now follows outcome → route → required access → saved-permission check → permission question when needed → host execution → conversational result. Questions and answers are model-generated; GRID validates structured routes and registered access paths. Permissions are broad boundaries rather than fact-specific entries: `host.system.read` covers bounded read-only system information used for date/time and Bluetooth; `host.system.write` is High-risk and accepts only registered typed operations. Relative and calendar-date Windows clock changes require GRID permission plus Windows UAC. Extra conversational whitespace is normalized; refusal prose and missing-information questions cannot become permission state. Schema v28 saves Normal, Medium and High grants with Once, Session and Always duration. Saved access never substitutes for exact file/task review. Real bundled-Qwen read acceptance and non-executing natural calendar-date planning passed; actual clock mutation remains manual. All **1,622 solution tests passed**. [Design, boundaries and evidence](Project_GRID_Dynamic_Access_Permissions.md).
@@ -2416,7 +2480,8 @@ The GUI is no longer sequenced before platform compatibility. Its requirements a
 | **GRID Foundation** | Persistent civilization, autonomous activity, persistent communications |
 | **GRID Operator** | MCP delegates authorized PC tasks to specialist agents and reports verified results |
 | **GRID Assistant** *(proposed additional release gate)* | Grounded advice, supplied context, approved editing and task assistance |
-| **GRID Platform** *(next active release gate)* | Grid.Platform preserves shared behavior across verified Windows, Linux and Android adapters; Android can select governed removable data through its native host and safely reuse a saved world |
+| **GRID Experience & Connected Agent** *(new active gate: Phase 6.39)* | Measured responsive conversation; verified resumable MAXIS coding; usable terminal and Even G2; authenticated Wi-Fi phone question/alert/approval workflows; host-only scheduled automations; zero GRID-initiated work after stop; real-device/security acceptance | 
+| **GRID Platform** *(next platform release gate, after 6.39)* | Grid.Platform preserves shared behavior across verified Windows, Linux and Android adapters; Android can select governed removable data through its native host and safely reuse a saved world |
 | **GRID City** *(future backlog)* | Interactive Godot 3D viewer displaying actual authoritative simulation state |
 | **GRID Terminal Assistant** | Existing terminal supports offline, approved natural-language device actions, guided setup, skills, optional connectors, scheduled workflows and auditable permissions (6.32–6.38), required before cross-platform extraction; GUI (6.39) is optional and non-blocking |
 
@@ -2442,7 +2507,7 @@ The GUI is no longer sequenced before platform compatibility. Its requirements a
 
 # Current Next Steps
 
-**Roadmap update — 2026-11-17:** Complete the remaining active Phase 6 acceptance, then begin Phase 7 Grid.Platform with Android ARM64 as the first priority and Linux following the shared contracts. The former City and Integration phases are in Backlog and Future Plans. Do not begin them without explicit reprioritization.
+**Roadmap update — 2026-11-21:** Prioritize the active Phase 6.39 experience, reliability and connected-device requirements above. Phase 7 Grid.Platform/Android follows completion and review of these new release gates; earlier 2026-11-17 platform sequencing is superseded for priority, not deleted. The former City and Integration phases are in Backlog and Future Plans. Do not begin them without explicit reprioritization.
 
 1. [x] Complete 5.1: named system-agent/task contracts, durable task queue and capability-scoped demonstration broker.
 2. [ ] Begin 5.2: MCP task coordination and delegation.
