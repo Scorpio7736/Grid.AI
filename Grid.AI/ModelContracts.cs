@@ -34,6 +34,11 @@ public sealed record ModelResult(string Text, bool Complete, string FinishReason
 {
     public long? OutputTokens { get; init; }
     public long? GenerationNanoseconds { get; init; }
+    // Provider counters are optional. Unknown must not be reported as zero.
+    public long? LoadNanoseconds { get; init; }
+    public long? PromptTokens { get; init; }
+    public long? PromptEvaluationNanoseconds { get; init; }
+    public long? TotalNanoseconds { get; init; }
 }
 public sealed record ModelChunk(string Text, bool Finished, string FinishReason = "");
 public sealed record ModelResources(bool Loaded, long? AllocatedBytes, long? GpuBytes, string Evidence);
