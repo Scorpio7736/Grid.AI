@@ -1,5 +1,7 @@
 # Project GRID — 6.7 Login Animation and Terminal Palette
 
+**Grid.AI logo replaced and responsively refined — 2026-11-20.** Startup, login animation and graceful shutdown now use a centered 78-column framed Grid.AI mark for normal terminal widths. It applies the established Grid.AI palette: bright cyan `GRID`, cyan `AI` and frame, a white connector accent, and a dark-gray intelligence subtitle. The supplied 12-line, 118-column artwork remains embedded exactly and appears only when a window is at least 140 columns wide, centered with safe margins. Python and external artwork files are not runtime dependencies. Redirected/monochrome output preserves geometry without escape codes; sub-78-column windows use compact branding. The five-second reveal, skip behavior, truthful shutdown status and reduced-motion behavior are unchanged. Fourteen focused logo/animation/palette tests passed. The older GRID7736 artwork below is retained only as historical evidence and is superseded by this note.
+
 **Implemented 2026-10-27.** The user-supplied block-letter GRID7736 banner replaces the earlier opening and closing artwork. Successful login now reveals it over five seconds and enters the terminal automatically, without the post-login Enter prompt. Welcome name and authority remain visible. The artwork uses Unicode box/block characters, as supplied; narrow windows use a compact text logo.
 
 ```text

@@ -22,7 +22,7 @@ Transfers accept drive roots as containers: `grid -copyto "E:\"` targets `E:\GRI
 
 ## Command contract
 
-Enter these commands inside GRID. Substitute a registered agent role such as MCP, MAXIS, SENTINEL, JN, VOLT or RELAY for AGENT. Agent switches are case-insensitive and resolve to stable registered IDs. Unknown/uninitialized agents and multiple/conflicting filters are rejected.
+Enter these commands inside GRID. Substitute a registered agent role such as MCP, MAXIS, TRON, JN, VOLT or RELAY for AGENT. Agent switches are case-insensitive and resolve to stable registered IDs. Unknown/uninitialized agents and multiple/conflicting filters are rejected.
 
 | Command | Behavior |
 | --- | --- |

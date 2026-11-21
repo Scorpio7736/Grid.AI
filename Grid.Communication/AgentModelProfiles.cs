@@ -12,7 +12,7 @@ public static class AgentModelProfiles
         new AgentModelProfile("MCP", Grid.Agent.AgentPersonas.Purpose("MCP")),
         new AgentModelProfile("MAXIS", Grid.Agent.AgentPersonas.Purpose("MAXIS")),
         new AgentModelProfile("JN", Grid.Agent.AgentPersonas.Purpose("JN")),
-        new AgentModelProfile("SENTINEL", Grid.Agent.AgentPersonas.Purpose("SENTINEL")),
+        new AgentModelProfile("TRON", Grid.Agent.AgentPersonas.Purpose("TRON")),
         new AgentModelProfile("VOLT", Grid.Agent.AgentPersonas.Purpose("VOLT")),
         new AgentModelProfile("RELAY", Grid.Agent.AgentPersonas.Purpose("RELAY"), 4096, 512, 1024)
     });

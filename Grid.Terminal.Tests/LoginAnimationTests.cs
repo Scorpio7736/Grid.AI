@@ -63,10 +63,21 @@ public sealed class LoginAnimationTests
     [Fact]
     public void AnimatedArtworkHasReadableNarrowFallbackAndHonestShutdownStatus()
     {
-        Assert.Contains("GRID.AI // LOCAL INTELLIGENCE", TerminalSessionUi.Opening(100));
-        Assert.NotEqual(GridBanner.Render(100, 0), GridBanner.Render(100, 1));
-        Assert.NotEqual(GridBanner.Render(100, .25), GridBanner.Render(100, .75));
-        Assert.All(GridBanner.Render(100, .5).Split('\n'), line => Assert.True(TerminalLayout.Width(line) <= 100));
+        Assert.Contains("G R I D . A I   //   L O C A L   I N T E L L I G E N C E", TerminalSessionUi.Opening(100));
+        Assert.Equal(12, GridBanner.PlainLogo.Split('\n').Length);
+        Assert.All(GridBanner.PlainLogo.Split('\n'), line => Assert.Equal(118, TerminalLayout.Width(line)));
+        Assert.Contains("\u001b[0;36m", GridBanner.Logo);
+        Assert.Contains("\u001b[0;96;46m", GridBanner.Logo);
+        var framed = GridBanner.Render(118, color: false);
+        Assert.Contains("╔", framed); Assert.Contains("◆", framed);
+        Assert.Contains("G R I D . A I   //   L O C A L   I N T E L L I G E N C E", framed);
+        Assert.Equal(framed, TerminalLayout.Plain(framed));
+        var colored = GridBanner.Render(118, color: true);
+        Assert.Contains("\u001b[96m", colored); Assert.Contains("\u001b[36m", colored); Assert.Contains("\u001b[90m", colored);
+        Assert.NotEqual(GridBanner.Render(118, 0, false), GridBanner.Render(118, 1, false));
+        Assert.NotEqual(GridBanner.Render(118, .25, false), GridBanner.Render(118, .75, false));
+        Assert.All(GridBanner.Render(118, .5, true).Split('\n'), line => Assert.True(TerminalLayout.Width(line) <= 118));
+        Assert.Contains(GridBanner.PlainLogo.Split('\n')[0].Trim(), GridBanner.Render(140, color: false));
         Assert.Contains("GRID.AI", GridBanner.Render(30));
         Assert.Equal("GRID.AI", GridBanner.Render(20));
         Assert.Contains(GridBanner.Render(100), TerminalPresentation.Farewell(true, true, 100));

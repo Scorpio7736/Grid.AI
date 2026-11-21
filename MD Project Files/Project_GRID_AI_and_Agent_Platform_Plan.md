@@ -22,7 +22,7 @@ The five stages are foundation (6.16–6.19), knowledge/memory (6.20–6.21), au
 
 The API contracts may initially run in-process in the .NET solution. A separate network service or additional server installation requires a justified design decision. Keep contracts transport-independent and make caller authentication explicit. Define ownership of each state field during migration so one authoritative writer manages each agent, conversation, memory and task record.
 
-GRID-AI accepts generic system instructions and authenticated scope. GRID-Agent assembles agent-specific prompts and selects an approved model profile for each request. Model choice confers no permissions. Preserve existing MCP, MAXIS, JN, SENTINEL, VOLT and RELAY identities and role definitions. The example collection assignments in the supplied prose illustrate scoping and do not change those roles.
+GRID-AI accepts generic system instructions and authenticated scope. GRID-Agent assembles agent-specific prompts and selects an approved model profile for each request. Model choice confers no permissions. Preserve existing MCP, MAXIS, JN, TRON, VOLT and RELAY identities and role definitions. The example collection assignments in the supplied prose illustrate scoping and do not change those roles.
 
 ## Interfaces and enforcement
 

@@ -97,7 +97,7 @@ public sealed class BundledRuntimeTests
     [Theory]
     [InlineData("status")]
     [InlineData("test")]
-    public async Task MissingAssetsReportStartupCauseWithoutProbingSentinelEndpoint(string diagnostic)
+    public async Task MissingAssetsReportStartupCauseWithoutProbingCanaryEndpoint(string diagnostic)
     {
         using var handler = new NoNetwork();
         using var backend = new OllamaLocalBackend(handler, new Uri("http://127.0.0.1:1/"));

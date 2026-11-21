@@ -338,8 +338,9 @@ public sealed partial class WorldStore : IDisposable
                 ?? throw new InvalidDataException("Missing communications state.") };
         command.CommandText = "SELECT StateJson FROM WorldTasks WHERE WorldId=$catalogWorld";
         if (command.ExecuteScalar() is string tasksJson)
-            state = state with { Tasks = System.Text.Json.JsonSerializer.Deserialize<Grid.Simulation.Tasks.TaskState>(tasksJson)
-                ?? throw new InvalidDataException("Missing task state.") };
+            state = state with { Tasks = Grid.Simulation.Tasks.TaskState.NormalizeAgentBrand(
+                System.Text.Json.JsonSerializer.Deserialize<Grid.Simulation.Tasks.TaskState>(tasksJson)
+                ?? throw new InvalidDataException("Missing task state.")) };
         command.CommandText = "SELECT StateJson FROM WorldContext WHERE WorldId=$catalogWorld";
         if (command.ExecuteScalar() is string contextJson)
             state = state with { Context = System.Text.Json.JsonSerializer.Deserialize<Grid.Communication.ContextState>(contextJson)

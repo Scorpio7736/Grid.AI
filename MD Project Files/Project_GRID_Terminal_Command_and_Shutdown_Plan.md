@@ -45,41 +45,41 @@ See [the shared plan](Project_GRID_Terminal_UX_Portability_and_Offline_Plan.md),
 
 Schema v8 persists social state and partial rounds, upgrades existing worlds without inventing participants, and supports validated backup recovery. `social [id|name]` and program inspection provide read-only views. Trusted engine APIs configure social participation/pools; production login, terminal admin configuration, automatic agent creation, actual communication/delegation and Phase 3.4 sustained autonomy remain future work. **336 tests passed**, plus isolated terminal create/save/reopen. See [Social Civilization](Project_GRID_Social_Civilization.md) for complete rules, limits and evidence. Earlier dated statements that social functionality is pending describe previous milestones.
 
-## Bare Grid7736 command support - 2026-10-20
+## Bare GRID-AI command support - renamed 2026-11-21
 
-Startup now also installs a managed `Grid7736.cmd` launcher in `%LOCALAPPDATA%\GRID\bin` and adds that directory to the Windows user PATH, preserving existing entries and avoiding duplicates. Type `Grid7736` directly in PowerShell or Command Prompt; arguments such as `--start` are forwarded. The persistent `Grid7736` environment variable remains supported. An existing unmanaged launcher is not overwritten. This extends the original variable-only 1.14 behavior.
+Startup installs a managed `GRID-AI.cmd` launcher in `%LOCALAPPDATA%\GRID\bin` and adds that directory to the Windows user PATH, preserving existing entries and avoiding duplicates. Type `GRID-AI` directly in PowerShell or Command Prompt; arguments such as `--start` are forwarded. The persistent `GridAI` executable-path variable remains supported. Existing unmanaged launchers are not overwritten or deleted. Obsolete `GridAI.cmd` and `Grid7736.cmd` files are removed only when their managed marker proves Grid.AI created them.
 
 Restart the parent terminal app to inherit the new PATH. For the currently open PowerShell session, refresh it without closing the window:
 
 ```powershell
 $env:Path += ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
-Grid7736
+GRID-AI
 ```
 
-Verification: **89 terminal tests passed**. The bare command resolved to the installed launcher and successfully ran/exited with `--ephemeral --no-color`; no saved world was opened.
+The bare command resolves to the managed launcher and forwards the child process exit code. No administrator elevation is required. Already-open terminal applications must be restarted or have their PATH refreshed before discovering the renamed command.
 
 ## Startup launcher environment variable - 1.14 (2026-10-20)
 
-**Implemented and verified.** On Windows startup, GRID ensures a persistent **user-scope** environment variable named `Grid7736` points to the terminal `.exe`. A missing, empty or broken path is registered using the current build's apphost; an existing valid absolute path is preserved, including another installed build. The current GRID process receives the same value. Values are stored without shell quotes, so paths with spaces remain usable. If no executable is available or Windows denies the environment update, startup reports a warning and GRID continues. Other platforms skip Windows registration. No administrator elevation, shell-profile changes or automatic simulation start are required. The follow-up above also adds a user-PATH launcher.
+**Implemented and verified.** On Windows startup, Grid.AI ensures a persistent **user-scope** environment variable named `GridAI` points to the terminal `.exe`. A missing, empty or broken path is registered using the current build's apphost; an existing valid absolute path is preserved, including another installed build. The current Grid.AI process receives the same value. Values are stored without shell quotes, so paths with spaces remain usable. If no executable is available or Windows denies the environment update, startup reports a warning and Grid.AI continues. Other platforms skip Windows registration. No administrator elevation, shell-profile changes or automatic simulation start are required. The preferred bare command is `GRID-AI`.
 
 PowerShell launch (from a fresh environment):
 
 ```powershell
-& $env:Grid7736
+& $env:GridAI
 # Optional: begin simulation immediately
-& $env:Grid7736 --start
+& $env:GridAI --start
 ```
 
 Command Prompt launch:
 
 ```bat
-"%Grid7736%"
+"%GridAI%"
 ```
 
-The environment variable is a path value; the managed PATH launcher above separately provides the bare `Grid7736` command. Already-open shells do not inherit changes from GRID. Restart the parent terminal/IDE, or sign out/in if necessary. To refresh only the current PowerShell shell without restarting:
+The environment variable is a path value; the managed PATH launcher above separately provides the bare `GRID-AI` command. Already-open shells do not inherit changes from Grid.AI. Restart the parent terminal/IDE, or sign out/in if necessary. To refresh only the current PowerShell shell without restarting:
 
 ```powershell
-$env:Grid7736 = [Environment]::GetEnvironmentVariable('Grid7736', 'User')
+$env:GridAI = [Environment]::GetEnvironmentVariable('GridAI', 'User')
 ```
 
 A development-build path remains tied to that build's `.exe`; rebuild that target to pick up changes. Launching another build preserves a still-valid registered installation. If the target is removed, launching GRID directly registers the current available apphost again. This is a convenience launcher, not an installer or authentication mechanism.

@@ -410,7 +410,7 @@ Apply:
 The following agent names should always use consistent capitalization:
 
 - MCP
-- SENTINEL
+- TRON
 - MAXIS
 - JN
 - VOLT

@@ -39,14 +39,14 @@ VOLT now reports existing host telemetry and supports approved normal/eco/auto p
 JN now inventories approved paths, reports possible duplicates, and prepares cleanup proposals without deleting source files. Defined GRID-managed storage is measured against an initial 20 GB decimal logical budget; MCP quota escalations require separate Master Control approval to change it. This is tracking/governance, not a hard write cap or disk reservation. Schema v18 preserves scope and quota history. **535 tests passed** (14 Core, 157 Simulation, 97 Persistence, 267 Terminal). See [JN implementation and acceptance test](Project_GRID_JN_Storage_Implementation.md) for limits, accounting roots, report retention and remaining planned automation. Next: **5.6 VOLT and RELAY**. Earlier milestone/schema/test statements below remain historical.
 
 
-## SENTINEL security — 5.4 completed (2026-10-21)
+## TRON security — 5.4 completed (2026-10-21)
 
-SENTINEL now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
+TRON now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [TRON implementation](Project_GRID_TRON_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
 
 
 ## MAXIS development — 5.3 completed (2026-10-21)
 
-MAXIS now supports registered-workspace inspection, fixed .NET build/test execution, saved diagnostics and explicit replacement suggestions staged outside original source. Every task requires human approval; build/test executes trusted project code as the current Windows user (no OS/network sandbox). Schema v16 persists immutable, revocable workspace registrations. Other specialists remain demonstrations. **505 tests passed** (14 Core, 157 Simulation, 97 Persistence, 237 Terminal). See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for commands, offline prerequisites, artifact retention and limits. Next: **5.4 SENTINEL**. Earlier milestone/schema/test statements below remain historical.
+MAXIS now supports registered-workspace inspection, fixed .NET build/test execution, saved diagnostics and explicit replacement suggestions staged outside original source. Every task requires human approval; build/test executes trusted project code as the current Windows user (no OS/network sandbox). Schema v16 persists immutable, revocable workspace registrations. Other specialists remain demonstrations. **505 tests passed** (14 Core, 157 Simulation, 97 Persistence, 237 Terminal). See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for commands, offline prerequisites, artifact retention and limits. Next: **5.4 TRON**. Earlier milestone/schema/test statements below remain historical.
 
 
 ## MCP administration — 5.2 completed (2026-10-21)
@@ -56,7 +56,7 @@ Explicit `mcp request` clauses now create atomic saved specialist task plans. MC
 
 ## Agent/task infrastructure - 5.1 completed (2026-10-21)
 
-Explicit `agents initialize` registers MCP, MAXIS, SENTINEL, JN, VOLT and RELAY by stable ID. Schema v14 persists a bounded task queue, immutable proposals, one-attempt human approvals, results and audit. `tasks propose/inspect/approve/cancel/retry/run` enforce role-specific allowlists and live session authority at the service boundary. The broker saves a running record before invocation, prevents concurrent dispatch, supports cancellation/timeouts and requires fresh approval for retries/restart recovery. Agent sessions cannot self-approve or borrow capabilities. **Only labeled demonstration adapters are enabled; no real PC task, shell execution, natural-language delegation or autonomous producer is implemented.** Chat/voice messages remain conversation data.
+Explicit `agents initialize` registers MCP, MAXIS, TRON, JN, VOLT and RELAY by stable ID. Schema v14 persists a bounded task queue, immutable proposals, one-attempt human approvals, results and audit. `tasks propose/inspect/approve/cancel/retry/run` enforce role-specific allowlists and live session authority at the service boundary. The broker saves a running record before invocation, prevents concurrent dispatch, supports cancellation/timeouts and requires fresh approval for retries/restart recovery. Agent sessions cannot self-approve or borrow capabilities. **Only labeled demonstration adapters are enabled; no real PC task, shell execution, natural-language delegation or autonomous producer is implemented.** Chat/voice messages remain conversation data.
 
 **472 tests passed**, including 15 new task integration cases covering authorization, persistence barriers, cancellation/retry, deduplication, SQL rollback and restart/recovery. Existing v13 worlds migrate without regenerating the city or automatically creating agents. Next planned module: 5.2 MCP coordination. See [task broker implementation](Project_GRID_Task_Broker_Implementation.md) for commands, bounds and limits. Earlier milestone/schema/test counts below remain historical.
 
@@ -411,7 +411,7 @@ One conceptual 20 GB city could feature:
 
 - Thousands of simulated citizens with persistent identities and compressed memories.
 - Five or more districts with buildings and transit routes.
-- Six main system agents: **MCP, SENTINEL, JN, MAXIS, VOLT, RELAY**.
+- Six main system agents: **MCP, TRON, JN, MAXIS, VOLT, RELAY**.
 - A shared local language model and separate voice components.
 - A 3D environment using reusable assets, materials, and animations.
 - Persistent conversation and city event histories spanning long periods, provided retention is managed.
@@ -449,7 +449,7 @@ This is arithmetic based on illustrative assumptions, **not measured Grid perfor
 | Initial storage quota | 20 GB |
 | Default requested expansion | +10 GB, user approval required |
 | Starting population | Running application representatives plus persistent agents/special programs; no fixed citizen target |
-| Key system agents | MCP, SENTINEL, JN, MAXIS, VOLT, RELAY |
+| Key system agents | MCP, TRON, JN, MAXIS, VOLT, RELAY |
 | City layout | Five interconnected districts |
 | Language models | One shared local inference service, optional when idle |
 | Persistence | SQLite with snapshots, audit/event logs |

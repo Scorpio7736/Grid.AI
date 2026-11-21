@@ -17,12 +17,14 @@ public sealed record CommunicationState(IReadOnlyList<Conversation> Conversation
 {
     public IReadOnlyList<VoiceProfile> VoiceProfiles { get; init; } = Array.Empty<VoiceProfile>();
     public IReadOnlyList<ConversationMemory> Memories { get; init; } = Array.Empty<ConversationMemory>();
+    public IReadOnlyList<AccessPermission> AccessPermissions { get; init; } = Array.Empty<AccessPermission>();
     public long MemoryRevision { get; init; }
     public static CommunicationState Empty => new([]);
     public const int MaxConversations = 128, MaxMessages = 2048, MaxContent = 4096;
     public static CommunicationState Copy(CommunicationState state) => new(Array.AsReadOnly(state.Conversations.Select(c => c with {
         Participants = Array.AsReadOnly(c.Participants.ToArray()), Messages = Array.AsReadOnly(c.Messages.ToArray()) }).ToArray())) { VoiceProfiles = Array.AsReadOnly(state.VoiceProfiles.ToArray()), MemoryRevision = state.MemoryRevision,
-        Memories = Array.AsReadOnly(state.Memories.Select(m => m with { Sources = Array.AsReadOnly(m.Sources.ToArray()), Grants = Array.AsReadOnly(m.Grants.ToArray()) }).ToArray()) };
+        Memories = Array.AsReadOnly(state.Memories.Select(m => m with { Sources = Array.AsReadOnly(m.Sources.ToArray()), Grants = Array.AsReadOnly(m.Grants.ToArray()) }).ToArray()),
+        AccessPermissions = Array.AsReadOnly(state.AccessPermissions.ToArray()) };
     public static bool SameIdentity(Recipient a, Recipient b) => a.Kind == b.Kind && a.Id == b.Id;
     public static bool ValidRecipient(Recipient? r) => r is not null && Enum.IsDefined(r.Kind) && r.Id != Guid.Empty &&
         !string.IsNullOrWhiteSpace(r.Name) && r.Name.Length <= 80 && !r.Name.Any(char.IsControl);
@@ -53,6 +55,7 @@ public sealed record CommunicationState(IReadOnlyList<Conversation> Conversation
             }
         }
         ConversationMemoryValidation.Validate(state);
+        AccessPermission.Validate(state.AccessPermissions);
     }
 }
 

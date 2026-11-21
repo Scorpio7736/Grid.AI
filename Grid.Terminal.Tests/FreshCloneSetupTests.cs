@@ -75,10 +75,10 @@ public sealed class FreshCloneSetupTests
     {
         if (!OperatingSystem.IsWindows()) return;
         using var clone = new Clone(); var folder = Path.Combine(clone.Root, ".grid-data"); Directory.CreateDirectory(folder);
-        var world = Path.Combine(folder, "world.db"); File.WriteAllText(world, "retained world sentinel");
+        var world = Path.Combine(folder, "world.db"); File.WriteAllText(world, "retained world canary");
         var result = await clone.Run("Setup-GridClone.ps1");
         Assert.NotEqual(0, result.Exit); Assert.Contains("Dependencies are absent", result.Output);
-        Assert.Equal("retained world sentinel", File.ReadAllText(world));
+        Assert.Equal("retained world canary", File.ReadAllText(world));
         Assert.False(Directory.Exists(Path.Combine(clone.Root, ".grid-runtime")));
         Assert.False(Directory.Exists(Path.Combine(clone.Root, ".grid-app")));
     }
@@ -97,12 +97,12 @@ public sealed class FreshCloneSetupTests
         if (!OperatingSystem.IsWindows()) return;
         using var clone = new Clone();
         var runtime = Path.Combine(clone.Root, ".grid-runtime"); Directory.CreateDirectory(runtime);
-        var sentinel = Path.Combine(runtime, "keep.txt"); File.WriteAllText(sentinel, "retain");
+        var canary = Path.Combine(runtime, "keep.txt"); File.WriteAllText(canary, "retain");
         var result = await clone.Run("Setup-GridClone.ps1");
         Assert.NotEqual(0, result.Exit); Assert.Contains("-Download -RepairRuntime", result.Output);
         var refused = await clone.Run("Setup-GridClone.ps1", "-RepairRuntime");
         Assert.NotEqual(0, refused.Exit); Assert.Contains("requires -Download", refused.Output);
-        Assert.Equal("retain", File.ReadAllText(sentinel));
+        Assert.Equal("retain", File.ReadAllText(canary));
         Assert.Empty(Directory.GetDirectories(clone.Root, ".grid-install-*"));
     }
     [Fact]

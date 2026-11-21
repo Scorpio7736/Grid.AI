@@ -17,6 +17,37 @@ public sealed record TaskState(IReadOnlyList<SystemAgent> Agents, IReadOnlyList<
     public static TaskState Empty => new(Array.Empty<SystemAgent>(), Array.Empty<TaskRecord>());
     public static TaskState Copy(TaskState state) => new(Array.AsReadOnly(state.Agents.ToArray()),
         Array.AsReadOnly(state.Records.Select(t => t with { Audit = Array.AsReadOnly(t.Audit.ToArray()) }).ToArray())) { VoltMode=state.VoltMode, Relay=state.Relay.Copy(), Storage = state.Storage.Copy(), Workspaces = Array.AsReadOnly(state.Workspaces.ToArray()), Plans = Array.AsReadOnly(state.Plans.Select(p => p with { TaskIds = Array.AsReadOnly(p.TaskIds.ToArray()) }).ToArray()) };
+    public static TaskState NormalizeAgentBrand(TaskState state)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        var tron = state.Agents.Where(agent => agent.Role == AgentRole.TRON).Select(agent => agent.Id).ToHashSet();
+        var legacy = string.Concat("SEN", "TINEL");
+        string Text(string? value) => value is null ? "" : System.Text.RegularExpressions.Regex.Replace(value, legacy, "TRON", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        string Capability(TaskRecord task)
+        {
+            if (!tron.Contains(task.AgentId)) return task.Capability;
+            var separator = task.Capability.IndexOf('.');
+            if (separator < 0) return task.Capability;
+            var suffix = task.Capability[(separator + 1)..];
+            return suffix is "demo" or "defender" or "firewall" or "events" ? "tron." + suffix : task.Capability;
+        }
+        return state with
+        {
+            Records = Array.AsReadOnly(state.Records.Select(task => task with
+            {
+                RequestKey = Text(task.RequestKey),
+                Capability = Capability(task),
+                Result = task.Result is null ? null : Text(task.Result),
+                Audit = Array.AsReadOnly(task.Audit.Select(audit => audit with { Detail = Text(audit.Detail) }).ToArray())
+            }).ToArray()),
+            Plans = Array.AsReadOnly(state.Plans.Select(plan => plan with
+            {
+                RequestKey = Text(plan.RequestKey),
+                Request = Text(plan.Request),
+                TaskIds = Array.AsReadOnly(plan.TaskIds.ToArray())
+            }).ToArray())
+        };
+    }
     public static bool Label(string? value, int max) => Grid.Agent.TaskWorkflow.Label(value, max);
     public static void Validate(TaskState state)
     {
@@ -35,7 +66,7 @@ public static class TaskCapabilities
 {
     public static string For(AgentRole role) => role.ToString().ToLowerInvariant() + ".demo";
     public static bool Valid(AgentRole role, string capability, string argument) => TaskState.Label(argument, 256) &&
-        (VoltRelayPolicy.Valid(role,capability,argument) || role == AgentRole.JN && StoragePolicy.Valid(capability,argument) || role == AgentRole.SENTINEL && SentinelPolicy.Valid(capability,argument) || role == AgentRole.MAXIS && DevelopmentPolicy.IsReal(capability) && DevelopmentPolicy.Parameters(capability,argument) || capability == For(role) || role == AgentRole.MAXIS && capability == "maxis.delay" && int.TryParse(argument, out var delay) && delay is >= 0 and <= 5000);
+        (VoltRelayPolicy.Valid(role,capability,argument) || role == AgentRole.JN && StoragePolicy.Valid(capability,argument) || role == AgentRole.TRON && TronPolicy.Valid(capability,argument) || role == AgentRole.MAXIS && DevelopmentPolicy.IsReal(capability) && DevelopmentPolicy.Parameters(capability,argument) || capability == For(role) || role == AgentRole.MAXIS && capability == "maxis.delay" && int.TryParse(argument, out var delay) && delay is >= 0 and <= 5000);
     internal static async Task<string> ExecuteAsync(AgentRole role, string capability, string argument, CancellationToken token)
     {
         if (!Valid(role, capability, argument)) throw new ArgumentException("Capability or argument is not allowed for this agent.");

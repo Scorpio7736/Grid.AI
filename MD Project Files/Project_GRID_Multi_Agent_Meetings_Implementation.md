@@ -43,9 +43,9 @@ For reviewed offline voice, use `agent meetings MCP MAXIS JN -inline` in the ori
 
 ## Selection and limits
 
-Names are case-insensitive registered roles: MCP, MAXIS, SENTINEL, JN, VOLT and RELAY. Duplicate, unknown, uninitialized and out-of-range participant lists fail before opening a window. `talk @MAXIS <message>` (also `@MAXIS: <message>`) overrides selection only when MAXIS belongs to this meeting; a missing question or nonparticipant is rejected without appending a turn.
+Names are case-insensitive registered roles: MCP, MAXIS, TRON, JN, VOLT and RELAY. Duplicate, unknown, uninitialized and out-of-range participant lists fail before opening a window. `talk @MAXIS <message>` (also `@MAXIS: <message>`) overrides selection only when MAXIS belongs to this meeting; a missing question or nonparticipant is rejected without appending a turn.
 
-Automatic selection counts distinct specialty keywords: coordination/planning/tasks for MCP; code/build/tests for MAXIS; security/firewall/threats for SENTINEL; files/storage/archive for JN; CPU/memory/performance for VOLT; notifications/delivery for RELAY. Highest score wins. Ties prefer MCP if tied, then alphabetical role. No matches use MCP if present, otherwise the first alphabetical role. This is deterministic keyword routing, not a semantic comparison of proposed AI answers. Unclear questions instruct the selected model to clarify. Unavailable local inference produces a labeled fallback and no invented answer. Detailed transcript sources include routing reasons.
+Automatic selection counts distinct specialty keywords: coordination/planning/tasks for MCP; code/build/tests for MAXIS; security/firewall/threats for TRON; files/storage/archive for JN; CPU/memory/performance for VOLT; notifications/delivery for RELAY. Highest score wins. Ties prefer MCP if tied, then alphabetical role. No matches use MCP if present, otherwise the first alphabetical role. This is deterministic keyword routing, not a semantic comparison of proposed AI answers. Unclear questions instruct the selected model to clarify. Unavailable local inference produces a labeled fallback and no invented answer. Detailed transcript sources include routing reasons.
 
 ## History, access and actions
 

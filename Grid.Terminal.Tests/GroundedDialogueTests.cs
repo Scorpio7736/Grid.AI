@@ -36,6 +36,18 @@ public sealed class GroundedDialogueTests
         var status=f.Engine.PrepareGroundedTurn(id,f.Engine.LocalOperator,"world status");Assert.Contains("; districts ",status.Facts);
     }
     [Fact]
+    public void McpPromptOffersPermissionPathInsteadOfFlatAccessRefusal()
+    {
+        var f = new Fixture(Reply()); var id = f.Chat.ActiveConversation!.Value;
+        var turn = f.Engine.PrepareGroundedTurn(id, f.Engine.LocalOperator, "What time is it?");
+        Assert.Contains("don't flatly refuse", turn.Prompt);
+        Assert.Contains("smallest permission or setup", turn.Prompt);
+        Assert.Contains("Permission defaults to one operation", turn.Prompt);
+        Assert.Contains("ask again only at a new boundary", turn.Prompt);
+        Assert.Contains("Consent cannot create a missing tool", turn.Prompt);
+        Assert.Contains("verify and return a receipt", turn.Prompt);
+    }
+    [Fact]
     public async Task ProductionChatStoresAttributedPairWithoutTasksAndPersistsOnce()
     {
         var saves = 0; var f = new Fixture(Reply(), _ => { saves++; return Task.CompletedTask; });
@@ -106,7 +118,7 @@ public sealed class GroundedDialogueTests
     [Theory]
     [InlineData("MCP", "coordinator")]
     [InlineData("MAXIS", "engineer")]
-    [InlineData("SENTINEL", "security analyst")]
+    [InlineData("TRON", "security analyst")]
     [InlineData("JN", "archivist")]
     [InlineData("VOLT", "resource steward")]
     [InlineData("RELAY", "messenger")]

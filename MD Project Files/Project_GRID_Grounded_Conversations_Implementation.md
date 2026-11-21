@@ -45,7 +45,7 @@ Only the selected participant-owned conversation is retrieved. Recent history in
 
 For a human conversation with a resident that has opted into social simulation, up to two of that resident's latest saved social memories are included, labeled **SIMULATED experience**, with tick, outcome, peer and district IDs. Other residents' memories are not searched. Ordinary agents with no social records do not acquire invented experiences. No cross-conversation memory search, vector database, file ingestion, credentials, raw process lists, tasks/results or screen images are included.
 
-Named profiles distinguish MCP (coordination), MAXIS (engineering), SENTINEL (security evidence), JN (archives/provenance), VOLT (resources) and RELAY (accurate messaging). Registered roles take precedence over names. Personality grants no permission. Other residents use an explicitly fictional character profile and do not impersonate host applications.
+Named profiles distinguish MCP (coordination), MAXIS (engineering), TRON (security evidence), JN (archives/provenance), VOLT (resources) and RELAY (accurate messaging). Registered roles take precedence over names. Personality grants no permission. Other residents use an explicitly fictional character profile and do not impersonate host applications.
 
 The stored response has separate sections:
 

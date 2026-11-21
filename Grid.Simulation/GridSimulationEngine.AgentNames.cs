@@ -5,13 +5,18 @@ namespace Grid.Simulation;
 public sealed partial class GridSimulationEngine
 {
     // Display-name migration only: IDs retain all grants, profiles, history and conversation ownership.
-    private void RenameLegacySystemAgents()
+    private void RenameLegacySystemAgents(Tasks.TaskState taskState)
     {
         var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         { ["ARCHON"] = "MCP", ["FORGE"] = "MAXIS", ["ARCHIVIST"] = "JN" };
         foreach (var program in world.Programs.Values.Where(p => p.Kind == ResidentKind.Agent).ToArray())
         {
-            if (!names.TryGetValue(program.Name, out var name)) continue;
+            var tron = taskState.Agents.Any(agent => agent.Id == program.Id && agent.Role == Tasks.AgentRole.TRON);
+            string name;
+            if (tron) name = "TRON";
+            else if (names.TryGetValue(program.Name, out var mapped)) name = mapped;
+            else continue;
+            if (program.Name.Equals(name, StringComparison.Ordinal)) continue;
             if (program.Revision == long.MaxValue || world.Programs.Values.Any(p => p.Id != program.Id && p.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
                 RecordEvent("AgentRenameSkipped", program.Id, program.Name, $"Rename to {name} requires manual resolution: target name is occupied or revision exhausted. Existing identities preserved.");

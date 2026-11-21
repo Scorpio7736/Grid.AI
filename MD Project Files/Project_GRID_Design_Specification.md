@@ -1,5 +1,9 @@
 # Project GRID
 
+**Dynamic access architecture — implemented 2026-11-21.** Conversation agents determine outcome → route → required access before asking permission. Permissions authorize broad paths, not individual facts/directories/applications; the model writes the question/result while GRID validates the path and typed operation. Schema v28 persists Normal, Medium and High grants as Once, Session or Always. Read-only system information and High-risk bounded relative Windows clock adjustment are implemented; the latter also requires UAC. Exact file/task approvals remain separate. [Full contract](Project_GRID_Dynamic_Access_Permissions.md).
+
+**Current logo specification — 2026-11-20.** Opening, successful-login animation and graceful shutdown use a centered 78-column framed Grid.AI mark at normal widths: bright cyan `GRID`, cyan `AI` and frame, white connector accent, dark-gray subtitle and deliberate surrounding whitespace. At 140+ columns, the exact operator-supplied 118-column ANSI artwork may appear centered with safe margins. Below 78 columns, use compact `GRID.AI` branding. Strip ANSI without altering geometry for redirected output. Assets remain local and native; Python is not a runtime dependency. This supersedes earlier GRID7736 banner references while preserving their historical record.
+
 **Cross-platform architecture update — planned 2026-11-17:** Grid.AI will isolate native behavior behind `Grid.Platform`, retain Windows through `Grid.Platform.Windows`, add Linux x64/ARM64 adapters and prioritize a dedicated `Grid.Host.Android`/`Grid.Platform.Android` target. Android uses native folder grants and lifecycle handling rather than being treated as generic Linux. Current implementation remains predominantly Windows; this is a roadmap/architecture update, not a portability completion claim. The former City and Integration phases are deferred to backlog. [Full platform plan and acceptance](Project_GRID_Cross_Platform_and_Android_Plan.md).
 
 **6.15 import implementation — 2026-11-04.** Offline PDF text extraction and DOCX body paragraph/table import are locally verified. The bundled parser uses bounded worker processes, page/paragraph provenance and explicit empty/scanned/encrypted/corrupt-file outcomes. 1,073 regression tests passed across current suites, with standalone PDF/DOCX deployment checks. Second-device acceptance and the final 6.7–6.31 gate remain pending. [Implementation, scope and verification](Project_GRID_Offline_Document_Import_Implementation.md).
@@ -93,14 +97,14 @@ VOLT now reports existing host telemetry and supports approved normal/eco/auto p
 JN now inventories approved paths, reports possible duplicates, and prepares cleanup proposals without deleting source files. Defined GRID-managed storage is measured against an initial 20 GB decimal logical budget; MCP quota escalations require separate Master Control approval to change it. This is tracking/governance, not a hard write cap or disk reservation. Schema v18 preserves scope and quota history. **535 tests passed** (14 Core, 157 Simulation, 97 Persistence, 267 Terminal). See [JN implementation and acceptance test](Project_GRID_JN_Storage_Implementation.md) for limits, accounting roots, report retention and remaining planned automation. Next: **5.6 VOLT and RELAY**. Earlier milestone/schema/test statements below remain historical.
 
 
-## SENTINEL security — 5.4 completed (2026-10-21)
+## TRON security — 5.4 completed (2026-10-21)
 
-SENTINEL now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
+TRON now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [TRON implementation](Project_GRID_TRON_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
 
 
 ## MAXIS development — 5.3 completed (2026-10-21)
 
-MAXIS now supports registered-workspace inspection, fixed .NET build/test execution, saved diagnostics and explicit replacement suggestions staged outside original source. Every task requires human approval; build/test executes trusted project code as the current Windows user (no OS/network sandbox). Schema v16 persists immutable, revocable workspace registrations. Other specialists remain demonstrations. **505 tests passed** (14 Core, 157 Simulation, 97 Persistence, 237 Terminal). See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for commands, offline prerequisites, artifact retention and limits. Next: **5.4 SENTINEL**. Earlier milestone/schema/test statements below remain historical.
+MAXIS now supports registered-workspace inspection, fixed .NET build/test execution, saved diagnostics and explicit replacement suggestions staged outside original source. Every task requires human approval; build/test executes trusted project code as the current Windows user (no OS/network sandbox). Schema v16 persists immutable, revocable workspace registrations. Other specialists remain demonstrations. **505 tests passed** (14 Core, 157 Simulation, 97 Persistence, 237 Terminal). See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for commands, offline prerequisites, artifact retention and limits. Next: **5.4 TRON**. Earlier milestone/schema/test statements below remain historical.
 
 
 ## MCP administration — 5.2 completed (2026-10-21)
@@ -110,7 +114,7 @@ Explicit `mcp request` clauses now create atomic saved specialist task plans. MC
 
 ## Agent/task infrastructure - 5.1 completed (2026-10-21)
 
-Explicit `agents initialize` registers MCP, MAXIS, SENTINEL, JN, VOLT and RELAY by stable ID. Schema v14 persists a bounded task queue, immutable proposals, one-attempt human approvals, results and audit. `tasks propose/inspect/approve/cancel/retry/run` enforce role-specific allowlists and live session authority at the service boundary. The broker saves a running record before invocation, prevents concurrent dispatch, supports cancellation/timeouts and requires fresh approval for retries/restart recovery. Agent sessions cannot self-approve or borrow capabilities. **Only labeled demonstration adapters are enabled; no real PC task, shell execution, natural-language delegation or autonomous producer is implemented.** Chat/voice messages remain conversation data.
+Explicit `agents initialize` registers MCP, MAXIS, TRON, JN, VOLT and RELAY by stable ID. Schema v14 persists a bounded task queue, immutable proposals, one-attempt human approvals, results and audit. `tasks propose/inspect/approve/cancel/retry/run` enforce role-specific allowlists and live session authority at the service boundary. The broker saves a running record before invocation, prevents concurrent dispatch, supports cancellation/timeouts and requires fresh approval for retries/restart recovery. Agent sessions cannot self-approve or borrow capabilities. **Only labeled demonstration adapters are enabled; no real PC task, shell execution, natural-language delegation or autonomous producer is implemented.** Chat/voice messages remain conversation data.
 
 **472 tests passed**, including 15 new task integration cases covering authorization, persistence barriers, cancellation/retry, deduplication, SQL rollback and restart/recovery. Existing v13 worlds migrate without regenerating the city or automatically creating agents. Next planned module: 5.2 MCP coordination. See [task broker implementation](Project_GRID_Task_Broker_Implementation.md) for commands, bounds and limits. Earlier milestone/schema/test counts below remain historical.
 
@@ -335,7 +339,7 @@ A later city may add a GPU/Arena district, residential zones, defense facilities
 | GPU-intensive game launches | Arena or GPU district receives activity |
 | PC is mostly idle | Maintenance or recovery opportunities increase |
 | Approved test suite finishes | Forge may record a research event and report the real outcome |
-| Defender reports an alert | Sentinel opens a simulated incident, without treating a fictional event as proof of actual danger |
+| Defender reports an alert | Tron opens a simulated incident, without treating a fictional event as proof of actual danger |
 
 All responses should be tuned, smoothed, bounded, and based on measured host conditions. For example, intense gaming should not automatically destroy the civilization.
 
@@ -404,22 +408,22 @@ Routine simulation does **not** require a large language model for every action.
 
 | Program | Role | Real capabilities (scoped) | Example update |
 |---|---|---|---|
-| **SENTINEL** | Security, inspired by TRON | Read Windows Defender/firewall status and permitted security events, investigate and report anomalies | “A security alert was recorded. No protective action has been taken.” |
-| **MCP** | Coordinator/administrator, inspired by CLU | Assign tasks, gather summaries, track queues, coordinate simulation administration | “Sentinel completed its review; Forge has three tasks pending.” |
+| **TRON** | Security, inspired by TRON | Read Windows Defender/firewall status and permitted security events, investigate and report anomalies | “A security alert was recorded. No protective action has been taken.” |
+| **MCP** | Coordinator/administrator, inspired by CLU | Assign tasks, gather summaries, track queues, coordinate simulation administration | “Tron completed its review; Forge has three tasks pending.” |
 | **JN** | Data management | Inventory approved folders, identify duplicates, prepare organization proposals and perform approved reversible moves | “18 possible duplicates are ready for review.” |
 | **MAXIS** | Development and builds | Inspect explicitly authorized repositories, run configured tests/builds, produce diagnostics and propose patches in isolated workspaces | “Two unit tests failed; a report is available.” |
 | **VOLT** | Resource monitoring | Observe CPU/GPU/RAM/disk/thermal metrics where supported and adjust *Grid’s own* resource budget | “I reduced Grid background work while host load is high.” |
 | **RELAY** | Communication | Route messages, transcribe audio, synthesize replies, manage notifications, and deliver briefings | “Forge's report is complete. Shall I read it aloud?” |
 
-**Organizational rule:** MCP may coordinate other agents but does not inherit their permissions. SENTINEL should independently monitor security conditions. RELAY is the universal communications layer.
+**Organizational rule:** MCP may coordinate other agents but does not inherit their permissions. TRON should independently monitor security conditions. RELAY is the universal communications layer.
 
-Potential first trio for useful system functionality: **MCP + SENTINEL + MAXIS**. Basic RELAY functionality must still exist early to deliver terminal messages.
+Potential first trio for useful system functionality: **MCP + TRON + MAXIS**. Basic RELAY functionality must still exist early to deliver terminal messages.
 
 ### 4.1 Agent personality
 
 Personality should change how a program communicates, not grant it extra access. For example:
 
-- SENTINEL: precise, vigilant, concise.
+- TRON: precise, vigilant, concise.
 - MCP: calm, strategic, administrative.
 - JN: thorough and methodical.
 - MAXIS: curious, engineering-focused.
@@ -473,7 +477,7 @@ A durable SQLite-backed queue should retain requests over restarts, use transact
 
 | Tier | Meaning | Example |
 |---|---|---|
-| 0 — Observer | Read permitted data | SENTINEL reads security status |
+| 0 — Observer | Read permitted data | TRON reads security status |
 | 1 — Reporter | Analyze and notify | VOLT reports high sustained CPU use |
 | 2 — Operator | Perform narrowly preapproved, bounded actions | MAXIS executes a fixed test command in an allowed repository |
 | 3 — Approval required | Propose higher-risk changes; execute only after user authorization | JN proposes deletions or major file moves |
@@ -780,7 +784,7 @@ The communication hub belongs to the always-running Grid host, **not** to the vi
 
 ### 10.1 Morning startup briefing
 
-> **MCP:** “Welcome back, User. The Grid has resumed. All six system programs are responding. Sentinel has no outstanding alerts from its last completed check. Forge has three development tasks pending. Would you like a full briefing?”
+> **MCP:** “Welcome back, User. The Grid has resumed. All six system programs are responding. Tron has no outstanding alerts from its last completed check. Forge has three development tasks pending. Would you like a full briefing?”
 
 The briefing must distinguish the time of the latest check from actual live scan results.
 
@@ -800,7 +804,7 @@ That reply must derive from the simulation's current reactor state, not be a pla
 
 ### 10.4 Incoming security transmission
 
-> **SENTINEL:** “User, a new security alert has appeared. I have prepared the details. No remediation has been attempted.”
+> **TRON:** “User, a new security alert has appeared. I have prepared the details. No remediation has been attempted.”
 
 The incident can appear in the 3D security district as an in-world event and in the real task/audit interface as a verifiable host alert.
 
@@ -859,7 +863,7 @@ Proposed MVP scale:
 
 ### 11.5 Agent task release
 
-- MCP coordinator, SENTINEL security status, MAXIS test/build capabilities.
+- MCP coordinator, TRON security status, MAXIS test/build capabilities.
 - Durable task queue, approvals and execution audit.
 - RELAY delivery and text/voice notifications.
 - Add JN and VOLT capabilities next.
@@ -942,7 +946,7 @@ Start with the **headless C# simulation and durable communication kernel**, not 
 3. Add deterministic fake host telemetry and event logging.
 4. Add persistent CLI conversations (`grid status`, `grid programs list`, `grid connect`, `grid talk`, `grid events`).
 5. Introduce MCP as a coordinator and a task broker that initially exposes only safe mock capabilities.
-6. Implement SENTINEL's read-only status inspection and MAXIS's narrowly configured test runner.
+6. Implement TRON's read-only status inspection and MAXIS's narrowly configured test runner.
 7. Add push-to-talk, speech recognition, and TTS when terminal communications are stable.
 8. Add the Godot renderer last, observing the same world state and conversations.
 

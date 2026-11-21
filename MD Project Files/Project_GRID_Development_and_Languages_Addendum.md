@@ -136,7 +136,7 @@ Principles:
 | 2 | The Core | SQLite persistence, snapshots, event log, pause/recovery, clock | 2–3 weeks |
 | 3 | First Programs | Autonomous citizens, needs, movement, jobs, utility decisions | 2–4 weeks |
 | 4 | Communications | Terminal messaging, persistence, microphone/STT, TTS | 2–4 weeks |
-| 5 | System Agents | MCP coordination; MAXIS, SENTINEL, JN; VOLT/RELAY functions | 3–5 weeks |
+| 5 | System Agents | MCP coordination; MAXIS, TRON, JN; VOLT/RELAY functions | 3–5 weeks |
 | 6 | Intelligence | One shared local model, grounded dialogue, memory retrieval, safe action proposals | 2–4 weeks |
 | 7 | The City | Godot 3D scene, districts, agent visualization, interaction | 4–8 weeks |
 | 8 | Integration | Startup, throttling, quotas, backups, notifications, robustness | 3–5 weeks |
@@ -147,7 +147,7 @@ Principles:
 
 - **GRID Genesis (`v0.1.0-genesis`):** console simulation with five districts and twenty uniquely identified citizens; start/pause/tick/status; passing tests.
 - **GRID Foundation:** persistent world, autonomous activity, conversational terminal, and optional voice.
-- **GRID Operator:** authorized local task execution coordinated by MCP, including MAXIS builds/tests and SENTINEL/JN reports.
+- **GRID Operator:** authorized local task execution coordinated by MCP, including MAXIS builds/tests and TRON/JN reports.
 - **GRID City:** 3D observer connected to the existing authoritative simulation, not a parallel simulation.
 
 ## 3. Milestone 1: Genesis — detailed plan
@@ -246,7 +246,7 @@ The planned Master Control terminal also includes program-value editing. Add typ
 
 - **MCP:** assign work, coordinate programs, synthesize status and approval requests.
 - **MAXIS:** execute only approved build/test capabilities in approved local repositories.
-- **SENTINEL:** monitor permitted Windows security status, initially read-only.
+- **TRON:** monitor permitted Windows security status, initially read-only.
 - **JN:** monitor data usage and prepare cleanup or quota-expansion proposals.
 - **VOLT:** observe system resources and throttle the Grid's own workload.
 - **RELAY:** route messages, voice output, briefings, and notifications.

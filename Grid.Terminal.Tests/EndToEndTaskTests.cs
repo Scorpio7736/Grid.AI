@@ -128,7 +128,7 @@ public sealed class EndToEndTaskTests : IDisposable
     [Theory]
     [InlineData("MCP")]
     [InlineData("MAXIS")]
-    [InlineData("SENTINEL")]
+    [InlineData("TRON")]
     [InlineData("JN")]
     [InlineData("VOLT")]
     [InlineData("RELAY")]

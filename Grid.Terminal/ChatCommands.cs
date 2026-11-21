@@ -11,11 +11,12 @@ public sealed partial class ChatCommands
     private Func<string>? aiWarning;
     private Func<CancellationToken, Task>? save;
     private TerminalIdentitySession? identity;
+    private TimeProvider timeProvider = TimeProvider.System;
     private Recipient Actor => identity?.CurrentRecipient ?? engine.LocalOperator;
     private ChatCommands(GridSimulationEngine engine) => this.engine = engine;
-    public static ChatCommands Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession? identity = null, ILocalInference? inference = null, Func<CancellationToken, Task>? save = null, IScreenContextProvider? screenProvider = null, Func<string>? aiWarning = null)
+    public static ChatCommands Register(CommandDispatcher commands, GridSimulationEngine engine, TerminalIdentitySession? identity = null, ILocalInference? inference = null, Func<CancellationToken, Task>? save = null, IScreenContextProvider? screenProvider = null, Func<string>? aiWarning = null, TimeProvider? timeProvider = null)
     {
-        var chat = new ChatCommands(engine) { identity = identity, inference = inference, save = save, dispatcher = commands, aiWarning = aiWarning };
+        var chat = new ChatCommands(engine) { identity = identity, inference = inference, save = save, dispatcher = commands, aiWarning = aiWarning, timeProvider = timeProvider ?? TimeProvider.System };
         chat.screens = screenProvider ?? new WindowsScreenContextProvider();
         commands.Register(new("screen", "screen <options|monitoring|ask|status|stop> ...", "One-shot offline screen OCR assistance; never background recording or actions.", chat.Screen) { Capability = "world.admin" });
         if (identity?.IsAttachment != true)
@@ -26,6 +27,7 @@ public sealed partial class ChatCommands
                 return new("Typewriter " + (commands.Typewriter ? "on." : "off."));
             }) { Capability = "chat" });
         commands.Register(new("memory", "memory <list|scope|save|save-summary|save-outcome|grant|revoke|expiry|correct|forget> ...", "Review durable agent/project memory, provenance, explicit retention and delegated summary grants. User-confirmed context is not verified host evidence.", chat.Memory) { Capability = "chat" });
+        commands.Register(new("permissions", "permissions [list] | permissions revoke <id>", "Review saved Normal/Medium/High access grants and revoke them. Access grants do not approve exact changes or tasks.", chat.Permissions) { Capability = "chat" });
         commands.Register(new("assist", "assist <advice|analyze|propose|submit|discard> ...", "Scoped AI guidance and reviewed MCP task drafts; never automatic execution.", args => chat.Assist(args)) { Capability = "chat" });
         commands.ConversationConnected = () => chat.active is not null;
         commands.ConversationParticipant = name => chat.active is {} id && chat.Find(id).IsMeeting && chat.Find(id).Participants.Any(p => p.Kind == ParticipantKind.Program && p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
@@ -101,6 +103,10 @@ public sealed partial class ChatCommands
         if (identity is not null && Find(id).IsMeeting && GridSimulationEngine.MeetingRoundRequested(text)) return SendMeetingRound(id, text, origin);
         if (inference is null || identity is null) return Response(engine.Talk(id, Actor, text, origin: origin));
         var turn = engine.PrepareGroundedTurn(id, Actor, text, origin);
+        var responder = engine.ResolveProgram(turn.ResponderId.ToString()).Name;
+        var capabilityPrompt = identity.IsMaster && !Find(id).IsMeeting && responder.Equals("MCP", StringComparison.OrdinalIgnoreCase)
+            ? "\nROUTE: infer outcome→route→access. Current host facts use a matching PATH. Access writes a natural permission question; Conversation answers naturally. Collections need no member. Never expose IDs. PATH: " + HostObservationCatalog.CompactPrompt
+            : "";
         var reference = identity.Reference;
         var consumed = 0;
         bool Current() => engine.IsMemoryCurrent(turn) && engine.IsRunning && engine.ActivityGeneration == turn.ActivityGeneration && identity.IsAuthenticated && identity.Reference == reference && active == id;
@@ -112,9 +118,12 @@ public sealed partial class ChatCommands
             try
             {
                 using var authorization = AuthorizeInference(id, turn.ResponderId, "ai.chat", Current);
+                var useAccessRouter = capabilityPrompt.Length > 0;
                 var pending = turn.Prompt.Length == 0
                     ? Task.FromResult(new InferenceReply(false, "", "Input exceeds AI context budget."))
-                    : inference.ForAgent(engine.ResolveProgram(turn.ResponderId.ToString()).Name).GenerateAsync(turn.Prompt, stop.Token);
+                    : useAccessRouter
+                        ? inference.ForAgent(responder).GenerateStructuredAsync(turn.Prompt + capabilityPrompt, HostObservationCatalog.RouteSchema, stop.Token)
+                        : inference.ForAgent(responder).GenerateAsync(turn.Prompt, stop.Token);
                 while (!pending.IsCompleted)
                 {
                     await Task.WhenAny(pending, Task.Delay(50, stop.Token));
@@ -122,14 +131,36 @@ public sealed partial class ChatCommands
                 }
                 var reply = await pending;
                 if (token.IsCancellationRequested || !Current() || !authorization.IsCurrent) return new("Conversation cancelled or session revoked; nothing stored.");
+                var routed = HostObservationCatalog.TryParseRoute(reply.Text, out var proposed,
+                    out var proposedCapability, out var proposedArgument, out var proposedMessage);
+                var presentedReply = routed ? reply with { Text = proposedMessage } : reply;
                 var result = identity.Execute("chat", () =>
                 {
                     if (!Current()) return new("Conversation stopped or session revoked; nothing stored.");
-                    var result = Response(engine.CompleteGroundedTurn(turn, reply, token));
+                    var result = Response(engine.CompleteGroundedTurn(turn, presentedReply, token));
+                    if (proposed)
+                    {
+                        var scope = Pending("intent", text);
+                        var intent = new Grid.Agent.ConversationIntent(1, Grid.Agent.ConversationIntentKind.ObserveHost,
+                            proposedCapability, proposedArgument, proposedMessage);
+                        pendingIntent = new(scope, intent);
+                        talkDetails = (scope, "Host observation requested: " + proposedCapability + " / " + proposedArgument);
+                    }
                     var fallbackNotice = reply.ResponseRejected ? "AI response rejected: " + reply.Reason + " Using a basic reply.\n" : "Grid.AI local AI is unavailable; using a basic reply (limited mode).\nReason: " + AiReadinessNotice.Summary(reply.Reason) + "\nReturn to the main terminal and run ai status for full details.\n";
                     return reply.Available && CommunicationState.ValidContent(reply.Text) ? result : result with
                     { Text = fallbackNotice + result.Text, Presentation = new[] { new ConversationSpan(0,fallbackNotice.Length,ConversationTone.Error) }.Concat(ConversationPresentation.Shift(result.Presentation,fallbackNotice.Length)).ToArray(), AnimateFrom = result.AnimateFrom is { } offset ? offset + fallbackNotice.Length : null };
                 }, "grounded-reply");
+                if (proposed)
+                {
+                    var access = HostObservationCatalog.Require(proposedCapability, proposedArgument);
+                    if (engine.HasAccessPermission(identity.Reference, access.Id, access.Risk) &&
+                        IntentControl("review this request", out var prepared))
+                    {
+                        var completed = prepared.BrokerOperation is { } operation ? await operation(token) : prepared;
+                        if (save is not null) await save(token);
+                        return completed;
+                    }
+                }
                 if (save is not null) await save(token);
                 return result;
             }

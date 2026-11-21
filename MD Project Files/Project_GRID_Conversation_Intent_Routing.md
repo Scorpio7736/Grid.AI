@@ -1,5 +1,9 @@
 # Conversation-first intent and action routing — 6.32
 
+## 2026-11-21 dynamic access follow-up
+
+Current-host requests now use model-selected broad access paths rather than question-specific command/response branches. MCP first determines the outcome and route, then requests a Normal/Medium/High permission only if that route needs access. The permission question and evidence summary are model-generated; GRID validates the exact path and executes a trusted provider. Once, Session and Always grants are durable under schema v28, with list/revoke controls. The first provider is broad read-only system information and passed a real date-to-Bluetooth replay. See [dynamic access and remembered permissions](Project_GRID_Dynamic_Access_Permissions.md). The original 6.32 behavior below remains the historical foundation.
+
 Implemented 2026-11-14. This extends the existing reviewed file/task routes; model output never grants authority. See [local coding integration](Project_GRID_Local_Coding_Integration.md) for repository repair, file recovery and original-host execution.
 
 ## Implemented behavior

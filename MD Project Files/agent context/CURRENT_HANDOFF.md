@@ -1,5 +1,13 @@
 # Grid.AI current handoff
 
+## 2026-11-21 — conversation window closure
+
+Closing a dedicated conversation or meeting window now ends its saved host conversation, retains the transcript and clears pending per-window authorization/intent state. Host cleanup covers `/close`, title-bar/process close and pipe loss; a new `connect` starts cleanly and ended conversations cannot resume. Ordinary attached terminals/data views still only detach. All 36 window cases and all 1,623 solution tests passed. See [terminal conversations](../Project_GRID_Terminal_Conversations.md).
+
+## 2026-11-21 — dynamic access permissions
+
+MCP host requests now follow outcome → route → access → permission → execution → conversational result. Natural permission questions/results are model-generated; the host validates broad access paths and typed operations. `host.system.read` supplies date/Bluetooth evidence. High-risk `host.system.write` supports bounded relative, exact-date and current-month-day Windows clock changes with GRID consent and UAC. Extra natural whitespace is normalized; refusals and missing-information questions cannot create permission state. Schema v28 stores Normal/Medium/High Once/Session/Always grants. Exact file/task approval remains separate. Real Qwen read and non-executing natural calendar-date planning acceptance passed; actual clock mutation remains manual. All 1,622 solution tests passed. See [dynamic access permissions](../Project_GRID_Dynamic_Access_Permissions.md).
+
 ## Latest verified batch — 2026-11-19
 
 Completed 6.35 [local declarative skills](../Project_GRID_Local_Skills.md) on the existing 6.34/onboarding foundation. V2 manifests declare typed dependencies and eligible agent roles; Master Control owns exact-byte review, lifecycle, bounded configuration and exact-revision grants. Registered agents can manually run only granted fixed read-only actions while GRID is running. Direct networking, model prompts, scripts/processes, general files and arbitrary arguments remain unavailable.

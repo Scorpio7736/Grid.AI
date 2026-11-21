@@ -11,7 +11,7 @@ public static class ModelReleaseVerification
         Directory.CreateDirectory(root);
         try
         {
-            File.WriteAllText(Path.Combine(root, "world.db"), "synthetic world sentinel");
+            File.WriteAllText(Path.Combine(root, "world.db"), "synthetic world canary");
             var policy = new ReleasePolicy("synthetic-suite-v1", 0.9, 1000, 1000000, 1.2, 1.2, 0.02, 30);
             var first = Create(root, "v1", policy);
             var second = Create(root, "v2", policy);
@@ -32,7 +32,7 @@ public static class ModelReleaseVerification
                 throw new InvalidDataException("Rejected candidate changed the active release.");
             if (await ReleaseCommands.RunAsync(["--release-rollback", root, "v2"]) != 0 || catalog.Read()!.Active != "v1")
                 throw new InvalidDataException("Rollback did not restore the baseline.");
-            if (File.ReadAllText(Path.Combine(root, "world.db")) != "synthetic world sentinel")
+            if (File.ReadAllText(Path.Combine(root, "world.db")) != "synthetic world canary")
                 throw new InvalidDataException("Synthetic world changed.");
             Console.WriteLine("6.30 synthetic release lifecycle passed: promote, compare/reject, retained evidence, rollback and world preservation.");
             return 0;

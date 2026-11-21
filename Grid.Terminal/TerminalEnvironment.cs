@@ -3,6 +3,11 @@ namespace Grid.Terminal;
 public static class TerminalEnvironment
 {
     public const string VariableName = "GridAI";
+    public const string LauncherFileName = "GRID-AI.cmd";
+    private static readonly string[] ObsoleteLauncherFileNames = ["Grid.AI.cmd", "GridAI.cmd", "Grid7736.cmd"];
+    private const string LauncherMarker = "@rem Grid.AI managed launcher";
+    private static readonly string[] ManagedLauncherMarkers =
+        [LauncherMarker, "@rem GRID.AI managed launcher", "@rem GRID7736 managed launcher"];
 
     public static string? Ensure()
     {
@@ -22,13 +27,13 @@ public static class TerminalEnvironment
             if (string.IsNullOrWhiteSpace(target) || !File.Exists(target)) return message;
             var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GRID", "bin");
             Directory.CreateDirectory(folder);
-            var launcher = Path.Combine(folder, "GridAI.cmd");
-            const string marker = "@rem Grid.AI managed launcher";
-            if (File.Exists(launcher) && !File.ReadAllText(launcher).StartsWith(marker + "\r\n", StringComparison.Ordinal))
+            var launcher = Path.Combine(folder, LauncherFileName);
+            if (File.Exists(launcher) && !IsManagedLauncher(launcher))
                 throw new IOException($"Existing unmanaged launcher will not be overwritten: {launcher}");
             var script = LauncherScript(target);
             var changed = !File.Exists(launcher) || File.ReadAllText(launcher) != script;
             if (changed) File.WriteAllText(launcher, script);
+            changed |= RemoveObsoleteManagedLaunchers(folder, launcher);
             var userPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.User);
             var updatedPath = WithLauncherPath(userPath, folder);
             if (updatedPath != userPath)
@@ -38,7 +43,7 @@ public static class TerminalEnvironment
             }
             Environment.SetEnvironmentVariable("Path", WithLauncherPath(Environment.GetEnvironmentVariable("Path"), folder));
             return changed ? (message is null ? "" : message + "\n") +
-                "Installed GridAI command on your user PATH. Restart your terminal app to use: GridAI" : message;
+                "Installed GRID-AI command on your user PATH. Restart your terminal app to use: GRID-AI" : message;
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException or System.ComponentModel.Win32Exception)
         {
@@ -50,8 +55,30 @@ public static class TerminalEnvironment
     {
         if (!Path.IsPathFullyQualified(executable) || executable.IndexOfAny(['"', '\r', '\n']) >= 0)
             throw new ArgumentException("Launcher requires an absolute executable path.");
-        return "@rem Grid.AI managed launcher\r\n@echo off\r\nsetlocal DisableDelayedExpansion\r\n\"" +
+        return LauncherMarker + "\r\n@echo off\r\nsetlocal DisableDelayedExpansion\r\n\"" +
             executable.Replace("%", "%%") + "\" %*\r\nexit /b %errorlevel%\r\n";
+    }
+
+    public static bool IsManagedLauncher(string path)
+    {
+        if (!File.Exists(path)) return false;
+        var contents = File.ReadAllText(path);
+        return ManagedLauncherMarkers.Any(marker => contents.StartsWith(marker + "\r\n", StringComparison.Ordinal));
+    }
+
+    public static bool RemoveObsoleteManagedLaunchers(string folder, string currentLauncher)
+    {
+        var changed = false;
+        foreach (var obsoleteName in ObsoleteLauncherFileNames)
+        {
+            var obsolete = Path.Combine(folder, obsoleteName);
+            if (!obsolete.Equals(currentLauncher, StringComparison.OrdinalIgnoreCase) && IsManagedLauncher(obsolete))
+            {
+                File.Delete(obsolete);
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     public static string WithLauncherPath(string? path, string folder) =>

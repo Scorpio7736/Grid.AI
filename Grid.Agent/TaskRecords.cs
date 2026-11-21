@@ -1,6 +1,6 @@
 namespace Grid.Simulation.Tasks;
 
-public enum AgentRole { MCP, MAXIS, SENTINEL, JN, VOLT, RELAY }
+public enum AgentRole { MCP, MAXIS, TRON, JN, VOLT, RELAY }
 public enum TaskStatus { AwaitingApproval, Queued, Running, Completed, Failed, Cancelled, TimedOut, Interrupted, Denied }
 public sealed record SystemAgent(Guid Id, AgentRole Role);
 public sealed record TaskAudit(DateTimeOffset AtUtc, string Action, Guid? OperatorId, Guid? ActiveAgentId, string Detail);

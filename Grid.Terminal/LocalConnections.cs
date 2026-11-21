@@ -156,7 +156,7 @@ public sealed class LocalConnections
     }
     private static byte[] Bounded(string path, int max) { using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read); if (file.Length > max) throw new InvalidDataException("Connection data exceeds its limit."); var bytes = new byte[(int)file.Length]; file.ReadExactly(bytes); return bytes; }
     private static bool Alias(string? value) => value is not null && Regex.IsMatch(value, "^[a-z][a-z0-9-]{0,47}$", RegexOptions.CultureInvariant);
-    private static bool Agent(string? role) => role is "MCP" or "MAXIS" or "SENTINEL" or "JN" or "VOLT" or "RELAY";
+    private static bool Agent(string? role) => role is "MCP" or "MAXIS" or "TRON" or "JN" or "VOLT" or "RELAY";
     private static bool Title(string? value) => !string.IsNullOrWhiteSpace(value) && value.Length <= 200 && !value.Any(char.IsControl);
     private static string Safe(string value) => new(value.Select(character => char.IsControl(character) ? ' ' : character).ToArray());
     private static LocalConnectionState Receipt(LocalConnectionState state, string id, string action, string outcome) => state with

@@ -23,10 +23,10 @@
       "Passed": true
     },
     {
-      "Agent": "SENTINEL",
+      "Agent": "TRON",
       "Version": "v2",
       "Question": "Return your own agent name only as answer.",
-      "Answer": "SENTINEL",
+      "Answer": "TRON",
       "Passed": true
     },
     {

@@ -51,7 +51,7 @@ public sealed class AssistanceTests
         Assert.Equal(2, backend.Calls);
         Assert.DoesNotContain("INDIGO captured source", backend.Prompt);
     }
-    private const string Proposal="{\"steps\":[{\"agent\":\"VOLT\",\"capability\":\"volt.status\",\"argument\":\"current\"},{\"agent\":\"SENTINEL\",\"capability\":\"sentinel.firewall\",\"argument\":\"status\"}]}";
+    private const string Proposal="{\"steps\":[{\"agent\":\"VOLT\",\"capability\":\"volt.status\",\"argument\":\"current\"},{\"agent\":\"TRON\",\"capability\":\"tron.firewall\",\"argument\":\"status\"}]}";
     private sealed class Model : ILocalInference
     {
         public string Prompt="", Reply="Check the captured deployment settings.";
@@ -174,7 +174,7 @@ public sealed class AssistanceTests
     [Fact]
     public async Task UnknownWorkspaceFailsWholeDraftEvenAfterValidStep()
     {
-        var f=new Fixture(); f.Ai.Reply=Proposal.Replace("{\"agent\":\"SENTINEL\",\"capability\":\"sentinel.firewall\",\"argument\":\"status\"}","{\"agent\":\"MAXIS\",\"capability\":\"maxis.build\",\"argument\":\"missing\"}");
+        var f=new Fixture(); f.Ai.Reply=Proposal.Replace("{\"agent\":\"TRON\",\"capability\":\"tron.firewall\",\"argument\":\"status\"}","{\"agent\":\"MAXIS\",\"capability\":\"maxis.build\",\"argument\":\"missing\"}");
         Assert.Contains("refused",(await f.Run("assist propose Check resources and build missing.")).Text); Assert.Empty(f.Engine.GetSnapshot().Tasks.Records);
     }
     [Theory]

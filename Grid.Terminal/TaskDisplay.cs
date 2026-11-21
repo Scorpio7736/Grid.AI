@@ -41,7 +41,7 @@ internal static class TaskDisplay
         }
         if(t.Capability=="volt.throttle") scope+="\nGRID PACING: changes only the automatic simulation wait. Does not change Windows allocations, manual steps or simulated tick length.\n";
         return $"TASK {reference} - {Role(state,t)}\n" + new string('-', 54) +
-            $"\nArchived:    {t.Archived}\nState:       {t.Status}\nCapability:  {t.Capability}\nArgument:    {t.Argument}\nAttempts:    {t.Attempts} / 3\nRequest key: {t.RequestKey}\nFull ID:     {t.Id}\n\nRESULT\n{(SentinelPolicy.IsReal(t.Capability) ? t.Result?.Replace(" | ", "\n") : t.Result) ?? "No result recorded; no completion claimed."}\n\n" +
+            $"\nArchived:    {t.Archived}\nState:       {t.Status}\nCapability:  {t.Capability}\nArgument:    {t.Argument}\nAttempts:    {t.Attempts} / 3\nRequest key: {t.RequestKey}\nFull ID:     {t.Id}\n\nRESULT\n{(TronPolicy.IsReal(t.Capability) ? t.Result?.Replace(" | ", "\n") : t.Result) ?? "No result recorded; no completion claimed."}\n\n" +
             scope + Next(t, reference) + $"\n\nIDENTITY & AUDIT\nOperator: {t.OperatorId}\nSubmitted as: {t.SubmittedAsAgent?.ToString() ?? "Master Control"}\nApproved by: {t.ApprovedBy?.ToString() ?? "Not approved"}\n" +
             string.Join("\n\n", t.Audit.Select(a => $"{a.AtUtc:O}  {a.Action}\n  {a.Detail}\n  Operator: {a.OperatorId}\n  Agent: {a.ActiveAgentId}"));
     }
@@ -63,7 +63,7 @@ internal static class TaskDisplay
             var children = p.TaskIds.Select(id => state.Records.Single(t => t.Id == id)).ToArray();
             return $"PLAN {Ref(p.Id,state.Plans.Select(x=>x.Id))} | {p.RequestKey}\n" + new string('=',54) +
                 $"\nFull plan ID: {p.Id}\nRequest: {p.Request}\nProgress: {Counts(p)}\n\n" + Tasks(state,children) + "\n\n" +
-                string.Join("\n\n",children.Select(t => { var r=Ref(t.Id,state.Records.Select(x=>x.Id)); return $"TASK {r} - {Role(state,t)}\nResult: {(SentinelPolicy.IsReal(t.Capability) ? t.Result?.Replace(" | ", "\n") : t.Result) ?? "No result recorded; no completion claimed."}\n\nInspect this task:\ntasks inspect {r}\n\n" + Next(t,r); }));
+                string.Join("\n\n",children.Select(t => { var r=Ref(t.Id,state.Records.Select(x=>x.Id)); return $"TASK {r} - {Role(state,t)}\nResult: {(TronPolicy.IsReal(t.Capability) ? t.Result?.Replace(" | ", "\n") : t.Result) ?? "No result recorded; no completion claimed."}\n\nInspect this task:\ntasks inspect {r}\n\n" + Next(t,r); }));
         }));
     }
 }

@@ -7,7 +7,7 @@
 The new `Grid.Agent` project owns `AgentPersonas`, immutable persona definitions, version selection and system-instruction assembly. It stores no user conversation, private context, agent memory, tools or permissions. `Grid.Communication` adapts existing role routing and token budgets to this catalog. All six agents continue sharing the same pinned model weights.
 
 - **v1:** the earlier role/tone prompt, retained for compatibility and rollback.
-- **v2 (default):** the same direct, serious/helpful style, with explicit identity and instruction hierarchy. MCP is the Master Control Program and digital helper; MAXIS is the software engineer; JN the file archivist; SENTINEL the security analyst; VOLT the resource analyst; RELAY the communications specialist.
+- **v2 (default):** the same direct, serious/helpful style, with explicit identity and instruction hierarchy. MCP is the Master Control Program and digital helper; MAXIS is the software engineer; JN the file archivist; TRON the security analyst; VOLT the resource analyst; RELAY the communications specialist.
 
 The hierarchy distinguishes trusted host instructions from user requests and untrusted documents, memories, transcripts and quoted content. It reinforces that only the host authorizes and executes operations, and that an execution claim requires a supplied verified receipt. These model instructions do not create a security boundary or replace deterministic permission checks. Model obedience and factual correctness cannot be guaranteed.
 

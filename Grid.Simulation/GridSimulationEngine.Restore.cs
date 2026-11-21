@@ -7,6 +7,7 @@ public sealed partial class GridSimulationEngine
     /// <summary>Restores durable state into a new, paused session. Wall time and edit authority are never replayed.</summary>
     public static GridSimulationEngine Restore(GridSimulationSnapshot snapshot, TimeProvider? timeProvider = null, Grid.Simulation.Editing.IProgramEditAuthorizer? editAuthorizer = null)
     {
+        snapshot = snapshot with { Tasks = Tasks.TaskState.NormalizeAgentBrand(snapshot.Tasks) };
         ValidateSnapshot(snapshot);
         var world = new GridWorld(snapshot.WorldId, snapshot.City);
         foreach (var saved in snapshot.Districts)
@@ -40,7 +41,7 @@ public sealed partial class GridSimulationEngine
         engine.communications = Grid.Communication.CommunicationState.Copy(snapshot.Communications);
         engine.social = Social.SocialState.Copy(snapshot.Social);
         engine.clock.Restore(snapshot.TickCount);
-        engine.RenameLegacySystemAgents();
+        engine.RenameLegacySystemAgents(snapshot.Tasks);
         engine.RestoreTasks(snapshot.Tasks);
         return engine;
     }

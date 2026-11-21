@@ -1,5 +1,7 @@
 # Project GRID — Master Overview
 
+**Agent identity update — 2026-11-21.** The security analyst is named **TRON**. Current architecture, terminal commands, meetings, personas, model profiles and documentation use TRON and the `tron.*` capability namespace. Existing saved security-agent state migrates by stable role/ID before validation. [TRON implementation](Project_GRID_TRON_Security_Implementation.md).
+
 **Roadmap rebased — 2026-11-17.** The next active phase is cross-platform compatibility through `Grid.Platform`, preserving Windows while adding Linux adapters and prioritizing a dedicated Android ARM64 host with native removable-folder access. The former City, Integration and optional GUI work is retained as backlog/future plans rather than deleted; Grid.Platform comes before new GUI work. [Cross-platform and Android architecture](Project_GRID_Cross_Platform_and_Android_Plan.md) and [master checklist](Project_GRID_Master_Development_Checklist.md#phase-7--cross-platform-compatibility-and-android-portability).
 
 **Planning update — 2026-11-04.** Planned architecture separates GRID-AI intelligence services, GRID-Agent identities/personas/memory/permissions/orchestration, and GRID7736 simulation/application operations. Sections 6.16–6.31 are required before Phase 7. The shared storage target is now 128 GB decimal for Flash and PC copies, with flash drives primary and installers/local PC copies supported. Specialist model choices await user research and evaluation. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
@@ -25,14 +27,14 @@ VOLT now reports existing host telemetry and supports approved normal/eco/auto p
 JN now inventories approved paths, reports possible duplicates, and prepares cleanup proposals without deleting source files. Defined GRID-managed storage is measured against an initial 20 GB decimal logical budget; MCP quota escalations require separate Master Control approval to change it. This is tracking/governance, not a hard write cap or disk reservation. Schema v18 preserves scope and quota history. **535 tests passed** (14 Core, 157 Simulation, 97 Persistence, 267 Terminal). See [JN implementation and acceptance test](Project_GRID_JN_Storage_Implementation.md) for limits, accounting roots, report retention and remaining planned automation. Next: **5.6 VOLT and RELAY**. Earlier milestone/schema/test statements below remain historical.
 
 
-## SENTINEL security — 5.4 completed (2026-10-21)
+## TRON security — 5.4 completed (2026-10-21)
 
-SENTINEL now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
+TRON now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [TRON implementation](Project_GRID_TRON_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
 
 
 ## MAXIS development — 5.3 completed (2026-10-21)
 
-MAXIS now supports registered-workspace inspection, fixed .NET build/test execution, saved diagnostics and explicit replacement suggestions staged outside original source. Every task requires human approval; build/test executes trusted project code as the current Windows user (no OS/network sandbox). Schema v16 persists immutable, revocable workspace registrations. Other specialists remain demonstrations. **505 tests passed** (14 Core, 157 Simulation, 97 Persistence, 237 Terminal). See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for commands, offline prerequisites, artifact retention and limits. Next: **5.4 SENTINEL**. Earlier milestone/schema/test statements below remain historical.
+MAXIS now supports registered-workspace inspection, fixed .NET build/test execution, saved diagnostics and explicit replacement suggestions staged outside original source. Every task requires human approval; build/test executes trusted project code as the current Windows user (no OS/network sandbox). Schema v16 persists immutable, revocable workspace registrations. Other specialists remain demonstrations. **505 tests passed** (14 Core, 157 Simulation, 97 Persistence, 237 Terminal). See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for commands, offline prerequisites, artifact retention and limits. Next: **5.4 TRON**. Earlier milestone/schema/test statements below remain historical.
 
 
 ## MCP administration — 5.2 completed (2026-10-21)
@@ -42,7 +44,7 @@ Explicit `mcp request` clauses now create atomic saved specialist task plans. MC
 
 ## Agent/task infrastructure - 5.1 completed (2026-10-21)
 
-Explicit `agents initialize` registers MCP, MAXIS, SENTINEL, JN, VOLT and RELAY by stable ID. Schema v14 persists a bounded task queue, immutable proposals, one-attempt human approvals, results and audit. `tasks propose/inspect/approve/cancel/retry/run` enforce role-specific allowlists and live session authority at the service boundary. The broker saves a running record before invocation, prevents concurrent dispatch, supports cancellation/timeouts and requires fresh approval for retries/restart recovery. Agent sessions cannot self-approve or borrow capabilities. **Only labeled demonstration adapters are enabled; no real PC task, shell execution, natural-language delegation or autonomous producer is implemented.** Chat/voice messages remain conversation data.
+Explicit `agents initialize` registers MCP, MAXIS, TRON, JN, VOLT and RELAY by stable ID. Schema v14 persists a bounded task queue, immutable proposals, one-attempt human approvals, results and audit. `tasks propose/inspect/approve/cancel/retry/run` enforce role-specific allowlists and live session authority at the service boundary. The broker saves a running record before invocation, prevents concurrent dispatch, supports cancellation/timeouts and requires fresh approval for retries/restart recovery. Agent sessions cannot self-approve or borrow capabilities. **Only labeled demonstration adapters are enabled; no real PC task, shell execution, natural-language delegation or autonomous producer is implemented.** Chat/voice messages remain conversation data.
 
 **472 tests passed**, including 15 new task integration cases covering authorization, persistence barriers, cancellation/retry, deduplication, SQL rollback and restart/recovery. Existing v13 worlds migrate without regenerating the city or automatically creating agents. Next planned module: 5.2 MCP coordination. See [task broker implementation](Project_GRID_Task_Broker_Implementation.md) for commands, bounds and limits. Earlier milestone/schema/test counts below remain historical.
 
@@ -234,7 +236,7 @@ The initial named agents are:
 | Agent | Responsibility |
 |---|---|
 | **MCP** | Administration, task coordination, briefings, permission requests |
-| **SENTINEL** | Read-only security monitoring, alerts, incident reporting |
+| **TRON** | Read-only security monitoring, alerts, incident reporting |
 | **MAXIS** | Approved software builds, unit tests, repository diagnostics |
 | **JN** | GRID storage management, approved file inventories, cleanup and expansion proposals |
 | **VOLT** | PC resource monitoring and GRID performance throttling |
@@ -307,7 +309,7 @@ The User should be able to treat GRID as a **local personal assistant and coordi
 - **MCP:** clarifies objectives when necessary, routes tasks to authorized specialists, tracks progress, merges outputs and obtains approvals; it does not inherit specialist permissions.
 - **MAXIS:** supports programming tasks such as reviewing code, explaining systems, drafting changes, running approved builds/tests and applying reviewed patches to authorized repositories.
 - **JN:** organizes user-provided material, inventories approved folders, summarizes documents, tracks project context and proposes reversible file changes.
-- **SENTINEL:** advises on security and reports approved security findings; initially read-only for host security.
+- **TRON:** advises on security and reports approved security findings; initially read-only for host security.
 - **VOLT:** provides host resource insights and manages GRID's own resource usage, not unrestricted system optimization.
 - **Other specialists or civilian programs:** may participate in fictional or advisory workflows only according to defined capabilities; in-world citizenship alone confers no host privileges.
 
@@ -339,7 +341,7 @@ The User should be able to treat GRID as a **local personal assistant and coordi
 2. **Approved code edits:** “MAXIS, implement the accepted fix and test it.” GRID previews the target changes, requests necessary approval, applies the patch in the approved repository and returns a diff and actual test output.
 3. **Document assistance:** “JN, use these uploaded documents to summarize the project and identify missing requirements.” The response cites or identifies source files and separates conclusions from speculation.
 4. **Planning:** “MCP, use this project context to break my goal into tasks and ask the appropriate agents to help.” MCP creates a reviewable task plan and delegates only allowed work.
-5. **Advisory-only:** “SENTINEL, look at this security log and explain the concerns; do not modify anything.” SENTINEL reports findings and possible next steps without host changes.
+5. **Advisory-only:** “TRON, look at this security log and explain the concerns; do not modify anything.” TRON reports findings and possible next steps without host changes.
 
 ### Acceptance criteria (future capability)
 
@@ -431,7 +433,7 @@ All inhabitants should be **human or human-adjacent**: recognizable, expressive 
 
 **Officers and major agents:** The approved uniform is a tailored light/medium-gray high-collar jacket or tunic, charcoal/black side panels, broad black belt with simple rectangular buckle, gray trousers tucked into polished tall black boots, and narrow ice-blue or cool-white seams. No hats, ribbon bars, medals, pens, or decorative chest badges. Command variants may use longer formal coats; specialist variants remain distinct while sharing consistent tailoring.
 
-Role lighting may vary subtly: MCP (pale gold/white), SENTINEL (blue), MAXIS (amber), JN (teal), VOLT (warm yellow), and RELAY (violet/cyan). Rank is not communicated by color alone.
+Role lighting may vary subtly: MCP (pale gold/white), TRON (blue), MAXIS (amber), JN (teal), VOLT (warm yellow), and RELAY (violet/cyan). Rank is not communicated by color alone.
 
 ## 11. Software architecture and programming languages
 
@@ -451,7 +453,7 @@ Build the engine and validate it before investing heavily in visualization:
 | **2. The Core** | SQLite state, snapshots, events, shutdown and restart recovery |
 | **3. First Programs** | Autonomous jobs, needs, movement, utility-based decisions |
 | **4. Communications** | Persistent terminal dialogue, microphone transcription, spoken replies, request-scoped context intake |
-| **5. System Agents** | MCP, MAXIS, SENTINEL, JN, VOLT, RELAY, user-authorized task execution, scoped file/repository operations |
+| **5. System Agents** | MCP, MAXIS, TRON, JN, VOLT, RELAY, user-authorized task execution, scoped file/repository operations |
 | **6. Intelligence** | Shared locally hosted AI, grounded conversations over supplied context, advice, drafts and validated action proposals |
 | **7. The City** | Godot streets, districts, citizens, inspection and interaction |
 | **8. Integration** | Startup, quotas, notifications, throttling, backups, crash recovery |

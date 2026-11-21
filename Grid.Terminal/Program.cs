@@ -50,6 +50,7 @@ if (args.SequenceEqual(new[] { "--verify-durable-memory" })) return await Durabl
 if (args.SequenceEqual(new[] { "--verify-file-operations" })) return await FileOperationsVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-conversation-recovery" })) return await ConversationRecoveryVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-chat-runtime" })) return await ChatRuntimeVerification.RunAsync();
+if (args.SequenceEqual(new[] { "--verify-host-observation" })) return await HostObservationVerification.RunAsync();
 if (args.SequenceEqual(new[] { "--verify-talk" })) return await IntelligenceVerification.RunAsync(unifiedTalk: true);
 if (args.SequenceEqual(new[] { "--verify-intelligence" })) return await IntelligenceVerification.RunAsync();
 

@@ -2,6 +2,16 @@
 
 # Project GRID — Master Development Checklist
 
+**Conversation-window close lifecycle completed — 2026-11-21.** Closing a dedicated conversation or meeting window now ends its host conversation and clears pending per-window authorization/intent state while retaining the transcript. `/close`, title-bar/window-process close and pipe loss share the same host-side cleanup. A new `connect` starts cleanly; ended conversations cannot resume. Ordinary attached terminals/data windows still only detach. All **1,623 solution tests passed**, including 36 attached-window cases. Earlier 4.2D notes describing conversation close as detach-only are superseded. [Current contract and evidence](Project_GRID_Terminal_Conversations.md).
+
+**Dynamic access paths and remembered permissions implemented — 2026-11-21.** MCP now follows outcome → route → required access → saved-permission check → permission question when needed → host execution → conversational result. Questions and answers are model-generated; GRID validates structured routes and registered access paths. Permissions are broad boundaries rather than fact-specific entries: `host.system.read` covers bounded read-only system information used for date/time and Bluetooth; `host.system.write` is High-risk and accepts only registered typed operations. Relative and calendar-date Windows clock changes require GRID permission plus Windows UAC. Extra conversational whitespace is normalized; refusal prose and missing-information questions cannot become permission state. Schema v28 saves Normal, Medium and High grants with Once, Session and Always duration. Saved access never substitutes for exact file/task review. Real bundled-Qwen read acceptance and non-executing natural calendar-date planning passed; actual clock mutation remains manual. All **1,622 solution tests passed**. [Design, boundaries and evidence](Project_GRID_Dynamic_Access_Permissions.md).
+
+**Permission-first conversational escalation added — 2026-11-21; superseded by dynamic access paths above.** The earlier clock-specific catalog entry was an intermediate implementation and is no longer current. Retain its test history only; current behavior uses broad, saved, risk-tiered access paths and model-written dialogue.
+
+**System-agent rename completed — 2026-11-21.** The security agent is now **TRON** everywhere: role enum, resident identity, persona/model profile, meeting and invitation routing, task/help syntax, implementation types, tests, documentation and capability prefix (`tron.defender`, `tron.firewall`, `tron.events`, `tron.demo`). Existing saved role-2 bindings, resident names, queued/history records, coordination text and persona selections are normalized before validation without replaying or approving work. The former implementation source/test/document filenames were renamed. Migration 17's original database-history label remains immutable compatibility data so existing worlds continue to open; a dedicated real-SQLite regression verifies it. A zero-reference repository scan and **1,613 passing solution tests** verify the rename and save compatibility. [TRON security implementation](Project_GRID_TRON_Security_Implementation.md).
+
+**Grid.AI logo replacement completed and refined — 2026-11-20.** Normal terminals now show a centered, framed 78-column mark in the Grid.AI cyan/bright-cyan/white/dark-gray palette instead of allowing the supplied 118-column art to crowd or clip against the viewport. The exact supplied artwork remains available, centered, for windows at least 140 columns wide. Native C# embedding, clean monochrome output, five-second reveal and compact narrow fallback remain. Fourteen focused visual/animation tests passed. [Implementation behavior](Project_GRID_Login_Animation_and_Colors.md).
+
 **Cross-platform roadmap rebased — 2026-11-17.** Phase 7 is now Grid.Platform cross-platform compatibility, with a dedicated Android ARM64 host/storage adapter as the first target and Linux following the shared contracts. All former Phase 7 City and Phase 8 Integration items are preserved under [Backlog and Future Plans](#backlog-and-future-plans). This is a planning change, not an implementation claim. [Authoritative platform plan](Project_GRID_Cross_Platform_and_Android_Plan.md).
 
 **Terminal-first roadmap placement correction — 2026-11-13; sequencing amended 2026-11-17.** Assistant capability milestones 6.32–6.38 remain at the end of Phase 6. Prioritize terminal-based action routing, local device integration, setup, skills, optional connections, scheduling and permission transparency. The former 6.39 GUI work is optional and has moved to Future Plan C so Grid.Platform is implemented first. Preserve 6.31's existing acceptance requirements; complete the required core milestones before beginning Phase 7.
@@ -159,7 +169,7 @@ See [Current implementation and verification](Project_GRID_Current_Implementatio
 | 2 | The Core | SQLite persistence, snapshots, events, recovery | 2–3 weeks |
 | 3 | First Programs | Needs, jobs, movement, utility-based autonomy | 2–4 weeks |
 | 4 | Communications | Messaging, context intake, conversation persistence, voice | 2–4 weeks |
-| 5 | System Agents | MCP, MAXIS, SENTINEL, JN, VOLT, RELAY | 3–5 weeks |
+| 5 | System Agents | MCP, MAXIS, TRON, JN, VOLT, RELAY | 3–5 weeks |
 | 6 | Intelligence | Shared local AI, grounded assistance, safe edit proposals | 2–4 weeks |
 | 7 | The City | Godot 3D streets, districts, inhabitants, interactions | 4–8 weeks |
 | 8 | Integration | Windows lifecycle, resource control, backups, release | 3–5 weeks |
@@ -520,13 +530,14 @@ See [NGE plan](Project_GRID_NGE_Nullify_Grid_Existence_Plan.md) for confirmation
 
 **Implemented and verified - 2026-10-20.**
 
-- [x] Ensure Windows user variable `Grid7736` points to an available terminal executable at startup
+- [x] Ensure Windows user variable `GridAI` points to an available terminal executable at startup
 - [x] Preserve valid existing installation paths; repair missing/empty/broken values without writing shell quotes
 - [x] Keep environment-update failures nonfatal and skip Windows-specific registration on other platforms
-- [x] Document PowerShell `& $env:Grid7736`, Command Prompt `"%Grid7736%"`, refresh behavior and development-build path limitations
+- [x] Install the bare `GRID-AI` command on the Windows user PATH and forward all launch arguments
+- [x] Document PowerShell `GRID-AI`, the optional `& $env:GridAI` path-variable form, refresh behavior and development-build path limitations
 - [x] Verify behavior with injected environment tests and an ephemeral Windows startup
 
-**Completion evidence:** 87 terminal tests passed. Actual user variable registered to the Release apphost and its existence verified. The smoke session did not open the user's saved world. Follow-up: managed `Grid7736.cmd` and deduplicated user PATH registration now support the bare `Grid7736` command. 89 terminal tests passed and a bare-command ephemeral launch succeeded.
+**Launch-command rename — 2026-11-21:** the managed launcher is now `%LOCALAPPDATA%\GRID\bin\GRID-AI.cmd`; type `GRID-AI` from PowerShell or Command Prompt. Startup removes obsolete `Grid.AI.cmd`, `GridAI.cmd` and `Grid7736.cmd` only when their managed marker proves Grid.AI created them. Unmanaged scripts are preserved. The `GridAI` path variable remains available for compatibility and transfer retargeting. The real user launcher was migrated without opening a saved world, fresh-shell resolution passed, and all **1,615 solution tests passed**.
 
 ---
 
@@ -922,7 +933,7 @@ Planned behavior follows GRID-REQ-005: ordinary application residents are transi
 **One-to-one implementation delivered - 2026-10-21.** Default connect/resume opens dedicated windows; meeting integration was subsequently completed in 6.2A on 2026-10-25.
 
 - [x] Open one-to-one agent conversations in a new dedicated window connected to the same authoritative GRID host
-- [x] Keep the original terminal available; closing a conversation window ends/detaches that view without shutting down GRID
+- [x] Keep the original terminal available; closing a conversation window ends that conversation and retains its transcript without shutting down GRID, while ordinary attached terminal/data windows only detach
 - [x] Preserve authenticated identity, participant scope, conversation history and logout/host-disconnection behavior across windows
 - [x] Render agent responses with a typewriter effect, with speaker names clearly visible
 - [x] Make the effect interruptible/skippable and offer instant text for accessibility, redirected output and reduced-motion preferences
@@ -1086,7 +1097,7 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 
 **Completion notes (2026-10-21):** Real MAXIS workspace registration/revocation, source inspection, fixed offline-ready .NET build/test, bounded diagnostic logs and per-attempt reports, explicit replacement suggestions, and separate-file working copies are implemented through the approved broker. Source apply and autonomous code generation remain planned; build/test executes trusted project-defined code without OS/network isolation. Schema v16 preserves registrations. **Verification: 505 tests passed**, including 17 new MAXIS cases and artifact-transfer coverage. See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md).
 
-## 5.4 SENTINEL — Security
+## 5.4 TRON — Security
 
 - [x] Read permitted Windows Defender status
 - [x] Read permitted firewall and security event information
@@ -1095,7 +1106,7 @@ Terminal/session authorization and edit auditing were implemented in 4.2A. The 5
 - [x] Keep initial security functions read-only
 - [x] Block sensitive remediation in this read-only release; require a separate scoped human-approval policy before enabling it
 
-**Completion notes (2026-10-21):** Approved read-only Defender, firewall and bounded Security-log observations implemented with source/UTC labels, factual warnings, explicit unknown/unavailable states and historical scan timestamps. No scans or sensitive remediation run. Fixed system PowerShell commands accept no user script/query input; 30-second deadline and bounded output. Schema v17 retains broker result/audit persistence. **Verification: 518 tests passed**, including 13 new SENTINEL cases and real local provider queries. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md).
+**Completion notes (2026-10-21):** Approved read-only Defender, firewall and bounded Security-log observations implemented with source/UTC labels, factual warnings, explicit unknown/unavailable states and historical scan timestamps. No scans or sensitive remediation run. Fixed system PowerShell commands accept no user script/query input; 30-second deadline and bounded output. Schema v17 retains broker result/audit persistence. **Verification: 518 tests passed**, including 13 new TRON cases and real local provider queries. See [TRON implementation](Project_GRID_TRON_Security_Implementation.md).
 
 ## 5.5 JN — Storage and files
 

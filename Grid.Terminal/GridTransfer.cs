@@ -279,7 +279,7 @@ public sealed class GridTransfer
         if (!File.Exists(target)) return;
         if (Environment.GetEnvironmentVariable(TerminalEnvironment.VariableName, EnvironmentVariableTarget.User)?.Equals(oldExe, StringComparison.OrdinalIgnoreCase) != true) return;
         Environment.SetEnvironmentVariable(TerminalEnvironment.VariableName, target, EnvironmentVariableTarget.User);
-        var launcher = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GRID", "bin", "GridAI.cmd");
+        var launcher = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GRID", "bin", TerminalEnvironment.LauncherFileName);
         if (File.Exists(launcher) && File.ReadAllText(launcher).StartsWith("@rem Grid.AI managed launcher\r\n") && File.ReadAllText(launcher).Contains(oldExe.Replace("%", "%%"), StringComparison.OrdinalIgnoreCase))
             File.WriteAllText(launcher, TerminalEnvironment.LauncherScript(target));
     }

@@ -344,6 +344,132 @@ public sealed class UnifiedTalkTests : IDisposable
     }
 
     [Fact]
+    public async Task LiveHostObservationUsesCatalogAndConsentInsteadOfWorkspaceQuestions()
+    {
+        await Input("connect MCP -inline");
+        ai.Replies.Enqueue("{\"route\":\"Access\",\"hostCapability\":\"host.system.read\",\"argument\":\"once\",\"message\":\"May I use read-only system access once to check the date for you?\"}");
+        ai.Replies.Enqueue("{\"version\":1,\"action\":\"GrantOnce\",\"message\":\"I'll read it once now.\"}");
+        ai.Replies.Enqueue("{\"version\":1,\"message\":\"Your PC's local date is available in the verified system information.\"}");
+
+        var permission = await Input("hey do you know what the date is?");
+        Assert.Contains("MCP", permission.Text);
+        Assert.Contains("May I use read-only system access once", permission.Text);
+        Assert.DoesNotContain("workspace", permission.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("host.system.read", permission.Text, StringComparison.OrdinalIgnoreCase);
+
+        var observed = await Input("go ahead");
+        Assert.Contains("MCP", observed.Text);
+        Assert.Contains("local date", observed.Text);
+        Assert.Contains("One-time read-only access completed", observed.Text);
+        Assert.DoesNotContain("workspace", observed.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("prepare the full preview", observed.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(engine.GetSnapshot().Tasks.Records);
+        var oneTime = Assert.Single(engine.GetSnapshot().Communications.AccessPermissions);
+        Assert.Equal(Grid.Agent.AccessGrantDuration.Once, oneTime.Duration);
+        Assert.NotNull(oneTime.ConsumedAtUtc);
+    }
+
+    [Fact]
+    public async Task AlwaysHostAccessIsRememberedAndReusedWithoutAnotherPermissionTurn()
+    {
+        await Input("connect MCP -inline");
+        ai.Replies.Enqueue("{\"route\":\"Access\",\"hostCapability\":\"host.system.read\",\"argument\":\"once\",\"message\":\"May I read system information to answer that?\"}");
+        ai.Replies.Enqueue("{\"version\":1,\"action\":\"GrantAlways\",\"message\":\"I'll remember that permission.\"}");
+        ai.Replies.Enqueue("{\"version\":1,\"message\":\"I checked the current system information.\"}");
+        Assert.Contains("May I read system information", (await Input("what is my current local time?")).Text);
+        Assert.Contains("checked the current system information", (await Input("you can always do this")).Text);
+
+        var saved = Assert.Single(engine.GetSnapshot().Communications.AccessPermissions);
+        Assert.Equal(Grid.Agent.AccessGrantDuration.Always, saved.Duration);
+        Assert.Null(saved.ConsumedAtUtc);
+
+        ai.Replies.Enqueue("{\"route\":\"Access\",\"hostCapability\":\"host.system.read\",\"argument\":\"once\",\"message\":\"May I read system information again?\"}");
+        ai.Replies.Enqueue("{\"version\":1,\"message\":\"The current system information was read using your saved permission.\"}");
+        var reused = await Input("what is my current local date?");
+        Assert.Contains("saved permission", reused.Text);
+        Assert.DoesNotContain("May I read system information again", reused.Text);
+        Assert.Null(Assert.Single(engine.GetSnapshot().Communications.AccessPermissions).ConsumedAtUtc);
+        Assert.Contains("Normal", commands.Execute("permissions").Text);
+        Assert.Contains("host.system.read", commands.Execute("permissions").Text);
+        Assert.Contains("revoked", commands.Execute("permissions revoke " + saved.Id.ToString("N")[..8]).Text, StringComparison.OrdinalIgnoreCase);
+        Assert.True(Assert.Single(engine.GetSnapshot().Communications.AccessPermissions).Revoked);
+    }
+
+    [Fact]
+    public async Task RelativeHostChangeUsesHighRiskPathInsteadOfRepeatingCurrentStateQuestions()
+    {
+        await Input("connect MCP -inline");
+        ai.Replies.Enqueue(Intent("ObserveHost", "planned", "host.system.write",
+            "I can determine the current setting and move it one hour ahead. May I make that High-risk system change?"));
+
+        var permission = await Input("change the time on my PC to be 1 hour ahead");
+        Assert.Contains("move it one hour ahead", permission.Text);
+        Assert.Contains("High-risk", permission.Text);
+        Assert.DoesNotContain("What time zone", permission.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("reference point", permission.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(engine.GetSnapshot().Communications.AccessPermissions);
+
+        var operation = HostSystemOperationCatalog.Parse("{\"version\":1,\"operation\":\"AdjustSystemClock\",\"offsetSeconds\":3600,\"targetDate\":\"\",\"targetDay\":0}");
+        Assert.Equal(3600, operation.OffsetSeconds);
+        Assert.Throws<ArgumentException>(() => HostSystemOperationCatalog.Parse(
+            "{\"version\":1,\"operation\":\"RunAnything\",\"offsetSeconds\":3600,\"targetDate\":\"\",\"targetDay\":0}"));
+    }
+
+    [Fact]
+    public async Task RelativeClockPlanIsBoundToPermissionRequestWithoutSecondInterpretation()
+    {
+        await Input("connect MCP -inline");
+        ai.Replies.Enqueue(Intent("Clarify", "", "", "What time zone should the change use?"));
+        ai.Replies.Enqueue("{\"version\":1,\"operation\":\"AdjustSystemClock\",\"offsetSeconds\":60,\"targetDate\":\"\",\"targetDay\":0}");
+        ai.Replies.Enqueue("{\"route\":\"Access\",\"hostCapability\":\"host.system.write\",\"argument\":\"planned\",\"message\":\"May I adjust this PC's clock by one minute?\"}");
+
+        var permission = await Input("hey can you change my pc time to be one minute ahead");
+        Assert.Contains("one minute", permission.Text);
+        var bound = Assert.IsType<HostSystemOperation>(chat.PendingHostOperationForTests);
+        Assert.Equal("AdjustSystemClock", bound.Operation);
+        Assert.Equal(60, bound.OffsetSeconds);
+        Assert.Equal(3, ai.Calls);
+    }
+
+    [Fact]
+    public async Task AbsoluteHostDateRequestWithNaturalWhitespaceUsesHighRiskPermissionRoute()
+    {
+        await Input("connect MCP -inline");
+        ai.Replies.Enqueue(Intent("ObserveHost", "planned", "host.system.write",
+            "I can preserve the current time and change this PC's date to November 22, 2026. May I make that High-risk system change?"));
+
+        var permission = await Input("hey can  you change the date on my pc? today should be changed to the 22nd.");
+        Assert.Contains("November 22, 2026", permission.Text);
+        Assert.Contains("High-risk", permission.Text);
+        Assert.DoesNotContain("date format", permission.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("exact command", permission.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(engine.GetSnapshot().Communications.AccessPermissions);
+
+        var exact = HostSystemOperationCatalog.Parse(
+            "{\"version\":1,\"operation\":\"SetSystemDate\",\"offsetSeconds\":0,\"targetDate\":\"2026-11-22\",\"targetDay\":0}");
+        Assert.Equal("2026-11-22", exact.TargetDate);
+        var currentMonth = HostSystemOperationCatalog.Parse(
+            "{\"version\":1,\"operation\":\"SetSystemDay\",\"offsetSeconds\":0,\"targetDate\":\"\",\"targetDay\":22}");
+        Assert.Equal(22, currentMonth.TargetDay);
+        Assert.Throws<ArgumentException>(() => HostSystemOperationCatalog.Parse(
+            "{\"version\":1,\"operation\":\"SetSystemDate\",\"offsetSeconds\":0,\"targetDate\":\"2026-02-30\",\"targetDay\":0}"));
+    }
+
+    [Fact]
+    public void AccessRouteMustActuallyAskForPermission()
+    {
+        const string refusal = "{\"route\":\"Access\",\"hostCapability\":\"host.system.write\",\"argument\":\"planned\",\"message\":\"I cannot change system dates directly. Provide an exact command.\"}";
+        Assert.False(HostObservationCatalog.TryParseRoute(refusal, out var access, out _, out _, out _));
+        Assert.False(access);
+        const string missingFact = "{\"route\":\"Access\",\"hostCapability\":\"host.system.write\",\"argument\":\"planned\",\"message\":\"What time zone should the date change use?\"}";
+        Assert.False(HostObservationCatalog.TryParseRoute(missingFact, out access, out _, out _, out _));
+        Assert.False(access);
+        const string consent = "{\"route\":\"Access\",\"hostCapability\":\"host.system.write\",\"argument\":\"planned\",\"message\":\"May I make this system change now?\"}";
+        Assert.True(HostObservationCatalog.TryParseRoute(consent, out access, out _, out _, out _));
+        Assert.True(access);
+    }
+
+    [Fact]
     public async Task NamedMaxisCreationUsesDynamicIntentClarificationAndReviewedFileTools()
     {
         await Input("connect MCP -inline");
@@ -1345,11 +1471,12 @@ public sealed class UnifiedTalkTests : IDisposable
         Assert.Equal(0, ai.Calls); Assert.DoesNotContain("PRIVATE", result.Text);
     }
     [Fact, Trait("Phase", "6.8")]
-    public async Task CssAdvicePromptExplainsBoxVersusTextCentering()
+    public async Task OrdinaryAdvicePromptDoesNotHardcodeAQuestionSpecificAnswer()
     {
         await Talk("How can I center a div?");
-        Assert.Contains("width: 100% with auto margins does not visibly center a narrower box", ai.Prompt);
-        Assert.Contains("parent flex/grid", ai.Prompt);
+        Assert.Contains("How can I center a div?", ai.Prompt);
+        Assert.DoesNotContain("width: 100% with auto margins does not visibly center a narrower box", ai.Prompt);
+        Assert.DoesNotContain("parent flex/grid", ai.Prompt);
     }
 
     [Theory, Trait("Phase", "6.8")]

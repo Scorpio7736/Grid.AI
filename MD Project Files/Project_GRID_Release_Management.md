@@ -39,7 +39,7 @@ Run from the repository root. Commands execute before ordinary world startup.
 dotnet run --project Grid.Terminal -- --verify-releases
 ```
 
-Expected output includes two successful promotions, a rejected regression, rollback to `v1` and a final synthetic lifecycle pass. The verifier creates and cleans up its own temporary directory, including a synthetic world sentinel.
+Expected output includes two successful promotions, a rejected regression, rollback to `v1` and a final synthetic lifecycle pass. The verifier creates and cleans up its own temporary directory, including a synthetic world canary.
 
 ```powershell
 dotnet run --project Grid.Terminal -- --release-check "C:\release-assets" request.json
@@ -51,6 +51,6 @@ dotnet run --project Grid.Terminal -- --release-rollback "C:\release-assets" exp
 
 ## Verification and remaining acceptance
 
-Verification passed 18 focused release regression cases and all 1,304 solution tests. The executable's `--verify-releases` also passed. Tests cover promotion/retry, score and resource regressions, failed/missing/stale/future/badly bound evidence, asset corruption, failed rollback, stale baselines, criteria changes, compatibility changes, cancellation, concurrent promotion and preservation of world/registry sentinel files.
+Verification passed 18 focused release regression cases and all 1,304 solution tests. The executable's `--verify-releases` also passed. Tests cover promotion/retry, score and resource regressions, failed/missing/stale/future/badly bound evidence, asset corruption, failed rollback, stale baselines, criteria changes, compatibility changes, cancellation, concurrent promotion and preservation of world/registry canary files.
 
 Production functional/adversarial/performance evaluation for each selected model/prompt/adapter combination remains pending candidate availability. No-GPU Lite, actual 8 GB Standard, 12 GB FLUX eligibility, network-blocked jobs, provider load/unload, validated document/code output, injected failures and separate-device acceptance remain in the master checklist. The next sequential integration module is 6.31, with these outstanding gates carried forward.

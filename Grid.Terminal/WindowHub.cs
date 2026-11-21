@@ -48,7 +48,8 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 var pid = (launcher ?? Launch)(name);
                 var task = Serve(pipe, pid, identity, commands, mode, snapshot, view?.FirstOrDefault(), conversation ? view : null);
                 clients.RemoveAll(t => t.IsCompleted); clients.Add(task); active++;
-                return new((conversation ? aiWarning?.Invoke() ?? "" : "") + "Opened " + mode + " window connected to this GRID. Closing it only detaches.");
+                return new((conversation ? aiWarning?.Invoke() ?? "" : "") + "Opened " + mode + " window connected to this GRID. " +
+                    (conversation ? "Closing it ends that conversation." : "Closing it only detaches."));
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or PlatformNotSupportedException or System.ComponentModel.Win32Exception)
             {
@@ -60,6 +61,13 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
     private async Task Serve(NamedPipeServerStream pipe, int pid, TerminalIdentitySession identity, CommandDispatcher commands, string mode, string snapshot, string? viewCommand, IReadOnlyList<string>? initialConversation = null)
     {
         await Task.Yield();
+        string EndAttachedConversation()
+        {
+            if (mode != "conversation" || commands.ConversationConnected?.Invoke() != true) return "Conversation already ended.";
+            try { return commands.Execute("disconnect").Text; }
+            catch (Exception error) when (error is ArgumentException or InvalidOperationException or UnauthorizedAccessException)
+            { return "Conversation ended as the attached window closed."; }
+        }
         try
         {
             using var connect = CancellationTokenSource.CreateLinkedTokenSource(stop.Token); connect.CancelAfter(TimeSpan.FromSeconds(60));
@@ -85,7 +93,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 conversationText = commands.ExecuteTokens(initialConversation).Text.Replace("Ordinary GRID commands still work.", "Use the original terminal for ordinary GRID commands.");
                 if (commands.ConversationConnected?.Invoke() != true)
                 { await WindowProtocol.WriteAsync(pipe, Reply(conversationText, closed: true), io.Token); return; }
-                conversationText += "\nAny key except Enter skips animation. Say turn off animation to disable it. Return to terminal ends the conversation. /close detaches this window.";
+                conversationText += "\nAny key except Enter skips animation. Say turn off animation to disable it. Return to terminal or /close ends this conversation.";
             }
             await WindowProtocol.WriteAsync(pipe, Reply(mode == "conversation" ? "GRID.AI // CONVERSATION\n\n" + conversationText :
                 $"GRID.AI // ATTACHED {mode.ToUpperInvariant()}\n{identity.Describe()}\nOriginal host owns simulation/save. Closing this window only detaches.\n" +
@@ -113,7 +121,8 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                 WindowReply reply;
                 if (!identity.IsAuthenticated || viewCommand is not null && !commands.IsAllowed(viewCommand))
                     reply = Reply("Session revoked or expired. Reopen from an authenticated terminal.", closed: true);
-                else if (request.Kind == "close") reply = Reply("Detached. GRID continues in the original host.", closed: true);
+                else if (request.Kind == "close") reply = Reply(mode == "conversation" ? EndAttachedConversation() :
+                    "Detached. GRID continues in the original host.", closed: true);
                 else if (request.Kind == "ping") reply = Reply();
                 else if (request.Kind == "frame" && (mode == "terminal" || mode == "live"))
                     reply = commands.IsAllowed("live") ? Reply(string.Join("\n", LiveViewRenderer.Render(engine.GetLiveSnapshot(), Math.Clamp(request.Width, 60, 200), Math.Clamp(request.Height, 18, 100), Math.Clamp(request.ProgramPage, 0, 10000), Math.Clamp(request.EventPage, 0, 10000))), live: true) : Reply("Access denied: live requires Master Control.");
@@ -142,6 +151,8 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
                         pendingPicker = null;
                         var result = commands.ExecuteTokens(tokens);
                         if (name.ToLowerInvariant() is "talk" or "assist" or "screen" or "changes" or "mcp") result = await CompleteConversationOperation(result);
+                        if (result.ExitRequested && mode == "conversation")
+                            result = result with { Text = EndAttachedConversation() };
                         pendingPicker = result.ContextPicker;
                         reply = Reply(result.Text, result.ExitRequested, result.LiveViewRequested, result.ClearRequested, result.LogoutRequested) with { PickFiles = pendingPicker is not null, AnimateFrom = result.AnimateFrom, Presentation = result.Presentation };
                     }
@@ -155,6 +166,7 @@ public sealed class WindowHub(GridSimulationEngine engine, TerminalSessionRegist
         catch (Exception e) when (e is IOException or OperationCanceledException or UnauthorizedAccessException or System.Text.Json.JsonException or ArgumentException or InvalidOperationException) { }
         finally
         {
+            _ = EndAttachedConversation();
             pipe.Dispose(); registry.Remove(identity); identity.Logout();
             lock (gate) active--;
         }

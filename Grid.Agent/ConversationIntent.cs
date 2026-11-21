@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace Grid.Agent;
 
-public enum ConversationIntentKind { CreateFile, UpdateFile, DeleteFile, ReadFile, SearchFiles, PlanTasks, Clarify, Unsupported }
+public enum ConversationIntentKind { CreateFile, UpdateFile, DeleteFile, ReadFile, SearchFiles, ObserveHost, PlanTasks, Clarify, Unsupported }
 public sealed record ConversationIntent(int Version, ConversationIntentKind Kind, string Scope, string Target, string Text)
 {
     public const int CurrentVersion = 1;
@@ -28,6 +28,12 @@ public sealed record ConversationIntent(int Version, ConversationIntentKind Kind
             throw new ArgumentException("Invalid intent argument size or control characters.");
         if (kind is ConversationIntentKind.CreateFile or ConversationIntentKind.UpdateFile or ConversationIntentKind.DeleteFile or ConversationIntentKind.ReadFile or ConversationIntentKind.SearchFiles)
         { if (string.IsNullOrWhiteSpace(scope) || string.IsNullOrWhiteSpace(target)) throw new ArgumentException("File intents require a destination and target; clarify missing values."); }
+        else if (kind == ConversationIntentKind.ObserveHost)
+        {
+            if (string.IsNullOrWhiteSpace(scope) || string.IsNullOrWhiteSpace(target))
+                throw new ArgumentException("Host observations require a registered access path and argument.");
+            if (string.IsNullOrWhiteSpace(text)) throw new ArgumentException("Host observations require an AI-written permission question.");
+        }
         else if (scope.Length != 0 || target.Length != 0) throw new ArgumentException("This intent cannot carry a file destination.");
         if (kind is ConversationIntentKind.Clarify or ConversationIntentKind.Unsupported && string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Clarification requires an explanation.");

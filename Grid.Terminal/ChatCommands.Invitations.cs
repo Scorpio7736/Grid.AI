@@ -47,12 +47,12 @@ public sealed partial class ChatCommands
         {
             // Recommendation uses registered tool purposes; it never grants membership by itself.
             var terms = Regex.Matches(name.ToLowerInvariant(), @"[a-z]+").Select(m => m.Value).Where(w => w.Length > 2).ToHashSet();
-            string Expertise(AgentRole role) => role switch { AgentRole.MAXIS => "code software debugging builds tests", AgentRole.JN => "files storage duplicates backups", AgentRole.SENTINEL => "security firewall malware", AgentRole.VOLT => "resources cpu gpu ram performance", AgentRole.RELAY => "notifications messages delivery", _ => "" };
+            string Expertise(AgentRole role) => role switch { AgentRole.MAXIS => "code software debugging builds tests", AgentRole.JN => "files storage duplicates backups", AgentRole.TRON => "security firewall malware", AgentRole.VOLT => "resources cpu gpu ram performance", AgentRole.RELAY => "notifications messages delivery", _ => "" };
             var scored = McpCapabilityCatalog.Entries.GroupBy(e => e.Agent).Select(g => (Role: g.Key, Score: terms.Count(w => Expertise(g.Key).Contains(w, StringComparison.OrdinalIgnoreCase)) * 10 + g.Sum(e => terms.Count(w => (e.Purpose + " " + e.Capability).Contains(w, StringComparison.OrdinalIgnoreCase)))))
                 .Where(x => x.Score > 0).OrderByDescending(x => x.Score).ToArray();
             if (scored.Length > 0 && (scored.Length == 1 || scored[0].Score > scored[1].Score)) agent = state.Agents.SingleOrDefault(a => a.Role == scored[0].Role);
         }
-        if (agent is null) { reply = Explain("Which specialist? Invite MAXIS, JN, SENTINEL, VOLT or RELAY; for example invite someone for code debugging."); return true; }
+        if (agent is null) { reply = Explain("Which specialist? Invite MAXIS, JN, TRON, VOLT or RELAY; for example invite someone for code debugging."); return true; }
         if (agent.Role == AgentRole.MCP || c.Participants.Any(p => p.Id == agent.Id) != remove) { reply = Explain(agent.Role == AgentRole.MCP ? "MCP stays as coordinator." : remove ? "That specialist is not present." : "That specialist is already present."); return true; }
         invitation = new(Pending("invitation", input), agent.Role.ToString(), remove, c.Messages.Count);
         var purpose = string.Join("; ", McpCapabilityCatalog.Entries.Where(e => e.Agent == agent.Role).Take(3).Select(e => e.Purpose));

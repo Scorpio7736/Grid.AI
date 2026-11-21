@@ -92,7 +92,7 @@ assist submit
 tasks
 ```
 
-Before `assist submit`, there should be no new task. After submission, the VOLT task should be awaiting approval. Inspect it before deciding whether to approve and run. For a multi-agent draft, ask for VOLT resource status plus SENTINEL firewall status; each step must still validate and be approved independently. AI can produce invalid proposals; refusal is expected rather than automatic repair/execution.
+Before `assist submit`, there should be no new task. After submission, the VOLT task should be awaiting approval. Inspect it before deciding whether to approve and run. For a multi-agent draft, ask for VOLT resource status plus TRON firewall status; each step must still validate and be approved independently. AI can produce invalid proposals; refusal is expected rather than automatic repair/execution.
 
 The original debug instance was running during this implementation. It was left alone; its locked executable was not replaced. The updated development build is `Grid.Terminal/bin/Release/net10.0/Grid.Terminal.exe`. Its normal default save is the existing per-user Grid.AI database, unless a custom `--world` path is supplied. The separately refreshed portable package uses its own package data directory; do not assume its world is the same as the development instance.
 

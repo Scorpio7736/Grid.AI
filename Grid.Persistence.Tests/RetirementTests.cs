@@ -58,9 +58,9 @@ public sealed class RetirementTests : IDisposable
     {
         using var store = Create();
         var plan = store.PrepareRetirement(store.Load().Info.Id, Path.Combine(root, "quarantine"));
-        File.WriteAllText(World + "-wal", "sentinel");
+        File.WriteAllText(World + "-wal", "canary");
         Assert.Throws<IOException>(() => store.Retire(plan));
-        Assert.Equal("sentinel", File.ReadAllText(World + "-wal"));
+        Assert.Equal("canary", File.ReadAllText(World + "-wal"));
         Assert.True(File.Exists(World)); Assert.False(Directory.Exists(plan.Destination));
     }
     [Fact]
@@ -80,7 +80,7 @@ public sealed class RetirementTests : IDisposable
         Assert.Throws<IOException>(() => store.PrepareRetirement(id, Path.GetPathRoot(root)!));
         Assert.Throws<IOException>(() => store.PrepareRetirement(id, Path.Combine(root, "data", "inside")));
         Assert.Throws<InvalidDataException>(() => store.PrepareRetirement(Guid.NewGuid(), Path.Combine(root, "other")));
-        File.WriteAllText(World + "-wal", "sentinel");
+        File.WriteAllText(World + "-wal", "canary");
         Assert.Throws<IOException>(() => store.PrepareRetirement(id, Path.Combine(root, "quarantine")));
     }
 }

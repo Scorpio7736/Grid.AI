@@ -37,13 +37,13 @@ public static class CoordinationRequest
         {
             var split = clause.IndexOf(':');
             if (split <= 0 || !Enum.TryParse<AgentRole>(clause[..split].Trim(), true, out var role) || !Enum.IsDefined(role) || role == AgentRole.MCP || int.TryParse(clause[..split].Trim(), out _))
-                throw new ArgumentException("Use a specialist name followed by a colon: MAXIS, SENTINEL, JN, VOLT or RELAY. MCP cannot delegate recursively.");
+                throw new ArgumentException("Use a specialist name followed by a colon: MAXIS, TRON, JN, VOLT or RELAY. MCP cannot delegate recursively.");
             var body = clause[(split + 1)..].Trim(); var separator = body.IndexOf(' ');
             if (separator < 1) throw new ArgumentException("Specify an explicit supported action and argument, e.g. MAXIS: demo hello.");
             var action = body[..separator].ToLowerInvariant(); var argument = body[(separator + 1)..].Trim();
             var capability = role.ToString().ToLowerInvariant() + "." + action;
             if (!TaskCapabilities.Valid(role, capability, argument))
-                throw new ArgumentException($"Unsupported action/argument for {role}. Use demo, MAXIS delay, registered MAXIS inspect/build/test/suggest, SENTINEL defender/firewall status and events recent, JN inventory/duplicates/cleanup <scope>, storage status, quota <GB>; VOLT status current or throttle normal/eco/auto; RELAY notify <text>, brief <task-guid>, speak <notification-guid>.");
+                throw new ArgumentException($"Unsupported action/argument for {role}. Use demo, MAXIS delay, registered MAXIS inspect/build/test/suggest, TRON defender/firewall status and events recent, JN inventory/duplicates/cleanup <scope>, storage status, quota <GB>; VOLT status current or throttle normal/eco/auto; RELAY notify <text>, brief <task-guid>, speak <notification-guid>.");
             steps.Add(new(role, capability, argument));
         }
         return Array.AsReadOnly(steps.ToArray());

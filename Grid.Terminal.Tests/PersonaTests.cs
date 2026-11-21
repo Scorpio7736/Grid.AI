@@ -10,7 +10,7 @@ namespace Grid.Terminal.Tests;
 public sealed class PersonaTests
 {
     [Theory]
-    [InlineData("MCP")][InlineData("MAXIS")][InlineData("JN")][InlineData("SENTINEL")][InlineData("VOLT")][InlineData("RELAY")]
+    [InlineData("MCP")][InlineData("MAXIS")][InlineData("JN")][InlineData("TRON")][InlineData("VOLT")][InlineData("RELAY")]
     public void DefinitionsHaveStableIdentityAndSeriousTone(string agent)
     {
         var catalog = new AgentPersonas(); var prompt = catalog.Assemble(agent, false);

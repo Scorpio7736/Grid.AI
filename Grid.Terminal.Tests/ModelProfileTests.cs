@@ -33,7 +33,7 @@ public sealed class ModelProfileTests
         }
     }
     [Theory]
-    [InlineData("MCP")][InlineData("MAXIS")][InlineData("JN")][InlineData("SENTINEL")][InlineData("VOLT")][InlineData("RELAY")]
+    [InlineData("MCP")][InlineData("MAXIS")][InlineData("JN")][InlineData("TRON")][InlineData("VOLT")][InlineData("RELAY")]
     public async Task RoleReachesModelWithoutDuplicatedWeights(string role)
     {
         var handler=new Handler(); using var backend=new OllamaLocalBackend(handler); await using var ai=new SharedLocalInference(backend);

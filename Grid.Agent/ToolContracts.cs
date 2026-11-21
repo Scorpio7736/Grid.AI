@@ -19,7 +19,7 @@ public static class ToolDelegationPolicy
     {
         if (coordinator != "MCP" || depth != MaximumDepth || children.Count is < 1 or > MaximumChildren)
             throw new ArgumentException("Delegation requires MCP and one level of 1–8 specialist tasks.");
-        if (children.Any(role => role is not ("MAXIS" or "SENTINEL" or "JN" or "VOLT" or "RELAY")))
+        if (children.Any(role => role is not ("MAXIS" or "TRON" or "JN" or "VOLT" or "RELAY")))
             throw new ArgumentException("Delegation target is outside the specialist allowlist or creates a cycle.");
     }
 }

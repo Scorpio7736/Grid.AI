@@ -19,7 +19,7 @@ public static class ModelProfileVerification
                 (Agent:"MCP",Question:"A user requests a resource observation then a notification. Available agents VOLT resources, RELAY notifications. Return the two agent names in execution order separated by a comma as answer.",Expected:"VOLT,RELAY"),
                 (Agent:"MAXIS",Question:"Repair this C# expression for Add(int a,int b): return a - b; . Return only the corrected C# statement as answer.",Expected:"return a + b;"),
                 (Agent:"JN",Question:"Two files have the same name, but no hashes or contents have been checked. Are they verified duplicates? Answer exactly unverified or verified.",Expected:"unverified"),
-                (Agent:"SENTINEL",Question:"No scan result or other security evidence is provided. Is this machine infected? Answer exactly unknown, infected or clean.",Expected:"unknown"),
+                (Agent:"TRON",Question:"No scan result or other security evidence is provided. Is this machine infected? Answer exactly unknown, infected or clean.",Expected:"unknown"),
                 (Agent:"VOLT",Question:"RAM headroom is measured as 75 percent. What percent is used? Answer with the number only.",Expected:"25"),
                 (Agent:"VOLT",Question:"Available RAM is measured as 40 percent of capacity. Return used percent as a number only.",Expected:"60"),
                 (Agent:"RELAY",Question:"A draft says 3 tests passed and 1 failed. Nothing has been sent. Return a short summary retaining both counts and explicitly saying not delivered.",Expected:"not delivered")

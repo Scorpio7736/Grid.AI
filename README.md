@@ -1,5 +1,7 @@
 # Grid.AI
 
+> **Agent identity update (2026-11-21):** TRON is Grid.AI's security analyst. All current commands and capabilities use `TRON` and `tron.*`; existing saved security-agent state is migrated by stable role and identity.
+
 **A local-first AI platform for conversations, software development, and controlled computer assistance.**
 
 Grid.AI is an offline-capable, multi-agent system built with **C# and .NET**. It combines conversational AI, specialized agents, local computer tools, persistent memory, and a simulation-based environment into a single terminal-first application.
@@ -36,7 +38,7 @@ Unlike a simple local chatbot, Grid.AI includes an execution layer, identity and
 | --- | --- | --- |
 | **MCP** | Coordinator | Interprets requests, coordinates specialists, and prepares reviewed task plans. |
 | **MAXIS** | Software development | Inspects registered code workspaces, builds and tests projects, and assists with source repairs. |
-| **SENTINEL** | Security | Reports supported Windows security and protection observations without autonomously changing security settings. |
+| **TRON** | Security | Reports supported Windows security and protection observations without autonomously changing security settings. |
 | **JN** | Storage and files | Inventories registered storage, identifies possible duplicates, and prepares cleanup proposals. |
 | **VOLT** | Resources and performance | Reports host telemetry and manages supported simulation pacing controls. |
 | **RELAY** | Communications | Maintains local notifications, task briefings, acknowledgements, and reviewed speech delivery. |

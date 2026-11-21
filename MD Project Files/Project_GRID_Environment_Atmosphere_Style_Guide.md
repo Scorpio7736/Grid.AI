@@ -146,7 +146,7 @@ Human-scale historic streets with 3–7-story masonry buildings, window light, s
 
 Larger pale stone civic facades, formal plazas, axial approaches, restrained banners and insignia, orderly lighting, and selective monumental landmarks. Preserve walkable streets and neighborhood continuity.
 
-### Security district — SENTINEL
+### Security district — TRON
 
 Austere institutional stone, disciplined geometry, guarded entries, subtle security wayfinding, slightly cooler lighting, and uncluttered public circulation.
 

@@ -17,7 +17,7 @@ remove participant MAXIS
 confirm removal
 ```
 
-Use `invite MAXIS`, `invite JN`, `invite SENTINEL`, `invite VOLT` or `invite RELAY` for an exact specialist. Recommendation uses registered capability purposes and role expertise; ambiguous requests ask for a name. The preview explains the role and sharing boundary. `decline invitation` leaves membership unchanged. MCP remains coordinator. Only human Master Control can confirm membership. A model reply cannot itself add someone.
+Use `invite MAXIS`, `invite JN`, `invite TRON`, `invite VOLT` or `invite RELAY` for an exact specialist. Recommendation uses registered capability purposes and role expertise; ambiguous requests ask for a name. The preview explains the role and sharing boundary. `decline invitation` leaves membership unchanged. MCP remains coordinator. Only human Master Control can confirm membership. A model reply cannot itself add someone.
 
 ## Direct work and MCP reports
 

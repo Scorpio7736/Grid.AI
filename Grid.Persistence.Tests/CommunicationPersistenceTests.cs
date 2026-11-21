@@ -1,5 +1,6 @@
 using Grid.Core;
 using Grid.Communication;
+using Grid.Agent;
 using Grid.Simulation;
 using Microsoft.Data.Sqlite;
 using System.Text.Json;
@@ -8,6 +9,28 @@ namespace Grid.Persistence.Tests;
 
 public sealed class CommunicationPersistenceTests
 {
+    [Fact]
+    public void RiskTieredAccessPermissionsSurviveWorldReload()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "GridPermissions-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(folder);
+        try
+        {
+            var engine = new GridSimulationEngine(GridWorldFactory.CreateGenesis());
+            var snapshot = engine.GetSnapshot();
+            var permission = new AccessPermission(Guid.NewGuid(), "host.system.read", AccessRiskTier.Normal,
+                AccessGrantDuration.Always, Guid.NewGuid(), DateTimeOffset.UtcNow);
+            snapshot = snapshot with { Communications = snapshot.Communications with { AccessPermissions = new[] { permission } } };
+            var path = Path.Combine(folder, "world.db");
+            using (var store = new WorldStore(path)) store.Create(new(snapshot.WorldId, "Permissions", DateTimeOffset.UtcNow), snapshot);
+            using var reopened = new WorldStore(path);
+            var loaded = Assert.Single(reopened.Load().State.Communications.AccessPermissions);
+            Assert.Equal(permission, loaded);
+            Assert.Equal(AccessGrantDuration.Always, loaded.Duration);
+            Assert.False(loaded.Revoked);
+        }
+        finally { Directory.Delete(folder, true); }
+    }
+
     [Fact]
     public void GroundedReplySourcesSurviveSqliteReloadAndBuildNextContext()
     {

@@ -99,6 +99,6 @@ public sealed class RemoteContactService
     private static bool Text(string? value, int max) => !string.IsNullOrWhiteSpace(value) && value.Length <= max && !value.Any(char.IsControl);
     private static void Validate(ContactPolicy policy)
     {
-        if (!Text(policy.Id, 48) || !Text(policy.Device, 64) || policy.Agents is null || policy.Agents.Length is < 1 or > 6 || policy.Agents.Any(value => value is not ("MCP" or "RELAY" or "MAXIS" or "JN" or "VOLT" or "SENTINEL")) || policy.Triggers is null || policy.Triggers.Length is < 1 or > 8 || policy.Triggers.Any(value => !Text(value, 64)) || policy.QuietStartUtcHour is < 0 or > 23 || policy.QuietEndUtcHour is < 0 or > 23 || policy.MaxPerDay is < 1 or > 20 || policy.ExpiresUtc.Offset != TimeSpan.Zero) throw new InvalidDataException("Invalid contact policy.");
+        if (!Text(policy.Id, 48) || !Text(policy.Device, 64) || policy.Agents is null || policy.Agents.Length is < 1 or > 6 || policy.Agents.Any(value => value is not ("MCP" or "RELAY" or "MAXIS" or "JN" or "VOLT" or "TRON")) || policy.Triggers is null || policy.Triggers.Length is < 1 or > 8 || policy.Triggers.Any(value => !Text(value, 64)) || policy.QuietStartUtcHour is < 0 or > 23 || policy.QuietEndUtcHour is < 0 or > 23 || policy.MaxPerDay is < 1 or > 20 || policy.ExpiresUtc.Offset != TimeSpan.Zero) throw new InvalidDataException("Invalid contact policy.");
     }
 }

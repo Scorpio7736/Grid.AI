@@ -23,7 +23,7 @@ All six agents use one installed **Qwen3 4B Q4_K_M** snapshot with distinct immu
 | MCP | Complete planning, clarification, approval vs. execution | 4,096 | 512 / 1,536 |
 | MAXIS | Correct code, debugging and honest test claims | 4,096 | 512 / 1,536 |
 | JN | Document/storage provenance and verified duplicates | 4,096 | 512 / 1,536 |
-| SENTINEL | Evidence-based security and explicit uncertainty | 4,096 | 512 / 1,536 |
+| TRON | Evidence-based security and explicit uncertainty | 4,096 | 512 / 1,536 |
 | VOLT | Capacity, utilization, headroom and unknown telemetry | 4,096 | 512 / 1,536 |
 | RELAY | Faithful concise summaries; draft vs. delivery | 4,096 | 512 / 1,024 |
 
@@ -48,7 +48,7 @@ Use `Grid.Terminal.exe --audit-package "absolute-package-root"` for a full size/
 ## Completion verification
 
 - Release solution: 1,044 regression tests (Core 14, Simulation 157, Persistence 99, Terminal 774), covering profile isolation in the shared queue, all six role bindings, CPU/reduced file limits, exact decimal cap boundaries, asset/source/data accounting and rejection of unbenchmarked manifests.
-- **14/14 live role checks passed**, seven in each mode. Cases cover MCP ordered delegation, MAXIS addition repair, JN unverified duplicate claims, SENTINEL unknown security state, VOLT headroom conversion at two values, and RELAY summary/delivery accuracy. CPU mode also requires one loaded model and zero reported GPU allocation.
+- **14/14 live role checks passed**, seven in each mode. Cases cover MCP ordered delegation, MAXIS addition repair, JN unverified duplicate claims, TRON unknown security state, VOLT headroom conversion at two values, and RELAY summary/delivery accuracy. CPU mode also requires one loaded model and zero reported GPU allocation.
 - The first benchmark failed VOLT's 75%-headroom calculation in both modes. Its role guidance now states the general conversion formula; the original and a second 40%-available case both pass. This failure is retained as evidence that generated reasoning still needs checks.
 - Live report: `Grid613Verification-03773268b30949e48c3b2e22bd8c14c5/report.json`; first failed candidate: `Grid613Verification-fc23030a5c994a39869c07ea90dee5d9/report.json`.
 
@@ -57,14 +57,14 @@ Use `Grid.Terminal.exe --audit-package "absolute-package-root"` for a full size/
 | MCP | standard | 2463 | 3180247121 | 3180247121 | Pass |
 | MAXIS | standard | 195 | 3180247121 | 3180247121 | Pass |
 | JN | standard | 193 | 3180247121 | 3180247121 | Pass |
-| SENTINEL | standard | 187 | 3180247121 | 3180247121 | Pass |
+| TRON | standard | 187 | 3180247121 | 3180247121 | Pass |
 | VOLT | standard | 225 | 3180247121 | 3180247121 | Pass |
 | VOLT | standard | 172 | 3180247121 | 3180247121 | Pass |
 | RELAY | standard | 263 | 3180247121 | 3180247121 | Pass |
 | MCP | cpu-reduced-memory | 4556 | 3186108660 | 0 | Pass |
 | MAXIS | cpu-reduced-memory | 2037 | 3186108660 | 0 | Pass |
 | JN | cpu-reduced-memory | 2025 | 3186108660 | 0 | Pass |
-| SENTINEL | cpu-reduced-memory | 1821 | 3186108660 | 0 | Pass |
+| TRON | cpu-reduced-memory | 1821 | 3186108660 | 0 | Pass |
 | VOLT | cpu-reduced-memory | 2143 | 3186108660 | 0 | Pass |
 | VOLT | cpu-reduced-memory | 834 | 3186108660 | 0 | Pass |
 | RELAY | cpu-reduced-memory | 2373 | 3186108660 | 0 | Pass |

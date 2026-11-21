@@ -6,16 +6,16 @@ public sealed record McpCapability(AgentRole Agent, string Capability, string Ar
 public static class McpCapabilityCatalog
 {
     public const int Version = 1;
-    public static bool ReadOnlyRetry(string capability) => capability is "volt.status" or "sentinel.defender" or "sentinel.firewall" or
-        "sentinel.events" or "maxis.inspect" or "jn.inventory" or "jn.duplicates" or "jn.storage";
+    public static bool ReadOnlyRetry(string capability) => capability is "volt.status" or "tron.defender" or "tron.firewall" or
+        "tron.events" or "maxis.inspect" or "jn.inventory" or "jn.duplicates" or "jn.storage";
     public static string Effect(string capability) => ReadOnlyRetry(capability) ? "Read-only observation; explicit retry can be reviewed" :
         capability.EndsWith(".demo", StringComparison.Ordinal) ? "Demonstration only" : "May write outputs or change state; conversational retry is not automatic";
     public static IReadOnlyList<McpCapability> Entries { get; } = Array.AsReadOnly(new[] {
         new McpCapability(AgentRole.VOLT, "volt.status", "current", "Read host resource observations"),
         new McpCapability(AgentRole.VOLT, "volt.throttle", "normal/eco/auto", "Adjust GRID pacing only"),
-        new McpCapability(AgentRole.SENTINEL, "sentinel.defender", "status", "Read Defender status"),
-        new McpCapability(AgentRole.SENTINEL, "sentinel.firewall", "status", "Read firewall status"),
-        new McpCapability(AgentRole.SENTINEL, "sentinel.events", "recent", "Read security event metadata"),
+        new McpCapability(AgentRole.TRON, "tron.defender", "status", "Read Defender status"),
+        new McpCapability(AgentRole.TRON, "tron.firewall", "status", "Read firewall status"),
+        new McpCapability(AgentRole.TRON, "tron.events", "recent", "Read security event metadata"),
         new McpCapability(AgentRole.MAXIS, "maxis.build", "workspace", "Build registered project"),
         new McpCapability(AgentRole.MAXIS, "maxis.test", "workspace", "Test registered project"),
         new McpCapability(AgentRole.MAXIS, "maxis.inspect", "workspace|relative-file", "Inspect source"),

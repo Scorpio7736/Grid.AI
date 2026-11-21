@@ -133,7 +133,7 @@ public sealed class MeetingTests
     [InlineData("MCP mcp")]
     [InlineData("MCP Unknown")]
     [InlineData("MCP MAXIS -bogus")]
-    [InlineData("MCP MAXIS JN SENTINEL VOLT RELAY MCP")]
+    [InlineData("MCP MAXIS JN TRON VOLT RELAY MCP")]
     public void InvalidParticipantsNeverLaunchOrMutate(string names)
     {
         var f=new Fixture(); var launches=0; f.Commands.OpenConversation=_=> {launches++;return new("opened");};
@@ -142,7 +142,7 @@ public sealed class MeetingTests
     }
     [Theory]
     [InlineData("How do I build and test this code?","MAXIS")]
-    [InlineData("Review the firewall and malware protection","SENTINEL")]
+    [InlineData("Review the firewall and malware protection","TRON")]
     [InlineData("Find duplicate files and storage quota","JN")]
     [InlineData("CPU GPU RAM performance","VOLT")]
     [InlineData("Notification delivery inbox","RELAY")]
@@ -152,7 +152,7 @@ public sealed class MeetingTests
     [InlineData("@MAXIS: storage question","MAXIS")]
     public async Task ExactlyOneSelectedParticipantReplies(string input,string expected)
     {
-        var f=new Fixture(); var id=f.Meeting("RELAY VOLT SENTINEL JN MAXIS MCP");
+        var f=new Fixture(); var id=f.Meeting("RELAY VOLT TRON JN MAXIS MCP");
         var result=await f.Talk(input); var messages=f.Engine.GetConversation(id).Messages;
         Assert.Equal(2,messages.Count); Assert.Equal(expected,messages[1].Sender.Name); Assert.NotNull(result.AnimateFrom);
         Assert.Contains(result.Presentation!,s=>s.Tone==ConversationTone.Heading && result.Text.Substring(s.Start,s.Length)==expected+": ");
@@ -171,7 +171,7 @@ public sealed class MeetingTests
         Assert.Empty(f.Engine.GetSnapshot().Tasks.Records);
     }
     [Theory]
-    [InlineData("@SENTINEL review security")]
+    [InlineData("@TRON review security")]
     [InlineData("@MAXIS")]
     [InlineData("@MAXIS: ")]
     public void BadDirectionDoesNotSilentlyRerouteOrAppend(string input)
@@ -215,7 +215,7 @@ public sealed class MeetingTests
         var f=new Fixture(); var id=f.Meeting(); f.Owner.Switch(f.Engine.ResolveProgram("MAXIS").Id.ToString());
         Assert.Throws<UnauthorizedAccessException>(()=>f.Engine.StartMeeting(f.Owner.Reference,["MCP","JN"]));
         Assert.Throws<UnauthorizedAccessException>(()=>f.Engine.PrepareGroundedTurn(id,f.Engine.ResolveProgram("MAXIS"),"private context"));
-        f.Owner.Switch(f.Engine.ResolveProgram("SENTINEL").Id.ToString());
+        f.Owner.Switch(f.Engine.ResolveProgram("TRON").Id.ToString());
         Assert.DoesNotContain(id.ToString(),f.Commands.Execute("conversations").Text);
         Assert.DoesNotContain("Shared answer",f.Commands.Execute("transcript "+id).Text);
         Assert.Empty(f.Engine.GetSnapshot().Tasks.Records);

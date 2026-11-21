@@ -171,7 +171,7 @@ public sealed partial class GridSimulationEngine
             ChangeTask(task with { Status = Status.Running, Attempts = task.Attempts + 1 }, "Started", actor, "Broker claimed an attempt; durable start is required before invocation.");
             taskExecuting = true;
         }
-        using var stop = CancellationTokenSource.CreateLinkedTokenSource(token); stop.CancelAfter(TimeSpan.FromSeconds(DevelopmentPolicy.IsReal(task.Capability) ? 120 : SentinelPolicy.IsReal(task.Capability) ? 30 : StoragePolicy.IsReal(task.Capability) ? 120 : VoltRelayPolicy.IsReal(task.Capability) ? 30 : 1));
+        using var stop = CancellationTokenSource.CreateLinkedTokenSource(token); stop.CancelAfter(TimeSpan.FromSeconds(DevelopmentPolicy.IsReal(task.Capability) ? 120 : TronPolicy.IsReal(task.Capability) ? 30 : StoragePolicy.IsReal(task.Capability) ? 120 : VoltRelayPolicy.IsReal(task.Capability) ? 30 : 1));
         Status outcome = Status.Failed; string result;
         try
         {
@@ -189,7 +189,7 @@ public sealed partial class GridSimulationEngine
                 else if (task.Capability is "volt.status" or "volt.throttle") execution = Task.FromResult(ExecuteVolt(session,task));
                 else if (task.Capability is "relay.notify" or "relay.brief" or "relay.speak") execution = ExecuteRelayAsync(session,task,save,stop.Token);
                 else if (StoragePolicy.IsReal(task.Capability)) execution = ExecuteStorageAsync(session,task,stop.Token);
-                else if (SentinelPolicy.IsReal(task.Capability)) execution = ReadSecurityAsync(task.Capability,stop.Token);
+                else if (TronPolicy.IsReal(task.Capability)) execution = ReadSecurityAsync(task.Capability,stop.Token);
                 else execution = TaskCapabilities.ExecuteAsync(role, task.Capability, task.Argument, stop.Token);
                 try
                 {
@@ -205,7 +205,7 @@ public sealed partial class GridSimulationEngine
                 }
                 finally { stop.Cancel(); try { await execution; } catch (OperationCanceledException) { } }
             }
-            catch (OperationCanceledException) { outcome = token.IsCancellationRequested ? Status.Cancelled : Status.TimedOut; result = "Attempt cancelled or exceeded its deadline (demo: 1 second; MAXIS/JN: 120 seconds; SENTINEL/VOLT/RELAY: 30 seconds)."; }
+            catch (OperationCanceledException) { outcome = token.IsCancellationRequested ? Status.Cancelled : Status.TimedOut; result = "Attempt cancelled or exceeded its deadline (demo: 1 second; MAXIS/JN: 120 seconds; TRON/VOLT/RELAY: 30 seconds)."; }
             catch (UnauthorizedAccessException) { outcome = Status.Interrupted; result = "Session authorization changed; fresh approval is required for retry."; }
             catch (Exception e) when (e is IOException or InvalidDataException or System.Data.Common.DbException or InvalidOperationException or ArgumentException or System.ComponentModel.Win32Exception) { result = "Attempt failed: " + e.GetType().Name + ". " + new string(e.Message.Where(c => !char.IsControl(c)).Take(350).ToArray()); }
             if (DevelopmentPolicy.IsReal(task.Capability) && outcome != Status.Completed && maxisRuntime is not null)

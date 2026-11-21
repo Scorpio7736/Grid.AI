@@ -217,7 +217,7 @@ The city is not a normal historical city with neon pasted onto it. Its infrastru
 - One major landmark headquarters visible from surrounding avenues
 - More formal landscaping, banners bearing original GRID insignia, and ceremonial lighting
 
-### 7.2 Security District — SENTINEL
+### 7.2 Security District — TRON
 
 - Austere institutional stonework and strong vertical proportions
 - Security headquarters, inspection stations, guarded courtyards

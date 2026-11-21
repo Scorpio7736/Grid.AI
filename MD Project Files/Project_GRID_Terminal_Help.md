@@ -300,14 +300,14 @@ VOLT now reports existing host telemetry and supports approved normal/eco/auto p
 JN now inventories approved paths, reports possible duplicates, and prepares cleanup proposals without deleting source files. Defined GRID-managed storage is measured against an initial 20 GB decimal logical budget; MCP quota escalations require separate Master Control approval to change it. This is tracking/governance, not a hard write cap or disk reservation. Schema v18 preserves scope and quota history. **535 tests passed** (14 Core, 157 Simulation, 97 Persistence, 267 Terminal). See [JN implementation and acceptance test](Project_GRID_JN_Storage_Implementation.md) for limits, accounting roots, report retention and remaining planned automation. Next: **5.6 VOLT and RELAY**. Earlier milestone/schema/test statements below remain historical.
 
 
-## SENTINEL security — 5.4 completed (2026-10-21)
+## TRON security — 5.4 completed (2026-10-21)
 
-SENTINEL now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
+TRON now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [TRON implementation](Project_GRID_TRON_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
 
 
 ## MAXIS development — 5.3 completed (2026-10-21)
 
-MAXIS now supports registered-workspace inspection, fixed .NET build/test execution, saved diagnostics and explicit replacement suggestions staged outside original source. Every task requires human approval; build/test executes trusted project code as the current Windows user (no OS/network sandbox). Schema v16 persists immutable, revocable workspace registrations. Other specialists remain demonstrations. **505 tests passed** (14 Core, 157 Simulation, 97 Persistence, 237 Terminal). See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for commands, offline prerequisites, artifact retention and limits. Next: **5.4 SENTINEL**. Earlier milestone/schema/test statements below remain historical.
+MAXIS now supports registered-workspace inspection, fixed .NET build/test execution, saved diagnostics and explicit replacement suggestions staged outside original source. Every task requires human approval; build/test executes trusted project code as the current Windows user (no OS/network sandbox). Schema v16 persists immutable, revocable workspace registrations. Other specialists remain demonstrations. **505 tests passed** (14 Core, 157 Simulation, 97 Persistence, 237 Terminal). See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for commands, offline prerequisites, artifact retention and limits. Next: **5.4 TRON**. Earlier milestone/schema/test statements below remain historical.
 
 
 **Implemented - 4.2B, 2026-10-20.** This bundled reference is available offline through `help -md`, which displays its path and Markdown in the terminal. Live `help` and Tab suggestions are capability-scoped; this full manual does not grant command access.
@@ -793,7 +793,7 @@ tasks
     # EXAMPLE: tasks run
 ```
 
-Capabilities are `mcp.demo`, `maxis.demo`, `sentinel.demo`, `jn.demo`, `volt.demo`, `relay.demo` (1..256 printable argument characters), plus `maxis.delay` (0..5000 ms; attempt timeout is one second). Agents may propose only for their own role, never approve or dispatch. Restart clears queued approvals and interrupts running tasks without automatic replay. No automatic chat-to-task interpretation. See [task broker implementation](Project_GRID_Task_Broker_Implementation.md).
+Capabilities are `mcp.demo`, `maxis.demo`, `tron.demo`, `jn.demo`, `volt.demo`, `relay.demo` (1..256 printable argument characters), plus `maxis.delay` (0..5000 ms; attempt timeout is one second). Agents may propose only for their own role, never approve or dispatch. Restart clears queued approvals and interrupts running tasks without automatic replay. No automatic chat-to-task interpretation. See [task broker implementation](Project_GRID_Task_Broker_Implementation.md).
 
 ## MCP coordination — 5.2 implemented
 
@@ -846,20 +846,20 @@ tasks
 
 MCP equivalent: `mcp request "MAXIS: build grid"`. Inspect the resulting task, approve it individually, then use `tasks run` from the original host. Builds/tests can change outputs and run project-defined code as your Windows user; they are not OS-sandboxed. Read [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for supported formats and artifact locations. NGE does not delete these external reports/working copies.
 
-## SENTINEL — read-only security (5.4)
+## TRON — read-only security (5.4)
 
 ```text
 tasks
-    - tasks propose SENTINEL sentinel.defender status [request-key]
+    - tasks propose TRON tron.defender status [request-key]
       # USAGE: Read protection flags, signature update time and prior scan end times; no new scan.
-    - tasks propose SENTINEL sentinel.firewall status [request-key]
+    - tasks propose TRON tron.firewall status [request-key]
       # USAGE: Read effective firewall profile settings; no configuration changes.
-    - tasks propose SENTINEL sentinel.events recent [request-key]
+    - tasks propose TRON tron.events recent [request-key]
       # USAGE: Read up to ten newest Security-log IDs/record IDs/timestamps in the last 24 hours.
-    # EXAMPLE: tasks propose SENTINEL sentinel.defender status defender-check-1
+    # EXAMPLE: tasks propose TRON tron.defender status defender-check-1
 ```
 
-MCP example: `mcp request "SENTINEL: defender status; SENTINEL: firewall status; SENTINEL: events recent"`. Inspect and approve each child, then use `tasks run` once per queued task. Results identify REAL HOST SECURITY and observation UTC. Completed means the query was recorded, including possible UNAVAILABLE access; it does not certify host safety. Remediation and elevation are disabled. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md).
+MCP example: `mcp request "TRON: defender status; TRON: firewall status; TRON: events recent"`. Inspect and approve each child, then use `tasks run` once per queued task. Results identify REAL HOST SECURITY and observation UTC. Completed means the query was recorded, including possible UNAVAILABLE access; it does not certify host safety. Remediation and elevation are disabled. See [TRON implementation](Project_GRID_TRON_Security_Implementation.md).
 
 ## JN — Storage and files (5.5)
 

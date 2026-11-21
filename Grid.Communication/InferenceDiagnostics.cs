@@ -55,7 +55,7 @@ public sealed class InferenceSpan : IDisposable
     internal InferenceSpan(InferenceDiagnostics owner, Guid id, string agent, InferenceKind kind, long queuedAt)
     {
         this.owner = owner; this.id = id; this.kind = kind;
-        this.agent = agent is "MCP" or "MAXIS" or "JN" or "SENTINEL" or "VOLT" or "RELAY" ? agent : "unknown";
+        this.agent = agent is "MCP" or "MAXIS" or "JN" or "TRON" or "VOLT" or "RELAY" ? agent : "unknown";
         queue = Math.Max(0, (long)Stopwatch.GetElapsedTime(queuedAt, started).TotalMilliseconds);
         previous = current.Value; current.Value = this;
     }

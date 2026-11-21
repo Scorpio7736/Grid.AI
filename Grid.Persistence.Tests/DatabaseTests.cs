@@ -52,6 +52,19 @@ public sealed class DatabaseTests
     }
 
     [Fact]
+    public void HistoricalSecurityMigrationNameRemainsStableAfterTronRebrand()
+    {
+        var historical = string.Concat("SEN", "TINEL read-only security capabilities");
+        using var files = new DatabaseFiles();
+        files.Database.Initialize();
+        using (var connection = files.Database.OpenExisting())
+            Assert.Equal(historical, Scalar(connection, "SELECT Name FROM SchemaMigrations WHERE Version=17;"));
+        files.Database.Initialize();
+        using var reopened = files.Database.OpenExisting();
+        Assert.Equal(historical, Scalar(reopened, "SELECT Name FROM SchemaMigrations WHERE Version=17;"));
+    }
+
+    [Fact]
     public void EveryConnectionEnforcesForeignKeysAndFullSynchronization()
     {
         using var files = new DatabaseFiles(); files.Database.Initialize();

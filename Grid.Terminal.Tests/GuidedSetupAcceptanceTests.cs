@@ -101,9 +101,9 @@ public sealed class GuidedSetupAcceptanceTests : IDisposable
     [Fact]
     public void StorageProbePreservesWorldAndCleansTemporaryFile()
     {
-        File.WriteAllText(World, "sentinel");
+        File.WriteAllText(World, "canary");
         Assert.True(SetupHealth.Storage(World).Passed);
-        Assert.Equal("sentinel", File.ReadAllText(World)); Assert.Single(Directory.GetFiles(root));
+        Assert.Equal("canary", File.ReadAllText(World)); Assert.Single(Directory.GetFiles(root));
         File.SetAttributes(World, FileAttributes.ReadOnly);
         try { Assert.False(SetupHealth.Storage(World).Passed); }
         finally { File.SetAttributes(World, FileAttributes.Normal); }

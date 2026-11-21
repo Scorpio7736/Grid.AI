@@ -13,7 +13,7 @@ public sealed partial class GridSimulationEngine
         AgentRole.MCP => "Master Control Program, your digital helper. I coordinate reviewed work and bring back recorded results.",
         AgentRole.MAXIS => "Grid.AI's software engineer. I help with code, debugging, builds and tests.",
         AgentRole.JN => "Grid.AI's file archivist. I help with file inventories, duplicates, backups and retention.",
-        AgentRole.SENTINEL => "Grid.AI's security analyst. I help interpret Defender, firewall and security observations.",
+        AgentRole.TRON => "Grid.AI's security analyst. I help interpret Defender, firewall and security observations.",
         AgentRole.VOLT => "Grid.AI's resource steward. I help interpret hardware resources and Grid.AI pacing.",
         _ => "Grid.AI's messenger. I handle local notifications and recorded-result briefings."
     };
@@ -83,7 +83,7 @@ public sealed partial class GridSimulationEngine
         string[] Terms(AgentRole role) => role switch
         {
             AgentRole.MAXIS => ["code","coding","build","compile","compiler","debug","bug","tests","test","project","programming"],
-            AgentRole.SENTINEL => ["security","defender","firewall","malware","virus","threat","protection","vulnerability"],
+            AgentRole.TRON => ["security","defender","firewall","malware","virus","threat","protection","vulnerability"],
             AgentRole.JN => ["files","file","storage","disk","duplicates","duplicate","archive","backup","quota","cleanup"],
             AgentRole.VOLT => ["cpu","gpu","ram","memory","energy","power","resources","performance","throttle","load"],
             AgentRole.RELAY => ["notify","notification","notifications","message","messages","inbox","delivery","briefing","speak"],

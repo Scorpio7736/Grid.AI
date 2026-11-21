@@ -6,7 +6,7 @@
 
 Grid.Agent defines typed task, file-operation and receipt contracts. Grid.Simulation validates live identity and destination scope before passing requests to its existing task broker and file-change services. Capability-specific command and simulation adapters retain their execution isolation, argument allowlists, approval binding and cancellation behavior.
 
-MCP may delegate one level to MAXIS, SENTINEL, JN, VOLT or RELAY, with at most eight child tasks. Recursive delegation is refused. This implementation retains the existing single active broker job across all profiles and adds a ten-minute cancellation budget per ordered dispatch. Remaining children stay undispatched after failure or cancellation. These conservative limits are the initial implementation choice. Profile-specific concurrency increases and deeper delegation require later evaluation.
+MCP may delegate one level to MAXIS, TRON, JN, VOLT or RELAY, with at most eight child tasks. Recursive delegation is refused. This implementation retains the existing single active broker job across all profiles and adds a ten-minute cancellation budget per ordered dispatch. Remaining children stay undispatched after failure or cancellation. These conservative limits are the initial implementation choice. Profile-specific concurrency increases and deeper delegation require later evaluation.
 
 `mcp ledger <plan-id>` projects the saved parent/child task records into receipts containing status, attempts, start/finish times and SHA256 request/result fingerprints. Existing approval and task audit records supply detailed evidence. Saved tasks recover through the existing persistence path. Token-cost accounting is outside this receipt format.
 

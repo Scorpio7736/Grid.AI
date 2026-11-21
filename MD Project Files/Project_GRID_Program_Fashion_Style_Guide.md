@@ -147,7 +147,7 @@ When making future model sheets, present consistent **front, three-quarter, side
 | **Command officer** | Long structured overcoat over service uniform | More formal coat profile, light-grey or two-tone treatment |
 | **Field officer** | Darker fitted tunic, practical finishing | Greater mobility and material durability |
 
-High-level system agents (MCP, SENTINEL, MAXIS, JN, VOLT, RELAY) can each develop individual variations on this shared visual language. They need not all wear identical military uniforms: the rank/role architecture should remain readable through fit, silhouette, and purposeful details.
+High-level system agents (MCP, TRON, MAXIS, JN, VOLT, RELAY) can each develop individual variations on this shared visual language. They need not all wear identical military uniforms: the rank/role architecture should remain readable through fit, silhouette, and purposeful details.
 
 ## 5. Agent role identities
 
@@ -156,7 +156,7 @@ Proposed role-specific light accents, subordinate to the grey/black base:
 | Program | Responsibility | Proposed accent | Wardrobe treatment |
 |---|---|---|---|
 | **MCP** | Administration and coordination | Soft white / pale gold | Most formal, long coat optional, highly restrained light design |
-| **SENTINEL** | Security | Cool blue / cyan | Sharply tailored field-ready security uniform |
+| **TRON** | Security | Cool blue / cyan | Sharply tailored field-ready security uniform |
 | **MAXIS** | Engineering / development | Controlled amber | Utility-informed officer design, practical sleeves and belt |
 | **JN** | Data and archives | Teal / pale cyan | Clean intellectual-service silhouette, minimal ornament |
 | **VOLT** | Power / resource systems | Warm yellow / electric pale gold | Robust engineered workwear, clear functional seams |

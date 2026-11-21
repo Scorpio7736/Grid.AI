@@ -4,20 +4,20 @@ using System.Text;
 using System.Text.Json;
 namespace Grid.Simulation.Tasks;
 
-public interface ISentinelProbe
+public interface ITronProbe
 {
     Task<string> ReadAsync(string capability, CancellationToken token);
 }
-public static class SentinelPolicy
+public static class TronPolicy
 {
-    public static bool IsReal(string capability) => capability is "sentinel.defender" or "sentinel.firewall" or "sentinel.events";
-    public static bool Valid(string capability, string argument) => capability is "sentinel.defender" or "sentinel.firewall" ? argument == "status" : capability == "sentinel.events" && argument == "recent";
+    public static bool IsReal(string capability) => capability is "tron.defender" or "tron.firewall" or "tron.events";
+    public static bool Valid(string capability, string argument) => capability is "tron.defender" or "tron.firewall" ? argument == "status" : capability == "tron.events" && argument == "recent";
     public static string Render(string capability, string json, DateTimeOffset observed)
     {
-        if (!IsReal(capability) || json.Length > 32768) throw new InvalidDataException("Invalid SENTINEL observation.");
+        if (!IsReal(capability) || json.Length > 32768) throw new InvalidDataException("Invalid TRON observation.");
         using var document = JsonDocument.Parse(json); var root = document.RootElement;
-        if (!root.TryGetProperty("available",out var available) || available.ValueKind is not (JsonValueKind.True or JsonValueKind.False)) throw new InvalidDataException("Invalid SENTINEL availability.");
-        var source = capability switch { "sentinel.defender" => "Windows Defender / Get-MpComputerStatus", "sentinel.firewall" => "Windows Firewall / ActiveStore", _ => "Windows Security log / Get-WinEvent" };
+        if (!root.TryGetProperty("available",out var available) || available.ValueKind is not (JsonValueKind.True or JsonValueKind.False)) throw new InvalidDataException("Invalid TRON availability.");
+        var source = capability switch { "tron.defender" => "Windows Defender / Get-MpComputerStatus", "tron.firewall" => "Windows Firewall / ActiveStore", _ => "Windows Security log / Get-WinEvent" };
         var fields = new List<string> { "[REAL HOST SECURITY - READ ONLY]", "Observed UTC: " + observed.ToUniversalTime().ToString("O"), "Source: " + source };
         string Value(JsonElement item,string name)
         {
@@ -34,7 +34,7 @@ public static class SentinelPolicy
         {
             fields.Add("UNAVAILABLE: " + Value(root,"reason")); fields.Add("Protection is unknown; no clean/safe conclusion. No elevation requested.");
         }
-        else if (capability == "sentinel.defender")
+        else if (capability == "tron.defender")
         {
             foreach(var name in new[]{"AntivirusEnabled","RealTimeProtectionEnabled","AMServiceEnabled"}) fields.Add(name + ": " + Flag(root,name));
             fields.Add("Running mode: " + Value(root,"AMRunningMode"));
@@ -44,7 +44,7 @@ public static class SentinelPolicy
             if(new[]{"AntivirusEnabled","RealTimeProtectionEnabled","AMServiceEnabled"}.Any(n=>Flag(root,n)=="Disabled")) fields.Add("WARNING: Defender reports a disabled protection component; review Windows Security and any third-party antivirus.");
             fields.Add("No scan started. Status is not a malware-free guarantee.");
         }
-        else if (capability == "sentinel.firewall")
+        else if (capability == "tron.firewall")
         {
             if(!root.TryGetProperty("profiles",out var profiles) || profiles.ValueKind != JsonValueKind.Array || profiles.GetArrayLength()>3) throw new InvalidDataException("Invalid firewall profile observation.");
             foreach(var profile in profiles.EnumerateArray()) fields.Add(Value(profile,"Name") + ": " + Flag(profile,"Enabled") + "; inbound=" + Value(profile,"Inbound") + "; outbound=" + Value(profile,"Outbound"));
@@ -61,27 +61,27 @@ public static class SentinelPolicy
             fields.Add("Messages, account names, IP addresses and event payloads are not collected.");
         }
         var text=string.Join(" | ",fields);
-        if(text.Length>2048) throw new InvalidDataException("SENTINEL summary exceeded its saved result limit.");
+        if(text.Length>2048) throw new InvalidDataException("TRON summary exceeded its saved result limit.");
         return text;
     }
 }
 
 /// <summary>Fixed read-only Windows commands. No user text enters PowerShell.</summary>
-public sealed class WindowsSentinelProbe : ISentinelProbe
+public sealed class WindowsTronProbe : ITronProbe
 {
     public async Task<string> ReadAsync(string capability,CancellationToken token)
     {
-        if(!SentinelPolicy.IsReal(capability)) throw new ArgumentException("Unsupported SENTINEL action; remediation is disabled.");
+        if(!TronPolicy.IsReal(capability)) throw new ArgumentException("Unsupported TRON action; remediation is disabled.");
         if(!OperatingSystem.IsWindows()) return "{\"available\":false,\"reason\":\"Windows is required\"}";
         var body = capability switch
         {
-            "sentinel.defender" => """
+            "tron.defender" => """
                 Import-Module (Join-Path $PSHOME 'Modules/Defender/Defender.psd1') -ErrorAction Stop
                 $s = Defender\Get-MpComputerStatus -ErrorAction Stop
                 function Stamp($v) { if ($null -ne $v -and $v.Year -gt 1601) { $v.ToUniversalTime().ToString('o') } else { $null } }
                 @{available=$true; AntivirusEnabled=$s.AntivirusEnabled; RealTimeProtectionEnabled=$s.RealTimeProtectionEnabled; AMServiceEnabled=$s.AMServiceEnabled; AMRunningMode=$s.AMRunningMode; SignatureUpdated=(Stamp $s.AntivirusSignatureLastUpdated); QuickScanEnd=(Stamp $s.QuickScanEndTime); FullScanEnd=(Stamp $s.FullScanEndTime)} | ConvertTo-Json -Compress
                 """,
-            "sentinel.firewall" => """
+            "tron.firewall" => """
                 Import-Module (Join-Path $PSHOME 'Modules/NetSecurity/NetSecurity.psd1') -ErrorAction Stop
                 $p = @(NetSecurity\Get-NetFirewallProfile -PolicyStore ActiveStore -ErrorAction Stop | ForEach-Object { @{Name=$_.Name; Enabled=($(if ([int]$_.Enabled -eq 1) {$true} elseif ([int]$_.Enabled -eq 0) {$false} else {$null})); Inbound=$_.DefaultInboundAction.ToString(); Outbound=$_.DefaultOutboundAction.ToString()} })
                 @{available=$true; profiles=$p} | ConvertTo-Json -Compress -Depth 4

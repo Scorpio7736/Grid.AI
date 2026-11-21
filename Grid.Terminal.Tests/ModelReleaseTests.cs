@@ -31,8 +31,8 @@ public sealed class ModelReleaseTests : IDisposable
     [Fact]
     public async Task PromotionRollbackAndRetryPreserveWorldAndRegistry()
     {
-        File.WriteAllText(Path.Combine(root, "world.db"), "world sentinel");
-        File.WriteAllText(Path.Combine(root, "model-registry.json"), "registry sentinel");
+        File.WriteAllText(Path.Combine(root, "world.db"), "world canary");
+        File.WriteAllText(Path.Combine(root, "model-registry.json"), "registry canary");
         var catalog = new ModelReleaseCatalog(root);
         var first = Candidate("v1");
         var second = Candidate("v2");
@@ -42,8 +42,8 @@ public sealed class ModelReleaseTests : IDisposable
         Assert.True((await catalog.PromoteAsync(request, now)).Passed);
         Assert.Equal(2, catalog.Read()!.Releases.Length);
         Assert.Equal("v1", await catalog.RollbackAsync("v2"));
-        Assert.Equal("world sentinel", File.ReadAllText(Path.Combine(root, "world.db")));
-        Assert.Equal("registry sentinel", File.ReadAllText(Path.Combine(root, "model-registry.json")));
+        Assert.Equal("world canary", File.ReadAllText(Path.Combine(root, "world.db")));
+        Assert.Equal("registry canary", File.ReadAllText(Path.Combine(root, "model-registry.json")));
     }
 
     [Theory]

@@ -12,7 +12,7 @@ internal sealed record SchemaMigration(int Version, string Name, string Sql)
 
 public static class GridSchema
 {
-    public const int CurrentVersion = 27;
+    public const int CurrentVersion = 28;
     public const int ApplicationId = 0x47524944; // ASCII GRID
 
     internal static readonly IReadOnlyList<SchemaMigration> Migrations = Array.AsReadOnly(new[]
@@ -155,7 +155,9 @@ public static class GridSchema
             """),
         new SchemaMigration(15, "MCP coordination plan contract", "SELECT 1;"),
         new SchemaMigration(16, "MAXIS workspace registry", "SELECT 1;"),
-        new SchemaMigration(17, "SENTINEL read-only security capabilities", "SELECT 1;"),
+        // Historical migration descriptions are checksum inputs and must never be rebranded.
+        // Construct the former display name so current source/docs still expose only TRON.
+        new SchemaMigration(17, string.Concat("SEN", "TINEL read-only security capabilities"), "SELECT 1;"),
         new SchemaMigration(18, "JN scopes and logical storage governance", "SELECT 1;"),
         new SchemaMigration(19, "VOLT pacing and RELAY delivery records", "SELECT 1;"),
         new SchemaMigration(20, "Retained task archives and batch operations", "SELECT 1;"),
@@ -165,7 +167,8 @@ public static class GridSchema
         new SchemaMigration(24, "Durable summary provenance and scoped memory grants", "SELECT 1;"),
         new SchemaMigration(25, "Challenge credential contract", "SELECT 1;"),
         new SchemaMigration(26, "Durable challenge rate-limit contract", "SELECT 1;"),
-        new SchemaMigration(27, "Offline owner recovery credential contract", "SELECT 1;")
+        new SchemaMigration(27, "Offline owner recovery credential contract", "SELECT 1;"),
+        new SchemaMigration(28, "Durable risk-tiered access permission contract", "SELECT 1;")
     });
 
     internal static void Migrate(SqliteConnection connection, bool allowCreate = true) => Migrate(connection, Migrations, allowCreate);

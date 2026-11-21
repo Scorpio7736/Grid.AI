@@ -77,7 +77,7 @@ public static class TaskCommands
                 }
                 else if (args.Count != 0) return new("Usage: agents [initialize]");
                 return new((engine.IsRunning ? "GRID AGENTS: active" : "GRID AGENTS: paused; saved identities retained") + "\n" + TerminalTable.Render(["Role", "Capabilities"], engine.TasksFor(identity.Reference).Agents.Select(a => new[] {
-                    a.Role.ToString(), TaskCapabilities.For(a.Role) + (a.Role == AgentRole.MAXIS ? ", maxis.delay, inspect, build, test, suggest" : a.Role == AgentRole.SENTINEL ? ", defender, firewall, events" : a.Role == AgentRole.JN ? ", inventory, duplicates, cleanup, storage, quota" : a.Role == AgentRole.VOLT ? ", status, throttle" : a.Role == AgentRole.RELAY ? ", notify, brief, speak" : "") })) + "\n\ndemo/delay are demonstrations. Specialist capabilities are real and require approval; relay.speak produces audio.");
+                    a.Role.ToString(), TaskCapabilities.For(a.Role) + (a.Role == AgentRole.MAXIS ? ", maxis.delay, inspect, build, test, suggest" : a.Role == AgentRole.TRON ? ", defender, firewall, events" : a.Role == AgentRole.JN ? ", inventory, duplicates, cleanup, storage, quota" : a.Role == AgentRole.VOLT ? ", status, throttle" : a.Role == AgentRole.RELAY ? ", notify, brief, speak" : "") })) + "\n\ndemo/delay are demonstrations. Specialist capabilities are real and require approval; relay.speak produces audio.");
             }
             catch (Exception e) when (Expected(e)) { return Error(e); }
         }) { Capability = "session" });

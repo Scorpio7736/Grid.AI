@@ -1,5 +1,19 @@
 # Project Grid.AI - Current Implementation and Verification
 
+**Dedicated conversation close now ends the conversation — 2026-11-21.** Closing a conversation/meeting window through `/close`, title-bar close, pipe loss or process exit ends its host conversation, retains the transcript and clears pending per-window authorization/intent state. A later `connect` starts cleanly; ended conversations cannot resume. Ordinary attached terminals/data views still only detach. All **1,623 solution tests passed**, including 36 window lifecycle cases. Earlier conversation-window notes that describe close as detach-only are historical. [Current conversation contract](Project_GRID_Terminal_Conversations.md).
+
+**Dynamic access and remembered permissions — 2026-11-21.** MCP now reasons from outcome to route to required access, generates its own permission question, and interprets structured host evidence conversationally. Broad `host.system.read` handles date/time and Bluetooth evidence. High-risk `host.system.write` accepts only registered typed mutations: bounded relative adjustment, exact calendar date, or a day in the current month/year, with GRID consent and Windows UAC. Refusal prose and missing-information questions cannot create permission state. Schema v28 persists Normal/Medium/High grants with Once/Session/Always duration; exact file/task approval remains separate. Real bundled-Qwen read replay and non-executing natural calendar-date planning passed; real clock mutation remains manual. All **1,622 solution tests passed**. [Implementation and boundaries](Project_GRID_Dynamic_Access_Permissions.md).
+
+The earlier clock-specific permission note below is historical and superseded by this broad-path implementation.
+
+**Historical permission-first routing step — 2026-11-21.** This intermediate clock-specific implementation proved natural consent routing but has been replaced by the broad `host.system.read` path and saved Normal/Medium/High permission model documented above. Its 1,617-test result remains historical evidence, not the current contract.
+
+**Bare launch command renamed — 2026-11-21.** Windows startup installs `%LOCALAPPDATA%\GRID\bin\GRID-AI.cmd` and keeps that directory on the user PATH. From a fresh PowerShell or Command Prompt session, launch with `GRID-AI`; arguments such as `GRID-AI --start` are forwarded. Obsolete `Grid.AI.cmd`, `GridAI.cmd` and `Grid7736.cmd` launchers are removed only when their marker proves they were created by Grid.AI. Unmanaged scripts are never overwritten or deleted. The `GridAI` environment variable remains a compatible executable-path registration, but it is not the preferred command. The real user launcher migration and fresh-shell command resolution passed without opening a saved world; all **1,615 solution tests passed**.
+
+**TRON rename completed — 2026-11-21.** TRON replaces the former security-agent name across source, terminal syntax, prompts, meetings, models, tests and all Markdown documentation. Security capabilities are now `tron.defender`, `tron.firewall`, `tron.events` and `tron.demo`. Saved worlds normalize the stable role binding, resident display name, capability records, audit/result text and coordination records before validation; no task approval or replay is introduced. Migration 17's original database-history label remains immutable compatibility data rather than a user-facing identity. The real SQLite migration regression and all **1,613 solution tests passed**, and no former-name references remain in current source/docs. [Implementation](Project_GRID_TRON_Security_Implementation.md).
+
+**New Grid.AI logo implemented and visually refined — 2026-11-20.** Opening, animated login and graceful shutdown use a centered 78-column framed mark in the established Grid.AI palette at ordinary widths. The exact supplied 118-column ANSI art remains a compressed native C# asset and is reserved for windows at least 140 columns wide, where it is centered with margins. There is no Python or external-file dependency. Redirected output is clean plain text and narrow terminals retain compact branding. Fourteen focused rendering, animation, width, color and palette cases passed. [Details](Project_GRID_Login_Animation_and_Colors.md).
+
 **6.38 trust-center terminal foundation — 2026-11-19.** `trust activity` consolidates agent/model/task/tool/resource/scheduler evidence. Master Control has a reviewed new-file-only memory export, disabled immutable policy templates with individual grant/revoke controls, and disabled-first local goals/suggestions. Suggestions are on-demand deterministic text and cannot monitor, invoke AI/tools or execute/approve work. Five focused cases and the complete solution pass (**1,551 passed, 0 failed, 0 skipped**). Representative-user and physical second-device/offline acceptance remain open. [Controls, boundaries and acceptance protocol](Project_GRID_Trust_Personalization_and_Acceptance.md).
 
 **6.37 durable scheduler foundation — 2026-11-19.** Original-host Master Control can plan and explicitly enable bounded one-time, recurring and conditional offline jobs. Ownership/world scope, conditions, quiet hours, expiration, results, inbox entries and receipts persist atomically. Late jobs run once without catch-up; uncertain interrupted runs are disabled and never replayed. Supported actions are world/resource status and local notifications—not AI, agents, files, processes, network calls or automatic approvals. Seven focused cases and the complete solution pass (**1,546 passed, 0 failed, 0 skipped**). [Commands, boundaries and verification](Project_GRID_Scheduled_Workflows.md).
@@ -250,14 +264,14 @@ VOLT now reports existing host telemetry and supports approved normal/eco/auto p
 JN now inventories approved paths, reports possible duplicates, and prepares cleanup proposals without deleting source files. Defined GRID-managed storage is measured against an initial 20 GB decimal logical budget; MCP quota escalations require separate Master Control approval to change it. This is tracking/governance, not a hard write cap or disk reservation. Schema v18 preserves scope and quota history. **535 tests passed** (14 Core, 157 Simulation, 97 Persistence, 267 Terminal). See [JN implementation and acceptance test](Project_GRID_JN_Storage_Implementation.md) for limits, accounting roots, report retention and remaining planned automation. Next: **5.6 VOLT and RELAY**. Earlier milestone/schema/test statements below remain historical.
 
 
-## SENTINEL security — 5.4 completed (2026-10-21)
+## TRON security — 5.4 completed (2026-10-21)
 
-SENTINEL now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [SENTINEL implementation](Project_GRID_SENTINEL_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
+TRON now reads local Defender protection/scan timestamps, effective firewall profiles, and bounded Security-log metadata through individually approved tasks. Timestamped results explicitly distinguish real host observations, warnings and unavailable data from simulated incidents. No scans, setting changes, elevation or remediation are enabled. Schema v17 persists these results through the existing broker. **518 tests passed** (14 Core, 157 Simulation, 97 Persistence, 250 Terminal), including 13 new security cases and live read-only provider verification. See [TRON implementation](Project_GRID_TRON_Security_Implementation.md). Next: **5.5 JN — Storage and files**. Earlier milestone/schema/test statements below remain historical.
 
 
 ## MAXIS development — 5.3 completed (2026-10-21)
 
-MAXIS now supports registered-workspace inspection, fixed .NET build/test execution, saved diagnostics and explicit replacement suggestions staged outside original source. Every task requires human approval; build/test executes trusted project code as the current Windows user (no OS/network sandbox). Schema v16 persists immutable, revocable workspace registrations. Other specialists remain demonstrations. **505 tests passed** (14 Core, 157 Simulation, 97 Persistence, 237 Terminal). See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for commands, offline prerequisites, artifact retention and limits. Next: **5.4 SENTINEL**. Earlier milestone/schema/test statements below remain historical.
+MAXIS now supports registered-workspace inspection, fixed .NET build/test execution, saved diagnostics and explicit replacement suggestions staged outside original source. Every task requires human approval; build/test executes trusted project code as the current Windows user (no OS/network sandbox). Schema v16 persists immutable, revocable workspace registrations. Other specialists remain demonstrations. **505 tests passed** (14 Core, 157 Simulation, 97 Persistence, 237 Terminal). See [MAXIS implementation](Project_GRID_MAXIS_Development_Implementation.md) for commands, offline prerequisites, artifact retention and limits. Next: **5.4 TRON**. Earlier milestone/schema/test statements below remain historical.
 
 
 ## MCP administration — 5.2 completed (2026-10-21)
@@ -267,7 +281,7 @@ Explicit `mcp request` clauses now create atomic saved specialist task plans. MC
 
 ## Agent/task infrastructure - 5.1 completed (2026-10-21)
 
-Explicit `agents initialize` registers MCP, MAXIS, SENTINEL, JN, VOLT and RELAY by stable ID. Schema v14 persists a bounded task queue, immutable proposals, one-attempt human approvals, results and audit. `tasks propose/inspect/approve/cancel/retry/run` enforce role-specific allowlists and live session authority at the service boundary. The broker saves a running record before invocation, prevents concurrent dispatch, supports cancellation/timeouts and requires fresh approval for retries/restart recovery. Agent sessions cannot self-approve or borrow capabilities. **Only labeled demonstration adapters are enabled; no real PC task, shell execution, natural-language delegation or autonomous producer is implemented.** Chat/voice messages remain conversation data.
+Explicit `agents initialize` registers MCP, MAXIS, TRON, JN, VOLT and RELAY by stable ID. Schema v14 persists a bounded task queue, immutable proposals, one-attempt human approvals, results and audit. `tasks propose/inspect/approve/cancel/retry/run` enforce role-specific allowlists and live session authority at the service boundary. The broker saves a running record before invocation, prevents concurrent dispatch, supports cancellation/timeouts and requires fresh approval for retries/restart recovery. Agent sessions cannot self-approve or borrow capabilities. **Only labeled demonstration adapters are enabled; no real PC task, shell execution, natural-language delegation or autonomous producer is implemented.** Chat/voice messages remain conversation data.
 
 **472 tests passed**, including 15 new task integration cases covering authorization, persistence barriers, cancellation/retry, deduplication, SQL rollback and restart/recovery. Existing v13 worlds migrate without regenerating the city or automatically creating agents. Next planned module: 5.2 MCP coordination. See [task broker implementation](Project_GRID_Task_Broker_Implementation.md) for commands, bounds and limits. Earlier milestone/schema/test counts below remain historical.
 
@@ -384,15 +398,15 @@ Schema v8 persists social state and partial rounds, upgrades existing worlds wit
 
 Schema v7 preserves station assignments, remaining routes and edge timing in existing behavior JSON, validates them on restore and performs no offline catch-up. Older unassigned routines retain their 3.1 behavior. No agent population or interactive admin job configuration is added. **323 tests passed** in isolated Verification builds; disposable jobs/activity/save/reopen smoke passed. A running user Release session locked its binaries and was left untouched; rebuild the normal target after closing it to use the changes. See [Movement and Occupations](Project_GRID_Movement_and_Occupations.md) for policy, limits and full completion evidence. Earlier statements that movement/workplaces are pending refer to previous milestones.
 
-## Bare Grid7736 command support - 2026-10-20
+## Bare GRID-AI command support - renamed 2026-11-21
 
-Startup now also installs a managed `Grid7736.cmd` launcher in `%LOCALAPPDATA%\GRID\bin` and adds that directory to the Windows user PATH, preserving existing entries and avoiding duplicates. Type `Grid7736` directly in PowerShell or Command Prompt; arguments such as `--start` are forwarded. The persistent `Grid7736` environment variable remains supported. An existing unmanaged launcher is not overwritten. This extends the original variable-only 1.14 behavior.
+Startup installs a managed `GRID-AI.cmd` launcher in `%LOCALAPPDATA%\GRID\bin` and adds that directory to the Windows user PATH, preserving existing entries and avoiding duplicates. Type `GRID-AI` directly in PowerShell or Command Prompt; arguments such as `--start` are forwarded. The persistent `GridAI` executable-path variable remains supported. Existing unmanaged launchers are preserved.
 
 Restart the parent terminal app to inherit the new PATH. For the currently open PowerShell session, refresh it without closing the window:
 
 ```powershell
 $env:Path += ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
-Grid7736
+GRID-AI
 ```
 
 Verification: **89 terminal tests passed**. The bare command resolved to the installed launcher and successfully ran/exited with `--ephemeral --no-color`; no saved world was opened.
@@ -415,7 +429,7 @@ Command Prompt launch:
 "%Grid7736%"
 ```
 
-The environment variable is a path value; the managed PATH launcher above separately provides the bare `Grid7736` command. Already-open shells do not inherit changes from GRID. Restart the parent terminal/IDE, or sign out/in if necessary. To refresh only the current PowerShell shell without restarting:
+The environment variable is a path value; the managed PATH launcher above separately provides the bare `GRID-AI` command. Already-open shells do not inherit changes from Grid.AI. Restart the parent terminal/IDE, or sign out/in if necessary. To refresh only the current PowerShell shell without restarting:
 
 ```powershell
 $env:Grid7736 = [Environment]::GetEnvironmentVariable('Grid7736', 'User')

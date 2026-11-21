@@ -62,7 +62,7 @@ public sealed class TrustCenter
     }
     private static TrustState WithReceipt(TrustState state, string action, string subject, string outcome) => state with { Receipts = state.Receipts.Append(new(DateTimeOffset.UtcNow, action, subject, outcome)).TakeLast(256).ToArray() };
     private static TrustPermissionProfile Find(TrustState state, string id) => state.Profiles.SingleOrDefault(value => value.Id == id) ?? throw new ArgumentException("Unknown permission profile.");
-    private static string NormalizeAgent(string value) { value = value.ToUpperInvariant(); return value is "MCP" or "MAXIS" or "JN" or "SENTINEL" or "VOLT" or "RELAY" ? value : throw new ArgumentException("Use a registered system-agent role."); }
+    private static string NormalizeAgent(string value) { value = value.ToUpperInvariant(); return value is "MCP" or "MAXIS" or "JN" or "TRON" or "VOLT" or "RELAY" ? value : throw new ArgumentException("Use a registered system-agent role."); }
     private static bool Label(string value, int max) => value.Length is > 0 && value.Length <= max && value.All(character => char.IsAsciiLetterOrDigit(character) || character is '-' or '_' or '.');
     private static bool Text(string value, int max) => value.Length is > 0 && value.Length <= max && value.All(character => !char.IsControl(character));
     private static TrustPermissionProfile[] DefaultProfiles() =>

@@ -4,6 +4,38 @@ namespace Grid.Terminal.Tests;
 public sealed class TerminalEnvironmentTests
 {
     [Fact]
+    public void BareLauncherCommandUsesGridAiHyphenatedBrand()
+    {
+        Assert.Equal("GRID-AI.cmd", TerminalEnvironment.LauncherFileName);
+    }
+
+    [Fact]
+    public void ObsoleteManagedLaunchersAreRemovedButUserScriptIsPreserved()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "GridLauncherTest-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(folder);
+        try
+        {
+            var current = Path.Combine(folder, TerminalEnvironment.LauncherFileName);
+            File.WriteAllText(current, TerminalEnvironment.LauncherScript(@"C:\Grid\Grid.Terminal.exe"));
+            File.WriteAllText(Path.Combine(folder, "Grid.AI.cmd"), "@rem GRID.AI managed launcher\r\n@echo off\r\n");
+            File.WriteAllText(Path.Combine(folder, "Grid7736.cmd"), "@rem GRID7736 managed launcher\r\n@echo off\r\n");
+            var userScript = Path.Combine(folder, "GridAI.cmd");
+            File.WriteAllText(userScript, "@echo user-owned\r\n");
+
+            Assert.True(TerminalEnvironment.RemoveObsoleteManagedLaunchers(folder, current));
+            Assert.True(File.Exists(current));
+            Assert.True(File.Exists(userScript));
+            Assert.False(File.Exists(Path.Combine(folder, "Grid.AI.cmd")));
+            Assert.False(File.Exists(Path.Combine(folder, "Grid7736.cmd")));
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    [Fact]
     public void LauncherPathPreservesExistingEntriesAndDoesNotDuplicate()
     {
         var folder = @"C:\Users\Test\GRID\bin";
