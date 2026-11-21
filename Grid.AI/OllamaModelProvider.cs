@@ -61,7 +61,11 @@ public sealed class OllamaModelProvider : ILocalModelProvider
         static long? Counter(JsonElement root, string name) => root.TryGetProperty(name, out var item) && item.ValueKind == JsonValueKind.Number &&
             item.TryGetInt64(out var value) && value >= 0 ? value : null;
         return new(response.GetString()!, reason != "length", reason)
-        { OutputTokens = Counter(root, "eval_count"), GenerationNanoseconds = Counter(root, "eval_duration") };
+        {
+            OutputTokens = Counter(root, "eval_count"), GenerationNanoseconds = Counter(root, "eval_duration"),
+            LoadNanoseconds = Counter(root, "load_duration"), PromptTokens = Counter(root, "prompt_eval_count"),
+            PromptEvaluationNanoseconds = Counter(root, "prompt_eval_duration"), TotalNanoseconds = Counter(root, "total_duration")
+        };
     }
     public async IAsyncEnumerable<ModelChunk> StreamAsync(LocalModel model, ModelRequest request, [EnumeratorCancellation] CancellationToken token)
     {
