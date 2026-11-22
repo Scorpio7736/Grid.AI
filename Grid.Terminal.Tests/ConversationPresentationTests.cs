@@ -25,7 +25,10 @@ public sealed class ConversationPresentationTests
         Assert.Equal("MCP: fake error", output.OfColor(ConsoleColor.White));
         Assert.Contains(body, output.OfColor(ConsoleColor.Yellow));
         Assert.Empty(output.OfColor(ConsoleColor.Red));
-        Assert.Equal(Math.Min(System.Globalization.StringInfo.ParseCombiningCharacters(body).Length, TypewriterRenderer.MaximumAnimatedElements), delays);
+        // The 24-element animation budget includes the five-character "MCP: " heading.
+        // Heading characters are styled but not delayed, leaving 19 delayed body elements.
+        Assert.Equal(Math.Min(System.Globalization.StringInfo.ParseCombiningCharacters(body).Length,
+            TypewriterRenderer.MaximumAnimatedElements - "MCP: ".Length), delays);
     }
     [Fact]
     public async Task DisabledAnimationKeepsStylesAndDoesNotPollOrDelay()
