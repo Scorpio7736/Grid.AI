@@ -105,7 +105,7 @@ public sealed partial class ChatCommands
         var turn = engine.PrepareGroundedTurn(id, Actor, text, origin);
         var responder = engine.ResolveProgram(turn.ResponderId.ToString()).Name;
         var capabilityPrompt = !conversationOnly && identity.IsMaster && !Find(id).IsMeeting && responder.Equals("MCP", StringComparison.OrdinalIgnoreCase)
-            ? "\nROUTE: infer outcome→route→access. Use Conversation for explanations, programming questions, general knowledge and advice that need no current host evidence. Answer the actual question with substantive details/examples, not a promise to answer. Use Access ONLY when the requested outcome genuinely requires current host evidence or an authorized system operation; ask a natural permission question. Never claim host access for normal conversation or expose internal route IDs. PATH: " + HostObservationCatalog.CompactPrompt
+            ? "\nROUTE: Conversation for answers, concepts, code examples and advice. Access only for current PC evidence or registered system changes; ask permission, never act. No invented host actions or permission. PATH: " + HostObservationCatalog.CompactPrompt
             : "";
         var reference = identity.Reference;
         var consumed = 0;
