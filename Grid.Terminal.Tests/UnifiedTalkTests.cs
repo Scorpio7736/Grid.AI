@@ -491,6 +491,36 @@ public sealed class UnifiedTalkTests : IDisposable
         Assert.Empty(engine.GetSnapshot().Tasks.Records);
     }
 
+    [Theory]
+    [InlineData("Write a complete C# binary search tree implementation with insertion, deletion, and inorder traversal. Explain the code and clearly state whether you actually compiled or tested it.")]
+    [InlineData("Generate a C# class demonstrating inorder traversal.")]
+    [InlineData("Draft Python code for a binary search tree.")]
+    public async Task CodeCompositionWithoutFileTargetAnswersInlineWithoutPermissionOrFileDraft(string request)
+    {
+        await Input("connect MCP -inline");
+        ai.Reply = "Here is a source-code example, not tested on this PC: public sealed class Tree { }";
+        var reply = await Input(request);
+        Assert.Equal(1, ai.Calls);
+        Assert.Equal(0, ai.StructuredCalls);
+        Assert.Contains("public sealed class Tree", reply.Text);
+        Assert.DoesNotContain("file destination", reply.Text, StringComparison.OrdinalIgnoreCase);
+        Assert.Empty(engine.GetSnapshot().Communications.AccessPermissions);
+        Assert.Empty(engine.GetSnapshot().Tasks.Records);
+        Assert.Null(chat.PendingHostOperationForTests);
+    }
+
+    [Fact]
+    public async Task ExplicitCodeFileTargetStillRequiresReviewedFileChange()
+    {
+        await Input("connect MCP -inline");
+        var result = await Input("write file Tree.cs in demo with content public class Tree {}");
+        Assert.Equal(0, ai.Calls);
+        Assert.NotNull(result.FileChange);
+        Assert.Equal("Draft", result.FileChange.State);
+        Assert.Empty(engine.GetSnapshot().Communications.AccessPermissions);
+        Assert.Empty(engine.GetSnapshot().Tasks.Records);
+    }
+
     [Fact]
     public async Task PlainCodingReplyCannotEscalateEvenWithValidAccessJson()
     {
