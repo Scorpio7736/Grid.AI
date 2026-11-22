@@ -43,6 +43,17 @@ public sealed class ModelProfileTests
         Assert.Equal(4096,handler.Body.Value.GetProperty("options").GetProperty("num_ctx").GetInt32());
     }
     [Fact]
+    public void McpLongFormAnswerBudgetIsBoundedAndDoesNotExpandOtherAgentBudgets()
+    {
+        var mcp = AgentModelProfiles.Get("MCP");
+        Assert.Equal(1536, mcp.InitialTokens);
+        Assert.Equal(3072, mcp.RetryTokens);
+        Assert.Equal(4096, mcp.ContextTokens);
+        Assert.Equal(512, AgentModelProfiles.Get("MAXIS").InitialTokens);
+        Assert.Equal(1536, AgentModelProfiles.Get("MAXIS").RetryTokens);
+    }
+
+    [Fact]
     public async Task LowMemoryFileRequestsUseCpuAndSmallerContext()
     {
         var handler=new Handler(); using var backend=new OllamaLocalBackend(handler,lowMemory:true); await using var ai=new SharedLocalInference(backend);
