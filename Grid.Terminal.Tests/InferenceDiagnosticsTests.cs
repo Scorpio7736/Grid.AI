@@ -195,7 +195,7 @@ public sealed class InferenceDiagnosticsTests
     [Fact]
     public async Task BenchmarkCommandRequiresOriginalHostMasterAndDoesNotCreateTasks()
     {
-        var engine = new Grid.Simulation.GridSimulationEngine(Grid.Simulation.GridWorldFactory.CreateGenesis());
+        var engine = new Grid.Simulation.GridSimulationEngine(Grid.Core.GridWorldFactory.CreateGenesis());
         var identity = new Grid.Terminal.TerminalIdentitySession(() => "benchmark-owner");
         identity.Attach(engine);
         var backend = new FixedBenchmarkBackend();
