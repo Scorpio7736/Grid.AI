@@ -14,6 +14,40 @@ public sealed class TypewriterTests
         Assert.Equal(8, delays); Assert.True(checks >= 2);
     }
     [Fact]
+    public async Task LongReplyAnimationIsCappedAndRemainderIsRenderedOnce()
+    {
+        var output = new StringWriter(); var delays = 0; var checks = 0;
+        var text = new string('a', 800) + "😀e\u0301" + new string('z', 800);
+        await TypewriterRenderer.WriteAsync(output, text, 0, true, () => false,
+            () => { checks++; return Task.CompletedTask; }, default,
+            _ => { delays++; return Task.CompletedTask; });
+        Assert.Equal(text + Environment.NewLine, output.ToString());
+        Assert.Equal(TypewriterRenderer.MaximumAnimatedElements, delays);
+        Assert.True(checks >= 7); // Periodic checks during bulk rendering.
+    }
+    [Fact]
+    public async Task RevokedSessionStopsLongReplyDuringBulkFlush()
+    {
+        var output = new StringWriter(); var checks = 0;
+        await Assert.ThrowsAsync<IOException>(() => TypewriterRenderer.WriteAsync(output,
+            new string('x', 1024), 0, true, () => false,
+            () => ++checks == 5 ? Task.FromException(new IOException("revoked")) : Task.CompletedTask,
+            default, _ => Task.CompletedTask));
+        Assert.True(output.ToString().Length >= TypewriterRenderer.MaximumAnimatedElements);
+        Assert.True(output.ToString().Length < 1024);
+        Assert.DoesNotContain(Environment.NewLine, output.ToString());
+    }
+    [Fact]
+    public async Task SkipStillChecksRevocationBeforeFlushingLongReply()
+    {
+        var output = new StringWriter(); var checks = 0;
+        await Assert.ThrowsAsync<IOException>(() => TypewriterRenderer.WriteAsync(output,
+            new string('x', 1024), 0, true, () => true,
+            () => ++checks == 2 ? Task.FromException(new IOException("revoked")) : Task.CompletedTask,
+            default, _ => throw new InvalidOperationException("skip must not delay")));
+        Assert.Empty(output.ToString());
+    }
+    [Fact]
     public async Task SkipFlushesRemainingResponseOnceWithoutDelays()
     {
         var output = new StringWriter();
