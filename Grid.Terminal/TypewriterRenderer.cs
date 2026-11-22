@@ -4,6 +4,10 @@ namespace Grid.Terminal;
 /// <summary>Presentation only: never generates, saves or dispatches messages.</summary>
 public static class TypewriterRenderer
 {
+    // Cap the decorative typewriter effect at ~480 ms. A long, fully validated
+    // response must not take tens of seconds to appear solely because of UI animation.
+    public const int MaximumAnimatedElements = 24;
+    private const int RemainingChunkLength = 256;
     public static bool Enabled(bool inputRedirected, bool outputRedirected, string? term, string? preference) =>
         !inputRedirected && !outputRedirected && !string.Equals(term, "dumb", StringComparison.OrdinalIgnoreCase) &&
         !string.Equals(preference, "off", StringComparison.OrdinalIgnoreCase);
@@ -45,6 +49,22 @@ public static class TypewriterRenderer
                 index = next;
             }
         }
+        async Task WriteRemainingSafely(int position)
+        {
+            // Chunked output permits cancellation and session revocation to stop
+            // a large response before the entire remainder is revealed.
+            while (position < text.Length)
+            {
+                token.ThrowIfCancellationRequested();
+                await validateSession();
+                var end = Math.Min(text.Length, position + RemainingChunkLength);
+                // Don't split a surrogate pair between writes.
+                if (end < text.Length && char.IsHighSurrogate(text[end - 1])) end--;
+                await WriteRange(position, end - position);
+                await output.FlushAsync();
+                position = end;
+            }
+        }
         token.ThrowIfCancellationRequested();
         await validateSession();
         if (!enabled || animateFrom is not { } start || start < 0 || start >= text.Length)
@@ -57,10 +77,9 @@ public static class TypewriterRenderer
             token.ThrowIfCancellationRequested();
             // Keep the attachment lease alive and stop revealing text after session revocation.
             if (count++ % 16 == 0) await validateSession();
-            if (skip())
+            if (skip() || count > MaximumAnimatedElements)
             {
-                await validateSession();
-                await WriteRange(start + elements.ElementIndex, text.Length - start - elements.ElementIndex);
+                await WriteRemainingSafely(start + elements.ElementIndex);
                 break;
             }
             await WriteRange(start + elements.ElementIndex, elements.GetTextElement().Length);
