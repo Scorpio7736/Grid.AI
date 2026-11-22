@@ -23,6 +23,9 @@ public sealed class UnifiedTalkTests : IDisposable
         public bool Available = true;
         public Queue<string> Replies = new();
         public int Calls;
+        public int StructuredCalls;
+        public Task<InferenceReply> GenerateStructuredAsync(string prompt, string schema, CancellationToken token = default)
+        { StructuredCalls++; return GenerateAsync(prompt, token); }
         public Func<Task>? BeforeReply;
         public async Task<InferenceReply> GenerateAsync(string prompt, CancellationToken token = default)
         { Calls++; Prompt = prompt; if (BeforeReply is { } before) await before(); return new InferenceReply(Available, Replies.Count > 0 ? Replies.Dequeue() : Reply, "controlled test"); }
@@ -352,6 +355,7 @@ public sealed class UnifiedTalkTests : IDisposable
         ai.Replies.Enqueue("{\"version\":1,\"message\":\"Your PC's local date is available in the verified system information.\"}");
 
         var permission = await Input("hey do you know what the date is?");
+        Assert.True(ai.StructuredCalls > 0); // Live host observations keep structured authorization routing.
         Assert.Contains("MCP", permission.Text);
         Assert.Contains("May I use read-only system access once", permission.Text);
         Assert.DoesNotContain("workspace", permission.Text, StringComparison.OrdinalIgnoreCase);
@@ -467,6 +471,24 @@ public sealed class UnifiedTalkTests : IDisposable
         const string consent = "{\"route\":\"Access\",\"hostCapability\":\"host.system.write\",\"argument\":\"planned\",\"message\":\"May I make this system change now?\"}";
         Assert.True(HostObservationCatalog.TryParseRoute(consent, out access, out _, out _, out _));
         Assert.True(access);
+    }
+
+    [Theory]
+    [InlineData("Explain binary search trees in C# with insertion, deletion, and traversal examples. Include working C# code.")]
+    [InlineData("What is a binary search tree?")]
+    [InlineData("How do I implement a binary search tree in C#?")]
+    public async Task ConceptualCodingQuestionsUsePlainConversationWithoutHostPermission(string request)
+    {
+        await Input("connect MCP -inline");
+        ai.Reply = "A BST keeps smaller keys to the left. Example C#: public sealed class Node { public int Value; public Node? Left, Right; }";
+        var result = await Input(request);
+        Assert.Equal(1, ai.Calls);
+        Assert.Equal(0, ai.StructuredCalls);
+        Assert.Contains("public sealed class Node", result.Text);
+        Assert.Contains("writing C# examples in the chat NEVER require host access", ai.Prompt);
+        Assert.DoesNotContain("\\\"route\\\"", result.Text);
+        Assert.Empty(engine.GetSnapshot().Communications.AccessPermissions);
+        Assert.Empty(engine.GetSnapshot().Tasks.Records);
     }
 
     [Fact]
