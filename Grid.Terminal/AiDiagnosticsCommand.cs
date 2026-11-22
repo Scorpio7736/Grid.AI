@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Grid.Communication;
 using Grid.Simulation.Tasks;
@@ -18,6 +19,42 @@ public static class AiDiagnosticsCommand
         var sorted = samples.OrderBy(x => x).ToArray();
         return sorted.Length == 0 ? null : sorted[(int)Math.Ceiling(sorted.Length * 0.95) - 1];
     }
+    // These are fixed, public, non-sensitive prompts; no user source or conversation content enters the benchmark.
+    // The existing SharedLocalInference FIFO, host lease, token limits and diagnostics remain authoritative.
+    public static async Task<string> BenchmarkAsync(SharedLocalInference service, Func<bool> current, CancellationToken token)
+    {
+        var probes = new (string Agent, string Prompt, string Expected)[]
+        {
+            ("MCP", "Reply with exactly GRID BENCHMARK READY. No punctuation.", "GRID BENCHMARK READY"),
+            ("MCP", "Reply with exactly GRID BENCHMARK WARM. No punctuation.", "GRID BENCHMARK WARM"),
+            ("MAXIS", "Reply with exactly GRID BENCHMARK CODE. No punctuation.", "GRID BENCHMARK CODE")
+        };
+        var lines = new List<string> {
+            "LIVE LOCAL INFERENCE PROBE — three fixed prompts, no files, tasks, or cloud calls.",
+            "The first request is not guaranteed to be cold. Use --evaluate-model-baseline with normal GRID sessions closed for controlled cold/streamed first-text evidence."
+        };
+        foreach (var probe in probes)
+        {
+            token.ThrowIfCancellationRequested();
+            if (!current()) return "Benchmark stopped: host authorization was revoked. No model output displayed.";
+            var stopwatch = Stopwatch.StartNew();
+            var reply = await service.ForAgent(probe.Agent).GenerateAsync(probe.Prompt, token);
+            token.ThrowIfCancellationRequested();
+            if (!current()) return "Benchmark stopped: host authorization was revoked. No model output displayed.";
+            var trace = reply.RequestId is { } id
+                ? service.Diagnostics.Snapshot().LastOrDefault(t => t.Id == id) : null;
+            var exact = reply.Available && string.Equals(reply.Text.Trim(), probe.Expected, StringComparison.Ordinal);
+            // Never print raw model output or transport errors; show only classification and safe timing fields.
+            lines.Add($"{probe.Agent}: {(exact ? "exact" : reply.Available ? "non-exact" : "unavailable")} | wall {stopwatch.ElapsedMilliseconds} ms" +
+                $" | queue {trace?.QueueMilliseconds.ToString() ?? "unknown"} ms" +
+                $" | model load {trace?.ModelLoadMilliseconds?.ToString() ?? "unknown"} ms" +
+                $" | prefill {trace?.PromptEvaluationMilliseconds?.ToString() ?? "unknown"} ms");
+            if (!reply.Available) break;
+        }
+        lines.Add("This is a tiny diagnostic sample, not a p95 benchmark or production-model evaluation. Buffered chat does not expose first visible token timing.");
+        return string.Join("\n", lines);
+    }
+
     public static IReadOnlyList<ToolDiagnostic> Tools(TaskState state) => state.Records.TakeLast(20).Select(task => new ToolDiagnostic(
         task.Id, task.AgentId, state.Agents.Single(a => a.Id == task.AgentId).Role, task.Status, task.Attempts,
         task.Audit.LastOrDefault(a => a.Action == "Started")?.AtUtc,
@@ -27,7 +64,38 @@ public static class AiDiagnosticsCommand
         SharedLocalInference service, Func<TaskState>? tasks)
     {
         if (!identity.IsMaster || identity.IsAttachment) return new("Use the original host terminal as Master Control.");
-        if (args.Count > 2 || args.Count == 2 && args[1] is not ("details" or "clear")) return new("Usage: ai diagnostics [details|clear]");
+        if (args.Count > 2 || args.Count == 2 && args[1] is not ("details" or "clear" or "benchmark")) return new("Usage: ai diagnostics [details|clear|benchmark]");
+        if (args.Count == 2 && args[1] == "benchmark")
+        {
+            var reference = identity.Reference;
+            var used = 0;
+            return new("", BrokerOperation: async token =>
+            {
+                if (Interlocked.Exchange(ref used, 1) != 0 || !identity.IsMaster || identity.Reference != reference)
+                    return new("Benchmark authorization expired or was already consumed.");
+                try
+                {
+                    using var authorization = TerminalRequestAuthorization.AcquireStandalone(identity, "ai.diagnostic",
+                        () => identity.IsMaster && identity.Reference == reference);
+                    using var stop = CancellationTokenSource.CreateLinkedTokenSource(token);
+                    stop.CancelAfter(TimeSpan.FromSeconds(90));
+                    bool Current() => authorization.IsCurrent && identity.IsMaster && identity.Reference == reference;
+                    var run = BenchmarkAsync(service, Current, stop.Token);
+                    while (!run.IsCompleted)
+                    {
+                        await Task.WhenAny(run, Task.Delay(50, token));
+                        if (token.IsCancellationRequested || !Current()) { stop.Cancel(); break; }
+                    }
+                    var report = await run;
+                    if (token.IsCancellationRequested || !Current())
+                        return new("Benchmark authorization expired; results withheld.");
+                    return new(report);
+                }
+                catch (OperationCanceledException) { return new("Benchmark cancelled or exceeded the 90-second budget."); }
+                catch (Exception error) when (error is UnauthorizedAccessException or InvalidOperationException)
+                { return new("Benchmark refused: " + error.GetType().Name); }
+            });
+        }
         if (args.Count == 2 && args[1] == "clear") { service.Diagnostics.Clear(); return new("In-memory inference diagnostics cleared. Existing task audit records remain unchanged."); }
         var rows = service.Diagnostics.Snapshot().TakeLast(20).ToArray();
         var tools = tasks is null ? [] : Tools(tasks());
