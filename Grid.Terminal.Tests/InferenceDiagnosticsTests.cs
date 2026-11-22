@@ -163,6 +163,28 @@ public sealed class InferenceDiagnosticsTests
         Assert.Equal(0, backend.Calls);
     }
     [Fact]
+    public async Task CancelledBenchmarkDoesNotReachModel()
+    {
+        var backend = new FixedBenchmarkBackend();
+        await using var service = new SharedLocalInference(backend);
+        using var stop = new CancellationTokenSource();
+        stop.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => AiDiagnosticsCommand.BenchmarkAsync(service, () => true, stop.Token));
+        Assert.Equal(0, backend.Calls);
+    }
+    [Fact]
+    public async Task RevokedBetweenStepsStopsBenchmarkWithoutFurtherModelCalls()
+    {
+        var backend = new FixedBenchmarkBackend();
+        await using var service = new SharedLocalInference(backend);
+        var checks = 0;
+        var report = await AiDiagnosticsCommand.BenchmarkAsync(service,
+            () => Interlocked.Increment(ref checks) < 2, CancellationToken.None);
+        Assert.Contains("revoked", report);
+        Assert.Equal(1, backend.Calls);
+    }
+    [Fact]
     public async Task BenchmarkClassifiesInvalidOutputWithoutDisplayingPrivateResponse()
     {
         await using var service = new SharedLocalInference(new Backend());
