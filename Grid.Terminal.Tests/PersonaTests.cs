@@ -25,7 +25,10 @@ public sealed class PersonaTests
     {
         var instruction = new AgentPersonas().Assemble(agent, false).SystemInstruction;
         Assert.Contains("Generated examples are untested", instruction);
-        Assert.Contains("Never say 'I tested it'", instruction);
+        Assert.Contains("covering every requested operation", instruction);
+        Assert.Contains("loop termination, branches and edge cases", instruction);
+        Assert.Contains("contradictory tested/untested claims", instruction);
+        Assert.Contains("Never call generated code tested", instruction);
         Assert.Contains("trusted host tool", instruction);
     }
 
