@@ -8,6 +8,9 @@
 
 ### 6.39A — Baseline and responsive inference (P0)
 
+**Implementation slice in `feat/6-39a-inference-timing` (2026-11-21; pending compile/test):** Extends existing bounded, content-free inference traces with provider-reported Ollama model-load, prompt-evaluation, prompt-token and total-generation durations. `ai diagnostics` now shows provider load/prefill timings and nearest-rank p95 queue/end-to-end latency for the most recent 20 requests; JSON details include nullable timing fields and timestamp-derived tool durations. Added focused regression cases for retries, missing data and percentiles. **Not yet verified on a running GRID host**: compiler/full-suite execution, real warm/cold measurements, first-visible-token streaming (buffered requests intentionally report unknown), request-to-tool correlation, and end-to-end MAXIS benchmarking. Do not check off 6.39A until these remaining requirements are implemented and measured.
+
+
 - [ ] Instrument end-to-end request timings: admission/queue wait, cold/warm model load, prompt processing, first visible token when supported, generation, tool execution and finished result; correlate by scoped task/request ID, redact prompts and secrets.
 - [ ] Benchmark real owner workflows on target 32 GB RAM/8 GB VRAM Windows PC: simple chat, follow-up, intent parsing, MAXIS coding and concurrent messages; report p50/p95, tokens/s and context size before changing policies.
 - [ ] Keep deterministic reads/status, cancellations, help and unambiguous intents off the inference queue; replace avoidable repeated model classification with validated deterministic dispatch.
