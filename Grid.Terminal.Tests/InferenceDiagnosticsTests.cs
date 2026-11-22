@@ -128,6 +128,66 @@ public sealed class InferenceDiagnosticsTests
         Assert.Equal(95, AiDiagnosticsCommand.Percentile95(Enumerable.Range(1, 100).Reverse().Select(i => (long)i)));
         Assert.Equal(12, AiDiagnosticsCommand.Percentile95(new long[] { 1, 12, 3 }));
     }
+    private sealed class FixedBenchmarkBackend : IInferenceBackend
+    {
+        public int Calls;
+        public Task<string> GenerateAsync(string prompt, CancellationToken token)
+        {
+            Interlocked.Increment(ref Calls);
+            if (prompt.Contains("GRID BENCHMARK READY", StringComparison.Ordinal)) return Task.FromResult("GRID BENCHMARK READY");
+            if (prompt.Contains("GRID BENCHMARK WARM", StringComparison.Ordinal)) return Task.FromResult("GRID BENCHMARK WARM");
+            if (prompt.Contains("GRID BENCHMARK CODE", StringComparison.Ordinal)) return Task.FromResult("GRID BENCHMARK CODE");
+            throw new InvalidOperationException("Unexpected diagnostic prompt");
+        }
+    }
+    [Fact]
+    public async Task LiveBenchmarkUsesOnlyExistingInferenceQueueAndDoesNotRevealOutputs()
+    {
+        var backend = new FixedBenchmarkBackend();
+        await using var service = new SharedLocalInference(backend);
+        var report = await AiDiagnosticsCommand.BenchmarkAsync(service, () => true, CancellationToken.None);
+        Assert.Equal(3, backend.Calls);
+        Assert.Equal(3, service.Diagnostics.Snapshot().Count);
+        Assert.Contains("MCP: exact", report);
+        Assert.Contains("MAXIS: exact", report);
+        Assert.DoesNotContain("Reply with", report); // Prompt bodies never appear in diagnostics.
+        Assert.Contains("Buffered chat does not expose first visible token timing", report);
+    }
+    [Fact]
+    public async Task BenchmarkRevokedHostDoesNotCallLocalModel()
+    {
+        var backend = new FixedBenchmarkBackend();
+        await using var service = new SharedLocalInference(backend);
+        var report = await AiDiagnosticsCommand.BenchmarkAsync(service, () => false, CancellationToken.None);
+        Assert.Contains("revoked", report);
+        Assert.Equal(0, backend.Calls);
+    }
+    [Fact]
+    public async Task BenchmarkClassifiesInvalidOutputWithoutDisplayingPrivateResponse()
+    {
+        await using var service = new SharedLocalInference(new Backend());
+        var report = await AiDiagnosticsCommand.BenchmarkAsync(service, () => true, CancellationToken.None);
+        Assert.Contains("non-exact", report);
+        Assert.DoesNotContain("PRIVATE RESPONSE", report);
+    }
+    [Fact]
+    public async Task BenchmarkCommandRequiresOriginalHostMasterAndDoesNotCreateTasks()
+    {
+        var engine = new Grid.Simulation.GridSimulationEngine(Grid.Simulation.GridWorldFactory.CreateGenesis());
+        var identity = new Grid.Terminal.TerminalIdentitySession(() => "benchmark-owner");
+        identity.Attach(engine);
+        var backend = new FixedBenchmarkBackend();
+        await using var service = new SharedLocalInference(backend);
+        Assert.Contains("original host", AiDiagnosticsCommand.Execute(["diagnostics", "benchmark"], identity, service, null).Text);
+        Assert.Equal(0, backend.Calls);
+        identity.Login();
+        var command = AiDiagnosticsCommand.Execute(["diagnostics", "benchmark"], identity, service, null);
+        Assert.NotNull(command.BrokerOperation);
+        var result = await command.BrokerOperation!(CancellationToken.None);
+        Assert.Contains("LIVE LOCAL INFERENCE PROBE", result.Text);
+        Assert.Equal(3, backend.Calls);
+        Assert.Empty(engine.GetSnapshot().Tasks.Records);
+    }
     [Fact]
     public void ToolProjectionDoesNotExposeArgumentsResultsOrAuditDetails()
     {
