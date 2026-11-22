@@ -9,7 +9,7 @@ public sealed record AgentModelProfile(string Agent, string Purpose, int Context
 public static class AgentModelProfiles
 {
     public static IReadOnlyList<AgentModelProfile> All { get; } = Array.AsReadOnly(new[] {
-        new AgentModelProfile("MCP", Grid.Agent.AgentPersonas.Purpose("MCP"), InitialTokens: 1024),
+        new AgentModelProfile("MCP", Grid.Agent.AgentPersonas.Purpose("MCP"), InitialTokens: 1536, RetryTokens: 3072),
         new AgentModelProfile("MAXIS", Grid.Agent.AgentPersonas.Purpose("MAXIS")),
         new AgentModelProfile("JN", Grid.Agent.AgentPersonas.Purpose("JN")),
         new AgentModelProfile("TRON", Grid.Agent.AgentPersonas.Purpose("TRON")),
