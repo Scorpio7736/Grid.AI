@@ -497,7 +497,7 @@ public sealed class UnifiedTalkTests : IDisposable
         await Input("connect MCP -inline");
         ai.Replies.Enqueue("{\"route\":\"Access\",\"hostCapability\":\"host.system.read\",\"argument\":\"once\",\"message\":\"I'll explain binary search trees with examples.\"}");
         ai.Replies.Enqueue("A binary search tree stores smaller keys on the left and larger keys on the right. In C#, insert by comparing keys and descending until an empty child is reached.");
-        var result = await Input("Explain binary search trees in C# with insertion examples.");
+        var result = await Input("Check this PC\'s current date.");
         Assert.Equal(2, ai.Calls);
         Assert.Contains("CORRECTION:", ai.Prompt);
         Assert.Contains("binary search tree stores", result.Text);
@@ -514,7 +514,7 @@ public sealed class UnifiedTalkTests : IDisposable
         await Input("connect MCP -inline");
         ai.Replies.Enqueue("{\"route\":\"Access\",\"hostCapability\":\"host.system.write\",\"argument\":\"planned\",\"message\":\"I'll explain it after changing the system.\"}");
         ai.Replies.Enqueue("{\"route\":\"Access\",\"hostCapability\":\"host.system.write\",\"argument\":\"planned\",\"message\":\"May I change your system settings?\"}");
-        var result = await Input("Explain binary search trees.");
+        var result = await Input("Check this PC\'s current local time.");
         Assert.Equal(2, ai.Calls);
         Assert.Contains("couldn't produce a valid answer", result.Text);
         Assert.DoesNotContain("\"route\"", result.Text);
@@ -529,7 +529,7 @@ public sealed class UnifiedTalkTests : IDisposable
     {
         await Input("connect MCP -inline");
         ai.Replies.Enqueue("{\"route\":\"Conversation\",\"hostCapability\":\"\",\"argument\":\"\",\"message\":\"A BST has an ordered left and right subtree.\"}");
-        var result = await Input("What is a binary search tree?");
+        var result = await Input("Does this PC have Bluetooth enabled?");
         Assert.Equal(1, ai.Calls);
         Assert.Contains("ordered left and right subtree", result.Text);
         Assert.DoesNotContain("\"route\"", result.Text);
