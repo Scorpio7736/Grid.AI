@@ -90,8 +90,9 @@ public static class AttachedTerminal
                 if (line is null) break;
                 if (line.TrimStart().StartsWith("screen ask ", StringComparison.OrdinalIgnoreCase))
                     await output.WriteLineAsync("SCREEN CAPTURE REQUESTED — one selected-monitor frame; offline OCR/local AI, no continuous recording.");
-                reply = await TerminalWorkStatus.AwaitWithNoticeAsync(
-                    Send(new("command", line)), output, stop.Token);
+                var sent = Send(new("command", line));
+                reply = await (Console.IsOutputRedirected ? sent
+                    : TerminalWorkStatus.AwaitWithNoticeAsync(sent, output, stop.Token));
                 if (reply.PickFiles)
                 {
                     if (!string.IsNullOrWhiteSpace(reply.Text)) await output.WriteLineAsync(reply.Text);
