@@ -133,10 +133,19 @@ public sealed partial class ChatCommands
                 if (token.IsCancellationRequested || !Current() || !authorization.IsCurrent) return new("Conversation cancelled or session revoked; nothing stored.");
                 var routed = HostObservationCatalog.TryParseRoute(reply.Text, out var proposed,
                     out var proposedCapability, out var proposedArgument, out var proposedMessage);
+                // Only an explicit structured host-routing request may propose host access.
+                // Plain conversation output, including a spoofed valid Access envelope,
+                // has no authority to create permission state.
+                if (!useAccessRouter && routed)
+                {
+                    if (!proposed) reply = reply with { Text = proposedMessage };
+                    routed = false;
+                    proposed = false;
+                }
                 // A rejected Access route is NOT an answer and must never be shown as raw
                 // model JSON or converted into a pending permission. Retry once as plain
                 // conversation (within the same host lease, deadline and inference queue).
-                if (useAccessRouter && reply.Available && !routed &&
+                if (reply.Available && !routed &&
                     reply.Text.TrimStart().StartsWith("{", StringComparison.Ordinal) &&
                     reply.Text.Contains("\"route\"", StringComparison.Ordinal))
                 {
