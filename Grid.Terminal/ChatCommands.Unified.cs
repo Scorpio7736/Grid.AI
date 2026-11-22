@@ -12,6 +12,20 @@ public sealed partial class ChatCommands
     private FollowUp? followUp;
     private (FollowUp Scope, string Text)? talkDetails;
     private static bool Starts(string text, string pattern) => Regex.IsMatch(text, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    private static bool IsInlineCodeRequest(string input)
+    {
+        if (!Regex.IsMatch(input, @"^(?:write|generate|draft|create|make)(?: me)?\b",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)) return false;
+        if (!Regex.IsMatch(input, @"(?:C#|C\+\+|\b(?:code|source code|algorithm|implementation|class|function|method|snippet|example|Python|Java)\b)",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)) return false;
+        // Explicit host/file targets must continue through the validated file/task
+        // interpretation flow; a missing destination must not be inferred.
+        return !Regex.IsMatch(input,
+            @"(?:\b(?:file|files|folder|directory|path|workspace|repository|repo|project|solution|desktop|documents|save|disk)\b|\.(?:cs|csproj|py|java|cpp|h|hpp|txt)\b|\b(?:in|into)\s+Visual\s+Studio\b|\badd\s+(?:it|this)\s+(?:to|into)\b)",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    }
+
     private CommandResult Explain(string text) => ConversationPresentation.AgentReply("GRID", text) with { AnimateFrom = null };
     private CommandResult Dispatch(params string[] tokens) => dispatcher.ExecuteTokens(tokens);
     private FollowUp Pending(string kind, string request, string workspace = "", string target = "") =>
@@ -208,6 +222,11 @@ public sealed partial class ChatCommands
         }
         if (Starts(input, @"^(approve|run|apply|delete|remove|execute|nge|transfer|copy|grant|revoke|fix|do (it|that))\b"))
             return Explain("Which operation and target do you mean? I can plan a task or draft a file edit. Approval needs an exact ID: talk approve task <id> or talk approve edit <id>. Nothing executed.");
+        // "Write C# code" with no file/host destination means compose source in chat,
+        // not an implicit file creation. Keep explicit paths, workspaces, projects and
+        // file requests on the existing reviewed-change route.
+        if (IsInlineCodeRequest(input))
+            return Send(id, input, MessageOrigin.Terminal, conversationOnly: true);
         // Advice and conceptual explanations do not require a host access route.
         // Host-backed actions, current device facts and file operations retain their
         // separate reviewed and permission-gated routes.
