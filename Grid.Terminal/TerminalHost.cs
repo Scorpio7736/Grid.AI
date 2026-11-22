@@ -74,7 +74,9 @@ public sealed class TerminalHost(GridSimulationEngine engine, CommandDispatcher 
                     if (!string.IsNullOrWhiteSpace(result.Text)) await output.WriteLineAsync(result.Text);
                     using var brokerStop = CancellationTokenSource.CreateLinkedTokenSource(shutdown.Token);
                     var operation = dispatch(brokerStop.Token);
-                    var shown = TerminalWorkStatus.AwaitWithNoticeAsync(operation, output, brokerStop.Token);
+                    var shown = interactiveConfirmation && showPrompt
+                        ? TerminalWorkStatus.AwaitWithNoticeAsync(operation, output, brokerStop.Token)
+                        : operation;
                     if (await Task.WhenAny(shown, scheduler, autosave, monitoring) != shown) brokerStop.Cancel();
                     try { result = await shown; }
                     catch (OperationCanceledException) { result = new("Task dispatch cancelled."); }
