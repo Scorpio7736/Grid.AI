@@ -77,8 +77,8 @@ public sealed class InferenceDiagnosticsTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
         {
             var body = request.RequestUri!.AbsolutePath == "/api/show" ? "{}" :
-                ++attempts == 1 ? "{\"done\":true,\"done_reason\":\"length\",\"response\":\"PRIVATE\",\"eval_count\":10,\"eval_duration\":1000000000}" :
-                "{\"done\":true,\"response\":\"PRIVATE\",\"eval_count\":20,\"eval_duration\":1000000000}";
+                ++attempts == 1 ? "{\"done\":true,\"done_reason\":\"length\",\"response\":\"PRIVATE\",\"eval_count\":10,\"eval_duration\":1000000000,\"load_duration\":2000000,\"prompt_eval_count\":7,\"prompt_eval_duration\":3000000,\"total_duration\":1009000000}" :
+                "{\"done\":true,\"response\":\"PRIVATE\",\"eval_count\":20,\"eval_duration\":1000000000,\"load_duration\":4000000,\"prompt_eval_count\":11,\"prompt_eval_duration\":5000000,\"total_duration\":1011000000}";
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(body) });
         }
     }
@@ -89,6 +89,12 @@ public sealed class InferenceDiagnosticsTests
         await service.ForAgent("MAXIS").GenerateAsync("private"); var trace = Assert.Single(service.Diagnostics.Snapshot());
         Assert.Equal(2, trace.Attempts); Assert.Equal(30, trace.OutputTokens); Assert.Equal(15, trace.TokensPerSecond);
         Assert.Equal("MAXIS/v2", trace.PromptVersion); Assert.Equal("qwen3:4b", trace.Model); Assert.Equal(64, trace.ModelRevision!.Length);
+        Assert.Equal(6, trace.ModelLoadMilliseconds);
+        Assert.Equal(8, trace.PromptEvaluationMilliseconds);
+        Assert.Equal(18, trace.PromptTokens);
+        Assert.Equal(2020, trace.ProviderTotalMilliseconds);
+        Assert.Null(trace.FirstVisibleTokenMilliseconds); // Buffered path cannot measure a visible first token.
+        Assert.True(trace.EndToEndMilliseconds >= trace.QueueMilliseconds);
     }
     [Fact]
     public void InvalidCountersAndMetadataCannotLeakOrOverflow()
@@ -103,6 +109,26 @@ public sealed class InferenceDiagnosticsTests
         Assert.DoesNotContain("PRIVATE", JsonSerializer.Serialize(trace));
     }
     [Fact]
+    public async Task ProviderTimingCountersStayUnknownWhenNotReturned()
+    {
+        await using var service = new SharedLocalInference(new Backend());
+        Assert.True((await service.GenerateAsync("private")).Available);
+        var trace = Assert.Single(service.Diagnostics.Snapshot());
+        Assert.Null(trace.ModelLoadMilliseconds);
+        Assert.Null(trace.PromptEvaluationMilliseconds);
+        Assert.Null(trace.PromptTokens);
+        Assert.Null(trace.ProviderTotalMilliseconds);
+        Assert.Null(trace.FirstVisibleTokenMilliseconds);
+        Assert.DoesNotContain("PRIVATE", JsonSerializer.Serialize(trace));
+    }
+    [Fact]
+    public void LatencyPercentileIsNearestRankAndSupportsEmptySamples()
+    {
+        Assert.Null(AiDiagnosticsCommand.Percentile95(Array.Empty<long>()));
+        Assert.Equal(95, AiDiagnosticsCommand.Percentile95(Enumerable.Range(1, 100).Reverse().Select(i => (long)i)));
+        Assert.Equal(12, AiDiagnosticsCommand.Percentile95(new long[] { 1, 12, 3 }));
+    }
+    [Fact]
     public void ToolProjectionDoesNotExposeArgumentsResultsOrAuditDetails()
     {
         var agent = new SystemAgent(Guid.NewGuid(), AgentRole.MAXIS);
@@ -110,6 +136,7 @@ public sealed class InferenceDiagnosticsTests
             Grid.Simulation.Tasks.TaskStatus.Completed, 1, null, "PRIVATE RESULT", [new(DateTimeOffset.UtcNow, "Finished", null, null, "PRIVATE DETAIL")]);
         var rows = AiDiagnosticsCommand.Tools(new([agent], [task])); Assert.Single(rows);
         Assert.DoesNotContain("PRIVATE", JsonSerializer.Serialize(rows));
+        Assert.Null(rows[0].ElapsedMilliseconds); // Missing start timestamp is not a zero-duration operation.
     }
     [Fact]
     public void EmbeddedSuiteAndThresholdsMatchEvidencePolicy()
