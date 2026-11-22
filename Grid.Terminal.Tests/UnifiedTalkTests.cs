@@ -492,6 +492,35 @@ public sealed class UnifiedTalkTests : IDisposable
     }
 
     [Fact]
+    public async Task PlainCodingReplyCannotEscalateEvenWithValidAccessJson()
+    {
+        await Input("connect MCP -inline");
+        ai.Replies.Enqueue("{\"route\":\"Access\",\"hostCapability\":\"host.system.read\",\"argument\":\"once\",\"message\":\"May I access your PC to explain C#?\"}");
+        ai.Replies.Enqueue("Here is a C# example: public sealed class Node { public int Value; }");
+        var result = await Input("Explain binary search trees with a C# code example.");
+        Assert.Equal(2, ai.Calls);
+        Assert.Equal(0, ai.StructuredCalls);
+        Assert.Contains("public sealed class Node", result.Text);
+        Assert.DoesNotContain("\"route\"", result.Text);
+        Assert.Empty(engine.GetSnapshot().Communications.AccessPermissions);
+        Assert.Empty(engine.GetSnapshot().Tasks.Records);
+        Assert.Null(chat.PendingHostOperationForTests);
+    }
+
+    [Fact]
+    public async Task PlainCodingReplyMayUnwrapOnlyAConversationEnvelope()
+    {
+        await Input("connect MCP -inline");
+        ai.Replies.Enqueue("{\"route\":\"Conversation\",\"hostCapability\":\"\",\"argument\":\"\",\"message\":\"Here is a safe C# example: public sealed class Node { }\"}");
+        var result = await Input("Explain binary search trees with a C# example.");
+        Assert.Equal(1, ai.Calls);
+        Assert.Equal(0, ai.StructuredCalls);
+        Assert.Contains("public sealed class Node", result.Text);
+        Assert.DoesNotContain("\"route\"", result.Text);
+        Assert.Empty(engine.GetSnapshot().Communications.AccessPermissions);
+    }
+
+    [Fact]
     public async Task InvalidAccessRouteForGeneralProgrammingQuestionRetriesAsDirectConversation()
     {
         await Input("connect MCP -inline");
