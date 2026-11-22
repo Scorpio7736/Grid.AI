@@ -208,8 +208,11 @@ public sealed partial class ChatCommands
         }
         if (Starts(input, @"^(approve|run|apply|delete|remove|execute|nge|transfer|copy|grant|revoke|fix|do (it|that))\b"))
             return Explain("Which operation and target do you mean? I can plan a task or draft a file edit. Approval needs an exact ID: talk approve task <id> or talk approve edit <id>. Nothing executed.");
-        if (Starts(input, @"^(how (do|can|should|would|to)|advice\b|help me (understand|learn)|explain\b|what is (the best|a good))"))
-            return Send(id, input, MessageOrigin.Terminal);
+        // Advice and conceptual explanations do not require a host access route.
+        // Host-backed actions, current device facts and file operations retain their
+        // separate reviewed and permission-gated routes.
+        if (Starts(input, @"^(how (do|can|should|would|to)|advice\b|help me (understand|learn)|explain\b|what is (a|an|the best|a good)\b)"))
+            return Send(id, input, MessageOrigin.Terminal, conversationOnly: true);
         if (Starts(input, @"^(?:task|ask|have|assign)\b.{0,120}\b(?:agent|agents|MAXIS|JN|VOLT|TRON|RELAY)\b.{0,80}\b(?:to|with)\b"))
             return InterpretAction(input);
         if (Starts(input, @"^(?:I\s+)?(?:need|want|would like)\b[\s\S]*\b(?:file|document|folder|task|agent|created|made|written|updated|deleted|searched|built|tested|saved|copied|moved)\b"))
