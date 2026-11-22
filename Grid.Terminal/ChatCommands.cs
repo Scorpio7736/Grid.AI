@@ -105,7 +105,7 @@ public sealed partial class ChatCommands
         var turn = engine.PrepareGroundedTurn(id, Actor, text, origin);
         var responder = engine.ResolveProgram(turn.ResponderId.ToString()).Name;
         var capabilityPrompt = identity.IsMaster && !Find(id).IsMeeting && responder.Equals("MCP", StringComparison.OrdinalIgnoreCase)
-            ? "\nROUTE: infer outcome→route→access. Current host facts use a matching PATH. Access writes a natural permission question; Conversation answers naturally. Collections need no member. Never expose IDs. PATH: " + HostObservationCatalog.CompactPrompt
+            ? "\nROUTE: infer outcome→route→access. Use Conversation for explanations, programming questions, general knowledge and advice that need no current host evidence. Answer the actual question with substantive details/examples, not a promise to answer. Use Access ONLY when the requested outcome genuinely requires current host evidence or an authorized system operation; ask a natural permission question. Never claim host access for normal conversation or expose internal route IDs. PATH: " + HostObservationCatalog.CompactPrompt
             : "";
         var reference = identity.Reference;
         var consumed = 0;
@@ -133,6 +133,41 @@ public sealed partial class ChatCommands
                 if (token.IsCancellationRequested || !Current() || !authorization.IsCurrent) return new("Conversation cancelled or session revoked; nothing stored.");
                 var routed = HostObservationCatalog.TryParseRoute(reply.Text, out var proposed,
                     out var proposedCapability, out var proposedArgument, out var proposedMessage);
+                // A rejected Access route is NOT an answer and must never be shown as raw
+                // model JSON or converted into a pending permission. Retry once as plain
+                // conversation (within the same host lease, deadline and inference queue).
+                if (useAccessRouter && reply.Available && !routed &&
+                    reply.Text.TrimStart().StartsWith("{", StringComparison.Ordinal) &&
+                    reply.Text.Contains("\"route\"", StringComparison.Ordinal))
+                {
+                    const string correction = "\nCORRECTION: Your previous structured route was invalid. " +
+                        "Do not request host access, create a plan, or return route JSON. " +
+                        "Answer the user's question directly in natural language with useful details and code examples when requested. " +
+                        "If current host facts are essential, say they are unverified; never invent host observations. " +
+                        "Do not claim any action was performed.";
+                    var retry = inference.ForAgent(responder).GenerateAsync(turn.Prompt + correction, stop.Token);
+                    while (!retry.IsCompleted)
+                    {
+                        await Task.WhenAny(retry, Task.Delay(50, stop.Token));
+                        if (token.IsCancellationRequested || !Current() || !authorization.IsCurrent) { stop.Cancel(); break; }
+                    }
+                    var repaired = await retry;
+                    if (token.IsCancellationRequested || !Current() || !authorization.IsCurrent)
+                        return new("Conversation cancelled or session revoked; nothing stored.");
+                    var conversationRoute = HostObservationCatalog.TryParseRoute(repaired.Text, out var retryAccess,
+                        out _, out _, out var retryMessage) && !retryAccess;
+                    reply = repaired.Available && CommunicationState.ValidContent(repaired.Text) && conversationRoute
+                        ? repaired with { Text = retryMessage }
+                        : repaired.Available && CommunicationState.ValidContent(repaired.Text) &&
+                            !(repaired.Text.TrimStart().StartsWith("{", StringComparison.Ordinal) &&
+                              repaired.Text.Contains("\"route\"", StringComparison.Ordinal))
+                            ? repaired
+                            : new InferenceReply(true,
+                                "I couldn't produce a valid answer. No host access was requested. Please rephrase your question.",
+                                "Invalid conversational route");
+                    routed = false;
+                    proposed = false;
+                }
                 var presentedReply = routed ? reply with { Text = proposedMessage } : reply;
                 var result = identity.Execute("chat", () =>
                 {
