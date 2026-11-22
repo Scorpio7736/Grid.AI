@@ -249,7 +249,7 @@ public sealed class LocalInferenceTests
         await using var service=new SharedLocalInference(backend);
         var reply=structured ? await service.GenerateStructuredAsync("answer") : await service.GenerateAsync("answer");
         Assert.True(reply.Available);Assert.False(reply.ResponseRejected);Assert.Equal("complete final answer",reply.Text);
-        Assert.Equal(new[]{512,1536},limits);Assert.Equal(prompts[0],prompts[1]);
+        Assert.Equal(new[]{1536,3072},limits);Assert.Equal(prompts[0],prompts[1]);
     }
     [Fact]
     public async Task RepeatedTruncationIsRejectedWithAccurateReasonAndQueueStillWorks()
