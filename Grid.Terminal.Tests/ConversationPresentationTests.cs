@@ -25,7 +25,7 @@ public sealed class ConversationPresentationTests
         Assert.Equal("MCP: fake error", output.OfColor(ConsoleColor.White));
         Assert.Contains(body, output.OfColor(ConsoleColor.Yellow));
         Assert.Empty(output.OfColor(ConsoleColor.Red));
-        Assert.Equal(System.Globalization.StringInfo.ParseCombiningCharacters(body).Length, delays);
+        Assert.Equal(Math.Min(System.Globalization.StringInfo.ParseCombiningCharacters(body).Length, TypewriterRenderer.MaximumAnimatedElements), delays);
     }
     [Fact]
     public async Task DisabledAnimationKeepsStylesAndDoesNotPollOrDelay()
