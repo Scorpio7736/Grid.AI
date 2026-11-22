@@ -433,6 +433,24 @@ public sealed class UnifiedTalkTests : IDisposable
         Assert.Equal("AdjustSystemClock", bound.Operation);
         Assert.Equal(60, bound.OffsetSeconds);
         Assert.Equal(3, ai.Calls);
+
+        HostSystemOperation? executed = null;
+        chat.HostSystemExecutorForTests = (operation, _) =>
+        {
+            executed = operation;
+            return Task.FromResult(new HostObservationResult("host.system.write", "planned", DateTimeOffset.UtcNow,
+                "{\"operation\":\"AdjustSystemClock\",\"success\":true,\"offsetSeconds\":60}"));
+        };
+        ai.Replies.Enqueue("{\"version\":1,\"action\":\"GrantOnce\",\"message\":\"I'll use that permission once.\"}");
+        ai.Replies.Enqueue("{\"version\":1,\"message\":\"The PC clock was moved ahead by one minute.\"}");
+
+        var completed = await Input("go ahead");
+        Assert.Contains("moved ahead by one minute", completed.Text);
+        Assert.Same(bound, executed);
+        Assert.Equal(5, ai.Calls);
+        var grant = Assert.Single(engine.GetSnapshot().Communications.AccessPermissions);
+        Assert.Equal(Grid.Agent.AccessGrantDuration.Once, grant.Duration);
+        Assert.NotNull(grant.ConsumedAtUtc);
     }
 
     [Fact]

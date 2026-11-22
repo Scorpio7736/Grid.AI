@@ -1,75 +1,10 @@
-**User-directed deferral — 2026-11-14:** Copy/transfer and second-PC offline acceptance are deferred until the transfer device is ready. Keep their unchecked acceptance gates open; continue local terminal milestones beginning with 6.32. This is a scheduling change, not a successful portable-device verification or Phase 7 approval.
-
 # Project GRID — Master Development Checklist
 
-## 6.39 — Experience, Agent Reliability & Connected Devices (active requirements, 2026-11-21)
-
-**Status: planned; all acceptance items below are open.** User priority is dependable everyday operation: responsive local AI, completed tasks, understandable conversational UX, Even G2 terminal access, Wi-Fi-preferred phone contact and approvals, reliable autonomous coding, and task automation. **Hard invariant:** GRID initiates no work, network contact, call, glasses session, notification, or scheduled action unless the authoritative GRID host is running. Persist only inert settings, task state and audit/history after shutdown. This milestone takes priority over Phase 7 Grid.Platform/Android portability and optional GUI pending explicit re-prioritization; the former GUI section 6.39 remains **Future Plan C**, not part of this milestone.
-
-### 6.39A — Baseline and responsive inference (P0)
-
-**Sixth live conversation check (2026-11-21, user Windows host):** after the latest 1,654/1,654 full .NET suite passed, MCP returned a substantive C# binary-search-tree example without routing JSON or a host-access prompt. The inference record shows success, queue 147 ms, run 13,337 ms, load 1,861 ms, prefill 234 ms, 115.7 tokens/sec. This establishes routing and timing acceptance, **not C# correctness**: the visible sample contains `var parent = null` (invalid type inference), an insertion `while (true)` without a post-insertion exit, an explicitly incomplete deletion case, and mutually contradictory `tested`/`untested` claims. Strengthened model persona instructions to check code completeness, type/nullability, loop termination and to avoid unsupported verification claims; updated the persona regression assertions. **These new wording/tests have not yet been built or run on the Windows host.** No local build, test, or host execution was performed during the conversation. Live model-quality acceptance remains open.
-
-**Implementation slice in `feat/6-39a-inference-timing` (2026-11-21; pending compile/test):** Extends existing bounded, content-free inference traces with provider-reported Ollama model-load, prompt-evaluation, prompt-token and total-generation durations. `ai diagnostics` now shows provider load/prefill timings and nearest-rank p95 queue/end-to-end latency for the most recent 20 requests; JSON details include nullable timing fields and timestamp-derived tool durations. Added focused regression cases for retries, missing data and percentiles. A second slice adds original-host Master Control-only `ai diagnostics benchmark`: three fixed MCP/MAXIS prompts through the existing inference queue, bounded to 90 seconds, with exact-answer classifications and timing while never exposing raw model text or starting separate services. Tests cover unauthenticated calls, cancellation and revoked host scope. A third slice fixes the post-inference terminal bottleneck: typewriter output is capped at 24 animated text elements (maximum 480 ms of intentional delay), the rest is flushed in cancellation- and session-checked chunks, and main/attached terminals show one content-free waiting message after 700 ms for long operations. Regression tests cover long Unicode/styled text, revocation, cancellation, and the waiting notice. Existing offline/standalone model acceptance already measures first generated text using a verified streaming provider, but live UI streaming is not yet connected and **no live partial model text is displayed before output validation**. **Live verification (user-run Windows host, 2026-11-21):** the full .NET test suite was reported passing after two test-only assertion/namespace repairs; local `ai test` succeeded; benchmark returned 3/3 exact outputs (MCP 1,772/2,013 ms, MAXIS 2,224 ms; warm queue 0 ms), and live timing/audit/working notices rendered as intended. **Fifth physical conversation and regression results (user-run Windows host, 2026-11-21/22):** writing a complete C# BST implementation was misclassified as a scoped file action and asked for a destination, even though the operator requested an inline code example and test-status statement. The test run (before the subsequent pull) showed 7 failures: 2 inference-budget assertions still expected 512/1,536 instead of 1,536/3,072; 4 grounded tone assertions could no longer find explicit `No flattery`; and a prompt-bound assertion saw the long access-route instruction appended beyond the 3,200-byte budget. Follow-up on `master` now routes clear source-code composition with no file/workspace destination to ordinary chat, preserving explicit reviewed file requests; shortens the structured permission prompt to fit within the existing reserved bytes; restores the tone contract; updates the two model-budget assertions; adds tests for exact C# request and destination-sensitive routing. **Not yet compiled/tested on user machine** after these commits; actual code compilation/verification of AI-generated sample remains separate.\n\n**Fourth physical conversation result (user-run Windows host, 2026-11-21):** user reports the updated full .NET suite passes, and a fresh original-host MCP inline conversation now returns substantive binary-search-tree C# source instead of `OutputLimit`, raw routing JSON, or an access permission refusal. The pasted console message is intentionally excerpted and does not establish that the full generated program compiles. The model claimed `I've tested it for basic functionality` without a verified GRID build/test receipt; this is an honesty failure, not evidence of a test run. Persona instructions now explicitly prohibit first-person claims of compiling/running/testing code without trusted tool evidence. Automated persona-instruction assertions were added, **but the latest phrasing fix has not been executed against the local model or full suite**. Continue manual model-quality acceptance; terminal rendering truncation is not established by the excerpt alone.\n\n**Third physical conversation result (user-run Windows host, 2026-11-21):** user repeated the full C# BST example request; model returned `OutputLimit` after ~24.6s and GRID showed its deterministic fallback rather than code. The subsequent console log shows the full .NET test command executed **before** the `git pull` that updated the checkout, so two observed grounding/recall failures and an xUnit analyzer warning are not confirmation against the newest sources. Follow-up patch shortens the trusted groundwork prompt by ~695 characters to restore reserved space for scoped memory/recall within the existing 3,200-byte cap, increases MCP initial/retry output budgets to 1,536/3,072 tokens, and replaces the analyzer warning with the predicate overload. **No updated live build or full suite has yet been verified for this patch.** Test the complete suite after pulling and stopping the old GRID instance; rerun the same C# question only after rebuilding/restarting.\n\n**Second physical conversation result (user-run Windows host, 2026-11-21):** the invalid-route JSON was no longer displayed, but MCP instead claimed that composing working C# examples required host access; the live request generated two inference records and did not answer. Follow-up repair routes clear conceptual/advice questions directly through the non-structured chat profile; forbids any plain model output from creating host permissions even if it embeds a valid Access envelope; clarifies system/persona instructions that writing examples is not executing on the PC; removes the blanket 100-word limit for explicitly detailed replies; and raises MCP's initial text generation ceiling to 1,024 tokens for requested explanation/code examples. Added targeted regression tests for plain-advice routing, adversarial route envelopes, and continued structured host-access permission flow. **This follow-up has not yet been compiled or verified with live Qwen on the user's PC; do not mark the acceptance gate complete.**\n\nThe conversational follow-up revealed a separate MCP routing fault: a conceptual C# question was misclassified as an invalid Access JSON envelope. A bounded, host-lease-checked conversational retry now prevents displaying invalid route JSON or creating a pending permission from it. New regression tests were added but **this follow-up fix has not yet been compiled or live-tested**. **Still unverified/incomplete for 6.39A**: controlled cold/warm performance sample, first-visible-token streaming (buffered requests report unknown), request-to-tool correlation, and end-to-end MAXIS benchmarking. Do not check off 6.39A until these remaining requirements are implemented and measured.
+**User-directed deferral — 2026-11-14:** Copy/transfer and second-PC offline acceptance are deferred until the transfer device is ready. Keep their unchecked acceptance gates open; continue local terminal milestones beginning with 6.32. This is a scheduling change, not a successful portable-device verification or Phase 7 approval.
 
 
-- [ ] Instrument end-to-end request timings: admission/queue wait, cold/warm model load, prompt processing, first visible token when supported, generation, tool execution and finished result; correlate by scoped task/request ID, redact prompts and secrets.
-- [ ] Benchmark real owner workflows on target 32 GB RAM/8 GB VRAM Windows PC: simple chat, follow-up, intent parsing, MAXIS coding and concurrent messages; report p50/p95, tokens/s and context size before changing policies.
-- [ ] Keep deterministic reads/status, cancellations, help and unambiguous intents off the inference queue; replace avoidable repeated model classification with validated deterministic dispatch.
-- [ ] Evaluate streaming to existing Terminal/Even clients and fair priority-aware local inference scheduling; ensure that long MAXIS requests cannot starve short conversations or evade existing authorization/rate limits.
-- [ ] Compare locally runnable model profiles against the bundled Qwen baseline for latency, comprehension, code repairs and memory pressure; never silently download a model, bypass sealed runtime checks or assume a larger model will be faster.
-- [ ] Add timeout, cancellation, queue-full, concurrent-agent and offline regression coverage. Set performance thresholds only after baseline measurements.
 
-### 6.39B — Durable task completion and MAXIS coding (P0)
-
-- [ ] Extend existing MCP coordination/TaskState and MAXIS, not a parallel task queue: request -> grounded plan -> scoped authorization -> execute -> observe -> verify -> bounded repair/retry -> completed/blocked/failed receipt.
-- [ ] Preserve work across conversations and process restarts as inert checkpoints, with exact step IDs, outcome evidence and safe idempotency checks; never replay an approval, side-effecting step or stale file mutation on restart.
-- [ ] Execute coding in a registered, isolated Git worktree with relevant repository instructions, hash/path policy and controlled build/test subprocesses. Preserve user worktrees, uncommitted edits, and unrelated files.
-- [ ] Allow repeat diagnosis and repair within an explicitly approved scope/attempt budget; require exact-content review for file mutations and fresh authority for steps exceeding scope. Do not grant arbitrary shell, auto-commit, push, deploy or delete.
-- [ ] Verify real compiler/test outcomes and changed-file diffs, then summarize what completed, what failed and how to resume. Exhausted retries, unclear requirements and revoked grants yield actionable blocked states, not fabricated success.
-- [ ] Introduce optional **Codex cloud escalation** only on explicit user opt-in after cost/privacy disclosure and exact data-sharing preview; defaults stay local/offline, and cloud is impossible while GRID is stopped. Measure completion on repeatable realistic multi-file tasks.
-
-### 6.39C — Conversational and terminal UX (P0/P1)
-
-- [ ] Present one user request as one tracked workflow; avoid repeated 'submit/review/approve/run' conversational ceremony where deterministic safe continuation is possible, while retaining exact risk-tier and mutation approvals.
-- [ ] Differentiate queueing, generating, running, verifying, awaiting approval, blocked and finished from authoritative host state; show step counters, elapsed time, concise receipts, live cancel/pause and optional diagnostics; never invent progress percentages.
-- [ ] Support clear natural follow-ups ('continue', 'what happened?', 'fix that failure') bound to a uniquely identified fresh task; request clarification only for genuine ambiguity. Keep private-meeting boundaries and explicit user control.
-- [ ] Test keyboard/navigation, small/narrow terminals, attached windows and disrupted/reconnected sessions. Avoid duplicate task execution and spurious authorizations after reconnect.
-- [ ] Maintain a benchmark of real failed user requests, labeled expected intent, resolution steps, response accuracy, manual interaction count and task-completion outcomes; use it as an acceptance gate alongside unit tests.
-
-### 6.39D — Even G2 terminal access (P1)
-
-- [ ] Reuse the user's existing Even Terminal + Tailscale/PowerShell setup; verify actual Even G2 transport, prompt/response, streaming, status, interruption and approval capabilities before choosing a supported bridge. Do not assume the G2 SDK or Even Terminal APIs expose undocumented functionality.
-- [ ] Implement a single authenticated, revocable connected-client adapter into the active GRID host, without a second agent authority, task owner, or persistent remote worker. Remote clients may submit requests and inspect authorized results.
-- [ ] Map task progress, follow-ups, questions and allowed review actions to readable glasses output; high-risk approvals must pass through the established authenticated host authorization boundary and may require original-host/phone confirmation.
-- [ ] Disconnect immediately on host shutdown, host lease expiry, session revocation or loss of trusted transport. Verify device reconnect never restores stale execution grants or task approvals.
-- [ ] Perform real G2/phone-pairing acceptance, including Tailscale connection, network loss, cancellation and task resumption; label any untested glasses capability as unverified.
-
-### 6.39E — Wi-Fi-first Android phone communication (P1)
-
-- [ ] Prototype a host-controlled Android companion for incoming **app-based VoIP** calls over local Wi-Fi or authenticated Tailscale; distinguish this from carrier/PSTN telephone calling. Validate signaling, Android call/notification permissions and background/locked-phone restrictions on a real Pixel device.
-- [ ] Use RELAY for user-configured questions, task follow-ups, important alerts and approval requests. Apply opt-in, quiet-hours/cooldown/rate controls and privacy-safe caller descriptions; no unsolicited calling by default.
-- [ ] Support two-way speech and text fallback for questions and follow-ups, with an authenticated screen-based approval confirmation for sensitive changes. Spoken acknowledgment alone cannot authorize high-risk operations; retain exact-scope binding, expiry, revoke and host-side auditing.
-- [ ] Require an active GRID host lease for call initiation, session signaling and action execution. When GRID stops, calls end and no companion/cloud worker processes GRID tasks. Record unavoidable provider/OS notification delivery limits honestly.
-- [ ] Verify same-Wi-Fi, remote Tailscale, phone asleep/locked, missed call, transport loss and host shutdown behavior on real hardware; no claim of guaranteed mobile call delivery without these tests.
-
-### 6.39F — Host-bound scheduler and automations (P1)
-
-- [ ] Add one-time, scheduled, recurring and explicitly registered event-triggered workflows using the existing task/approval/persistence infrastructure, not Windows Task Scheduler, external always-on cloud workers or separate host-independent daemons.
-- [ ] Store definitions and audit history durably; acquire fresh active-host execution leases and validate workspace/device permissions, due time and execution policy at each run. Apply per-workflow concurrency limits, cancellation and duplicate-run guards.
-- [ ] Default missed schedules during host downtime to **recorded/skipped, not retroactively executed**. Offer optional manual review/run after GRID restarts; never silently replay sensitive work.
-- [ ] On graceful shutdown cancel or checkpoint jobs, terminate outbound communication and revoke host/client leases. After crashes/power loss, recovered jobs remain inert until explicitly re-authorized where required.
-- [ ] Test shutdown, crash, missed schedules, clock changes, duplicate timers, stale tokens, revoked grants, lost network and resumed world; require zero post-stop GRID-initiated actions.
-
-### 6.39G — Security and real-device release gates (required)
-
-- [ ] Preserve Grid.Agent contracts, simulation single-writer state, SQLite durability, workspace grants, exact file-hash reviews, risk-tiered permission model, audit history, original-host privileged boundaries and existing security tests.
-- [ ] Treat remote phone and glasses as authenticated clients, not independent authorities. Bind every operation to an active authoritative-host lease; fail closed after termination and never share private workspace content with cloud Codex without explicit, scoped consent.
-- [ ] Run focused/full regression suites plus actual end-to-end owner scenarios. Record measured latency, comprehension accuracy, task success, required user interactions, and real coding build/test evidence; separate simulated fixtures from physical G2/Android/offline acceptance.
-- [ ] No release claim until representative multi-step coding, live Even G2 interaction, genuine Wi-Fi voice follow-up/approval, scheduled work while running, and verified absence of actions after host stop all pass. Document unsupported/offline states and rollback.
-
-**Implementation order:** 6.39A baseline -> 6.39B durable work/MAXIS -> 6.39C terminal UX (overlap permitted) -> 6.39D Even G2 -> 6.39E phone calling -> 6.39F automations -> 6.39G acceptance. P0 work is required before expanding the platform, and no checkbox should be marked complete without test evidence.
-
+**Bound host-operation consent completed — 2026-11-22.** MCP now retains the host-validated typed operation that produced a permission question and binds consent to that exact operation. “Go ahead” is interpreted only as Once/Session/Always/Cancel/Unclear for a pending access request; it no longer invokes file-preview wording or asks the model to recreate the operation after approval. A non-mutating adapter verified the complete one-minute clock flow, exact object identity, one-time grant consumption and conversational receipt without changing the development PC. All **1,654 solution tests passed**; real Windows clock/UAC mutation remains manual. [Permission design and evidence](Project_GRID_Dynamic_Access_Permissions.md).
 
 **Conversation-window close lifecycle completed — 2026-11-21.** Closing a dedicated conversation or meeting window now ends its host conversation and clears pending per-window authorization/intent state while retaining the transcript. `/close`, title-bar/window-process close and pipe loss share the same host-side cleanup. A new `connect` starts cleanly; ended conversations cannot resume. Ordinary attached terminals/data windows still only detach. All **1,623 solution tests passed**, including 36 attached-window cases. Earlier 4.2D notes describing conversation close as detach-only are superseded. [Current contract and evidence](Project_GRID_Terminal_Conversations.md).
 
@@ -2027,25 +1962,94 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 
 **6.38 automated verification — 2026-11-19:** Five focused Trust Center cases and the complete solution pass: **1,551 passed, 0 failed, 0 skipped** (Core 14, Simulation 163, Persistence 107, Terminal 1,267). Automated coverage is not substituted for the two unchecked representative-user and physical-device acceptance items.
 
+## 6.39 — Experience, agent reliability and connected devices
+
+**Added 2026-11-21; reorganized 2026-11-22. Status: active pre-Phase-7 requirements.** This number is reassigned to the terminal-first experience gate after the former optional GUI milestone moved to unnumbered Future Plan C. All acceptance boxes below remain open unless checked individually. Priorities are dependable local AI, completed and resumable work, understandable conversation UX, Even G2 access, Wi-Fi-first Android communication, and host-bound automation.
+
+**Hard invariant:** GRID initiates no work, network contact, call, glasses session, notification or scheduled action unless the authoritative GRID host is running. Persisted definitions, checkpoints and audit history are inert after shutdown. This gate precedes Phase 7 Grid.Platform unless the user explicitly reprioritizes it.
+
+### 6.39A — Baseline and responsive inference (P0)
+
+**Implemented foundation and measured evidence — 2026-11-21/22:** Content-free inference traces include provider load, prompt evaluation, prompt tokens and total generation timing. `ai diagnostics` reports recent queue/end-to-end p95 values, and the Master Control-only benchmark uses three fixed MCP/MAXIS prompts through the existing queue. Terminal waiting feedback appears after 700 ms; typewriter delay is capped before checked chunked output. A reported live benchmark produced 3/3 exact classifications with warm queue at 0 ms and approximately 1.8–2.2 second model runs. The current complete automated suite passes **1,654/1,654**.
+
+**Live conversation evidence and remaining limitation:** Successive user runs exposed raw routing JSON, incorrect host-access claims, `OutputLimit`, and unsupported claims that generated C# had been tested. Later routing/budget/persona changes produced a substantive binary-search-tree answer without an access prompt, but the visible sample still contained invalid type inference, a non-terminating insertion path, incomplete deletion and contradictory verification claims. This is useful latency/routing evidence, not code-correctness acceptance. Live first-visible-token streaming, complete request-to-tool correlation, end-to-end MAXIS coding benchmarks and repeatable model-quality acceptance remain open.
+
+- [ ] Instrument end-to-end request timings: admission/queue wait, cold/warm model load, prompt processing, first visible token when supported, generation, tool execution and finished result; correlate by scoped task/request ID, redact prompts and secrets.
+- [ ] Benchmark real owner workflows on target 32 GB RAM/8 GB VRAM Windows PC: simple chat, follow-up, intent parsing, MAXIS coding and concurrent messages; report p50/p95, tokens/s and context size before changing policies.
+- [ ] Keep deterministic reads/status, cancellations, help and unambiguous intents off the inference queue; replace avoidable repeated model classification with validated deterministic dispatch.
+- [ ] Evaluate streaming to existing Terminal/Even clients and fair priority-aware local inference scheduling; ensure that long MAXIS requests cannot starve short conversations or evade existing authorization/rate limits.
+- [ ] Compare locally runnable model profiles against the bundled Qwen baseline for latency, comprehension, code repairs and memory pressure; never silently download a model, bypass sealed runtime checks or assume a larger model will be faster.
+- [ ] Add timeout, cancellation, queue-full, concurrent-agent and offline regression coverage. Set performance thresholds only after baseline measurements.
+
+### 6.39B — Durable task completion and MAXIS coding (P0)
+
+- [ ] Extend existing MCP coordination/TaskState and MAXIS, not a parallel task queue: request -> grounded plan -> scoped authorization -> execute -> observe -> verify -> bounded repair/retry -> completed/blocked/failed receipt.
+- [ ] Preserve work across conversations and process restarts as inert checkpoints, with exact step IDs, outcome evidence and safe idempotency checks; never replay an approval, side-effecting step or stale file mutation on restart.
+- [ ] Execute coding in a registered, isolated Git worktree with relevant repository instructions, hash/path policy and controlled build/test subprocesses. Preserve user worktrees, uncommitted edits, and unrelated files.
+- [ ] Allow repeat diagnosis and repair within an explicitly approved scope/attempt budget; require exact-content review for file mutations and fresh authority for steps exceeding scope. Do not grant arbitrary shell, auto-commit, push, deploy or delete.
+- [ ] Verify real compiler/test outcomes and changed-file diffs, then summarize what completed, what failed and how to resume. Exhausted retries, unclear requirements and revoked grants yield actionable blocked states, not fabricated success.
+- [ ] Introduce optional **Codex cloud escalation** only on explicit user opt-in after cost/privacy disclosure and exact data-sharing preview; defaults stay local/offline, and cloud is impossible while GRID is stopped. Measure completion on repeatable realistic multi-file tasks.
+
+### 6.39C — Conversational and terminal UX (P0/P1)
+
+- [ ] Present one user request as one tracked workflow; avoid repeated 'submit/review/approve/run' conversational ceremony where deterministic safe continuation is possible, while retaining exact risk-tier and mutation approvals.
+- [ ] Differentiate queueing, generating, running, verifying, awaiting approval, blocked and finished from authoritative host state; show step counters, elapsed time, concise receipts, live cancel/pause and optional diagnostics; never invent progress percentages.
+- [ ] Support clear natural follow-ups ('continue', 'what happened?', 'fix that failure') bound to a uniquely identified fresh task; request clarification only for genuine ambiguity. Keep private-meeting boundaries and explicit user control.
+- [ ] Test keyboard/navigation, small/narrow terminals, attached windows and disrupted/reconnected sessions. Avoid duplicate task execution and spurious authorizations after reconnect.
+- [ ] Maintain a benchmark of real failed user requests, labeled expected intent, resolution steps, response accuracy, manual interaction count and task-completion outcomes; use it as an acceptance gate alongside unit tests.
+
+### 6.39D — Even G2 terminal access (P1)
+
+- [ ] Reuse the user's existing Even Terminal + Tailscale/PowerShell setup; verify actual Even G2 transport, prompt/response, streaming, status, interruption and approval capabilities before choosing a supported bridge. Do not assume the G2 SDK or Even Terminal APIs expose undocumented functionality.
+- [ ] Implement a single authenticated, revocable connected-client adapter into the active GRID host, without a second agent authority, task owner, or persistent remote worker. Remote clients may submit requests and inspect authorized results.
+- [ ] Map task progress, follow-ups, questions and allowed review actions to readable glasses output; high-risk approvals must pass through the established authenticated host authorization boundary and may require original-host/phone confirmation.
+- [ ] Disconnect immediately on host shutdown, host lease expiry, session revocation or loss of trusted transport. Verify device reconnect never restores stale execution grants or task approvals.
+- [ ] Perform real G2/phone-pairing acceptance, including Tailscale connection, network loss, cancellation and task resumption; label any untested glasses capability as unverified.
+
+### 6.39E — Wi-Fi-first Android phone communication (P1)
+
+- [ ] Prototype a host-controlled Android companion for incoming **app-based VoIP** calls over local Wi-Fi or authenticated Tailscale; distinguish this from carrier/PSTN telephone calling. Validate signaling, Android call/notification permissions and background/locked-phone restrictions on a real Pixel device.
+- [ ] Use RELAY for user-configured questions, task follow-ups, important alerts and approval requests. Apply opt-in, quiet-hours/cooldown/rate controls and privacy-safe caller descriptions; no unsolicited calling by default.
+- [ ] Support two-way speech and text fallback for questions and follow-ups, with an authenticated screen-based approval confirmation for sensitive changes. Spoken acknowledgment alone cannot authorize high-risk operations; retain exact-scope binding, expiry, revoke and host-side auditing.
+- [ ] Require an active GRID host lease for call initiation, session signaling and action execution. When GRID stops, calls end and no companion/cloud worker processes GRID tasks. Record unavoidable provider/OS notification delivery limits honestly.
+- [ ] Verify same-Wi-Fi, remote Tailscale, phone asleep/locked, missed call, transport loss and host shutdown behavior on real hardware; no claim of guaranteed mobile call delivery without these tests.
+
+### 6.39F — Host-bound scheduler and automations (P1)
+
+- [ ] Add one-time, scheduled, recurring and explicitly registered event-triggered workflows using the existing task/approval/persistence infrastructure, not Windows Task Scheduler, external always-on cloud workers or separate host-independent daemons.
+- [ ] Store definitions and audit history durably; acquire fresh active-host execution leases and validate workspace/device permissions, due time and execution policy at each run. Apply per-workflow concurrency limits, cancellation and duplicate-run guards.
+- [ ] Default missed schedules during host downtime to **recorded/skipped, not retroactively executed**. Offer optional manual review/run after GRID restarts; never silently replay sensitive work.
+- [ ] On graceful shutdown cancel or checkpoint jobs, terminate outbound communication and revoke host/client leases. After crashes/power loss, recovered jobs remain inert until explicitly re-authorized where required.
+- [ ] Test shutdown, crash, missed schedules, clock changes, duplicate timers, stale tokens, revoked grants, lost network and resumed world; require zero post-stop GRID-initiated actions.
+
+### 6.39G — Security and real-device release gates (required)
+
+- [ ] Preserve Grid.Agent contracts, simulation single-writer state, SQLite durability, workspace grants, exact file-hash reviews, risk-tiered permission model, audit history, original-host privileged boundaries and existing security tests.
+- [ ] Treat remote phone and glasses as authenticated clients, not independent authorities. Bind every operation to an active authoritative-host lease; fail closed after termination and never share private workspace content with cloud Codex without explicit, scoped consent.
+- [ ] Run focused/full regression suites plus actual end-to-end owner scenarios. Record measured latency, comprehension accuracy, task success, required user interactions, and real coding build/test evidence; separate simulated fixtures from physical G2/Android/offline acceptance.
+- [ ] No release claim until representative multi-step coding, live Even G2 interaction, genuine Wi-Fi voice follow-up/approval, scheduled work while running, and verified absence of actions after host stop all pass. Document unsupported/offline states and rollback.
+
+**Implementation order:** 6.39A baseline -> 6.39B durable work/MAXIS -> 6.39C terminal UX (overlap permitted) -> 6.39D Even G2 -> 6.39E phone calling -> 6.39F automations -> 6.39G acceptance. P0 work is required before expanding the platform, and no checkbox should be marked complete without test evidence.
+
 ## Pre-Phase-7 closure queue — authoritative execution order
 
-**Organized 2026-11-19.** This queue orders the existing unchecked requirements from Phase 1 through 6.38 without duplicating them as new checkboxes. The canonical checkboxes remain in their original sections so implementation history and exact acceptance language are preserved. Completing a queue gate means satisfying and checking the linked original items, not adding a second completion mark here.
+**Organized 2026-11-19; reconciled through 6.39 on 2026-11-22.** This queue orders the existing unchecked requirements from Phase 1 through 6.39 without duplicating them as new checkboxes. The canonical checkboxes remain in their original sections so implementation history and exact acceptance language are preserved. Completing a queue gate means satisfying and checking the linked original items, not adding a second completion mark here.
 
 ### Current closure inventory
 
 | Checklist range | Completed | Open | Status |
 | --- | ---: | ---: | --- |
-| Phase 1 | 140 | 0 | Complete |
+| Phase 1 | 141 | 0 | Complete |
 | Phase 2 | 79 | 2 | Two platform/telemetry enhancements |
 | Phase 3 | 26 | 0 | Complete |
 | Phase 4 | 121 | 3 | Transfer recovery and visual acceptance |
 | Phase 5 | 69 | 2 | Manual-session/autonomous-task coordination |
-| Phase 6 through 6.38 | 256 | 65 | Model, integration, security, portability and manual acceptance |
-| **Total before Phase 7** | **691** | **72** | **90.6% complete** |
+| Phase 6 through 6.39 | 265 | 102 | Model, integration, security, portability, experience, connected-device and manual acceptance |
+| **Total before Phase 7** | **701** | **109** | **86.5% complete** |
 
-Recounted 2026-11-19 from actual checkbox lines in Phases 1–6, including nested completed sub-items. There are 72 open checkboxes across 27 numbered sections, grouped into Gates 0–6. This counts requirements, not independent implementation jobs or elapsed work; overlapping acceptance and physical/user gates remain open after partial implementation improvements.
+Recounted directly from actual checkbox lines in Phases 1–6 on 2026-11-22, including nested completed sub-items and the 36 open requirements under 6.39. The earlier inventory had also omitted one completed Phase 1 box and nine completed plus one open Phase 6 box. There are now 109 open checkboxes across 28 numbered sections, grouped into Gates 0–7. This counts requirements, not independent implementation jobs or elapsed work; overlapping acceptance and physical/user gates remain open after partial implementation improvements.
 
-The 72 boxes are not 72 independent engineering jobs. Twenty-one are the 6.17A model-handling roll-up; ten are the 6.31 integration/release roll-up; and several repeat the same second-PC, offline-package or final-review outcome. Work them through the gates below rather than line order.
+The 109 boxes are not 109 independent engineering jobs. Twenty-one are the 6.17A model-handling roll-up; ten are the 6.31 integration/release roll-up; 36 are the coordinated 6.39 experience and connected-device requirements; and several repeat the same second-PC, offline-package or final-review outcome. Work them through the gates below rather than line order.
 
 ### Gate 0 — Freeze the first-release scope (NEXT)
 
@@ -2163,13 +2167,26 @@ Begin only after Gates 1–3 fix the code, model inventory and security contract
 
 **Gate 6 exit:** every pre-Phase-7 checkbox is either completed with linked evidence or explicitly moved with user approval; no item is silently ignored or marked complete from planning alone.
 
+### Gate 7 — Complete the 6.39 experience and connected-device release gate
+
+Begin the P0 work alongside the earlier gates where it shares the same MCP, MAXIS and terminal foundations; do not treat glasses, phone or scheduling prototypes as substitutes for the core workflow.
+
+1. Establish measured inference and task baselines, then complete durable MCP/MAXIS work and conversation UX in 6.39A–C.
+2. Preserve exact approvals, resumable checkpoints, real build/test evidence and authoritative progress throughout the ordinary-language workflow.
+3. Implement Even G2, Android communication and host-bound scheduling only through authenticated, revocable clients and active-host leases.
+4. Run the real-device, shutdown, security and representative coding scenarios in 6.39G; simulated fixtures cannot close physical-device boxes.
+
+**Canonical boxes closed by this gate:** 6.39A–6.39G.
+
+**Gate 7 exit:** the local agent workflow is responsive, resumable and evidence-backed; approved connected clients and automations stop when GRID stops; and all required physical acceptance is recorded without fabricated support claims.
+
 ### Stop rules
 
 - Do not start a later gate when an earlier gate would change its packaged code, selected assets or authorization contract.
 - Do not use a passing unit suite as evidence for a physical device, disconnected network, visual appearance, power-loss or representative-user requirement.
 - Do not download every listed model before Gate 0 chooses the release set.
 - Do not count optional GUI work as a terminal-first release blocker.
-- Phase 7 architecture investigation may inform Gate 0, but Phase 7 implementation does not begin until Gate 6 review unless this checklist is explicitly re-sequenced by the user.
+- Phase 7 architecture investigation may inform Gate 0, but Phase 7 implementation does not begin until Gates 6 and 7 are reviewed unless this checklist is explicitly re-sequenced by the user.
 
 **Recommended next implementation item:** Gate 1, beginning with the open 6.31 conversational-reference and MCP-to-MAXIS delegation flow. It provides the most direct progress toward the required local agentic coding experience and does not depend on the unavailable transfer device.
 
@@ -2177,7 +2194,7 @@ Begin only after Gates 1–3 fix the code, model inventory and security contract
 
 ---
 
-## 6.39 Optional unified desktop GUI — moved to Future Plan C
+## Former optional unified desktop GUI milestone — moved to Future Plan C
 
 The GUI is no longer sequenced before platform compatibility. Its requirements are preserved under Future Plan C and may begin only after the active Grid.Platform phase is reviewed and the user explicitly reprioritizes it. Terminal completion remains sufficient for core AI acceptance.
 

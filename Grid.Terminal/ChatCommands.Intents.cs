@@ -11,6 +11,7 @@ public sealed partial class ChatCommands
     private sealed record PendingIntent(FollowUp Scope, ConversationIntent Intent, HostSystemOperation? HostOperation = null);
     private PendingIntent? pendingIntent;
     internal HostSystemOperation? PendingHostOperationForTests => pendingIntent?.HostOperation;
+    internal Func<HostSystemOperation, CancellationToken, Task<HostObservationResult>> HostSystemExecutorForTests { get; set; } = HostSystemOperationCatalog.ExecuteAsync;
     private int intentRequest;
     private CommandResult AskIntentClarification(string request, string question)
     {
@@ -359,7 +360,7 @@ public sealed partial class ChatCommands
     private async Task<HostObservationResult> ExecuteHostSystemOperationAsync(PendingIntent selected, Guid agentId, CancellationToken token)
     {
         if (selected.HostOperation is { } bound)
-            return await HostSystemOperationCatalog.ExecuteAsync(bound, token);
+            return await HostSystemExecutorForTests(bound, token);
         var prompt = "Translate the user's authorized system-setting request into one typed host operation. Return only the schema. " +
             "A relative change uses the host's current value automatically; do not require the user to supply the current value, time zone or reference point. " +
             "A requested calendar day can preserve the host's current month, year and time; an explicit date uses ISO yyyy-MM-dd. " +
@@ -372,7 +373,7 @@ public sealed partial class ChatCommands
                 "\nRETRY: The prior typed result was invalid. A day number in the current month uses SetSystemDay; a fully specified date uses SetSystemDate. Populate all five fields and no others.";
             var reply = await inference!.ForAgent("MCP").GenerateStructuredAsync(request, HostSystemOperationCatalog.Schema, token);
             if (!reply.Available || !authorization.IsCurrent || !Current(selected.Scope)) break;
-            try { return await HostSystemOperationCatalog.ExecuteAsync(HostSystemOperationCatalog.Parse(reply.Text), token); }
+            try { return await HostSystemExecutorForTests(HostSystemOperationCatalog.Parse(reply.Text), token); }
             catch (Exception error) when (error is ArgumentException or JsonException) { }
         }
         throw new InvalidOperationException("MCP could not produce a current typed system operation.");

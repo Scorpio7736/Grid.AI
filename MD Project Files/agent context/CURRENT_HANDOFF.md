@@ -1,5 +1,9 @@
 # Grid.AI current handoff
 
+## 2026-11-22 — bound host permission plans
+
+The typed system operation that generated MCP's permission question is retained on the pending intent. Natural Once/Session/Always consent executes that exact validated object; GRID does not ask AI to recreate the plan after approval. The consent schema is request-kind validated and no longer falls back to file-preview wording. A safe injected adapter passed the full one-minute clock request/consent/receipt flow without touching the real clock. All 1,654 solution tests passed; actual Windows UAC/clock mutation remains manual. See [dynamic access permissions](../Project_GRID_Dynamic_Access_Permissions.md).
+
 ## 2026-11-21 — conversation window closure
 
 Closing a dedicated conversation or meeting window now ends its saved host conversation, retains the transcript and clears pending per-window authorization/intent state. Host cleanup covers `/close`, title-bar/process close and pipe loss; a new `connect` starts cleanly and ended conversations cannot resume. Ordinary attached terminals/data views still only detach. All 36 window cases and all 1,623 solution tests passed. See [terminal conversations](../Project_GRID_Terminal_Conversations.md).
