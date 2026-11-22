@@ -534,7 +534,7 @@ public sealed class UnifiedTalkTests : IDisposable
         Assert.DoesNotContain("host.system.read", result.Text);
         Assert.Empty(engine.GetSnapshot().Communications.AccessPermissions);
         Assert.Empty(engine.GetSnapshot().Tasks.Records);
-        Assert.Single(engine.GetConversation(chat.ActiveConversation!.Value).Messages.Where(m => m.Sender.Kind == ParticipantKind.Program));
+        Assert.Single(engine.GetConversation(chat.ActiveConversation!.Value).Messages, m => m.Sender.Kind == ParticipantKind.Program);
     }
 
     [Fact]
