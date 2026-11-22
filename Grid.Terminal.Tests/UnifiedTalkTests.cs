@@ -470,6 +470,51 @@ public sealed class UnifiedTalkTests : IDisposable
     }
 
     [Fact]
+    public async Task InvalidAccessRouteForGeneralProgrammingQuestionRetriesAsDirectConversation()
+    {
+        await Input("connect MCP -inline");
+        ai.Replies.Enqueue("{\"route\":\"Access\",\"hostCapability\":\"host.system.read\",\"argument\":\"once\",\"message\":\"I'll explain binary search trees with examples.\"}");
+        ai.Replies.Enqueue("A binary search tree stores smaller keys on the left and larger keys on the right. In C#, insert by comparing keys and descending until an empty child is reached.");
+        var result = await Input("Explain binary search trees in C# with insertion examples.");
+        Assert.Equal(2, ai.Calls);
+        Assert.Contains("CORRECTION:", ai.Prompt);
+        Assert.Contains("binary search tree stores", result.Text);
+        Assert.DoesNotContain("\"route\"", result.Text);
+        Assert.DoesNotContain("host.system.read", result.Text);
+        Assert.Empty(engine.GetSnapshot().Communications.AccessPermissions);
+        Assert.Empty(engine.GetSnapshot().Tasks.Records);
+        Assert.Single(engine.GetConversation(chat.ActiveConversation!.Value).Messages.Where(m => m.Sender.Kind == ParticipantKind.Program));
+    }
+
+    [Fact]
+    public async Task RepairedAccessRouteCannotCreateLatentPermissionOrRevealJson()
+    {
+        await Input("connect MCP -inline");
+        ai.Replies.Enqueue("{\"route\":\"Access\",\"hostCapability\":\"host.system.write\",\"argument\":\"planned\",\"message\":\"I'll explain it after changing the system.\"}");
+        ai.Replies.Enqueue("{\"route\":\"Access\",\"hostCapability\":\"host.system.write\",\"argument\":\"planned\",\"message\":\"May I change your system settings?\"}");
+        var result = await Input("Explain binary search trees.");
+        Assert.Equal(2, ai.Calls);
+        Assert.Contains("couldn't produce a valid answer", result.Text);
+        Assert.DoesNotContain("\"route\"", result.Text);
+        Assert.Empty(engine.GetSnapshot().Communications.AccessPermissions);
+        Assert.Empty(engine.GetSnapshot().Tasks.Records);
+        Assert.Null(chat.PendingHostOperationForTests);
+        Assert.Contains("Which operation", (await Input("approve that")).Text);
+    }
+
+    [Fact]
+    public async Task ValidConversationRouteReturnsOnlyMessageWithoutRepair()
+    {
+        await Input("connect MCP -inline");
+        ai.Replies.Enqueue("{\"route\":\"Conversation\",\"hostCapability\":\"\",\"argument\":\"\",\"message\":\"A BST has an ordered left and right subtree.\"}");
+        var result = await Input("What is a binary search tree?");
+        Assert.Equal(1, ai.Calls);
+        Assert.Contains("ordered left and right subtree", result.Text);
+        Assert.DoesNotContain("\"route\"", result.Text);
+        Assert.Empty(engine.GetSnapshot().Communications.AccessPermissions);
+    }
+
+    [Fact]
     public async Task NamedMaxisCreationUsesDynamicIntentClarificationAndReviewedFileTools()
     {
         await Input("connect MCP -inline");
