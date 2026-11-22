@@ -18,6 +18,17 @@ public sealed class PersonaTests
         Assert.Contains("serious and helpful", prompt.SystemInstruction); Assert.Contains("verified receipt", prompt.SystemInstruction);
         foreach (var other in AgentPersonas.Names.Where(n => n != agent)) Assert.DoesNotContain("You are " + other + ",", prompt.SystemInstruction);
     }
+    [Theory]
+    [InlineData("MCP")]
+    [InlineData("MAXIS")]
+    public void CodingAgentsDoNotClaimUnverifiedCompilationOrTests(string agent)
+    {
+        var instruction = new AgentPersonas().Assemble(agent, false).SystemInstruction;
+        Assert.Contains("Generated examples are untested", instruction);
+        Assert.Contains("Never say 'I tested it'", instruction);
+        Assert.Contains("trusted host tool", instruction);
+    }
+
     [Fact]
     public void RollbackRestoresExactPromptWithoutChangingOtherAgentsOrSnapshot()
     {
