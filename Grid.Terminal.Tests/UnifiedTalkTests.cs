@@ -485,7 +485,7 @@ public sealed class UnifiedTalkTests : IDisposable
         Assert.Equal(1, ai.Calls);
         Assert.Equal(0, ai.StructuredCalls);
         Assert.Contains("public sealed class Node", result.Text);
-        Assert.Contains("writing C# examples in the chat NEVER require host access", ai.Prompt);
+        Assert.Contains("writing C# examples require no host access", ai.Prompt);
         Assert.DoesNotContain("\\\"route\\\"", result.Text);
         Assert.Empty(engine.GetSnapshot().Communications.AccessPermissions);
         Assert.Empty(engine.GetSnapshot().Tasks.Records);
