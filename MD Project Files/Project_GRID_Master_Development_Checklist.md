@@ -1,5 +1,16 @@
 # Project GRID — Master Development Checklist
 
+## Next work item — first-run installer (requested 2026-11-23)
+
+- [ ] **Build a user-friendly Grid.AI first-run installer** for a fresh Windows clone and eventually supported portable deployments. Preserve the existing pinned `Setup-GridClone.ps1` / `Start-GridClone.ps1` integrity and real-model verification as the underlying provisioning mechanism; do not assume this checklist item is implemented.
+- [ ] Detect supported .NET SDK/runtime, host hardware, free disk space, network/offline asset availability, private NuGet cache, and existing local assets; show storage/download sizes and prerequisites before obtaining explicit consent.
+- [ ] Provide clear install/repair/resume/cancel options, progress and error diagnostics; never silently create/overwrite a saved world, import credentials, or weaken pinned hash and offline model verification.
+- [ ] Set up clone-local runtime/model and user data separately, support repeat launches without repeated downloads, and guide secure first owner login without copying another PC's secrets.
+- [ ] Validate a real inline and attached MCP model reply; smoke-test normal terminal startup and cleanly report unsupported flags (including `--help`) without triggering unnecessary downloads.
+- [ ] Run clean-clone acceptance on PC 2, repeated install, interrupted install, offline execution after provisioning, runtime repair, and full automated tests. Keep physical second-PC acceptance unchecked until verified.
+
+**PC 2 test harness repair — 2026-11-23:** Two persistence tests returned exit code 2 because noninteractive child terminal launches could trigger the first-run local-AI preflight before exercising their seeded world fixtures. The persistence-only child launcher now sets `GRID_AI_DISABLED=1`, leaving ordinary application startup and pinned local-AI verification unchanged. Child exit failures now report captured stdout/stderr. The change has been committed; PC 2 re-run and full suite remain unverified.
+
 **User-directed deferral — 2026-11-14:** Copy/transfer and second-PC offline acceptance are deferred until the transfer device is ready. Keep their unchecked acceptance gates open; continue local terminal milestones beginning with 6.32. This is a scheduling change, not a successful portable-device verification or Phase 7 approval.
 
 
