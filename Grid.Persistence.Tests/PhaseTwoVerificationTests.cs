@@ -26,10 +26,13 @@ public sealed class PhaseTwoVerificationTests : IDisposable
         return Path.Combine(root.FullName, project, "bin", configuration, "net10.0", Path.GetFileName(project) + ".dll");
     }
 
-    private static Process Start(string assembly, params string[] arguments)
+    private static Process Start(string assembly, string[] arguments, bool disableAiPreflight = false)
     {
         var start = new ProcessStartInfo("dotnet") { UseShellExecute = false, CreateNoWindow = true,
             RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true };
+        // Persistence subprocesses must not prompt for or download clone-local AI assets.
+        // Keep the opt-out scoped to the child; normal GRID startup still requires real AI.
+        if (disableAiPreflight) start.Environment["GRID_AI_DISABLED"] = "1";
         start.ArgumentList.Add(assembly);
         foreach (var argument in arguments) start.ArgumentList.Add(argument);
         return Process.Start(start) ?? throw new InvalidOperationException("Could not start isolated process.");
@@ -43,7 +46,7 @@ public sealed class PhaseTwoVerificationTests : IDisposable
 
     private async Task<(int Code, string Output, string Error)> Terminal(string input, params string[] extra)
     {
-        using var process = Start(BuiltAssembly("Grid.Terminal"), ["--world", DatabasePath, .. extra]);
+        using var process = Start(BuiltAssembly("Grid.Terminal"), ["--world", DatabasePath, .. extra], disableAiPreflight: true);
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();
         try
@@ -68,7 +71,7 @@ public sealed class PhaseTwoVerificationTests : IDisposable
         }
         var backupBefore = File.ReadAllBytes(DatabasePath + ".backup");
         var before = engine.GetSnapshot();
-        using (var child = Start(BuiltAssembly("TestSupport/Grid.Persistence.Probe"), DatabasePath))
+        using (var child = Start(BuiltAssembly("TestSupport/Grid.Persistence.Probe"), [DatabasePath]))
         {
             var errors = child.StandardError.ReadToEndAsync();
             try
@@ -100,7 +103,7 @@ public sealed class PhaseTwoVerificationTests : IDisposable
         fixture.BindLocalOwner(System.Security.Principal.WindowsIdentity.GetCurrent().User!.Value);
         using (var initial = new WorldStore(DatabasePath)) initial.Create(new(fixture.GetSnapshot().WorldId,"Start fixture",DateTimeOffset.UtcNow),fixture.GetSnapshot());
         var result = await Terminal("agents\ngrid -pause\nagents\nexit\n", "--start");
-        Assert.Equal(0,result.Code); Assert.Contains("GRID AGENTS: active",result.Output); Assert.Contains("GRID AGENTS: paused",result.Output);
+        Assert.True(result.Code == 0, $"Terminal exited with {result.Code}.\nSTDOUT:\n{result.Output}\nSTDERR:\n{result.Error}"); Assert.Contains("GRID AGENTS: active",result.Output); Assert.Contains("GRID AGENTS: paused",result.Output);
         using var saved = new WorldStore(DatabasePath);
         Assert.Equal(6,saved.Load().State.Tasks.Agents.Count);
         Assert.Empty(saved.Load().State.Tasks.Records);
@@ -113,20 +116,20 @@ public sealed class PhaseTwoVerificationTests : IDisposable
         fixture.BindLocalOwner(System.Security.Principal.WindowsIdentity.GetCurrent().User!.Value);
         using (var initial = new WorldStore(DatabasePath)) initial.Create(new(fixture.GetSnapshot().WorldId, "Headless fixture", DateTimeOffset.UtcNow), fixture.GetSnapshot());
         var first = await Terminal("step\nstep\ngrid -start\ngrid -pause\nexit\n");
-        Assert.Equal(0, first.Code); Assert.Contains("World saved.", first.Output);
+        Assert.True(first.Code == 0, $"Terminal exited with {first.Code}.\nSTDOUT:\n{first.Output}\nSTDERR:\n{first.Error}"); Assert.Contains("World saved.", first.Output);
         SavedWorld saved;
         using (var store = new WorldStore(DatabasePath)) saved = store.Load();
         Assert.Equal(6, saved.State.Tasks.Agents.Count);
         var second = await Terminal("status\nhistory kind=Clock\nexit\n");
-        Assert.Equal(0, second.Code); Assert.Contains(saved.Info.Id.ToString(), second.Output);
+        Assert.True(second.Code == 0, $"Terminal exited with {second.Code}.\nSTDOUT:\n{second.Output}\nSTDERR:\n{second.Error}"); Assert.Contains(saved.Info.Id.ToString(), second.Output);
         Assert.Contains("State: Paused", second.Output); Assert.Contains($"at tick {saved.State.TickCount}", second.Output);
         Assert.Contains("Information | Clock", second.Output);
         using (var store = new WorldStore(DatabasePath)) AssertState(saved.State, store.Load().State);
         File.WriteAllText(DatabasePath, "injected corruption");
         var invalid = await Terminal("exit\n");
-        Assert.Equal(1, invalid.Code); Assert.Equal("injected corruption", File.ReadAllText(DatabasePath));
+        Assert.True(invalid.Code == 1, $"Terminal exited with {invalid.Code} (expected 1).\nSTDOUT:\n{invalid.Output}\nSTDERR:\n{invalid.Error}"); Assert.Equal("injected corruption", File.ReadAllText(DatabasePath));
         var recovery = await Terminal("status\nexit\n", "--recover");
-        Assert.Equal(0, recovery.Code);
+        Assert.True(recovery.Code == 0, $"Terminal exited with {recovery.Code}.\nSTDOUT:\n{recovery.Output}\nSTDERR:\n{recovery.Error}");
         using var restored = new WorldStore(DatabasePath);
         AssertState(saved.State, restored.Load().State);
         Assert.Contains(Directory.GetFiles(directory, "*.damaged-*"), f => File.ReadAllText(f) == "injected corruption");
