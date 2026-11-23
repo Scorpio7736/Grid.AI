@@ -1,6 +1,15 @@
 # Project GRID — Master Development Checklist
 
-## Next work item — first-run installer (requested 2026-11-23)
+## Next work item — repair automatic model selection and RAM-aware startup (priority 1, requested 2026-11-23)
+
+- [ ] **Finish and integrate existing hardware-aware model selection into normal Grid.AI startup**, rather than creating another selector. Connect `ModelDeviceDiscovery`, `ModelProfileEligibility.Select`, `ModelRegistry`, and `AgentModelProfiles` so startup makes an explicit, auditable decision from installed, hash-verified, device-accepted models only.
+- [ ] Observe physical total/available RAM, CPU, supported GPU/total and free VRAM, runtime compatibility, disk headroom, model allocation and other active memory consumers. Distinguish OS *currently available RAM* from `GC.GetGCMemoryInfo().TotalAvailableMemoryBytes`; use current resource readings before inference and report measurements, confidence, and selected profile.
+- [ ] Apply Lite/Standard/Performance only where verified by device-specific smoke tests and benchmark evidence. The currently pinned Qwen3 4B remains the safe baseline; never imply a different model is installed, promote candidates from hardware alone, silently download weights, or use cloud inference.
+- [ ] Improve memory-pressure handling on 16 GB PCs such as PC 2: use existing CPU/reduced-context fallback when safe, bound model load/unload and generation, clearly identify low-memory refusals, and never bypass the <1 GiB safety guard or fabricate model replies. If no verified model can run, preserve deterministic GRID functions with an explicit unavailable status.
+- [ ] Add tests for startup selection, measured-RAM changes, unavailable/partial GPU telemetry, no eligible model, model/manifest mismatch, device changes, concurrent inference and fallback. Verify full solution tests plus real inline/attached MCP conversations on PC 2, including repeated interactions under load and post-idle recovery. Keep live-model PC 2 acceptance open until those checks pass.
+
+## Following work item — first-run installer (requested 2026-11-23)
+
 
 - [ ] **Build a user-friendly Grid.AI first-run installer** for a fresh Windows clone and eventually supported portable deployments. Preserve the existing pinned `Setup-GridClone.ps1` / `Start-GridClone.ps1` integrity and real-model verification as the underlying provisioning mechanism; do not assume this checklist item is implemented.
 - [ ] Detect supported .NET SDK/runtime, host hardware, free disk space, network/offline asset availability, private NuGet cache, and existing local assets; show storage/download sizes and prerequisites before obtaining explicit consent.
