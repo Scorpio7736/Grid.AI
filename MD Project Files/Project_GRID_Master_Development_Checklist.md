@@ -2514,6 +2514,17 @@ The GUI is no longer sequenced before platform compatibility. Its requirements a
 - [ ] Distinguish inferred AI suggestions, verified host observations, pending proposals, approved actions and completed results in every view
 - [ ] Verify GUI, terminal and Android host show the same underlying state and enforce the same permissions
 
+### C.1 — Custom local agent voices and Voice Studio
+
+**Proposed — 2026-11-25; optional, non-blocking.** No final speech engine or agent voice has been selected. Extend the existing 4.4 offline voice foundation.
+
+- [ ] Evaluate Qwen3-TTS, Chatterbox Turbo, Kokoro and Piper; choose local engine(s) after quality, hardware, licensing and portability benchmarks. No required Fish Audio cloud service or recurring API charges.
+- [ ] Design persistent, portable custom agent voices using original voice design or authorized reference recordings; retain existing installed-voice compatibility.
+- [ ] Design Voice Studio and meeting audio UX: audition, per-agent voice/volume/mute, speaking indicators, subtitles, cancellation and coordinated speech.
+- [ ] Verify offline operation, resource contention, local fallback, accessibility, profile portability and physical playback before claiming support.
+
+See [custom local agent voice proposal](Project_GRID_Offline_Voice_Implementation.md#future-enhancement--custom-local-agent-voices-and-voice-studio-2026-11-25). Planning only; all implementation and acceptance remain open.
+
 # Release Gates
 
 | Release | Required result |
