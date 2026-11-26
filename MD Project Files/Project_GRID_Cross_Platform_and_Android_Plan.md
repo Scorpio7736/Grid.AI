@@ -2,11 +2,11 @@
 
 ## Status
 
-**Planned as the next active phase — 2026-11-17. Nothing in this document is an implementation claim.**
+**Deferred future feature — 2026-11-25.** Previously planned as the next active phase on 2026-11-17; that priority has been superseded by the [core-features-first roadmap](Project_GRID_Core_Features_First_Roadmap.md). The full requirements below are retained **without closing their checkboxes or implying current Linux/Android support**.
 
 Grid.AI will introduce a dedicated **Grid.Platform** compatibility layer instead of spreading Windows, Linux or Android checks through the simulation, intelligence and terminal code. Android is the first priority because it has a distinct application lifecycle, permission system and storage model; it must not be treated as an ordinary Linux distribution. Linux desktop/server support follows the same shared contracts.
 
-The former Phase 7 City, Phase 8 Integration and optional desktop GUI roadmaps are preserved under **Backlog and Future Plans** in the master checklist. Their completed historical items remain completed, but they are not the active next phase. Grid.Platform is intentionally sequenced before any new GUI shell.
+The former City, Integration, and desktop GUI plans are preserved in the master checklist. Grid.Platform/Android/USB work is now **Future Plan D**, not the next required milestone. A Windows-first GUI may begin when shared agent/service contracts are ready; it does **not** depend on completing Grid.Platform first.
 
 ## Architecture boundary
 
