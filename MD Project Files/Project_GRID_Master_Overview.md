@@ -1,8 +1,10 @@
 # Project GRID — Master Overview
 
+**Current decision — 2026-11-25:** Grid.AI is **core-features-first and Windows-first**. Complete reliable local models/startup, ordinary-language MCP/MAXIS work, agent collaboration, practical terminal UX and then optional GUI/voice features before prioritizing portable package/USB migration or Linux/Android support. **Retain all verified transfer code, tests and historical plans**, but leave second-device and cross-platform acceptance unchecked. The 2026-11-17 platform-first sequence below is superseded for planning priority. [Authoritative roadmap](Project_GRID_Core_Features_First_Roadmap.md).
+
 **Agent identity update — 2026-11-21.** The security analyst is named **TRON**. Current architecture, terminal commands, meetings, personas, model profiles and documentation use TRON and the `tron.*` capability namespace. Existing saved security-agent state migrates by stable role/ID before validation. [TRON implementation](Project_GRID_TRON_Security_Implementation.md).
 
-**Roadmap rebased — 2026-11-17.** The next active phase is cross-platform compatibility through `Grid.Platform`, preserving Windows while adding Linux adapters and prioritizing a dedicated Android ARM64 host with native removable-folder access. The former City, Integration and optional GUI work is retained as backlog/future plans rather than deleted; Grid.Platform comes before new GUI work. [Cross-platform and Android architecture](Project_GRID_Cross_Platform_and_Android_Plan.md) and [master checklist](Project_GRID_Master_Development_Checklist.md#phase-7--cross-platform-compatibility-and-android-portability).
+**Historical roadmap — 2026-11-17; superseded by 2026-11-25 decision.** The next active phase was cross-platform compatibility through `Grid.Platform`, preserving Windows while adding Linux adapters and prioritizing a dedicated Android ARM64 host with native removable-folder access. The former City, Integration and optional GUI work is retained as backlog/future plans rather than deleted; Grid.Platform comes before new GUI work. [Cross-platform and Android architecture](Project_GRID_Cross_Platform_and_Android_Plan.md) and [master checklist](Project_GRID_Master_Development_Checklist.md#phase-7--cross-platform-compatibility-and-android-portability).
 
 **Planning update — 2026-11-04.** Planned architecture separates GRID-AI intelligence services, GRID-Agent identities/personas/memory/permissions/orchestration, and GRID7736 simulation/application operations. Sections 6.16–6.31 are required before Phase 7. The shared storage target is now 128 GB decimal for Flash and PC copies, with flash drives primary and installers/local PC copies supported. Specialist model choices await user research and evaluation. [Full plan and acceptance gates](Project_GRID_AI_and_Agent_Platform_Plan.md).
 
@@ -444,6 +446,8 @@ Other considered languages have targeted roles: PowerShell for controlled Window
 **Architectural boundary:** The Godot viewer observes the C# simulation; it must not create a second authoritative civilization. The headless GRID world must run without the viewer, audio devices, or a local LLM.
 
 ## 12. Development roadmap
+
+**Current sequencing (2026-11-25):** Finish 6.39A–C/P0 local inference, agent execution and conversational UX first; then deliver the practical Windows-first agent product, selected specialist/client features and optional GUI shell. Cross-device copy/transfer, Grid.Platform, Linux and Android remain planned future work (Future Plan D); no completed implementation is discarded. See the [core-first roadmap](Project_GRID_Core_Features_First_Roadmap.md) and [master checklist](Project_GRID_Master_Development_Checklist.md). The eight-phase table below is the **historical original outline**, not the current execution order.
 
 Build the engine and validate it before investing heavily in visualization:
 
