@@ -10,9 +10,9 @@ The project is designed around a straightforward principle: **AI should be able 
 
 Grid.AI is the current product name. A small number of internal solution/database/protocol identifiers remain unchanged solely for backward compatibility; they are not user-facing branding.
 
-## Next roadmap phase: cross-platform and Android
+## Current roadmap: core AI and agents first
 
-The next planned phase introduces `Grid.Platform` so shared simulation, persistence, agents and AI do not directly depend on one operating system. Android ARM64 is the first priority through a dedicated native host and system folder/document access for removable Grid.AI data; Linux x64/ARM64 follows while current Windows behavior is preserved. Separate platform builds share a governed data/manifest contract. The former Godot City, later integration and optional desktop GUI work are retained as backlog/future plans. This is planned work, not a current support claim. [Architecture and acceptance plan](MD%20Project%20Files/Project_GRID_Cross_Platform_and_Android_Plan.md).
+**Decision (2026-11-25):** Finish the main Windows-hosted AI and agent capabilities before expanding device transferability. The next priorities are reliable hardware-aware local inference and installation, MCP/MAXIS workflows that complete verified work, agent collaboration and persistent context, and a usable terminal/optional GUI experience. Existing portable deployment and transfer work remains preserved but **second-PC/USB transfer, Linux and Android cross-platform release gates are future features**, not blockers for a useful Windows-first release. [Core-first roadmap](MD%20Project%20Files/Project_GRID_Core_Features_First_Roadmap.md); [retained cross-platform plan](MD%20Project%20Files/Project_GRID_Cross_Platform_and_Android_Plan.md).
 
 ## Overview
 
@@ -159,12 +159,13 @@ Run these from a deployment containing the executable. Guided configuration is s
 
 Grid.AI is an **actively developed project**, not a finished general-purpose desktop automation product. Its primary focus is reliable offline AI, coordinated agent workflows, persistent local state, and verified computer assistance.
 
-The terminal remains the main interface while core functionality is developed. A graphical interface is a later, optional milestone. Broader autonomous coding, production-model validation, and certain hardware/portable-deployment acceptance scenarios are not yet complete.
+The terminal remains the main interface while core functionality is developed. A graphical product interface can follow stable agent workflows **without waiting for cross-platform support**. Broader autonomous coding, production-model validation and physical portable-deployment acceptance are not yet complete.
 
 Development plans, milestone evidence, test reports, and known limitations are maintained separately so this README stays focused on explaining the product.
 
 ## Documentation
 
+- [Core-features-first development roadmap](MD%20Project%20Files/Project_GRID_Core_Features_First_Roadmap.md)
 - [Current development handoff](MD%20Project%20Files/agent%20context/CURRENT_HANDOFF.md)
 - [Local coding workflow](MD%20Project%20Files/Project_GRID_Local_Coding_Integration.md)
 - [Agent integration and acceptance](MD%20Project%20Files/Project_GRID_Integration_Acceptance.md)
