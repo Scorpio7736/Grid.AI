@@ -2,6 +2,29 @@
 
 **4.2E compatibility update (2026-10-21):** Use `connect MCP -inline` or `resume ID -inline` in the original host before voice commands. Default connect/resume opens a typed conversation window; attached audio remains unavailable. Inline output is instant. See [conversation windows](Project_GRID_Conversation_Windows_Implementation.md).
 
+## Future enhancement — custom local agent voices and Voice Studio (2026-11-25)
+
+**Status: proposed research and UX backlog; no engine selected or implementation authorized by this note.** Extend the existing offline speech MVP and persistent named-agent voice profiles rather than replacing them prematurely. This is optional future work, not an additional Phase 6.39 or Phase 7 release gate.
+
+### Candidate engines
+
+- [Qwen3-TTS](https://github.com/QwenLM/Qwen3-TTS): evaluate 1.7B VoiceDesign for original reference creation and 0.6B Base for local reference-conditioned speech.
+- [Chatterbox](https://github.com/resemble-ai/chatterbox): evaluate Turbo/local reference-based cloning and expressive speech.
+- [Kokoro](https://github.com/hexgrad/kokoro): evaluate lightweight local preset voices and optional fallback.
+- [Piper](https://github.com/OHF-Voice/piper1-gpl): evaluate a lightweight offline fallback, including engine and individual voice licensing.
+- Fish Audio cloud voices may inform desired vocal characteristics, but must not be a required runtime dependency. Do not depend on temporary free API access or introduce paid calls. Only use reference recordings with appropriate consent and usage rights; otherwise design original voices.
+
+### Proposed requirements and UX
+
+- [ ] Benchmark candidates for naturalness, identity consistency, expressiveness, time to first audio, CPU/RAM/VRAM, concurrent LLM load, disk footprint, offline operation and platform/license compatibility before selecting one or more.
+- [ ] Maintain a stable agent-to-voice profile with local reference audio where appropriate, transcript, engine/model version, settings and provenance; support export/import and preserve legacy installed-voice profiles.
+- [ ] Design an optional Voice Studio under agent settings with voice library, original voice descriptions (accent, pitch, pace, personality), authorized reference import, audition, save/reset, mute, volume and accessible text alternatives. Treat descriptive controls as prompts unless calibrated acoustic controls are supported.
+- [ ] Evaluate optional streaming playback, active-speaker indicators, per-agent volume, subtitles, replay, cancellation and non-overlapping speech queues for meetings; do not enable unsolicited speech by default.
+- [ ] Use a provider-neutral local synthesis interface and hardware-aware resource scheduling; preserve typed chat and existing permissions when speech is unavailable. Any fallback must be local, clearly identified and user-configurable; never silently change an agent's voice or use a cloud service.
+- [ ] Provision optional, versioned and integrity-checked model assets explicitly; keep normal startup independent of voice assets. Validate portable profiles, disconnected synthesis, failure/cancellation, host shutdown, and physical audio on supported platforms. Keep speech output distinct from authentication and command authority.
+
+**Open decisions:** engine(s), individual agent voice identities, fallback policy, asset packaging, supported platforms and performance targets. No benchmark, installation, code change or physical-device test has been performed for this proposal. See [master checklist, Future Plan C](Project_GRID_Master_Development_Checklist.md#future-plan-c--optional-unified-gui).
+
 ## Communications verification - 4.5 completed (2026-10-21)
 
 All seven 4.5 checklist items have automated coverage. **455 tests passed** (14 Core, 155 Simulation, 97 Persistence, 189 Terminal), including three new end-to-end tests for authenticated conversation/context recovery through SQLite, malformed input without transcript mutation, and unrelated-agent privacy with logout revocation. Existing suites cover recipient routing, durable history/recovery, reviewed speech/typed-message equivalence, audio failure fallback and deterministic communication without AI. No production-code/schema change was needed. Physical microphone/playback/device-unplug checks remain manual; advanced voice and task-delegation features remain planned. See [verification matrix and limits](Project_GRID_Communications_Verification.md). Earlier milestone counts below are historical.
