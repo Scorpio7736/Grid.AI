@@ -139,4 +139,4 @@ Only one authoritative host may open a world for writing. Cross-platform opening
 - Running executables directly from USB where the host OS forbids it.
 - Concurrently writing the same world from multiple devices.
 - Claiming every Android phone can run the full desktop AI/model profile.
-- Beginning the Godot city, desktop GUI or later integration backlog before the cross-platform release gate is reviewed.
+- Beginning a second platform-specific state owner or unreviewed migration while delivering future platform support. **A Windows-first GUI can be developed before this deferred gate** as long as it shares the authoritative host contracts.
