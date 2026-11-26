@@ -1,5 +1,9 @@
 # Grid.AI current handoff
 
+## 2026-11-25 — active roadmap decision (supersedes platform-first order)
+
+User directed development toward **core functionality before transferability**. Preserve implemented Windows transfer/package code and tests, but place actual copy/move portability completion, second-PC/USB acceptance, Grid.Platform, Linux and Android in the future backlog. Immediate work is Windows-first: repair measured local model selection and low-RAM startup, simplify fresh-host installation, complete MCP/MAXIS useful end-to-end agent work with evidence and resumption, then polish terminal/agent UI and optionally begin a GUI without waiting for Android. Maintain truthful offline/local-model claims, permissions, backups, and platform-friendly contracts. See [new authoritative roadmap](../Project_GRID_Core_Features_First_Roadmap.md) and updated [master checklist](../Project_GRID_Master_Development_Checklist.md). Documentation change only; no tests or cross-device acceptance have been run by this decision.
+
 ## 2026-11-22 — bound host permission plans
 
 The typed system operation that generated MCP's permission question is retained on the pending intent. Natural Once/Session/Always consent executes that exact validated object; GRID does not ask AI to recreate the plan after approval. The consent schema is request-kind validated and no longer falls back to file-preview wording. A safe injected adapter passed the full one-minute clock request/consent/receipt flow without touching the real clock. All 1,654 solution tests passed; actual Windows UAC/clock mutation remains manual. See [dynamic access permissions](../Project_GRID_Dynamic_Access_Permissions.md).
@@ -68,7 +72,7 @@ The reported demonstration/workspace mismatch and invalid main-terminal resume w
 
 ## Next work and open gates
 
-- Roadmap direction 2026-11-17: the next active phase is Grid.Platform cross-platform compatibility. Prioritize a dedicated Android ARM64 host with native system folder/document access, then Linux x64/ARM64 while preserving Windows behavior. Separate platform artifacts share a governed world/data manifest; Android is not generic Linux and may need private executable staging. Former City and Integration phases are now Backlog and Future Plans. No platform code is implemented by this planning update. See [cross-platform plan](../Project_GRID_Cross_Platform_and_Android_Plan.md) and the rebased [master checklist](../Project_GRID_Master_Development_Checklist.md#phase-7--cross-platform-compatibility-and-android-portability).
+- Historical roadmap 2026-11-17 (superseded for priority on 2026-11-25): the next active phase was Grid.Platform cross-platform compatibility. Prioritize a dedicated Android ARM64 host with native system folder/document access, then Linux x64/ARM64 while preserving Windows behavior. Separate platform artifacts share a governed world/data manifest; Android is not generic Linux and may need private executable staging. Former City and Integration phases are now Backlog and Future Plans. No platform code is implemented by this planning update. See [cross-platform plan](../Project_GRID_Cross_Platform_and_Android_Plan.md) and the rebased [master checklist](../Project_GRID_Master_Development_Checklist.md#phase-7--cross-platform-compatibility-and-android-portability).
 
 - User direction 2026-11-17: 6.34A enrollment, management and trusted-host challenge sessions are implemented. Schema v25 stores three independently salted 1..64-character challenge verifiers; schema v26 persists bounded increasing account/endpoint cooldowns. Master-Control-granted endpoints receive two-minute, two-random-prompt attempts and five-minute exact-purpose claims bound to user/host/world/endpoint/call. Replay, cross-call, forgery, expiry, rotation and restart fail closed; claims never log in or approve work. Full solution: 1,452 passed, zero failed/skipped. Protected client secret input, transcription suppression, actual remote call integration and voiceprints remain open. See [implementation and remaining plan](../Project_GRID_Challenge_Code_Authentication.md).
 
@@ -85,7 +89,7 @@ The reported demonstration/workspace mismatch and invalid main-terminal resume w
 
 ## Suggested next-chat request
 
-Continue Grid.AI with the next 6.34B item, recoverable world retirement, while retaining the open 6.33 real-device acceptance checks. Copy/transfer and PC2 acceptance are deferred until the user has the transfer device ready. Read AGENTS.md and the current handoff, verify current repository state, implement the item, and update its completion evidence. Keep output concise and preserve outstanding model/device acceptance gates.
+Continue Grid.AI on master with the **2026-11-25 core-first roadmap**. First repair existing RAM-aware automatic model selection and verify honest low-memory behavior on a supported Windows host; then complete simple Windows first-run setup and the P0 6.39 MCP/MAXIS workflow. Preserve existing transfer implementation and all unchecked second-PC/portable/Android/Linux gates as future work. Read AGENTS.md and current handoff, inspect current branch and tests, implement one verified feature increment, and update its evidence.
 
 MCP testing follow-up: five of six executable workflow checks passed; missing-workspace clarification returned Invalid clarification response. Interactive UI and Desktop HTML delivery remain unverified. See the integration acceptance reference, MCP executable testing follow-up.
 
