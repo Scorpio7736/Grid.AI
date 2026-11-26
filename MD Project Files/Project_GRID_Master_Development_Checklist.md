@@ -1,5 +1,14 @@
 # Project GRID — Master Development Checklist
 
+## Active product direction — core features first (2026-11-25)
+
+**User-approved sequencing change:** Complete the main Windows-hosted Grid.AI agent product **before resuming transferability work**. Preserve all existing copy/transfer implementation, verified Windows portable packaging, world/model manifest work, tests and historical evidence. Physical second-PC/USB migration, PC/Flash edition completion, `Grid.Platform`, Linux and Android move into **Future Plan D**, with Future Plan B.6–B.9 retained. No acceptance box is marked complete by this scheduling decision. [Authoritative core-first roadmap](Project_GRID_Core_Features_First_Roadmap.md).
+
+**Current priorities, in order:** (1) Fix existing RAM/VRAM-aware local model selection and Windows low-memory startup; (2) deliver friendly **single-host** Windows first-run setup; (3) complete MCP coordination, MAXIS real coding execution/recovery, conversation, memory and task reliability (6.31/6.39A–C); (4) polish terminal/agent UX and develop an optional GUI shell from the existing demo **without waiting for platform adapters**; (5) validate a useful Windows-first local product, then explicitly re-evaluate transfer targets. Voice customization and selected connected-device functions are feature priorities only when they do not block P0 work.
+
+**Do not treat cross-device transfer, removable-media acceptance, Linux/Android runtime support or a complete self-contained flash edition as prerequisites for the current Windows-first core release.** Continue to respect existing local-offline, permissions, schema/backup and integrity constraints. Historical date-stamped platform-first statements below remain preserved but are superseded for priority by this section.
+
+
 ## Next work item — repair automatic model selection and RAM-aware startup (priority 1, requested 2026-11-23)
 
 - [ ] **Finish and integrate existing hardware-aware model selection into normal Grid.AI startup**, rather than creating another selector. Connect `ModelDeviceDiscovery`, `ModelProfileEligibility.Select`, `ModelRegistry`, and `AgentModelProfiles` so startup makes an explicit, auditable decision from installed, hash-verified, device-accepted models only.
@@ -97,7 +106,7 @@ On world load, legacy-named Agent residents are renamed without changing IDs, re
 Verification: 457 tests passed (14 Core, 157 Simulation, 97 Persistence, 189 Terminal), including new legacy-name/idempotence and collision cases. Earlier completion dates and test counts remain historical evidence; documentation examples now use current names.
 
 
-## Current completion audit - 2026-10-21
+## Current completion audit - 2026-10-21 (historical snapshot; consult current roadmap above)
 
 Reviewed against the implemented modules, completion notes, source authorization paths and existing verification evidence. **Latest full run: 455 tests passed** (14 Core, 155 Simulation, 97 Persistence, 189 Terminal), recorded in [4.5 verification](Project_GRID_Communications_Verification.md). This reconciliation changes documentation only; tests were not rerun for checkbox edits. Older dated notes and test totals below are historical, not current status.
 
@@ -109,7 +118,7 @@ Reviewed against the implemented modules, completion notes, source authorization
 | Phase 4 - Communications | 4.1-4.5 and 4.2A-D/4.3A implemented for documented scope; 4.2D edition/disaster acceptance and physical voice checks remain outstanding |
 | Phase 5 - System Agents | 5.1 registry/task broker/queue complete for demonstration adapters; 5.2 coordination and real specialist execution remain planned |
 | Phase 6 - Intelligence and terminal assistant | Partially implemented; remaining acceptance stays active before platform extraction |
-| Phase 7 - Grid.Platform | Planned next: preserve Windows, add Linux adapters and prioritize a dedicated Android ARM64 host/removable-storage flow |
+| Former Phase 7 - Grid.Platform | Deferred as Future Plan D (2026-11-25); Windows/Linux/Android and USB migration are not active core-release blockers |
 | Backlog - City and integration hardening | Former Phases 7-8 preserved as future plans; no longer the active next phase |
 
 **Reconciled completed entries:** 1.10 session visibility, 1.13 authenticated NGE, 2.4 application resource policy/no artificial drain, Phase 5 human-versus-agent authority separation, 8.1 saved-city loading and no offline catch-up, 8.3 world backup/recovery, and the post-Genesis login/editing and completion-note recommendations. Evidence includes `TerminalHost` live/deletion rechecks, `TerminalIdentitySession` capabilities, `ApplicationResidentTests.ConditionRequiresSourcedBudgetsAndAppEnergyDoesNotDrainOnTicks`, city persistence/recovery tests, and the 4.2A/4.5 verification notes.
@@ -186,6 +195,8 @@ See [Current implementation and verification](Project_GRID_Current_Implementatio
 > **Architecture principles:** C#/.NET owns authoritative world state; agent behavior does not require AI; Windows tasks are explicitly permission-scoped and auditable; essential operation is local-first and requires no subscriptions; the 3D viewer observes the simulation instead of owning it. Simulation time advances only while GRID operates.
 
 ## Overall roadmap
+
+**Historical original eight-milestone outline.** Current priority is the 2026-11-25 core-features-first sequence above; the former cross-platform Phase 7 is Future Plan D.
 
 | Milestone | Name | Deliverables | Original rough solo part-time estimate |
 |---|---|---|---|
@@ -2051,7 +2062,9 @@ Initial setup/profile/health implementation and 1,431 passing regressions: [guid
 
 **Implementation order:** 6.39A baseline -> 6.39B durable work/MAXIS -> 6.39C terminal UX (overlap permitted) -> 6.39D Even G2 -> 6.39E phone calling -> 6.39F automations -> 6.39G acceptance. P0 work is required before expanding the platform, and no checkbox should be marked complete without test evidence.
 
-## Pre-Phase-7 closure queue — authoritative execution order
+## Core-first closure queue — previously called pre-Phase-7 (historical gate numbers retained)
+
+**Core-first override 2026-11-25:** Work the Windows-host inference, agent execution, UX and safety gates first. Historical Gate 4 portability and any second-device/flash/cross-platform clauses are **deferred open requirements**, not prerequisites to start a GUI or release the core on one Windows host. The original gate numbers and completion evidence remain for traceability.
 
 **Organized 2026-11-19; reconciled through 6.39 on 2026-11-22.** This queue orders the existing unchecked requirements from Phase 1 through 6.39 without duplicating them as new checkboxes. The canonical checkboxes remain in their original sections so implementation history and exact acceptance language are preserved. Completing a queue gate means satisfying and checking the linked original items, not adding a second completion mark here.
 
@@ -2083,8 +2096,8 @@ Make these decisions before downloading models or changing platform code:
 | Semantic embeddings | Recommended deferral unless learned semantic retrieval is required beyond the implemented lexical baseline | 6.20 |
 | Remote voice/wearables | Recommended Future Plan placement; retain foreground text/private-network foundations without making voice transport a core gate | 6.36A–6.36B |
 | Voiceprint authentication | Keep optional and future; challenge codes remain knowledge-based authentication, never biometric proof | 6.34A |
-| Platform-dependent Phase 4 item | Move the requirement to the matching Phase 7 portability gate; it cannot logically require completion of Phase 7 before Phase 7 begins | 4.2D |
-| Phase 2 telemetry/application breadth | Carry into Grid.Platform capability/adaptor work unless it is required for the selected release models | 2.4, 2.7.2 |
+| Platform-dependent Phase 4 item | Defer physical copy/move acceptance to Future Plan D; the existing implementation and tests remain intact | 4.2D |
+| Phase 2 telemetry/application breadth | Finish only the host data necessary for core Windows agents; defer cross-platform adapter breadth to Future Plan D | 2.4, 2.7.2 |
 
 Deferral candidates remain unchecked until their move is explicitly accepted and recorded in both their original section and the appropriate Future Plan/Phase 7 section. Deferral is a sequencing decision, not a false completion claim.
 
@@ -2150,9 +2163,9 @@ Work only the candidates retained by Gate 0:
 
 **Gate 3 exit:** no model, conversation, agent, attached terminal or remote client can widen authentication, approval, recovery or destructive authority.
 
-### Gate 4 — Build and prove one complete portable offline package
+### Deferred portability gate (formerly Gate 4) — future Windows/USB transfer acceptance
 
-Begin only after Gates 1–3 fix the code, model inventory and security contract that must be packaged.
+This gate is **not** required for Windows-first core feature development or its release. Return to it after core agent usefulness and reliability are demonstrated and the user reprioritizes transferability. Existing steps and open evidence remain preserved:
 
 1. Build the complete checksummed package and verify actual size, staging reserve, free space and rollback assets.
 2. Exercise copy and transfer interruption recovery, low-space refusal, drive removal and changed drive letters.
@@ -2164,7 +2177,7 @@ Begin only after Gates 1–3 fix the code, model inventory and security contract
 
 **Gate 4 exit:** the copied Grid.AI package works offline on the second machine from its destination, with no personal/global runtime dependency and no regenerated world.
 
-### Gate 5 — Run physical UX and representative-user acceptance
+### Gate 5 — Run Windows-first UX and representative-user acceptance
 
 1. Confirm main terminal, detached conversation and meeting appearance, colors and typewriter behavior.
 2. Test one non-sensitive physical monitor capture plus unplug/reconnect.
@@ -2177,15 +2190,15 @@ Begin only after Gates 1–3 fix the code, model inventory and security contract
 
 ### Gate 6 — Evidence reconciliation and user release review
 
-1. Re-run the complete functional, adversarial, regression, performance and compatibility suites against the exact packaged revision.
+1. Re-run the functional, adversarial, regression, performance and applicable Windows compatibility suites against the exact Windows-first release revision. Separately preserve future portable-package verification gates.
 2. Reconcile all roll-up boxes so 6.17A, 6.30 and 6.31 cite the same model/device/package evidence rather than duplicating claims.
-3. Review all 12 production-readiness checks: offline inference, selected models, identity/memory isolation, retrieval provenance, unauthorized operations, recovery, diagnostics, performance/storage, evaluations, rollback, portability and repeatable training disposition.
+3. Review the production-readiness checks, distinguishing mandatory Windows single-host criteria from explicitly deferred portability, physical second-device and optional model/training requirements; do not mark deferred criteria passed.
 4. Record the final supported hardware/model/feature matrix and every explicit deferral.
-5. Obtain user review of the evidence before beginning Phase 7 implementation.
+5. Obtain user review of the evidence before declaring the Windows-first core experience ready; portability retains a separate later go/no-go review.
 
 **Canonical boxes closed by this gate:** 6.15 consolidated acceptance, 6.17A/6.30 review items, the three top-level 6.31 release-gate boxes and any remaining evidence-only boxes from earlier gates.
 
-**Gate 6 exit:** every pre-Phase-7 checkbox is either completed with linked evidence or explicitly moved with user approval; no item is silently ignored or marked complete from planning alone.
+**Gate 6 exit:** core Windows feature criteria have linked evidence and every deferred item remains traceable and unchecked; neither portability nor optional feature scope may be silently marked complete.
 
 ### Gate 7 — Complete the 6.39 experience and connected-device release gate
 
@@ -2202,123 +2215,33 @@ Begin the P0 work alongside the earlier gates where it shares the same MCP, MAXI
 
 ### Stop rules
 
-- Do not start a later gate when an earlier gate would change its packaged code, selected assets or authorization contract.
+- Do not start a later **active core** gate when an earlier active gate would change its code, selected assets or authorization contract. Deferred portability is not an ordering block.
 - Do not use a passing unit suite as evidence for a physical device, disconnected network, visual appearance, power-loss or representative-user requirement.
 - Do not download every listed model before Gate 0 chooses the release set.
 - Do not count optional GUI work as a terminal-first release blocker.
-- Phase 7 architecture investigation may inform Gate 0, but Phase 7 implementation does not begin until Gates 6 and 7 are reviewed unless this checklist is explicitly re-sequenced by the user.
+- Future platform architecture investigation may inform core interfaces, but transfer and Grid.Platform implementation remain deferred by the 2026-11-25 user decision until explicitly reprioritized.
 
 **Recommended next implementation item:** Gate 1, beginning with the open 6.31 conversational-reference and MCP-to-MAXIS delegation flow. It provides the most direct progress toward the required local agentic coding experience and does not depend on the unavailable transfer device.
 
-**Experience release gate:** A new user on a supported Windows PC can install or launch a prepared Grid.AI edition, set up the selected local model and grants, request a realistic multi-step file or application task conversationally, review/approve it, observe grounded agent progress, recover from a failure and revoke access through the terminal with no required cloud service. Repeat essential workflows from a verified offline Flash Grid.AI package on a second supported machine. Preserve simulation integrity, capability scoping and auditable Master Control authority throughout. The optional GUI is not part of this gate.
+**Windows-first core experience release gate:** A user on a supported Windows PC can install or launch Grid.AI, set up a verified local model and grants, request and complete a realistic multi-step file/coding task conversationally, review/approve it, observe grounded progress and real test outcomes, resume/recover safely, and revoke access with no required cloud service. Preserve simulation integrity and audited Master Control authority throughout. A GUI can proceed on the same host contracts; second-PC/Flash/USB/platform migration is a separate future release gate.
 
 ---
 
-## Former optional unified desktop GUI milestone — moved to Future Plan C
+## Optional unified desktop GUI — Future Plan C, now eligible before portability
 
-The GUI is no longer sequenced before platform compatibility. Its requirements are preserved under Future Plan C and may begin only after the active Grid.Platform phase is reviewed and the user explicitly reprioritizes it. Terminal completion remains sufficient for core AI acceptance.
+GUI work may start once MCP/MAXIS host contracts and core conversation/task states are sufficiently stable. It **no longer waits for Grid.Platform, USB transfer or Android**. Existing GUI concepts remain in Future Plan C, and terminal remains a first-class option.
 
-**Core terminal experience acceptance (6.32–6.38; required before the cross-platform phase):** On a supported Windows PC, an authenticated user can configure local AI and grants, ask MCP for a multi-step device/file task in ordinary conversation, inspect a typed plan, approve consequential actions, view verified results, recover or cancel safely, and revoke access — **entirely through the existing GRID terminal** with no required cloud service. Test a prepared portable offline package on a second supported computer. Future Plan C must not block this gate.
-
----
-
-# Phase 7 — Cross-platform compatibility and Android portability
-
-**New active next phase — planned 2026-11-17. No implementation is claimed by this planning update.** Introduce a typed `Grid.Platform` subsystem that isolates operating-system behavior from Grid.Core, Grid.Simulation, Grid.Persistence, Grid.AI, Grid.Agent and the terminal experience. Preserve separate native adapters rather than emulating Windows. Android ARM64 is the first priority, followed by Linux x64/ARM64 while retaining Windows behavior. [Architecture, USB layout, Android constraints and acceptance](Project_GRID_Cross_Platform_and_Android_Plan.md).
-
-## 7.1 Platform boundary and dependency inventory
-
-- [ ] Inventory direct Windows, registry, WMI/CIM, PowerShell, named-pipe, WinForms/WPF, System.Speech, process, path and drive assumptions across every project
-- [ ] Define which behavior is shared, platform-adapted, platform-optional or unsupported
-- [ ] Add architecture tests preventing new native dependencies in Grid.Core, Grid.Simulation and Grid.Persistence
-- [ ] Preserve observable Windows behavior while moving native calls behind adapters
-- [ ] Record the supported OS/version/architecture matrix; do not equate “all devices” with untested universal compatibility
-
-## 7.2 Grid.Platform contracts and capability model
-
-- [ ] Create `Grid.Platform` abstractions for detection, file systems, runtimes, processes, removable storage, resources, dependency checks and lifecycle
-- [ ] Represent `Available`, `PermissionRequired`, `TemporarilyUnavailable`, `Unsupported` and `Unknown` without simulated success
-- [ ] Provide deterministic fake adapters and contract suites for paths, permissions, failures, cancellation and capability changes
-- [ ] Keep task approval, identity and audit enforcement above platform adapters; an adapter cannot widen authority
-- [ ] Use typed operations instead of arbitrary shell-command concatenation
-
-## 7.3 Windows adapter extraction
-
-- [ ] Create `Grid.Platform.Windows` and migrate current Windows discovery, storage, process, runtime, telemetry, picker and lifecycle integrations
-- [ ] Retain current local credentials, world loading, terminal, AI, file/context, transfer and recovery behavior
-- [ ] Preserve explicit Windows-only features as capability results when no portable equivalent exists
-- [ ] Pass the existing full suite and real Windows smoke tests after extraction
-
-## 7.4 Linux adapters and host
-
-- [ ] Create `Grid.Platform.Linux` for x64 and ARM64 OS/architecture detection, XDG paths, permissions, processes, resources and removable storage
-- [ ] Replace PowerShell assumptions with direct process APIs or bounded Bash adapter operations where required
-- [ ] Define Linux runtime/self-contained publishing, app dependencies and offline launch scripts
-- [ ] Verify case-sensitive paths, mount changes, executable permissions, signals, suspend/resume and headless terminal behavior
-- [ ] Test disposable-world login, save/restart, context/file tasks and supported local inference on real Linux hosts
-
-## 7.5 Android ARM64 host and storage adapter
-
-- [ ] Create `Grid.Platform.Android` plus a dedicated `Grid.Host.Android`; do not treat Android as `linux-arm64`
-- [ ] Use the Android system folder/document picker and persisted user grants for removable Grid.AI data instead of unrestricted `/storage` or Termux access
-- [ ] Represent Android content/document handles without fabricating ordinary filesystem paths
-- [ ] Stage verified executable/runtime assets in app-private storage when Android forbids executing from USB, while retaining approved persistent data on removable storage
-- [ ] Add touch-friendly login, terminal/chat, approval, cancellation, file selection and diagnostics without duplicating world state
-- [ ] Handle foreground/background, suspension, process death, grant revocation, USB removal and app restart without silent world replacement
-- [ ] Request folder, microphone, notifications, network and screen/media permissions separately and only when the user selects the feature
-
-## 7.6 Portable world and USB contract
-
-- [ ] Publish separate `windows-x64`, `linux-x64`, `linux-arm64` and `android-arm64` artifacts with one versioned manifest/data contract
-- [ ] Share governed worlds, memory and configuration while keeping platform executables and native dependencies separate
-- [ ] Permit only one authoritative writer per world; add lease/lock, schema, backup, atomic-write and post-load identity checks before cross-platform writes
-- [ ] Reuse the saved world/city instead of regenerating after device change
-- [ ] Revoke or review device-bound paths, workspaces, credentials, remote pairings and permissions on a new device
-- [ ] Test read-only media, missing drive, changed mount/URI, low space, interrupted staging and incompatible package/schema versions
-
-## 7.7 Runtime, command and dependency adaptation
-
-- [ ] Detect or stage the correct self-contained .NET/application host for each supported target
-- [ ] Provide platform-specific launchers without making host PATH, environment variables or registry changes mandatory in portable mode
-- [ ] Map supported typed commands to direct APIs, PowerShell, Bash or Android host services and report unavailable operations honestly
-- [ ] Provide platform-specific health/repair guidance for runtime, storage, permissions, model and dependency failures
-- [ ] Keep ordinary runtime offline; installations/provisioning are the only permitted network-dependent stage
-
-## 7.8 AI and resource portability
-
-- [ ] Keep inference selection behind Grid.AI provider contracts; Ollama is not a universal platform requirement
-- [ ] Evaluate compatible offline Windows, Linux and Android backends, model formats, licenses and CPU/GPU/NPU support
-- [ ] Select the smallest measured profile that passes the task on the current device
-- [ ] Provide a phone-safe degraded mode for simulation, terminal, memory and deterministic tools when generative AI cannot run
-- [ ] Account for RAM, storage/staging, thermal throttling, battery and concurrency before model loading
-- [ ] Never silently download models or claim unavailable AI work succeeded
-
-## 7.9 Cross-platform security, lifecycle and diagnostics
-
-- [ ] Preserve Master Control, capability grants, reviewed actions and audit semantics across adapters
-- [ ] Save/recover safely across shutdown, signals, suspend, Android backgrounding/process death and removable-media loss
-- [ ] Keep permissions scoped and revocable; reopening a world does not imply OS permission on the new device
-- [ ] Provide one capability/health report showing platform, architecture, grants, limitations, runtime, storage and AI readiness
-- [ ] Verify that unsupported security, process, screen, voice or file features fail closed with useful alternatives
-
-## 7.10 Real-device release gate
-
-- [ ] Run the shared contract and full applicable regression suites on Windows x64, Linux x64, Linux ARM64 and at least one supported Android ARM64 device
-- [ ] On Android, install the host normally, select Grid.AI on USB/removable storage, save/restart/regrant, detach/reconnect and recover from revoked access
-- [ ] Move one disposable world between supported platforms without regeneration, concurrent writes or loss of portable identity/history
-- [ ] Verify essential offline workflows with network/DNS blocked and record which AI/profile is actually available on each device
-- [ ] Publish measured OS/API/ABI/hardware/backend support and known limitations before claiming a target supported
-- [ ] Obtain user review of the device matrix and evidence before advancing a future backlog item
+**Core terminal acceptance (6.32–6.38):** On a supported Windows PC, an authenticated user can configure local AI/grants, ask MCP for multi-step tasks, inspect and approve consequential actions, see verified results, recover/cancel and revoke access through the existing terminal with no required cloud service. Physical second-PC portable acceptance stays open under Future Plan D and does not block current core work or optional GUI exploration.
 
 ---
 
 # Backlog and Future Plans
 
-**Roadmap rebased 2026-11-17.** Everything below was formerly Phase 7 or later. It is preserved for future work but is no longer the active next phase, does not block planning/implementation of Grid.Platform, and must not be reported as implemented unless its own evidence exists. Completed historical checkboxes remain evidence of earlier work only.
+**Roadmap reprioritized 2026-11-25.** Everything below is deferred future work unless explicitly promoted for the core Windows product. Future Plan D retains the former active Phase 7 cross-platform/USB requirements; it no longer blocks GUI or core agent features. Existing checked historical implementation evidence is retained, while physical/OS acceptance stays open.
 
 ## Future Plan A — The City (formerly Phase 7)
 
-**Deferred backlog.** Godot city work begins only after the active cross-platform phase is reviewed and the user explicitly reprioritizes it. It must render authoritative saved state rather than becoming a competing simulation.
+**Deferred backlog.** Godot city work begins after core agent usefulness is established and the user explicitly reprioritizes it. It must render authoritative saved state rather than becoming a competing simulation.
 
 ### A.1 Godot foundation
 
@@ -2504,15 +2427,15 @@ The GUI is no longer sequenced before platform compatibility. Its requirements a
 
 ## Future Plan C — Optional unified GUI
 
-**Deferred until after Grid.Platform.** This was formerly section 6.39. It is optional, non-blocking and must use the same authoritative services and capability contracts as terminal and Android clients.
+**Eligible after stable core agent services, before portability if desired (2026-11-25).** This was formerly section 6.39. It is optional, non-blocking and must use the same authoritative host services/capability contracts as the terminal; future Android clients will use the same contracts.
 
 - [ ] Define an optional user-facing shell for conversations, agent selection/meetings, task approvals, local files, activity, settings and future city access; preserve the advanced terminal as a first-class option
-- [ ] Build on Grid.Platform rather than introducing a new OS-specific authority or duplicate state owner
+- [ ] Build on current host-neutral conversation/task/service contracts rather than introducing a new OS-specific authority or duplicate state owner; adapt through Grid.Platform later if needed
 - [ ] Integrate the future City backlog as an optional navigable representation of actual agents, applications and verified activity, not a separate synthetic source of truth
 - [ ] Provide persistent conversation/task navigation, search, readable source boundaries, progress/cancellation indicators and interrupted-session recovery
 - [ ] Support accessible keyboard navigation, screen readers, reduced motion, high DPI and responsive/resizable layouts on each claimed platform
 - [ ] Distinguish inferred AI suggestions, verified host observations, pending proposals, approved actions and completed results in every view
-- [ ] Verify GUI, terminal and Android host show the same underlying state and enforce the same permissions
+- [ ] Verify GUI and terminal show the same underlying state and enforce the same permissions; later verify Android when Future Plan D is active
 
 ### C.1 — Custom local agent voices and Voice Studio
 
@@ -2525,6 +2448,100 @@ The GUI is no longer sequenced before platform compatibility. Its requirements a
 
 See [custom local agent voice proposal](Project_GRID_Offline_Voice_Implementation.md#future-enhancement--custom-local-agent-voices-and-voice-studio-2026-11-25). Planning only; all implementation and acceptance remain open.
 
+## Future Plan D — Transferability and cross-platform (former Phase 7)
+
+**Deferred by the user 2026-11-25.** This is retained implementation design and unchecked acceptance; it is **not the next release gate**. Re-enter only after completing and reviewing the core Windows agent product. The earlier Android-first/Linux plan below remains a candidate future sequence, not an active commitment. Existing Windows transfer/package work is preserved; see [core-first roadmap](Project_GRID_Core_Features_First_Roadmap.md).
+
+
+**New active next phase — planned 2026-11-17. No implementation is claimed by this planning update.** Introduce a typed `Grid.Platform` subsystem that isolates operating-system behavior from Grid.Core, Grid.Simulation, Grid.Persistence, Grid.AI, Grid.Agent and the terminal experience. Preserve separate native adapters rather than emulating Windows. Android ARM64 is the first priority, followed by Linux x64/ARM64 while retaining Windows behavior. [Architecture, USB layout, Android constraints and acceptance](Project_GRID_Cross_Platform_and_Android_Plan.md).
+
+### 7.1 Platform boundary and dependency inventory
+
+- [ ] Inventory direct Windows, registry, WMI/CIM, PowerShell, named-pipe, WinForms/WPF, System.Speech, process, path and drive assumptions across every project
+- [ ] Define which behavior is shared, platform-adapted, platform-optional or unsupported
+- [ ] Add architecture tests preventing new native dependencies in Grid.Core, Grid.Simulation and Grid.Persistence
+- [ ] Preserve observable Windows behavior while moving native calls behind adapters
+- [ ] Record the supported OS/version/architecture matrix; do not equate “all devices” with untested universal compatibility
+
+### 7.2 Grid.Platform contracts and capability model
+
+- [ ] Create `Grid.Platform` abstractions for detection, file systems, runtimes, processes, removable storage, resources, dependency checks and lifecycle
+- [ ] Represent `Available`, `PermissionRequired`, `TemporarilyUnavailable`, `Unsupported` and `Unknown` without simulated success
+- [ ] Provide deterministic fake adapters and contract suites for paths, permissions, failures, cancellation and capability changes
+- [ ] Keep task approval, identity and audit enforcement above platform adapters; an adapter cannot widen authority
+- [ ] Use typed operations instead of arbitrary shell-command concatenation
+
+### 7.3 Windows adapter extraction
+
+- [ ] Create `Grid.Platform.Windows` and migrate current Windows discovery, storage, process, runtime, telemetry, picker and lifecycle integrations
+- [ ] Retain current local credentials, world loading, terminal, AI, file/context, transfer and recovery behavior
+- [ ] Preserve explicit Windows-only features as capability results when no portable equivalent exists
+- [ ] Pass the existing full suite and real Windows smoke tests after extraction
+
+### 7.4 Linux adapters and host
+
+- [ ] Create `Grid.Platform.Linux` for x64 and ARM64 OS/architecture detection, XDG paths, permissions, processes, resources and removable storage
+- [ ] Replace PowerShell assumptions with direct process APIs or bounded Bash adapter operations where required
+- [ ] Define Linux runtime/self-contained publishing, app dependencies and offline launch scripts
+- [ ] Verify case-sensitive paths, mount changes, executable permissions, signals, suspend/resume and headless terminal behavior
+- [ ] Test disposable-world login, save/restart, context/file tasks and supported local inference on real Linux hosts
+
+### 7.5 Android ARM64 host and storage adapter
+
+- [ ] Create `Grid.Platform.Android` plus a dedicated `Grid.Host.Android`; do not treat Android as `linux-arm64`
+- [ ] Use the Android system folder/document picker and persisted user grants for removable Grid.AI data instead of unrestricted `/storage` or Termux access
+- [ ] Represent Android content/document handles without fabricating ordinary filesystem paths
+- [ ] Stage verified executable/runtime assets in app-private storage when Android forbids executing from USB, while retaining approved persistent data on removable storage
+- [ ] Add touch-friendly login, terminal/chat, approval, cancellation, file selection and diagnostics without duplicating world state
+- [ ] Handle foreground/background, suspension, process death, grant revocation, USB removal and app restart without silent world replacement
+- [ ] Request folder, microphone, notifications, network and screen/media permissions separately and only when the user selects the feature
+
+### 7.6 Portable world and USB contract
+
+- [ ] Publish separate `windows-x64`, `linux-x64`, `linux-arm64` and `android-arm64` artifacts with one versioned manifest/data contract
+- [ ] Share governed worlds, memory and configuration while keeping platform executables and native dependencies separate
+- [ ] Permit only one authoritative writer per world; add lease/lock, schema, backup, atomic-write and post-load identity checks before cross-platform writes
+- [ ] Reuse the saved world/city instead of regenerating after device change
+- [ ] Revoke or review device-bound paths, workspaces, credentials, remote pairings and permissions on a new device
+- [ ] Test read-only media, missing drive, changed mount/URI, low space, interrupted staging and incompatible package/schema versions
+
+### 7.7 Runtime, command and dependency adaptation
+
+- [ ] Detect or stage the correct self-contained .NET/application host for each supported target
+- [ ] Provide platform-specific launchers without making host PATH, environment variables or registry changes mandatory in portable mode
+- [ ] Map supported typed commands to direct APIs, PowerShell, Bash or Android host services and report unavailable operations honestly
+- [ ] Provide platform-specific health/repair guidance for runtime, storage, permissions, model and dependency failures
+- [ ] Keep ordinary runtime offline; installations/provisioning are the only permitted network-dependent stage
+
+### 7.8 AI and resource portability
+
+- [ ] Keep inference selection behind Grid.AI provider contracts; Ollama is not a universal platform requirement
+- [ ] Evaluate compatible offline Windows, Linux and Android backends, model formats, licenses and CPU/GPU/NPU support
+- [ ] Select the smallest measured profile that passes the task on the current device
+- [ ] Provide a phone-safe degraded mode for simulation, terminal, memory and deterministic tools when generative AI cannot run
+- [ ] Account for RAM, storage/staging, thermal throttling, battery and concurrency before model loading
+- [ ] Never silently download models or claim unavailable AI work succeeded
+
+### 7.9 Cross-platform security, lifecycle and diagnostics
+
+- [ ] Preserve Master Control, capability grants, reviewed actions and audit semantics across adapters
+- [ ] Save/recover safely across shutdown, signals, suspend, Android backgrounding/process death and removable-media loss
+- [ ] Keep permissions scoped and revocable; reopening a world does not imply OS permission on the new device
+- [ ] Provide one capability/health report showing platform, architecture, grants, limitations, runtime, storage and AI readiness
+- [ ] Verify that unsupported security, process, screen, voice or file features fail closed with useful alternatives
+
+### 7.10 Real-device release gate
+
+- [ ] Run the shared contract and full applicable regression suites on Windows x64, Linux x64, Linux ARM64 and at least one supported Android ARM64 device
+- [ ] On Android, install the host normally, select Grid.AI on USB/removable storage, save/restart/regrant, detach/reconnect and recover from revoked access
+- [ ] Move one disposable world between supported platforms without regeneration, concurrent writes or loss of portable identity/history
+- [ ] Verify essential offline workflows with network/DNS blocked and record which AI/profile is actually available on each device
+- [ ] Publish measured OS/API/ABI/hardware/backend support and known limitations before claiming a target supported
+- [ ] Obtain user review of the device matrix and evidence before advancing a future backlog item
+
+---
+
+
 # Release Gates
 
 | Release | Required result |
@@ -2534,7 +2551,7 @@ See [custom local agent voice proposal](Project_GRID_Offline_Voice_Implementatio
 | **GRID Operator** | MCP delegates authorized PC tasks to specialist agents and reports verified results |
 | **GRID Assistant** *(proposed additional release gate)* | Grounded advice, supplied context, approved editing and task assistance |
 | **GRID Experience & Connected Agent** *(new active gate: Phase 6.39)* | Measured responsive conversation; verified resumable MAXIS coding; usable terminal and Even G2; authenticated Wi-Fi phone question/alert/approval workflows; host-only scheduled automations; zero GRID-initiated work after stop; real-device/security acceptance | 
-| **GRID Platform** *(next platform release gate, after 6.39)* | Grid.Platform preserves shared behavior across verified Windows, Linux and Android adapters; Android can select governed removable data through its native host and safely reuse a saved world |
+| **GRID Platform** *(deferred future release, after core product review)* | Grid.Platform preserves shared behavior across verified Windows, Linux and Android adapters; Android can select governed removable data through its native host and safely reuse a saved world |
 | **GRID City** *(future backlog)* | Interactive Godot 3D viewer displaying actual authoritative simulation state |
 | **GRID Terminal Assistant** | Existing terminal supports offline, approved natural-language device actions, guided setup, skills, optional connectors, scheduled workflows and auditable permissions (6.32–6.38), required before cross-platform extraction; GUI (6.39) is optional and non-blocking |
 
@@ -2560,11 +2577,11 @@ See [custom local agent voice proposal](Project_GRID_Offline_Voice_Implementatio
 
 # Current Next Steps
 
-**Roadmap update — 2026-11-21:** Prioritize the active Phase 6.39 experience, reliability and connected-device requirements above. Phase 7 Grid.Platform/Android follows completion and review of these new release gates; earlier 2026-11-17 platform sequencing is superseded for priority, not deleted. The former City and Integration phases are in Backlog and Future Plans. Do not begin them without explicit reprioritization.
+**Roadmap update — 2026-11-25 (current):** Prioritize Windows-first local model/startup reliability, real MCP/MAXIS agent usefulness and conversation/UX (6.39 P0), then optional GUI and selected specialist/device features. Portable package/USB transfer completion, Grid.Platform/Linux/Android and second-PC acceptance are deferred as Future Plan D/B.6–B.9. Preserve all existing code and evidence; no cross-platform work begins without explicit reprioritization.
 
 1. [x] Complete 5.1: named system-agent/task contracts, durable task queue and capability-scoped demonstration broker.
 2. [ ] Begin 5.2: MCP task coordination and delegation.
 3. [ ] Perform physical voice capture/playback/headset-disconnection acceptance; automated recognition fixtures passed in 4.4/4.5.
-4. [ ] Continue tracking the open extension items under 2.4, 2.7.2 and 4.2D; reconcile relevant portable/offline requirements from future plans B.6–B.7 into the active Grid.Platform contracts where necessary.
+4. [ ] Continue tracking open 2.4/2.7.2 Windows-host requirements when needed for agents; retain 4.2D/B.6–B.9 and former Phase 7 platform work as deferred acceptance, not current blockers.
 
-**Note:** This checklist preserves completed history plus the active Phase 7 cross-platform roadmap and deferred future plans. Completion indicators should be updated after each repository review; generated code and documentation are not evidence that a test has passed.
+**Note:** This checklist preserves completed history, the active core-first agent roadmap and deferred platform/transfer future plans. Completion indicators should be updated after each repository review; generated code and documentation are not evidence that a test has passed.
